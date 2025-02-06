@@ -1,0 +1,28 @@
+{
+  "name": "haiphen-aboutme",
+  "version": "1.0.0",
+  "main": "docs/index.html",
+  "description": "",
+  "scripts": {
+    "start": "npx live-server docs",
+    "build": "echo 'No build step required for this static site'"
+  },
+  "directories": {
+    "doc": "docs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JudeSafo/haiphen-aboutme.git"
+  },
+  "keywords": [],
+  "author": "Jude Safo",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/JudeSafo/haiphen-aboutme/issues"
+  },
+  "homepage": "https://github.com/JudeSafo/haiphen-aboutme#readme",
+  "devDependencies": {
+    "live-server": "^1.2.0",
+    "serve": "^14.2.4"
+  }
+}
