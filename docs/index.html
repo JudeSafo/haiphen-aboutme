@@ -3,284 +3,289 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>About Jude Safo</title>
-  <!-- No external CSS file is used in this example -->
+  <title>Haiphen</title>
   <style>
-    /* ----------------------------------------------------------
-       Global Reset & Base Styles
-    ----------------------------------------------------------- */
+    /* ============================================================
+       Reset & Base Styles
+    ============================================================ */
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
     }
-    html, body {
-      min-height: 100%;
-      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    }
-    
-    /* Full-page background & overlay */
     body {
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
       background: url('./assets/background.png') no-repeat center center fixed;
       background-size: cover;
       color: #333;
-      position: relative;
+      padding-top: 70px; /* Space for fixed navbar */
+      min-height: 100vh;
     }
-    .overlay {
+    
+    /* ============================================================
+       Fixed Navbar (Top)
+    ============================================================ */
+    nav.navbar {
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
-      height: 100%;
-      background-color: rgba(255,255,255,0.85);
-      z-index: -1;
-    }
-    
-    /* Container to center and constrain content */
-    .container {
-      max-width: 960px;
-      margin: 0 auto;
-      padding: 2rem;
-      position: relative;
-      z-index: 1;
-    }
-    
-    /* Standard content section styling */
-    section {
-      margin-bottom: 2rem;
-      padding: 1rem;
-      background-color: #fff;
-      border-radius: 8px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
-    section h2 {
-      font-size: 1.75rem;
-      margin-bottom: 1rem;
-      border-bottom: 2px solid #2c3e50;
-      padding-bottom: 0.5rem;
-      color: #2c3e50;
-    }
-    .item {
-      margin-bottom: 1.5rem;
-    }
-    .item h3 {
-      font-size: 1.25rem;
-      color: #34495e;
-    }
-    .item p {
-      margin: 0.25rem 0;
-      line-height: 1.5;
-    }
-    
-    /* Header & Profile styling */
-    header {
-      text-align: center;
-      padding-bottom: 2rem;
-    }
-    header h1 {
-      font-size: 2.5rem;
-      margin-bottom: 0.5rem;
-      color: #2c3e50;
-    }
-    header p {
-      font-size: 1.25rem;
-      color: #555;
-    }
-    .profile-photo {
-      width: 150px;
-      height: 150px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 5px solid #fff;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-      margin: 0 auto 1rem auto;
-      display: block;
-    }
-    
-    /* Navigation Menu styling */
-    nav {
+      background: rgba(255, 255, 255, 0.95);
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
       display: flex;
-      justify-content: center;
-      gap: 1.5rem;
-      margin-bottom: 2rem;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.5rem 1rem;
+      z-index: 1000;
     }
-    nav a {
-      color: #2c3e50;
+    nav.navbar .logo {
+      cursor: pointer;
+    }
+    nav.navbar .logo img {
+      height: 40px;
+    }
+    nav.navbar .nav-links {
+      display: flex;
+      gap: 1rem;
+    }
+    nav.navbar .nav-links a {
       text-decoration: none;
+      color: #2c3e50;
       font-weight: bold;
       padding: 0.5rem 1rem;
       transition: background 0.3s ease;
     }
-    nav a:hover {
-      background-color: #ecf0f1;
+    nav.navbar .nav-links a:hover {
+      background: #ecf0f1;
       border-radius: 4px;
     }
     
-    /* Footer styling */
-    footer {
+    /* ============================================================
+       Main Container
+    ============================================================ */
+    .main-container {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 4rem 2rem;
       text-align: center;
-      padding: 1rem 0;
-      color: #fff;
-      background-color: #2c3e50;
-      border-top: 4px solid #3498db;
     }
     
-    /* ----------------------------------------------------------
-       PDF Embed Styling (for seamless integration)
-       The embedded PDF is given a set height (adjust as needed)
-       and no visible borders so that it appears as a natural section.
-    ----------------------------------------------------------- */
-    .pdf-embed {
-      width: 100%;
-      height: 800px; /* Adjust this value as needed */
-      border: none;
+    /* ============================================================
+       Hero Section (with solid background for readability)
+    ============================================================ */
+    .hero {
+      background: rgba(255, 255, 255, 0.9);
+      padding: 2rem 3rem;
+      border-radius: 8px;
+      margin-bottom: 4rem;
+    }
+    .hero h1 {
+      font-size: 3rem;
+      color: #2c3e50;
+      margin-bottom: 1rem;
+    }
+    .hero p {
+      font-size: 1.25rem;
+      color: #555;
+      margin-bottom: 3rem;
     }
     
-    /* Back-to-Top Button */
-    .back-to-top {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
+    /* ============================================================
+       Section Menu (Horizontal Buttons)
+    ============================================================ */
+    .section-menu {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin-bottom: 5rem;
+      flex-wrap: wrap;
+    }
+    .section-menu button {
       background: #2c3e50;
       color: #fff;
       border: none;
-      padding: 0.75rem;
-      border-radius: 50%;
+      padding: 0.75rem 1.5rem;
+      border-radius: 4px;
       cursor: pointer;
-      font-size: 1.25rem;
+      font-size: 1rem;
+      transition: background 0.3s ease;
+    }
+    .section-menu button:hover {
+      background: #34495e;
+    }
+    
+    /* ============================================================
+       Content Widget (Accordion-Like Area)
+    ============================================================ */
+    .content-widget {
+      max-width: 960px;
+      width: 100%;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      padding: 1.5rem;
       display: none;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+    .content-widget.active {
+      display: block;
+      opacity: 1;
+    }
+    
+    /* ============================================================
+       Bottom Left Contact Widget (Profile)
+    ============================================================ */
+    .contact-widget {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      width: 50px;
+      height: 50px;
+      cursor: pointer;
       z-index: 1000;
+    }
+    .contact-widget img {
+      width: 100%;
+      height: auto;
+      border-radius: 50%;
+      border: 2px solid #2c3e50;
+    }
+    .contact-popup {
+      position: absolute;
+      bottom: 60px;
+      left: 0;
+      background: rgba(255, 255, 255, 0.95);
+      border: 1px solid #2c3e50;
+      border-radius: 4px;
+      padding: 0.5rem 1rem;
+      display: none;
+      white-space: nowrap;
+      font-size: 0.9rem;
+    }
+    .contact-widget:hover .contact-popup {
+      display: block;
+    }
+    
+    /* ============================================================
+       Responsive Adjustments
+    ============================================================ */
+    @media (max-width: 600px) {
+      .hero h1 { font-size: 2.5rem; }
+      .section-menu { flex-direction: column; align-items: center; }
     }
   </style>
 </head>
 <body>
-  <div class="overlay"></div>
-  <div class="container">
-    <!-- SECTION 1: PDF Embedded at the Top -->
-    <section id="pdf">
-      <h2 style="text-align: center;">Haiphen One Pager</h2>
-      <object data="assets/haiphen-one-pager.pdf" type="application/pdf" class="pdf-embed">
-        <p>
-          Your browser does not support PDF viewing. Please download the PDF
-          <a href="assets/haiphen-one-pager.pdf" target="_blank">here</a>.
-        </p>
-      </object>
+  <!-- Fixed Navbar -->
+  <nav class="navbar">
+    <div class="logo" onclick="resetLanding()">
+      <img src="assets/logo.png" alt="Haiphen Logo">
+    </div>
+    <div class="nav-links">
+      <a href="javascript:void(0)" onclick="resetLanding()">Home</a>
+      <a href="javascript:void(0)" onclick="showSection('Contact')">Contact</a>
+    </div>
+  </nav>
+  
+  <!-- Main Content -->
+  <div class="main-container">
+    <!-- Hero Section -->
+    <section class="hero">
+      <h1>Haiphen</h1>
+      <p>Innovating Cybersecurity &amp; Machine Learning Solutions</p>
     </section>
     
-    <!-- SECTION 2: Landing Page Content -->
-    <section id="landing">
-      <!-- Header & Profile -->
-      <header>
-        <img src="assets/profile.png" alt="Jude Safo" class="profile-photo" />
-        <h1>Jude Safo</h1>
-        <p>Machine Learning Engineer &amp; Software Developer</p>
-      </header>
-      
-      <!-- Navigation Menu -->
-      <nav>
-        <a href="#about">About</a>
-        <a href="#experience">Experience</a>
-        <a href="#education">Education</a>
-        <a href="#skills">Skills</a>
-        <a href="#contact">Contact</a>
-      </nav>
-      
-      <!-- About Section -->
-      <section id="about">
-        <h2>About Me</h2>
-        <p>
-          I have 8 years of experience in machine learning, software development, and leadership. My work has generated over $10 million in revenue across Fortune 500 companies including Twitter, Fidelity Investments, and Bridgewater Associates. My projects include building chatbots, large language models, and AWS cloud full-stack applications.
-        </p>
-      </section>
-      
-      <!-- Experience Section -->
-      <section id="experience">
-        <h2>Experience</h2>
-        <div class="item">
-          <h3>Erdős#0, Haiphen</h3>
-          <p><strong>CEO &amp; Founder</strong> | Jan 2022 - Present</p>
-          <p>
-            Leading Haiphen to innovate around the 4 key pillars of the Internet: Storage, Service, Search, and Security. (Techstars &amp; Google-for-Startups backed)
-          </p>
-        </div>
-        <div class="item">
-          <h3>Filecoin Techstars Accelerator</h3>
-          <p><strong>Founder</strong> | Apr 2022 - Jun 2022</p>
-          <p>
-            Cohort participant for my cybersecurity and machine learning company, Haiphen.
-          </p>
-        </div>
-        <div class="item">
-          <h3>Twitter</h3>
-          <p><strong>Applied Machine Learning Engineer</strong> | Jan 2021 - Dec 2021</p>
-          <p>
-            Delivered ML models for the Content Understand and Research (CUAR) team using cutting-edge NLP techniques.
-          </p>
-        </div>
-        <div class="item">
-          <h3>Bridgewater Associates</h3>
-          <p><strong>Knowledge Engineer: NLP Engineer</strong> | Jun 2019 - Aug 2020</p>
-          <p>
-            Developed solutions including knowledge graphs, topic modeling, and advanced NLP classifiers.
-          </p>
-        </div>
-        <div class="item">
-          <h3>Fidelity Investments</h3>
-          <p><strong>NLP Data Scientist</strong> | Apr 2018 - Jun 2019</p>
-          <p>
-            Leveraged AI and ML techniques to provide insights for managing $5.7T in assets.
-          </p>
-        </div>
-      </section>
-      
-      <!-- Education Section -->
-      <section id="education">
-        <h2>Education</h2>
-        <div class="item">
-          <h3>Massachusetts Institute of Technology</h3>
-          <p><strong>S.M. (unfinished PhD)</strong> in Applied Plasma Physics | 2011 - 2014</p>
-          <p>
-            Conducted research on high-Z metals for plasma boundary conditions.
-          </p>
-        </div>
-        <div class="item">
-          <h3>Stony Brook University</h3>
-          <p><strong>B.E., M.S.</strong> in Physics &amp; Material Science Engineering</p>
-          <p>
-            Actively involved as a Student Ambassador and club leader.
-          </p>
-        </div>
-      </section>
-      
-      <!-- Skills & Certifications Section -->
-      <section id="skills">
-        <h2>Skills &amp; Certifications</h2>
-        <p>
-          <strong>Skills:</strong> Physics, Data Analysis, Mathematical Modeling, Materials Science, Sensors, Statistics, Algorithms, and Nanotechnology.
-        </p>
-        <p>
-          <strong>Certification:</strong> Certified Catastrophe Modeler – AIR WorldWide (Feb 2015)
-        </p>
-      </section>
-      
-      <!-- Contact Section -->
-      <section id="contact">
-        <h2>Contact</h2>
-        <p>Email: <a href="mailto:jude.safo@gmail.com">jude.safo@gmail.com</a></p>
-        <p>LinkedIn: <a href="https://linkedin.com/in/judesafo" target="_blank">linkedin.com/in/judesafo</a></p>
-      </section>
-      
-      <!-- Footer -->
-      <footer>
-        <p>&copy; 2025 Jude Safo. All rights reserved.</p>
-      </footer>
-    </section>
+    <!-- Section Menu (Horizontal Buttons) -->
+    <div class="section-menu">
+      <button onclick="showSection('About')">About</button>
+      <button onclick="showSection('OnePager')">One Pager</button>
+      <button onclick="showSection('Experience')">Experience</button>
+      <button onclick="showSection('Education')">Education</button>
+      <button onclick="showSection('Skills')">Skills</button>
+      <button onclick="showSection('Contact')">Contact</button>
+    </div>
+    
+    <!-- Content Widget (Appears on Click) -->
+    <div id="content-widget" class="content-widget"></div>
   </div>
   
-  <!-- Back-to-Top Button -->
-  <button class="back-to-top" id="backToTop" aria-label="Back to Top">&uarr;</button>
+  <!-- Bottom Left Contact Widget -->
+  <div class="contact-widget">
+    <img src="assets/profile.png" alt="Profile">
+    <div class="contact-popup">
+      <p><strong>Contact</strong></p>
+      <p>Founder: <a href="https://linkedin.com/in/judesafo" target="_blank" rel="noopener noreferrer">Jude Safo</a></p>
+      <p>Email: <a href="mailto:pi@haiphenai.com">pi@haiphenai.com</a></p>
+      <p>Phone: (512) 910-4544</p>
+    </div>
+  </div>
   
-  <!-- JavaScript for interactive functionality -->
-  <script src="main.js"></script>
+  <!-- JavaScript for Interactivity -->
+  <script>
+    // Define the content for each section
+    const sectionContent = {
+      "About": `
+        <h2>About Haiphen</h2>
+        <p>
+          Haiphen is a leader in delivering cutting-edge cybersecurity and machine learning solutions.
+          We specialize in computational linguistics, intelligent data processing, and automated decision systems.
+          Our expertise in AI agents and knowledge graphs empowers businesses to harness data like never before.
+        </p>
+      `,
+      "OnePager": `
+        <h2>Haiphen One Pager</h2>
+        <object data="assets/haiphen-one-pager.pdf" type="application/pdf" style="width:100%; height:600px; border:none;">
+          <p>Your browser does not support PDF viewing. Please <a href="assets/haiphen-one-pager.pdf" target="_blank">download the PDF</a>.</p>
+        </object>
+      `,
+      "Experience": `
+        <h2>Our Experience</h2>
+        <ul>
+          <li><strong>Erdős#0, Haiphen</strong> – CEO &amp; Founder (Jan 2022 - Present)</li>
+          <li><strong>Filecoin Techstars Accelerator</strong> – Founder (Apr 2022 - Jun 2022)</li>
+          <li><strong>Twitter</strong> – Applied ML Engineer (Jan 2021 - Dec 2021)</li>
+          <li><strong>Bridgewater Associates</strong> – NLP Engineer (Jun 2019 - Aug 2020)</li>
+          <li><strong>Fidelity Investments</strong> – NLP Data Scientist (Apr 2018 - Jun 2019)</li>
+        </ul>
+      `,
+      "Education": `
+        <h2>Education</h2>
+        <ul>
+          <li><strong>MIT</strong> – S.M. (unfinished PhD) in Applied Plasma Physics (2011 - 2014)</li>
+          <li><strong>Stony Brook University</strong> – B.E., M.S. in Physics &amp; Material Science Engineering</li>
+        </ul>
+      `,
+      "Skills": `
+        <h2>Skills &amp; Certifications</h2>
+        <p><strong>Skills:</strong> Physics, Data Analysis, Mathematical Modeling, Materials Science, Sensors, Statistics, Algorithms, and Nanotechnology.</p>
+        <p><strong>Certification:</strong> Certified Catastrophe Modeler – AIR WorldWide (Feb 2015)</p>
+      `,
+      "Contact": `
+        <h2>Contact Us</h2>
+        <p>Founder: <a href="https://linkedin.com/in/judesafo" target="_blank" rel="noopener noreferrer">Jude Safo</a></p>
+        <p>Email: <a href="mailto:pi@haiphenai.com">pi@haiphenai.com</a></p>
+        <p>Phone: (512) 910-4544</p>
+        <p>Address: Manhattan, New York, USA</p>
+      `
+    };
+
+    // Function to show a section's content in the widget
+    function showSection(sectionName) {
+      const contentWidget = document.getElementById("content-widget");
+      contentWidget.innerHTML = sectionContent[sectionName] || "<p>No content available.</p>";
+      contentWidget.classList.add("active");
+      // Scroll so that the content widget occupies full view (the section menu moves to top)
+      contentWidget.scrollIntoView({ behavior: "smooth" });
+    }
+
+    // Reset to landing page (hide content widget and scroll to top)
+    function resetLanding() {
+      document.getElementById("content-widget").classList.remove("active");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  </script>
 </body>
 </html>
