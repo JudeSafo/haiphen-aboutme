@@ -228,26 +228,32 @@
       "About": `
         <h2>About Us</h2>
         <p>
-          <p>
-            <a href="https://haiphen.io" target="_blank" rel="noopener noreferrer"><strong>Haiphen</strong></a>: A small tech startup with a big knack for delivering custom, open src solutions to various cloud, edge, and infra obstacles in a variety of technical, business, and scientific domains.  
-            <br><br>
-            With a deep foundation in <strong>computational linguistics</strong>, <strong>NLP</strong>, and <strong>ML</strong>, we geek out over building the plumbing and infra (e.g. data pipelines, ETL, entity extraction, pruning, clustering) that simplifies unwanted haziness into simple API calls.  
-            <br><br>
-            We're excited about the future, and the more custom projects we're able to assist you with, the closer we move to our vision of ultimately making knowledge graphs the backbone of every tech stack (without the headache).
-          </p>
+          <a href="https://haiphen.io" target="_blank" rel="noopener noreferrer"><strong>Haiphen</strong></a>: A small tech startup with a big knack for delivering custom, open src solutions to various cloud, edge, and infra obstacles in a variety of technical, business, and scientific domains.  
+          <br><br>
+          With a deep foundation in <strong>computational linguistics</strong>, <strong>NLP</strong>, and <strong>ML</strong>, we geek out over building the plumbing and infra (e.g. data pipelines, ETL, entity extraction, pruning, clustering) that simplifies unwanted haziness into reliable API calls.  
+          <br><br>
+          We're excited about the future: the more custom solutions we're able to assist you with, the closer we move towards our vision of productizing knowledge graphs into every company (without the headache).
+        </p>
       `,
       "OnePager": `
         <h2>Haiphen One Pager</h2>
-        <object data="assets/haiphen-one-pager.pdf" type="application/pdf" style="width:100%; height:600px; border:none;">
-          <p>Your browser does not support PDF viewing. Please <a href="assets/haiphen-one-pager.pdf" target="_blank">download the PDF</a>.</p>
-        </object>
+        <div id="onepager-buttons" style="margin-bottom: 1rem;">
+          <button onclick="toggleOnePager('default')">Default One Pager</button>
+          <button onclick="toggleOnePager('zerodays')">ZeroDays Investigation</button>
+        </div>
+        <div id="onepager-display">
+          <object id="onepager-object" data="assets/haiphen-one-pager.pdf" type="application/pdf" style="width:100%; height:600px; border:none;">
+            <p>Your browser does not support PDF viewing. Please <a href="assets/haiphen-one-pager.pdf" target="_blank">download the PDF</a>.</p>
+          </object>
+        </div>
       `,
       "Portfolio": `
         <h2>Portfolio</h2>
         <ul>
+          <!-- First Portfolio Item: ETL Ingestion Engine -->
           <li style="list-style: disc; margin-bottom: 2rem;">
             <p style="margin-bottom: 0.5rem; font-size: 1.1rem; text-align: center;">
-              <strong>ETL Ingestion Engine:</strong> From raw unstructured data, entity extraction, parsing and entry into a knowledge graph for efficient querying.
+              <strong>ETL Ingestion Engine:</strong> Prior work with a DEI tech startup to build out their data infrastructure pipeline from crawling raw unstructured pdf data to building a basic KG pipeline.
             </p>
             <div style="text-align: center;">
               <a href="https://github.com/JudeSafo/All_Language_Model" target="_blank" rel="noopener noreferrer">
@@ -256,20 +262,44 @@
             </div>
           </li>
           
-          <!-- Second Portfolio Item: GIF Showcase (No Hyperlink) -->
+          <!-- Second Portfolio Item: Protein Biomarker Indexing (Genomics Use Case) -->
           <li style="list-style: disc; margin-bottom: 2rem;">
             <p style="margin-bottom: 0.5rem; font-size: 1.1rem; text-align: center;">
-              <strong>Web Crawler:</strong> Custom, open src search engine for curating and parsing unstructured pdf data (e.g research, financials) for downstream applications.
+              <strong>Protein Biomarker Indexing:</strong> Crawling PubMed articles to identify co-occurrences of diseases and biomarker conditions for potential overlapping treatment options.
+            </p>
+            <div style="text-align: center;">
+              <a href="javascript:void(0)" onclick="toggleOnePager('default'); showSection('OnePager')">
+                <img src="assets/genomics_usecase.png" alt="Genomics Use Case" style="max-width:80%; height:auto; border: 1px solid #ccc; border-radius: 4px;">
+              </a>
+            </div>
+          </li>
+          
+          <!-- Third Portfolio Item: Web Crawler -->
+          <li style="list-style: disc; margin-bottom: 2rem;">
+            <p style="margin-bottom: 0.5rem; font-size: 1.1rem; text-align: center;">
+              <strong>Web Crawler:</strong> Custom, open src search engine for curating and parsing unstructured pdf data (e.g. research, financials) for downstream applications.
             </p>
             <div style="text-align: center;">
               <img src="assets/haiphen-gif5.gif" alt="Haiphen AI Showcase" style="max-width:80%; height:auto; border: 1px solid #ccc; border-radius: 4px;">
             </div>
           </li>
-        
-          <!-- Third Portfolio Item: GIF Showcase (No Hyperlink) -->
+          
+          <!-- Fifth Portfolio Item: ZeroDays Follina Investigation -->
+          <li style="list-style: disc; margin-bottom: 2rem;">
+            <p style="margin-bottom: 0.5rem; font-size: 1.1rem; text-align: center;">
+              <strong>ZeroDays Follina Investigation:</strong> An in-depth investigation of Confluence vulnerabilities with Follina, producing actionable security insights.
+            </p>
+            <div style="text-align: center;">
+              <a href="javascript:void(0)" onclick="toggleOnePager('zerodays'); showSection('OnePager')">
+                <img src="assets/haiphen-follina-screenshot.png" alt="ZeroDays Investigation" style="max-width:80%; height:auto; border: 1px solid #ccc; border-radius: 4px;">
+              </a>
+            </div>
+          </li>
+
+          <!-- Fourth Portfolio Item: Distilled LLM -->
           <li style="list-style: disc; margin-bottom: 2rem;">
             <p style="margin-bottom: 0.5rem; font-size: 1.1rem;">
-              <strong>Distilled LLM:</strong> Custom open src llm for specific business usecases.
+              <strong>Distilled LLM:</strong> Custom open src LLM for specific business use cases, e.g. answering DEI questions.
             </p>
             <div style="text-align: center;">
               <img src="assets/haiphen-gif3.gif" alt="LLM" style="max-width:80%; height:auto; border: 1px solid #ccc; border-radius: 4px;">
@@ -279,9 +309,9 @@
       `,
       "Qualifications": `
         <h2>Qualifications</h2>
-  	<br>
+        <br>
         <h3>Education</h3>
-	<br>
+        <br>
         <ul>
           <li><strong>MIT</strong> – S.M. in Applied Plasma Physics (2011 - 2014)</li>
           <li><strong>Stony Brook University</strong> – B.E., M.S. in Physics &amp; Material Science Engineering</li>
@@ -308,6 +338,15 @@
         <p>Address: Manhattan, New York, USA</p>
       `
     };
+
+    function toggleOnePager(mode) {
+      const obj = document.getElementById("onepager-object");
+      if (mode === 'default') {
+        obj.setAttribute("data", "assets/haiphen-one-pager.pdf");
+      } else if (mode === 'zerodays') {
+        obj.setAttribute("data", "assets/Haiphen_ZeroDaysFollinaConfluenceInvestigation.pdf");
+      }
+    }
 
     function showSection(sectionName) {
       const contentWidget = document.getElementById("content-widget");
