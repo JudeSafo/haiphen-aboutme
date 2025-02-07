@@ -103,7 +103,7 @@
       flex-wrap: wrap;
     }
     .section-menu button {
-      background: #2c3e50;
+      background: #5A9BD4;
       color: #fff;
       border: none;
       padding: 0.75rem 1.5rem;
@@ -185,7 +185,7 @@
       <img src="assets/logo.png" alt="Haiphen Logo">
     </div>
     <div class="nav-links">
-      <a href="javascript:void(0)" onclick="resetLanding()">Home</a>
+      <a href="javascript:void(0)" onclick="showSection('OnePager')">About</a>
       <a href="javascript:void(0)" onclick="showSection('Contact')">Contact</a>
     </div>
   </nav>
@@ -195,16 +195,15 @@
     <!-- Hero Section -->
     <section class="hero">
       <h1>Haiphen</h1>
-      <p>Innovating Cybersecurity &amp; Machine Learning Solutions</p>
+      <p>Search, Infra, Storage: Custom ML Builds</p>
     </section>
     
     <!-- Section Menu (Horizontal Buttons) -->
     <div class="section-menu">
       <button onclick="showSection('About')">About</button>
       <button onclick="showSection('OnePager')">One Pager</button>
-      <button onclick="showSection('Experience')">Experience</button>
-      <button onclick="showSection('Education')">Education</button>
-      <button onclick="showSection('Skills')">Skills</button>
+      <button onclick="showSection('Portfolio')">Portfolio</button>
+      <button onclick="showSection('Qualifications')">Qualifications</button>
       <button onclick="showSection('Contact')">Contact</button>
     </div>
     
@@ -225,15 +224,17 @@
   
   <!-- JavaScript for Interactivity -->
   <script>
-    // Define the content for each section
     const sectionContent = {
       "About": `
-        <h2>About Haiphen</h2>
+        <h2>About Us</h2>
         <p>
-          Haiphen is a leader in delivering cutting-edge cybersecurity and machine learning solutions.
-          We specialize in computational linguistics, intelligent data processing, and automated decision systems.
-          Our expertise in AI agents and knowledge graphs empowers businesses to harness data like never before.
-        </p>
+          <p>
+            <a href="https://haiphen.io" target="_blank" rel="noopener noreferrer"><strong>Haiphen</strong></a>: A small tech startup with a big knack for delivering custom, open src solutions to various cloud, edge, and infra obstacles in a variety of technical, business, and scientific domains.  
+            <br><br>
+            With a deep foundation in <strong>computational linguistics</strong>, <strong>NLP</strong>, and <strong>ML</strong>, we geek out over building the plumbing and infra (e.g. data pipelines, ETL, entity extraction, pruning, clustering) that simplifies unwanted haziness into simple API calls.  
+            <br><br>
+            We're excited about the future, and the more custom projects we're able to assist you with, the closer we move to our vision of ultimately making knowledge graphs the backbone of every tech stack (without the headache).
+          </p>
       `,
       "OnePager": `
         <h2>Haiphen One Pager</h2>
@@ -241,8 +242,56 @@
           <p>Your browser does not support PDF viewing. Please <a href="assets/haiphen-one-pager.pdf" target="_blank">download the PDF</a>.</p>
         </object>
       `,
-      "Experience": `
-        <h2>Our Experience</h2>
+      "Portfolio": `
+        <h2>Portfolio</h2>
+        <ul>
+          <li style="list-style: disc; margin-bottom: 2rem;">
+            <p style="margin-bottom: 0.5rem; font-size: 1.1rem; text-align: center;">
+              <strong>ETL Ingestion Engine:</strong> From raw unstructured data, entity extraction, parsing and entry into a knowledge graph for efficient querying.
+            </p>
+            <div style="text-align: center;">
+              <a href="https://github.com/JudeSafo/All_Language_Model" target="_blank" rel="noopener noreferrer">
+                <img src="assets/gitPortfolio_esg.png" alt="All Language Model" style="max-width:80%; height:auto; border: 1px solid #ccc; border-radius: 4px;">
+              </a>
+            </div>
+          </li>
+          
+          <!-- Second Portfolio Item: GIF Showcase (No Hyperlink) -->
+          <li style="list-style: disc; margin-bottom: 2rem;">
+            <p style="margin-bottom: 0.5rem; font-size: 1.1rem; text-align: center;">
+              <strong>Web Crawler:</strong> Custom, open src search engine for curating and parsing unstructured pdf data (e.g research, financials) for downstream applications.
+            </p>
+            <div style="text-align: center;">
+              <img src="assets/haiphen-gif5.gif" alt="Haiphen AI Showcase" style="max-width:80%; height:auto; border: 1px solid #ccc; border-radius: 4px;">
+            </div>
+          </li>
+        
+          <!-- Third Portfolio Item: GIF Showcase (No Hyperlink) -->
+          <li style="list-style: disc; margin-bottom: 2rem;">
+            <p style="margin-bottom: 0.5rem; font-size: 1.1rem;">
+              <strong>Distilled LLM:</strong> Custom open src llm for specific business usecases.
+            </p>
+            <div style="text-align: center;">
+              <img src="assets/haiphen-gif3.gif" alt="LLM" style="max-width:80%; height:auto; border: 1px solid #ccc; border-radius: 4px;">
+            </div>
+          </li>
+        </ul>
+      `,
+      "Qualifications": `
+        <h2>Qualifications</h2>
+  	<br>
+        <h3>Education</h3>
+	<br>
+        <ul>
+          <li><strong>MIT</strong> – S.M. in Applied Plasma Physics (2011 - 2014)</li>
+          <li><strong>Stony Brook University</strong> – B.E., M.S. in Physics &amp; Material Science Engineering</li>
+        </ul>
+        <br>
+        <h3>Skills &amp; Certifications</h3>
+        <p><strong>Skills:</strong> Physics, Data Analysis, Mathematical Modeling, Materials Science, Sensors, Statistics, Algorithms, and Nanotechnology.</p>
+        <p><strong>Certification:</strong> Certified Catastrophe Modeler – AIR WorldWide (Feb 2015)</p>
+        <br>
+        <h3>Experience</h3>
         <ul>
           <li><strong>Erdős#0, Haiphen</strong> – CEO &amp; Founder (Jan 2022 - Present)</li>
           <li><strong>Filecoin Techstars Accelerator</strong> – Founder (Apr 2022 - Jun 2022)</li>
@@ -250,18 +299,6 @@
           <li><strong>Bridgewater Associates</strong> – NLP Engineer (Jun 2019 - Aug 2020)</li>
           <li><strong>Fidelity Investments</strong> – NLP Data Scientist (Apr 2018 - Jun 2019)</li>
         </ul>
-      `,
-      "Education": `
-        <h2>Education</h2>
-        <ul>
-          <li><strong>MIT</strong> – S.M. (unfinished PhD) in Applied Plasma Physics (2011 - 2014)</li>
-          <li><strong>Stony Brook University</strong> – B.E., M.S. in Physics &amp; Material Science Engineering</li>
-        </ul>
-      `,
-      "Skills": `
-        <h2>Skills &amp; Certifications</h2>
-        <p><strong>Skills:</strong> Physics, Data Analysis, Mathematical Modeling, Materials Science, Sensors, Statistics, Algorithms, and Nanotechnology.</p>
-        <p><strong>Certification:</strong> Certified Catastrophe Modeler – AIR WorldWide (Feb 2015)</p>
       `,
       "Contact": `
         <h2>Contact Us</h2>
@@ -272,16 +309,13 @@
       `
     };
 
-    // Function to show a section's content in the widget
     function showSection(sectionName) {
       const contentWidget = document.getElementById("content-widget");
       contentWidget.innerHTML = sectionContent[sectionName] || "<p>No content available.</p>";
       contentWidget.classList.add("active");
-      // Scroll so that the content widget occupies full view (the section menu moves to top)
       contentWidget.scrollIntoView({ behavior: "smooth" });
     }
 
-    // Reset to landing page (hide content widget and scroll to top)
     function resetLanding() {
       document.getElementById("content-widget").classList.remove("active");
       window.scrollTo({ top: 0, behavior: "smooth" });
