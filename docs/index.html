@@ -170,6 +170,47 @@
     }
     
     /* ============================================================
+       Service Keys Popup Styling
+    ============================================================ */
+    .service-keys {
+      background-color: #f2f2f2;
+      padding: 1rem;
+      margin-top: 2rem;
+      border-radius: 4px;
+      text-align: left;
+      display: inline-block;
+    }
+    .service-keys strong {
+      margin-right: 0.5rem;
+    }
+    .service-key {
+      position: relative;
+      color: #5A9BD4;
+      text-decoration: none;
+      font-weight: bold;
+      margin-right: 0.5rem;
+      cursor: pointer;
+    }
+    .service-key .service-tooltip {
+      display: none;
+      position: absolute;
+      bottom: 120%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+      padding: 0.5rem;
+      white-space: nowrap;
+      z-index: 100;
+    }
+    .service-key:hover .service-tooltip,
+    .service-tooltip:hover {
+      display: block;
+    }
+    
+    /* ============================================================
        Responsive Adjustments
     ============================================================ */
     @media (max-width: 600px) {
@@ -203,7 +244,7 @@
       <button onclick="showSection('About')">About</button>
       <button onclick="showSection('OnePager')">One Pager</button>
       <button onclick="showSection('Portfolio')">Portfolio</button>
-      <button onclick="showSection('Qualifications')">Qualifications</button>
+      <button onclick="showSection('Tech')">Tech</button>
       <button onclick="showSection('Contact')">Contact</button>
     </div>
     
@@ -230,9 +271,36 @@
         <p>
           <a href="https://haiphen.io" target="_blank" rel="noopener noreferrer"><strong>Haiphen</strong></a>: A small tech startup with a big knack for delivering custom, open src solutions to various cloud, edge, and infra obstacles in a variety of technical, business, and scientific domains.  
           <br><br>
-          With a deep foundation in <strong>computational linguistics</strong>, <strong>NLP</strong>, and <strong>ML</strong>, we geek out over building the plumbing and infra (e.g. data pipelines, ETL, entity extraction, pruning, clustering) that simplifies unwanted haziness into reliable API calls.  
+          With a deep foundation in <strong>computational linguistics</strong>, <strong>NLP</strong>, and <strong>ML</strong>, we geek out over building the plumbing and infra (e.g. data pipelines, ETL, entity extraction, pruning, clustering) that simplifies unwanted haziness into reliable API calls. Consider us your personal DBA (database admin) but with domain expertise that persists in your data through it's lifecycle.
           <br><br>
           We're excited about the future: the more custom solutions we're able to assist you with, the closer we move towards our vision of productizing knowledge graphs into every company (without the headache).
+        </p>
+        <p class="service-keys">
+          <strong>Services:</strong>
+          <a class="service-key" href="https://en.wikipedia.org/wiki/Consultant" target="_blank" rel="noopener noreferrer">
+            Consulting
+            <span class="service-tooltip">Professional IT consulting and advisory services.</span>
+          </a>,
+          <a class="service-key" href="https://en.wikipedia.org/wiki/Consultant" target="_blank" rel="noopener noreferrer">
+            Knowledge Graph DB
+            <span class="service-tooltip">Intelligent persistent data-store</span>
+          </a>,
+          <a class="service-key" href="https://en.wikipedia.org/wiki/Quality_assurance" target="_blank" rel="noopener noreferrer">
+            QA
+            <span class="service-tooltip">Comprehensive quality assurance and testing services.</span>
+          </a>, 
+          <a class="service-key" href="https://en.wikipedia.org/wiki/Access_control" target="_blank" rel="noopener noreferrer">
+            Access Control
+            <span class="service-tooltip">Secure identity and access management solutions.</span>
+          </a>,
+          <a class="service-key" href="https://en.wikipedia.org/wiki/Open_source" target="_blank" rel="noopener noreferrer">
+            Open Src
+            <span class="service-tooltip">Utilization of open source technology and collaborative development.</span>
+          </a>,
+          <a class="service-key" href="https://en.wikipedia.org/wiki/Infrastructure" target="_blank" rel="noopener noreferrer">
+            Infra.
+            <span class="service-tooltip">Robust infrastructure design and management.</span>
+          </a>
         </p>
       `,
       "OnePager": `
@@ -284,6 +352,16 @@
             </div>
           </li>
 
+          <!-- Fourth Portfolio Item: Distilled LLM -->
+          <li style="list-style: disc; margin-bottom: 2rem;">
+            <p style="margin-bottom: 0.5rem; font-size: 1.1rem;">
+              <strong>Distilled LLM:</strong> Custom open src LLM for specific business use cases, e.g. answering DEI questions.
+            </p>
+            <div style="text-align: center;">
+              <img src="assets/haiphen-gif3.gif" alt="LLM" style="max-width:80%; height:auto; border: 1px solid #ccc; border-radius: 4px;">
+            </div>
+          </li>
+          
           <!-- Fifth Portfolio Item: ZeroDays Follina Investigation -->
           <li style="list-style: disc; margin-bottom: 2rem;">
             <p style="margin-bottom: 0.5rem; font-size: 1.1rem; text-align: center;">
@@ -295,40 +373,53 @@
               </a>
             </div>
           </li>
-
-          <!-- Fourth Portfolio Item: Distilled LLM -->
-          <li style="list-style: disc; margin-bottom: 2rem;">
-            <p style="margin-bottom: 0.5rem; font-size: 1.1rem;">
-              <strong>Distilled LLM:</strong> Custom open src LLM for specific business use cases, e.g. answering DEI questions.
-            </p>
-            <div style="text-align: center;">
-              <img src="assets/haiphen-gif3.gif" alt="LLM" style="max-width:80%; height:auto; border: 1px solid #ccc; border-radius: 4px;">
-            </div>
-          </li>
         </ul>
       `,
-      "Qualifications": `
-        <h2>Qualifications</h2>
-        <br>
-        <h3>Education</h3>
-        <br>
-        <ul>
-          <li><strong>MIT</strong> – S.M. in Applied Plasma Physics (2011 - 2014)</li>
-          <li><strong>Stony Brook University</strong> – B.E., M.S. in Physics &amp; Material Science Engineering</li>
-        </ul>
-        <br>
-        <h3>Skills &amp; Certifications</h3>
-        <p><strong>Skills:</strong> Physics, Data Analysis, Mathematical Modeling, Materials Science, Sensors, Statistics, Algorithms, and Nanotechnology.</p>
-        <p><strong>Certification:</strong> Certified Catastrophe Modeler – AIR WorldWide (Feb 2015)</p>
-        <br>
-        <h3>Experience</h3>
-        <ul>
-          <li><strong>Erdős#0, Haiphen</strong> – CEO &amp; Founder (Jan 2022 - Present)</li>
-          <li><strong>Filecoin Techstars Accelerator</strong> – Founder (Apr 2022 - Jun 2022)</li>
-          <li><strong>Twitter</strong> – Applied ML Engineer (Jan 2021 - Dec 2021)</li>
-          <li><strong>Bridgewater Associates</strong> – NLP Engineer (Jun 2019 - Aug 2020)</li>
-          <li><strong>Fidelity Investments</strong> – NLP Data Scientist (Apr 2018 - Jun 2019)</li>
-        </ul>
+      "Tech": `
+        <h2>Tech Stack</h2>
+        <div class="tech-container">
+          <div class="tech-left">
+            <h3>Philosophy</h3>
+            <p>
+              We believe in leveraging open source products to provide our users with a complete chain of custody insight into every asset build. Our approach includes regular supply chain inspections and updates to ensure transparency and minimize vulnerabilities.
+            </p>
+            <br>
+            <h3>Security</h3>
+            <p>
+              Our security protocols incorporate industry best practices with proactive threat detection and mitigation to protect your critical systems.
+            </p>
+            <br>
+            <h3>Stack</h3>
+            <p><strong>Backend:</strong> Apache Framework, Node.js, Python</p>
+            <p><strong>Network:</strong> ISTO, SD-WAN solutions</p>
+            <p><strong>Platform:</strong> Ansible, Terraform, Kubernetes</p>
+            <p><strong>Access Control:</strong> Comprehensive identity and access management</p>
+            <p><strong>Telemetry:</strong> Prometheus, Grafana, ELK Stack</p>
+          </div>
+          <div class="tech-right">
+            <img src="assets/tech_asset.gif" alt="Tech Illustration" style="max-width:100%; border-radius: 4px; margin-bottom: 1rem;">
+            <!-- Additional asset images can be added here -->
+          </div>
+        </div>
+        <style>
+          .tech-container {
+            display: flex;
+            gap: 2rem;
+            align-items: flex-start;
+            justify-content: center;
+            flex-wrap: wrap;
+            text-align: left;
+            margin-top: 2rem;
+          }
+          .tech-left {
+            flex: 1;
+            min-width: 280px;
+          }
+          .tech-right {
+            flex: 1;
+            min-width: 280px;
+          }
+        </style>
       `,
       "Contact": `
         <h2>Contact Us</h2>
