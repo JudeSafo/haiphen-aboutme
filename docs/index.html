@@ -379,33 +379,36 @@
         <h2>Tech Stack</h2>
         <div class="tech-container">
           <div class="tech-left">
-            <h3>Philosophy</h3>
+            <h3>Ethos</h3>
             <p>
-              We believe in leveraging open source products to provide our users with a complete chain of custody insight into every asset build. Our approach includes regular supply chain inspections and updates to ensure transparency and minimize vulnerabilities.
+              After 7 years in industry one thing became clear: Open src software is powering everything. Hence, the first priority was to build a stand alone working environment based entirely on OS. Thus our value proposition: leveraging open source products to provide our users with a complete ownsership and chain of custody insight into every asset build. Our approach includes regular supply chain inspections and updates to ensure transparency and minimize vulnerabilities.
             </p>
             <br>
-            <h3>Security</h3>
+            <h3>Secure</h3>
             <p>
               Our security protocols incorporate industry best practices with proactive threat detection and mitigation to protect your critical systems.
             </p>
             <br>
             <h3>Stack</h3>
-            <p><strong>Backend:</strong> Apache Framework, Node.js, Python</p>
-            <p><strong>Network:</strong> ISTO, SD-WAN solutions</p>
-            <p><strong>Platform:</strong> Ansible, Terraform, Kubernetes</p>
-            <p><strong>Access Control:</strong> Comprehensive identity and access management</p>
-            <p><strong>Telemetry:</strong> Prometheus, Grafana, ELK Stack</p>
+            <ul class="tech-list">
+              <li><i>Backend:</i> Apache Framework, Node.js, Python</li>
+              <li><i>Network:</i> ISTO, SD-WAN solutions</li>
+              <li><i>Platform:</i> Ansible, Terraform, Kubernetes</li>
+              <li><i>Access Control:</i> Comprehensive identity and access management</li>
+              <li><i>Telemetry:</i> Prometheus, Grafana, ELK Stack</li>
+            </ul>
           </div>
           <div class="tech-right">
-            <img src="assets/tech_asset.gif" alt="Tech Illustration" style="max-width:100%; border-radius: 4px; margin-bottom: 1rem;">
-            <!-- Additional asset images can be added here -->
+            <a href="javascript:void(0)" onclick="openTechModal()">
+              <img src="assets/tech_asset.png" alt="Tech Illustration" style="max-width:100%; border-radius: 4px; margin: auto; display: block;">
+            </a>
           </div>
         </div>
         <style>
           .tech-container {
             display: flex;
             gap: 2rem;
-            align-items: flex-start;
+            align-items: center; /* vertically center the columns */
             justify-content: center;
             flex-wrap: wrap;
             text-align: left;
@@ -419,6 +422,16 @@
             flex: 1;
             min-width: 280px;
           }
+          .tech-list {
+            list-style-type: disc;
+            padding-left: 20px;
+            font-size: 1rem;
+            line-height: 1.8;
+          }
+          .tech-list li i {
+            font-style: italic;
+            font-weight: normal;
+          }
         </style>
       `,
       "Contact": `
@@ -427,6 +440,12 @@
         <p>Email: <a href="mailto:pi@haiphenai.com">pi@haiphenai.com</a></p>
         <p>Phone: (512) 910-4544</p>
         <p>Address: Manhattan, New York, USA</p>
+        <br><br>
+        <div style="text-align: center;">
+          <img src="assets/nature.png" alt="Nature" style="max-width:80%; border-radius: 4px;">
+        </div>
+        <br><br>
+        <p>"No man is a failure who has friends"</p>
       `
     };
 
