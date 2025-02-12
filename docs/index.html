@@ -1,474 +1,524 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Haiphen</title>
-  <style>
-    /* ============================================================
-       Reset & Base Styles
-    ============================================================ */
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-    body {
-      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-      background: url('./assets/background.png') no-repeat center center fixed;
-      background-size: cover;
-      color: #333;
-      padding-top: 70px; /* Space for fixed navbar */
-      min-height: 100vh;
-    }
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Haiphen</title>
+    <style>
+      /* ============================================================
+         Reset & Base Styles
+      ============================================================ */
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        background: url('./assets/background.png') no-repeat center center fixed;
+        background-size: cover;
+        color: #333;
+        padding-top: 70px; /* Space for fixed navbar */
+        min-height: 100vh;
+      }
+      
+      /* ============================================================
+         Fixed Navbar (Top)
+      ============================================================ */
+      nav.navbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        background: rgba(255, 255, 255, 0.95);
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.5rem 1rem;
+        z-index: 1000;
+      }
+      nav.navbar .logo {
+        cursor: pointer;
+      }
+      nav.navbar .logo img {
+        height: 40px;
+      }
+      nav.navbar .nav-links {
+        display: flex;
+        gap: 1rem;
+      }
+      nav.navbar .nav-links a {
+        text-decoration: none;
+        color: #2c3e50;
+        font-weight: bold;
+        padding: 0.5rem 1rem;
+        transition: background 0.3s ease;
+      }
+      nav.navbar .nav-links a:hover {
+        background: #ecf0f1;
+        border-radius: 4px;
+      }
+      
+      /* ============================================================
+         Main Container
+      ============================================================ */
+      .main-container {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 4rem 2rem;
+        text-align: center;
+      }
+      
+      /* ============================================================
+         Hero Section (with solid background for readability)
+      ============================================================ */
+      .hero {
+        background: rgba(255, 255, 255, 0.9);
+        padding: 2rem 3rem;
+        border-radius: 8px;
+        margin-bottom: 4rem;
+      }
+      .hero h1 {
+        font-size: 3rem;
+        color: #2c3e50;
+        margin-bottom: 1rem;
+      }
+      .hero p {
+        font-size: 1.25rem;
+        color: #555;
+        margin-bottom: 3rem;
+      }
+      
+      /* ============================================================
+         Section Menu (Horizontal Buttons)
+      ============================================================ */
+      .section-menu {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin-bottom: 5rem;
+        flex-wrap: wrap;
+      }
+      .section-menu button {
+        background: #5A9BD4;
+        color: #fff;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: background 0.3s ease;
+      }
+      .section-menu button:hover {
+        background: #34495e;
+      }
+      
+      /* ============================================================
+         Content Widget (Accordion-Like Area)
+      ============================================================ */
+      .content-widget {
+        max-width: 960px;
+        width: 100%;
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        padding: 1.5rem;
+        display: none;
+        opacity: 0;
+        transition: opacity 0.5s ease;
+      }
+      .content-widget.active {
+        display: block;
+        opacity: 1;
+      }
+      
+      /* ============================================================
+         Bottom Left Contact Widget (Profile)
+      ============================================================ */
+      .contact-widget {
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        width: 50px;
+        height: 50px;
+        cursor: pointer;
+        z-index: 1000;
+      }
+      .contact-widget img {
+        width: 100%;
+        height: auto;
+        border-radius: 50%;
+        border: 2px solid #2c3e50;
+      }
+      .contact-popup {
+        position: absolute;
+        bottom: 60px;
+        left: 0;
+        background: rgba(255, 255, 255, 0.95);
+        border: 1px solid #2c3e50;
+        border-radius: 4px;
+        padding: 0.5rem 1rem;
+        display: none;
+        white-space: nowrap;
+        font-size: 0.9rem;
+      }
+      .contact-widget:hover .contact-popup {
+        display: block;
+      }
+      
+      /* ============================================================
+         Service Keys Popup Styling
+      ============================================================ */
+      .service-keys {
+        background-color: #f2f2f2;
+        padding: 1rem;
+        margin-top: 2rem;
+        border-radius: 4px;
+        text-align: left;
+        display: inline-block;
+      }
+      .service-keys strong {
+        margin-right: 0.5rem;
+      }
+      .service-key {
+        position: relative;
+        color: #5A9BD4;
+        text-decoration: none;
+        font-weight: bold;
+        margin-right: 0.5rem;
+        cursor: pointer;
+      }
+      .service-tooltip {
+        display: none;
+        position: absolute;
+        bottom: 120%;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #fff;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        padding: 0.5rem;
+        white-space: normal; /* Allows text to wrap */
+        width: 300px; /* Set a fixed width */
+        max-width: 100%; /* Prevents it from overflowing */
+        color: #000; /* Ensure text is black */
+        font-weight: normal;
+        text-decoration: none;
+        z-index: 100;
+        word-wrap: break-word; /* Ensures long words wrap properly */
+        text-align: left; /* Keeps the text left-aligned */
+      }
+      .service-key .service-tooltip {
+        display: none;
+        position: absolute;
+        bottom: 120%;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #fff;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        padding: 0.5rem;
+        white-space: normal;
+        max-width: 5000px;          /* Fixed width, adjust as needed */
+        z-index: 100;
+        color: #000;           /* Force text to black */
+        font-weight: normal;   /* Use normal font weight */
+        text-decoration: none; /* Remove underline, etc. */
+      }
+      .service-key:hover .service-tooltip,
+      .service-tooltip:hover {
+        display: block;
+      }
+      
+      /* ============================================================
+         Responsive Adjustments
+      ============================================================ */
+      @media (max-width: 600px) {
+        .hero h1 { font-size: 2.5rem; }
+        .section-menu { flex-direction: column; align-items: center; }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Fixed Navbar -->
+    <nav class="navbar">
+      <div class="logo" onclick="resetLanding()">
+        <img src="assets/logo.png" alt="Haiphen Logo">
+      </div>
+      <div class="nav-links">
+        <a href="javascript:void(0)" onclick="showSection('OnePager')">About</a>
+        <a href="javascript:void(0)" onclick="showSection('Contact')">Contact</a>
+      </div>
+    </nav>
     
-    /* ============================================================
-       Fixed Navbar (Top)
-    ============================================================ */
-    nav.navbar {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      background: rgba(255, 255, 255, 0.95);
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0.5rem 1rem;
-      z-index: 1000;
-    }
-    nav.navbar .logo {
-      cursor: pointer;
-    }
-    nav.navbar .logo img {
-      height: 40px;
-    }
-    nav.navbar .nav-links {
-      display: flex;
-      gap: 1rem;
-    }
-    nav.navbar .nav-links a {
-      text-decoration: none;
-      color: #2c3e50;
-      font-weight: bold;
-      padding: 0.5rem 1rem;
-      transition: background 0.3s ease;
-    }
-    nav.navbar .nav-links a:hover {
-      background: #ecf0f1;
-      border-radius: 4px;
-    }
-    
-    /* ============================================================
-       Main Container
-    ============================================================ */
-    .main-container {
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 4rem 2rem;
-      text-align: center;
-    }
-    
-    /* ============================================================
-       Hero Section (with solid background for readability)
-    ============================================================ */
-    .hero {
-      background: rgba(255, 255, 255, 0.9);
-      padding: 2rem 3rem;
-      border-radius: 8px;
-      margin-bottom: 4rem;
-    }
-    .hero h1 {
-      font-size: 3rem;
-      color: #2c3e50;
-      margin-bottom: 1rem;
-    }
-    .hero p {
-      font-size: 1.25rem;
-      color: #555;
-      margin-bottom: 3rem;
-    }
-    
-    /* ============================================================
-       Section Menu (Horizontal Buttons)
-    ============================================================ */
-    .section-menu {
-      display: flex;
-      justify-content: center;
-      gap: 1rem;
-      margin-bottom: 5rem;
-      flex-wrap: wrap;
-    }
-    .section-menu button {
-      background: #5A9BD4;
-      color: #fff;
-      border: none;
-      padding: 0.75rem 1.5rem;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 1rem;
-      transition: background 0.3s ease;
-    }
-    .section-menu button:hover {
-      background: #34495e;
-    }
-    
-    /* ============================================================
-       Content Widget (Accordion-Like Area)
-    ============================================================ */
-    .content-widget {
-      max-width: 960px;
-      width: 100%;
-      background: #fff;
-      border-radius: 8px;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-      padding: 1.5rem;
-      display: none;
-      opacity: 0;
-      transition: opacity 0.5s ease;
-    }
-    .content-widget.active {
-      display: block;
-      opacity: 1;
-    }
-    
-    /* ============================================================
-       Bottom Left Contact Widget (Profile)
-    ============================================================ */
-    .contact-widget {
-      position: fixed;
-      bottom: 20px;
-      left: 20px;
-      width: 50px;
-      height: 50px;
-      cursor: pointer;
-      z-index: 1000;
-    }
-    .contact-widget img {
-      width: 100%;
-      height: auto;
-      border-radius: 50%;
-      border: 2px solid #2c3e50;
-    }
-    .contact-popup {
-      position: absolute;
-      bottom: 60px;
-      left: 0;
-      background: rgba(255, 255, 255, 0.95);
-      border: 1px solid #2c3e50;
-      border-radius: 4px;
-      padding: 0.5rem 1rem;
-      display: none;
-      white-space: nowrap;
-      font-size: 0.9rem;
-    }
-    .contact-widget:hover .contact-popup {
-      display: block;
-    }
-    
-    /* ============================================================
-       Service Keys Popup Styling
-    ============================================================ */
-    .service-keys {
-      background-color: #f2f2f2;
-      padding: 1rem;
-      margin-top: 2rem;
-      border-radius: 4px;
-      text-align: left;
-      display: inline-block;
-    }
-    .service-keys strong {
-      margin-right: 0.5rem;
-    }
-    .service-key {
-      position: relative;
-      color: #5A9BD4;
-      text-decoration: none;
-      font-weight: bold;
-      margin-right: 0.5rem;
-      cursor: pointer;
-    }
-    .service-key .service-tooltip {
-      display: none;
-      position: absolute;
-      bottom: 120%;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #fff;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-      padding: 0.5rem;
-      white-space: nowrap;
-      z-index: 100;
-    }
-    .service-key:hover .service-tooltip,
-    .service-tooltip:hover {
-      display: block;
-    }
-    
-    /* ============================================================
-       Responsive Adjustments
-    ============================================================ */
-    @media (max-width: 600px) {
-      .hero h1 { font-size: 2.5rem; }
-      .section-menu { flex-direction: column; align-items: center; }
-    }
-  </style>
-</head>
-<body>
-  <!-- Fixed Navbar -->
-  <nav class="navbar">
-    <div class="logo" onclick="resetLanding()">
-      <img src="assets/logo.png" alt="Haiphen Logo">
+    <!-- Main Content -->
+    <div class="main-container">
+      <!-- Hero Section -->
+      <section class="hero">
+        <h1>Haiphen</h1>
+        <p>API Everything [♥]</p>
+      </section>
+      
+      <!-- Section Menu (Horizontal Buttons) -->
+      <div class="section-menu">
+        <button onclick="showSection('Services')">Services</button>
+        <button onclick="showSection('OnePager')">One Pager</button>
+        <button onclick="showSection('Portfolio')">Portfolio</button>
+        <button onclick="showSection('Tech')">Tech</button>
+        <button onclick="showSection('Contact')">Contact</button>
+      </div>
+      
+      <!-- Content Widget (Appears on Click) -->
+      <div id="content-widget" class="content-widget"></div>
     </div>
-    <div class="nav-links">
-      <a href="javascript:void(0)" onclick="showSection('OnePager')">About</a>
-      <a href="javascript:void(0)" onclick="showSection('Contact')">Contact</a>
-    </div>
-  </nav>
-  
-  <!-- Main Content -->
-  <div class="main-container">
-    <!-- Hero Section -->
-    <section class="hero">
-      <h1>Haiphen</h1>
-      <p>API Everything [♥]</p>
-    </section>
     
-    <!-- Section Menu (Horizontal Buttons) -->
-    <div class="section-menu">
-      <button onclick="showSection('About')">About</button>
-      <button onclick="showSection('OnePager')">One Pager</button>
-      <button onclick="showSection('Portfolio')">Portfolio</button>
-      <button onclick="showSection('Tech')">Tech</button>
-      <button onclick="showSection('Contact')">Contact</button>
-    </div>
-    
-    <!-- Content Widget (Appears on Click) -->
-    <div id="content-widget" class="content-widget"></div>
-  </div>
-  
-  <!-- Bottom Left Contact Widget -->
-  <div class="contact-widget">
-    <img src="assets/profile.png" alt="Profile">
-    <div class="contact-popup">
-      <p><strong>Contact</strong></p>
-      <p>Founder: <a href="https://linkedin.com/in/judesafo" target="_blank" rel="noopener noreferrer">Jude Safo</a></p>
-      <p>Email: <a href="mailto:pi@haiphenai.com">pi@haiphenai.com</a></p>
-      <p>Phone: (512) 910-4544</p>
-    </div>
-  </div>
-  
-  <!-- JavaScript for Interactivity -->
-  <script>
-    const sectionContent = {
-      "About": `
-        <h2>About Us</h2>
-        <p>
-          <a href="https://haiphen.io" target="_blank" rel="noopener noreferrer"><strong>Haiphen</strong></a>: A small tech startup with a big knack for delivering custom, open src solutions to various cloud, edge, and infra obstacles in a variety of technical, business, and scientific domains.  
-          <br><br>
-          With a deep foundation in <strong>computational linguistics</strong>, <strong>NLP</strong>, and <strong>ML</strong>, we geek out over building the plumbing and infra (e.g. data pipelines, ETL, entity extraction, pruning, clustering) that simplifies unwanted haziness into reliable API calls. Consider us your personal DBA (database admin) but with domain expertise that persists in your data through it's lifecycle.
-          <br><br>
-          We're excited about the future: the more custom solutions we're able to assist you with, the closer we move towards our vision of productizing knowledge graphs into every company (without the headache).
-        </p>
-        <p class="service-keys">
-          <strong>Services:</strong>
-          <a class="service-key" href="https://en.wikipedia.org/wiki/Consultant" target="_blank" rel="noopener noreferrer">
-            Consulting
-            <span class="service-tooltip">Professional IT consulting and advisory services.</span>
-          </a>,
-          <a class="service-key" href="https://en.wikipedia.org/wiki/Consultant" target="_blank" rel="noopener noreferrer">
-            Knowledge Graph DB
-            <span class="service-tooltip">Intelligent persistent data-store</span>
-          </a>,
-          <a class="service-key" href="https://en.wikipedia.org/wiki/Quality_assurance" target="_blank" rel="noopener noreferrer">
-            QA
-            <span class="service-tooltip">Comprehensive quality assurance and testing services.</span>
-          </a>, 
-          <a class="service-key" href="https://en.wikipedia.org/wiki/Access_control" target="_blank" rel="noopener noreferrer">
-            Access Control
-            <span class="service-tooltip">Secure identity and access management solutions.</span>
-          </a>,
-          <a class="service-key" href="https://en.wikipedia.org/wiki/Open_source" target="_blank" rel="noopener noreferrer">
-            Open Src
-            <span class="service-tooltip">Utilization of open source technology and collaborative development.</span>
-          </a>,
-          <a class="service-key" href="https://en.wikipedia.org/wiki/Infrastructure" target="_blank" rel="noopener noreferrer">
-            Infra.
-            <span class="service-tooltip">Robust infrastructure design and management.</span>
-          </a>
-        </p>
-      `,
-      "OnePager": `
-        <h2>Haiphen One Pager</h2>
-        <div id="onepager-buttons" style="margin-bottom: 1rem;">
-          <button onclick="toggleOnePager('default')">Genomics</button>
-          <button onclick="toggleOnePager('zerodays')">ZeroDays Investigation</button>
-        </div>
-        <div id="onepager-display">
-          <object id="onepager-object" data="assets/haiphen-one-pager.pdf" type="application/pdf" style="width:100%; height:600px; border:none;">
-            <p>Your browser does not support PDF viewing. Please <a href="assets/haiphen-one-pager.pdf" target="_blank">download the PDF</a>.</p>
-          </object>
-        </div>
-      `,
-      "Portfolio": `
-        <h2>Portfolio</h2>
-        <ul>
-          <!-- First Portfolio Item: ETL Ingestion Engine -->
-          <li style="list-style: disc; margin-bottom: 2rem;">
-            <p style="margin-bottom: 0.5rem; font-size: 1.1rem; text-align: center;">
-              <strong>ETL Ingestion Engine:</strong> Prior work with a DEI tech startup to build out their data infrastructure pipeline from crawling raw unstructured pdf data to building a basic KG database.
-            </p>
-            <div style="text-align: center;">
-              <a href="https://github.com/JudeSafo/All_Language_Model" target="_blank" rel="noopener noreferrer">
-                <img src="assets/gitPortfolio_esg.png" alt="All Language Model" style="max-width:80%; height:auto; border: 1px solid #ccc; border-radius: 4px;">
-              </a>
-            </div>
-          </li>
-          
-          <!-- Second Portfolio Item: Protein Biomarker Indexing (Genomics Use Case) -->
-          <li style="list-style: disc; margin-bottom: 2rem;">
-            <p style="margin-bottom: 0.5rem; font-size: 1.1rem; text-align: center;">
-              <strong>Protein Biomarker Indexing:</strong> Crawling PubMed articles to identify co-occurrences of diseases and biomarker conditions for potential overlapping treatment options.
-            </p>
-            <div style="text-align: center;">
-              <a href="javascript:void(0)" onclick="showSection('OnePager')">
-                <img src="assets/genomics_usecase.png" alt="Genomics Use Case" style="max-width:80%; height:auto; border: 1px solid #ccc; border-radius: 4px;">
-              </a>
-            </div>
-          </li>
-          
-          <!-- Third Portfolio Item: Web Crawler -->
-          <li style="list-style: disc; margin-bottom: 2rem;">
-            <p style="margin-bottom: 0.5rem; font-size: 1.1rem; text-align: center;">
-              <strong>Web Crawler:</strong> Custom, open src search engine for curating and parsing unstructured pdf data (e.g. research, financials) for downstream applications.
-            </p>
-            <div style="text-align: center;">
-              <img src="assets/haiphen-gif5.gif" alt="Haiphen AI Showcase" style="max-width:80%; height:auto; border: 1px solid #ccc; border-radius: 4px;">
-            </div>
-          </li>
-
-          <!-- Fourth Portfolio Item: Distilled LLM -->
-          <li style="list-style: disc; margin-bottom: 2rem;">
-            <p style="margin-bottom: 0.5rem; font-size: 1.1rem;">
-              <strong>Distilled LLM:</strong> Custom open src LLM for specific business use cases, e.g. answering DEI questions.
-            </p>
-            <div style="text-align: center;">
-              <img src="assets/haiphen-gif3.gif" alt="LLM" style="max-width:80%; height:auto; border: 1px solid #ccc; border-radius: 4px;">
-            </div>
-          </li>
-          
-          <!-- Fifth Portfolio Item: ZeroDays Follina Investigation -->
-          <li style="list-style: disc; margin-bottom: 2rem;">
-            <p style="margin-bottom: 0.5rem; font-size: 1.1rem; text-align: center;">
-              <strong>ZeroDays Follina Investigation:</strong> An in-depth investigation of Confluence vulnerabilities with Follina, producing actionable security insights.
-            </p>
-            <div style="text-align: center;">
-              <a href="javascript:void(0)" onclick="showSection('OnePager')">
-                <img src="assets/haiphen-follina-screenshot.png" alt="ZeroDays Investigation" style="max-width:80%; height:auto; border: 1px solid #ccc; border-radius: 4px;">
-              </a>
-            </div>
-          </li>
-        </ul>
-      `,
-      "Tech": `
-        <h2>Tech Stack</h2>
-        <div class="tech-container">
-          <div class="tech-left">
-            <h3>Ethos</h3>
-            <p>
-              After 7 years in industry one thing became clear: Open src software is powering everything. Hence, the first priority was to build a stand alone working environment based entirely on OS. Thus our value proposition: leveraging open source products to provide our users with a complete ownsership and chain of custody insight into every asset build. Our approach includes regular supply chain inspections and updates to ensure transparency and minimize vulnerabilities.
-            </p>
-            <br>
-            <h3>Secure</h3>
-            <p>
-              Our security protocols incorporate industry best practices with proactive threat detection and mitigation to protect your critical systems.
-            </p>
-            <br>
-            <h3>Stack</h3>
-            <ul class="tech-list">
-              <li><i>Backend:</i> Apache Framework, Node.js, Python</li>
-              <li><i>Network:</i> ISTO, SD-WAN solutions</li>
-              <li><i>Platform:</i> Ansible, Terraform, Kubernetes</li>
-              <li><i>Access Control:</i> Comprehensive identity and access management</li>
-              <li><i>Telemetry:</i> Prometheus, Grafana, ELK Stack</li>
-            </ul>
-          </div>
-          <div class="tech-right">
-            <a href="javascript:void(0)" onclick="openTechModal()">
-              <img src="assets/tech_asset.png" alt="Tech Illustration" style="max-width:100%; border-radius: 4px; margin: auto; display: block;">
-            </a>
-          </div>
-        </div>
-        <style>
-          .tech-container {
-            display: flex;
-            gap: 2rem;
-            align-items: center; /* vertically center the columns */
-            justify-content: center;
-            flex-wrap: wrap;
-            text-align: left;
-            margin-top: 2rem;
-          }
-          .tech-left {
-            flex: 1;
-            min-width: 280px;
-          }
-          .tech-right {
-            flex: 1;
-            min-width: 280px;
-          }
-          .tech-list {
-            list-style-type: disc;
-            padding-left: 20px;
-            font-size: 1rem;
-            line-height: 1.8;
-          }
-          .tech-list li i {
-            font-style: italic;
-            font-weight: normal;
-          }
-        </style>
-      `,
-      "Contact": `
-        <h2>Contact Us</h2>
+    <!-- Bottom Left Contact Widget -->
+    <div class="contact-widget">
+      <img src="assets/profile.png" alt="Profile">
+      <div class="contact-popup">
+        <p><strong>Contact</strong></p>
         <p>Founder: <a href="https://linkedin.com/in/judesafo" target="_blank" rel="noopener noreferrer">Jude Safo</a></p>
         <p>Email: <a href="mailto:pi@haiphenai.com">pi@haiphenai.com</a></p>
         <p>Phone: (512) 910-4544</p>
-        <p>Address: Manhattan, New York, USA</p>
-        <br><br>
-        <div style="text-align: center;">
-          <img src="assets/nature.png" alt="Nature" style="max-width:80%; border-radius: 4px;">
-        </div>
-        <br><br>
-        <p>"No man is a failure who has friends" - Angel Clarence</p>
-      `
-    };
+      </div>
+    </div>
+    
+    <!-- JavaScript for Interactivity -->
+    <script>
+      const sectionContent = {
+        "Services": `
+          <h2>About Us</h2>
+          <br>
+          <p>
+            <a href="https://haiphen.io" target="_blank" rel="noopener noreferrer"><strong>Haiphen</strong></a>: A small tech startup engineered for delivering custom, open src solutions to various cloud, edge, and infra obstacles in a variety of technical, business, and scientific domains.
+          </p>
+          <div class="about-columns">
+            <div class="about-col">
+              <p>
+                With a deep foundation in <strong>computational linguistics</strong>, <strong>NLP</strong>, and <strong>ML</strong>, we geek out over building the plumbing and infra (e.g. data pipelines, ETL, entity extraction, pruning, clustering) that simplifies unwanted haziness into reliable API calls. Consider us your personal DBA (database admin) but with domain expertise that persists in your data through its lifecycle.
+              </p>
+            </div>
+            <div class="about-col">
+              <p>
+                We're excited about the future: the more <strong>custom solutions</strong> we're able to assist you with, the closer we move towards our vision of productizing <strong>knowledge graphs</strong> into every company (without the headache). <i>Note</i>: we're intentional barebones as you may have noticed. We believe good software was and should be transparent, inspectable and about what's under the hood.
+              </p>
+            </div>
+          </div>
+          <p class="service-keys">
+            <strong>Services:</strong>
+            <a class="service-key" href="https://docs.google.com/forms/d/e/1FAIpQLSc8HhR9nIEE-DBgtKq2CQ-Y4PJ8Mr0pbE07fzGE15FhcfqG6g/viewform?usp=header" target="_blank" rel="noopener noreferrer">
+              Consulting
+              <span class="service-tooltip">Hardvard, Fidelity, Techstars: Be our next collaborater</span>
+            </a>,
+            <a class="service-key" href="https://en.wikipedia.org/wiki/Consultant" target="_blank" rel="noopener noreferrer">
+              Knowledge Graph DB
+              <span class="service-tooltip"><strong>Intelligent persistent data-store</strong>: We build machine learning intelligence into the foundation of your data pipeline so you get predictable, reliable intelligence downstream.</span>
+            </a>,
+            <a class="service-key" href="https://en.wikipedia.org/wiki/Quality_assurance" target="_blank" rel="noopener noreferrer">
+              QA
+              <span class="service-tooltip">LLM QA can be surprisingly different from regular.</span>
+            </a>, 
+            <a class="service-key" href="https://en.wikipedia.org/wiki/Access_control" target="_blank" rel="noopener noreferrer">
+              Access Control
+              <span class="service-tooltip">Beyond authentication, full ZeroTrust, real-time, tracking of assets</span>
+            </a>,
+            <a class="service-key" href="https://en.wikipedia.org/wiki/Open_source" target="_blank" rel="noopener noreferrer">
+              Open Src
+              <span class="service-tooltip">Most importantly, we build everything on open src so you have full transparency and ownership</span>
+            </a>,
+            <a class="service-key" href="https://en.wikipedia.org/wiki/Infrastructure" target="_blank" rel="noopener noreferrer">
+              Infra.
+              <span class="service-tooltip">Robust infrastructure design and management.</span>
+            </a>
+          </p>
+          <style>
+            .about-columns {
+              display: flex;
+              gap: 2rem;
+              margin: 2rem 0;
+              flex-wrap: wrap;
+            }
+            .about-col {
+              flex: 1;
+              min-width: 280px;
+              text-align: left;
+            }
+          </style>
+        `,
+        "OnePager": `
+          <h2>Haiphen One Pager</h2>
+          <div id="onepager-buttons" style="margin-bottom: 1rem;">
+            <button onclick="toggleOnePager('default')">Genomics</button>
+            <button onclick="toggleOnePager('zerodays')">ZeroDays Investigation</button>
+          </div>
+          <div id="onepager-display">
+            <object id="onepager-object" data="assets/haiphen-one-pager.pdf" type="application/pdf" style="width:100%; height:600px; border:none;">
+              <p>Your browser does not support PDF viewing. Please <a href="assets/haiphen-one-pager.pdf" target="_blank">download the PDF</a>.</p>
+            </object>
+          </div>
+        `,
+        "Portfolio": `
+          <h2>Portfolio</h2>
+          <br>
+          <ul>
+            <!-- First Portfolio Item: ETL Ingestion Engine -->
+            <li style="list-style: disc; margin-bottom: 2rem;">
+              <p style="margin-bottom: 0.5rem; font-size: 1.1rem; text-align: center;">
+                <strong>ETL Ingestion Engine:</strong> Prior work with a DEI tech startup to build out their data infrastructure pipeline from crawling raw unstructured pdf data to building a basic KG database.
+              </p>
+              <div style="text-align: center;">
+                <a href="https://github.com/JudeSafo/All_Language_Model" target="_blank" rel="noopener noreferrer">
+                  <img src="assets/gitPortfolio_esg.png" alt="All Language Model" style="max-width:80%; height:auto; border: 1px solid #ccc; border-radius: 4px;">
+                </a>
+              </div>
+            </li>
+            
+            <!-- Second Portfolio Item: Protein Biomarker Indexing (Genomics Use Case) -->
+            <li style="list-style: disc; margin-bottom: 2rem;">
+              <p style="margin-bottom: 0.5rem; font-size: 1.1rem; text-align: center;">
+                <strong>Protein Biomarker Indexing:</strong> Contract with a Harvard Genetics research lab, crawling PubMed articles to identify co-occurrences of diseases and biomarker conditions for potential overlapping treatment options. 
+              </p>
+              <div style="text-align: center;">
+                <a href="javascript:void(0)" onclick="showSection('OnePager')">
+                  <img src="assets/genomics_usecase.png" alt="Genomics Use Case" style="max-width:80%; height:auto; border: 1px solid #ccc; border-radius: 4px;">
+                </a>
+              </div>
+            </li>
+            
+            <!-- Third Portfolio Item: Web Crawler -->
+            <li style="list-style: disc; margin-bottom: 2rem;">
+              <p style="margin-bottom: 0.5rem; font-size: 1.1rem; text-align: center;">
+                <strong>Web Crawler:</strong> Custom, open src search engine for curating and parsing unstructured pdf data (e.g. research, financials) for downstream applications.
+              </p>
+              <div style="text-align: center;">
+                <img src="assets/haiphen-gif5.gif" alt="Haiphen AI Showcase" style="max-width:80%; height:auto; border: 1px solid #ccc; border-radius: 4px;">
+              </div>
+            </li>
 
-    function toggleOnePager(mode) {
-      const obj = document.getElementById("onepager-object");
-      if (mode === 'default') {
-        obj.setAttribute("data", "assets/haiphen-one-pager.pdf");
-      } else if (mode === 'zerodays') {
-        obj.setAttribute("data", "assets/Haiphen_ZeroDaysFollinaConfluenceInvestigation.pdf");
+            <!-- Fourth Portfolio Item: Distilled LLM -->
+            <li style="list-style: disc; margin-bottom: 2rem;">
+              <p style="margin-bottom: 0.5rem; font-size: 1.1rem;">
+                <strong>Distilled LLM:</strong> Custom open src LLM for specific business use cases, e.g. answering DEI questions.
+              </p>
+              <div style="text-align: center;">
+                <img src="assets/haiphen-gif3.gif" alt="LLM" style="max-width:80%; height:auto; border: 1px solid #ccc; border-radius: 4px;">
+              </div>
+            </li>
+            
+            <!-- Fifth Portfolio Item: ZeroDays Follina Investigation -->
+            <li style="list-style: disc; margin-bottom: 2rem;">
+              <p style="margin-bottom: 0.5rem; font-size: 1.1rem; text-align: center;">
+                <strong>ZeroDays Follina Investigation:</strong> An in-depth investigation of Confluence vulnerabilities with Follina, producing actionable security insights.
+              </p>
+              <div style="text-align: center;">
+                <a href="javascript:void(0)" onclick="showSection('OnePager')">
+                  <img src="assets/haiphen-follina-screenshot.png" alt="ZeroDays Investigation" style="max-width:80%; height:auto; border: 1px solid #ccc; border-radius: 4px;">
+                </a>
+              </div>
+            </li>
+          </ul>
+        `,
+        "Tech": `
+          <h2>Tech Stack</h2>
+          <div class="tech-container">
+            <div class="tech-left">
+              <h3>Ethos</h3>
+              <p>
+                Open Source Everything: We spent years building our own stand alone OS environment to train, test and deploy all of our models. Hence we're able to provide unmatched value proposition: chain of custody insight and transparency into every asset build so you minimize vulnerabilities.
+              </p>
+              <br>
+              <h3>Stack</h3>
+              <ul class="tech-list">
+                <li><i>Backend:</i> Apache Framework, Redis, Postgres</li>
+                <li><i>Network:</i> ISTO, SD-WAN solutions</li>
+                <li><i>Platform:</i> Ansible, Terraform, Kubernetes</li>
+                <li><i>Access Control:</i> Keycloak, OpenFGA</li>
+                <li><i>Telemetry:</i> Prometheus, Grafana, ELK Stack</li>
+              </ul>
+              <br>
+              <h3>Secure</h3>
+              <p>
+                Our security protocols incorporate industry best practices with proactive threat detection and mitigation to protect your critical systems.
+              </p>            
+            </div>
+            <div class="tech-right">
+              <a href="javascript:void(0)" onclick="openTechModal()">
+                <img src="assets/tech_asset.png" alt="Tech Illustration" style="max-width:100%; border-radius: 4px; margin: auto; display: block;">
+              </a>
+            </div>
+          </div>
+          <style>
+            .tech-container {
+              display: flex;
+              gap: 2rem;
+              align-items: center; /* vertically center the columns */
+              justify-content: center;
+              flex-wrap: wrap;
+              text-align: left;
+              margin-top: 2rem;
+            }
+            .tech-left {
+              flex: 1;
+              min-width: 280px;
+            }
+            .tech-right {
+              flex: 1;
+              min-width: 280px;
+            }
+            .tech-list {
+              list-style-type: disc;
+              padding-left: 20px;
+              font-size: 1rem;
+              line-height: 1.8;
+            }
+            .tech-list li i {
+              font-style: italic;
+              font-weight: normal;
+            }
+          </style>
+        `,
+        "Contact": `
+          <h2>Contact Us</h2>
+          <p>Founder: <a href="https://linkedin.com/in/judesafo" target="_blank" rel="noopener noreferrer">Jude Safo</a></p>
+          <p>Email: <a href="mailto:pi@haiphenai.com">pi@haiphenai.com</a></p>
+          <p>Phone: (512) 910-4544</p>
+          <p>Address: Manhattan, New York, USA</p>
+          <br><br>
+          <div style="text-align: center;">
+            <a href="https://docs.google.com/forms/d/e/1FAIpQLSc8HhR9nIEE-DBgtKq2CQ-Y4PJ8Mr0pbE07fzGE15FhcfqG6g/viewform?usp=header" target="_blank" rel="noopener noreferrer">
+              <img src="assets/nature.png" alt="Nature" style="max-width:80%; border-radius: 4px;">
+            </a>
+          </div>
+          <br><br>
+          <p>"No man is a failure who has friends" - Angel Clarence</p>
+        `
+      };
+
+      function toggleOnePager(mode) {
+        const obj = document.getElementById("onepager-object");
+        if (mode === 'default') {
+          obj.setAttribute("data", "assets/haiphen-one-pager.pdf");
+        } else if (mode === 'zerodays') {
+          obj.setAttribute("data", "assets/Haiphen_ZeroDaysFollinaConfluenceInvestigation.pdf");
+        }
       }
-    }
 
-    function showSection(sectionName) {
-      const contentWidget = document.getElementById("content-widget");
-      contentWidget.innerHTML = sectionContent[sectionName] || "<p>No content available.</p>";
-      contentWidget.classList.add("active");
-      contentWidget.scrollIntoView({ behavior: "smooth" });
-    }
+      function showSection(sectionName) {
+        const contentWidget = document.getElementById("content-widget");
+        contentWidget.innerHTML = sectionContent[sectionName] || "<p>No content available.</p>";
+        contentWidget.classList.add("active");
+        contentWidget.scrollIntoView({ behavior: "smooth" });
+      }
 
-    function resetLanding() {
-      document.getElementById("content-widget").classList.remove("active");
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-  </script>
-</body>
-</html>
+      function resetLanding() {
+        document.getElementById("content-widget").classList.remove("active");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    </script>
+  </body>
+  </html>
