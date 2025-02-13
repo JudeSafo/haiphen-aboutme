@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="600" height="400" viewBox="0 0 600 400" 
+     xmlns="http://www.w3.org/2000/svg" version="1.1">
+
+  <!-- Background / Canvas -->
+  <rect x="0" y="0" width="600" height="400" fill="#FFFFFF" />
+
+  <!-- 
+    ============== Layout Explanation ============
+    - 3 Input circles on the LEFT:  (x ~ 50)
+    - 1 central square:             (x ~ 280)
+    - 3 Output circles on the RIGHT (x ~ 520)
+    
+    Y positions:  100, 200, 300
+    Lines connect circle centers to the square center
+  -->
+
+  <!-- =========== INPUT CIRCLES =========== -->
+  <!-- Input 1 -->
+  <circle id="input1" cx="50" cy="100" r="20" fill="#5A9BD4" />
+  <text x="50" y="100" fill="#FFF" text-anchor="middle" alignment-baseline="central" font-size="10" font-weight="bold">
+    Data 1
+  </text>
+
+  <!-- Input 2 -->
+  <circle id="input2" cx="50" cy="200" r="20" fill="#5A9BD4" />
+  <text x="50" y="200" fill="#FFF" text-anchor="middle" alignment-baseline="central" font-size="10" font-weight="bold">
+    Data 2
+  </text>
+
+  <!-- Input 3 -->
+  <circle id="input3" cx="50" cy="300" r="20" fill="#5A9BD4" />
+  <text x="50" y="300" fill="#FFF" text-anchor="middle" alignment-baseline="central" font-size="10" font-weight="bold">
+    Data 3
+  </text>
+
+  <!-- =========== CENTRAL PROCESSING SQUARE =========== -->
+  <rect id="processing" x="260" y="160" width="80" height="80" rx="4" ry="4" fill="#34495e" />
+  <text x="300" y="200" fill="#FFF" text-anchor="middle" alignment-baseline="central" font-size="12" font-weight="bold">
+    Process
+  </text>
+
+  <!-- =========== OUTPUT CIRCLES =========== -->
+  <!-- Output 1 -->
+  <circle id="output1" cx="520" cy="100" r="20" fill="#2ecc71" />
+  <text x="520" y="100" fill="#FFF" text-anchor="middle" alignment-baseline="central" font-size="10" font-weight="bold">
+    Node 1
+  </text>
+
+  <!-- Output 2 -->
+  <circle id="output2" cx="520" cy="200" r="20" fill="#2ecc71" />
+  <text x="520" y="200" fill="#FFF" text-anchor="middle" alignment-baseline="central" font-size="10" font-weight="bold">
+    Node 2
+  </text>
+
+  <!-- Output 3 -->
+  <circle id="output3" cx="520" cy="300" r="20" fill="#2ecc71" />
+  <text x="520" y="300" fill="#FFF" text-anchor="middle" alignment-baseline="central" font-size="10" font-weight="bold">
+    Node 3
+  </text>
+
+  <!-- 
+    ============== DATA FLOW LINES ==============
+    Each line has a small circle that travels from left to right 
+    to represent the "electric pulse" or "current."
+    We'll define them as separate <line> plus an <circle> for the pulse,
+    with <animateMotion> or dash offset animations.
+  -->
+
+  <!-- =========== LEFT-LINES to Center =========== -->
+
+  <!-- From Input1 to square -->
+  <line x1="70" y1="100" x2="260" y2="200" stroke="#888" stroke-width="2" />
+  <!-- Electric pulse path: We'll define a tiny circle that moves along an invisible path -->
+  <!-- For a straightforward approach, we can use a <circle> + <animate> of x,y. -->
+
+  <circle r="4" fill="#F1C40F">
+    <animate 
+      attributeName="cx" 
+      from="70" to="290" 
+      dur="2.5s" 
+      repeatCount="indefinite" 
+      begin="0s"
+      calcMode="linear" />
+    <animate 
+      attributeName="cy" 
+      from="100" to="200" 
+      dur="2.5s" 
+      repeatCount="indefinite" 
+      begin="0s"
+      calcMode="linear" />
+  </circle>
+
+  <!-- From Input2 to square -->
+  <line x1="70" y1="200" x2="260" y2="200" stroke="#888" stroke-width="2" />
+  <circle r="4" fill="#F1C40F">
+    <animate attributeName="cx" from="70" to="290" dur="2s" repeatCount="indefinite" begin="0.5s" />
+    <animate attributeName="cy" from="200" to="200" dur="2s" repeatCount="indefinite" begin="0.5s" />
+  </circle>
+
+  <!-- From Input3 to square -->
+  <line x1="70" y1="300" x2="260" y2="200" stroke="#888" stroke-width="2" />
+  <circle r="4" fill="#F1C40F">
+    <animate attributeName="cx" from="70" to="290" dur="3s" repeatCount="indefinite" begin="1s" />
+    <animate attributeName="cy" from="300" to="200" dur="3s" repeatCount="indefinite" begin="1s" />
+  </circle>
+
+  <!-- 
+    ============ RIGHT-LINES from Center =========== 
+    We'll connect the center of the square (340, 200) to the 
+    output circles' left edge (500, ???).
+  -->
+
+  <!-- From square to Output1 -->
+  <line x1="340" y1="200" x2="500" y2="100" stroke="#888" stroke-width="2" />
+  <circle r="4" fill="#F1C40F">
+    <animate attributeName="cx" from="340" to="500" dur="2s" repeatCount="indefinite" begin="0.5s" />
+    <animate attributeName="cy" from="200" to="100" dur="2s" repeatCount="indefinite" begin="0.5s" />
+  </circle>
+
+  <!-- From square to Output2 -->
+  <line x1="340" y1="200" x2="500" y2="200" stroke="#888" stroke-width="2" />
+  <circle r="4" fill="#F1C40F">
+    <animate attributeName="cx" from="340" to="500" dur="2.25s" repeatCount="indefinite" begin="1s" />
+    <animate attributeName="cy" from="200" to="200" dur="2.25s" repeatCount="indefinite" begin="1s" />
+  </circle>
+
+  <!-- From square to Output3 -->
+  <line x1="340" y1="200" x2="500" y2="300" stroke="#888" stroke-width="2" />
+  <circle r="4" fill="#F1C40F">
+    <animate attributeName="cx" from="340" to="500" dur="2.8s" repeatCount="indefinite" begin="1.5s" />
+    <animate attributeName="cy" from="200" to="300" dur="2.8s" repeatCount="indefinite" begin="1.5s" />
+  </circle>
+
+  <!-- 
+    =============== PULSING Central Square ===============
+    A subtle pulsing effect: we animate the fill or stroke 
+    to give the appearance of a mild "heartbeat"
+  -->
+  <animate 
+    xlink:href="#processing" 
+    attributeName="fill" 
+    values="#34495e; #3e53ff; #34495e" 
+    dur="3s" 
+    repeatCount="indefinite" 
+  />
+
+</svg>
