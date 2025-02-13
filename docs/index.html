@@ -237,7 +237,33 @@
     .onepager-arrow:hover {
       background: rgba(0,0,0,0.8);
     }
-    
+    /* ============================================================
+       Tech animated
+    ============================================================ */
+      .tech-container {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        justify-content: center;
+        flex-wrap: wrap;
+        text-align: left;
+        margin-top: 1rem;
+      }
+      .tech-left {
+        flex: 0.1;      /* smaller width for text column */
+        min-width: 280px;
+      }
+      .tech-right {
+        flex: 1.2;      /* larger width for SVG */
+        min-width: 280px;
+      }
+      .tech-svg {
+        width: 100%;
+        max-width: 900px; /* increased size for better legibility */
+        height: auto;
+        display: block;
+        margin: auto;
+      }
     /* ============================================================
        Responsive Adjustments
     ============================================================ */
@@ -560,10 +586,9 @@
             </p>
           </div>
           <div class="tech-right">
-            <a href="javascript:void(0)" onclick="openTechModal()">
-              <img src="assets/tech_asset.png" alt="Tech Illustration"
-                style="max-width:100%; border-radius: 4px; margin: auto; display: block;">
-            </a>
+            <object type="image/svg+xml" data="assets/tech_animated.svg" class="tech-svg">
+              Your browser does not support SVG.
+            </object>
           </div>
         </div>
         <style>
