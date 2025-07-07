@@ -187,7 +187,55 @@
     .service-tooltip:hover {
       display: block;
     }
-    
+
+    /* === Services gallery (NEW) === */
+    .services-gallery-wrapper{
+      max-height:450px;          /* keeps the widget compact */
+      overflow-y:auto;
+      padding-right:.4rem;       /* room for scrollbar */
+      margin-top:2rem;
+    }
+    .services-gallery{
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+      gap:1.5rem;
+    }
+    .gallery-item{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+    }
+    .gallery-item img{
+      width:100%;
+      aspect-ratio:4/3;
+      object-fit:cover;
+      border-radius:8px;
+      box-shadow:0 2px 8px rgba(0,0,0,.08);
+      cursor:pointer;
+      transition:transform .25s ease;
+    }
+    .gallery-item img:hover{transform:scale(1.04);}
+    .gallery-item figcaption{
+      margin-top:.4rem;
+      font-size:.85rem;
+      color:#555;
+      text-align:center;
+    }    
+    /* Lightbox overlay */
+    #lightbox{
+      position:fixed;
+      inset:0;
+      display:none;               /* hidden until opened */
+      align-items:center;
+      justify-content:center;
+      background:rgba(0,0,0,.85);
+      z-index:2000;
+    }
+    #lightbox img{
+      max-width:90%;
+      max-height:90%;
+      border-radius:8px;
+    }    
     /* ============================================================
        Step by Step
     ============================================================ */
@@ -264,6 +312,8 @@
         display: block;
         margin: auto;
       }
+
+
     /* ============================================================
        Responsive Adjustments
     ============================================================ */
@@ -354,7 +404,19 @@
         // ... add additional pages as needed
       ]
     };
-
+    /* --- inventory images for Services gallery --- */
+    const servicesImages = [
+      {file: '1.jpg', cap: 'Fig. 1'},
+      {file: '2.jpg', cap: 'Fig. 2'},
+      {file: '3.jpg', cap: 'Fig. 3'},
+      {file: '4.jpg', cap: 'Fig. 4'},
+      {file: '5.jpg', cap: 'Fig. 5'},
+      {file: '6.jpg', cap: 'Fig. 6'},
+      {file: '7.jpeg', cap: 'Fig. 7'},
+      {file: '8.png', cap: 'Fig. 8'},
+      {file: '9.png', cap: 'Fig. 9'},
+      {file: '10.png', cap: 'Fig. 10'}
+    ];
     /* ------------------------------------------------------------
        2) OnePager Carousel Logic
     ------------------------------------------------------------ */
@@ -383,6 +445,14 @@
       renderOnePagerPage();
     }
 
+    function openLightbox(src){
+      const lbImg = document.querySelector('#lightbox img');
+      lbImg.src = src;
+      document.getElementById('lightbox').style.display = 'flex';
+    }
+    function closeLightbox(){
+      document.getElementById('lightbox').style.display = 'none';
+    }
     /* ------------------------------------------------------------
        3) Section Content (Accordion-Like) with new OnePager
     ------------------------------------------------------------ */
@@ -422,6 +492,33 @@
               </p>
             </div>
           </div>
+
+          <!-- about/paragraph placeholders -->
+          <div class="services-about">
+            <h3>Customizations</h3>
+            <p>[Placeholder] Robotic custom enhancements to everyday household products (e.g. tractors, smart locks, cameras, etc.) are offered on a one-off basis. This has extended our toolbase and skillset into welding, masonry, carpentry and hardware (in particular embedded devices)  </p>
+            <p><!-- paragraph 2 --></p>          
+          </div>
+          <br>
+          <div id="lightbox" onclick="closeLightbox()">
+            <img src="" alt="preview">
+          </div>
+          <!-- scrollable gallery -->
+          <h3>Robotics Gallery</h3>
+          <div class="services-gallery-wrapper">
+            <div class="services-gallery">
+              ${servicesImages
+                .map(({file,cap}) =>
+                  `<figure class="gallery-item">
+                     <img src="assets/robotics/${file}" alt="${cap}"
+                          onclick="openLightbox(this.src)">
+                     <figcaption>${cap}</figcaption>
+                   </figure>`
+                ).join('')}
+            </div>
+          </div>
+
+
           <p class="service-keys">
             <strong>Services:</strong>
             <a class="service-key" href="https://docs.google.com/forms/d/e/1FAIpQLSc8HhR9nIEE-DBgtKq2CQ-Y4PJ8Mr0pbE07fzGE15FhcfqG6g/viewform?usp=header" target="_blank" rel="noopener noreferrer">
@@ -533,7 +630,7 @@
           <!-- Fourth Portfolio Item: Distilled LLM -->
           <li style="list-style: disc; margin-bottom: 2rem;">
             <p style="margin-bottom: 0.5rem; font-size: 1.1rem;">
-              <strong>Distilled LLM:</strong> Custom open src LLM for specific business use cases,
+              <strong>Distilled RAG LLM:</strong> Custom open src LLM for specific business use cases,
               e.g. answering DEI questions.
             </p>
             <div style="text-align: center;">
