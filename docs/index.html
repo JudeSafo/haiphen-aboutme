@@ -314,6 +314,53 @@
       }
 
 
+    /* === Left-hand sidebar tweaks === */
+    .left-widget {
+      position: fixed;
+      top: 170px;                     /* push down from top of page */
+      left: 0;
+      width: 8.666%;                 /* 1/6th */
+      background: #f2f2f2;            /* light gray */
+      padding: 1rem;
+      box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+      z-index: 900;
+
+      /* ✅ let the height be dictated by content */
+      height: auto;                   
+      overflow: visible;              /* no more full-height scroll */
+
+      /* ✅ add a neat bottom border just under the last link */
+      border-bottom: 1px solid #ccc;  
+    }
+
+    .left-widget a {
+      display: block;
+      color: #2c3e50;
+      text-decoration: none;
+      padding: 0.5rem 0;
+
+      /* ✅ smaller, non-bold font */
+      font-size: 0.975rem;
+      font-weight: normal;
+
+      border-bottom: 1px solid #ddd;
+    }
+    .left-widget a:last-child {
+      border-bottom: none;
+    }
+    .left-widget a:hover {
+      background: #e0e0e0;
+    }
+
+    /* push the main content over so it clears the sidebar */
+    .main-container {
+      margin-left: 16.666%;
+    }
+    /* push your main content over so it doesn’t sit under the sidebar */
+    .main-container {
+      margin-left: 0.666%;
+    }
+
     /* ============================================================
        Responsive Adjustments
     ============================================================ */
@@ -335,6 +382,16 @@
     </div>
   </nav>
   
+  <!-- Left-hand sidebar of clickable entities -->
+  <div class="left-widget">
+    <a href="#" onclick="showSection('Signals')">Signals</a>
+    <a href="#" onclick="showSection('Hardware')">Hardware</a>
+    <a href="#" onclick="showSection('Embedded')">Embedded</a>
+    <a href="#" onclick="showSection('Robotics')">Robotics</a>
+    <a href="#" onclick="showSection('Welding')">Welding</a>
+    <a href="#" onclick="showSection('Fabrication')">Fabrication</a>
+  </div>
+
   <!-- Main Content -->
   <div class="main-container">
     <!-- Hero Section -->
@@ -495,7 +552,7 @@
 
           <!-- about/paragraph placeholders -->
           <div class="services-about">
-            <h3>Customizations</h3>
+            <h3>Embedded Customizations</h3>
             <p>[Placeholder] Robotic custom enhancements to everyday household products (e.g. tractors, smart locks, cameras, etc.) are offered on a one-off basis. This has extended our toolbase and skillset into welding, masonry, carpentry and hardware (in particular embedded devices)  </p>
             <p><!-- paragraph 2 --></p>          
           </div>
@@ -504,7 +561,7 @@
             <img src="" alt="preview">
           </div>
           <!-- scrollable gallery -->
-          <h3>Robotics Gallery</h3>
+          <h3>Gallery</h3>
           <div class="services-gallery-wrapper">
             <div class="services-gallery">
               ${servicesImages
