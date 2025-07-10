@@ -12,7 +12,7 @@
     @keyframes march { to { stroke-dashoffset:-120; } }
 
     /* processing gears (reuse from template) */
-    .gear  { fill:#f4f6f7; stroke:#555; stroke-width:1.2;
+    .gear  { fill:#add8e6; stroke:#555; stroke-width:1.2;
              transform-origin:center; animation: spin 6s linear infinite; }
     @keyframes spin { to { transform:rotate(360deg);} }
 
