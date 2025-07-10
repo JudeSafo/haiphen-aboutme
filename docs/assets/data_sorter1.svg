@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--  📦  “Raw → Sorted Pipeline”  (‘after’ view)  -->
+<svg viewBox="0 0 760 200" xmlns="http://www.w3.org/2000/svg"
+     font-family="Helvetica,Arial,sans-serif" font-size="12"
+     text-anchor="middle">
+
+  <!-- ───────────────  STYLES & ANIMATION  ─────────────── -->
+  <style><![CDATA[
+    /* straight transport line */
+    .bus   { stroke:#3498db; stroke-width:3; fill:none;
+             stroke-dasharray:8 6; animation: march 6s linear infinite; }
+    @keyframes march { to { stroke-dashoffset:-120; } }
+
+    /* processing gears (reuse from template) */
+    .gear  { fill:#f4f6f7; stroke:#555; stroke-width:1.2;
+             transform-origin:center; animation: spin 6s linear infinite; }
+    @keyframes spin { to { transform:rotate(360deg);} }
+
+    /* bins turn green when item arrives */
+    .bin   { fill:#e0e0e0; stroke:#666; stroke-width:1.2; }
+    .bin.ok{ animation: fillOk 6s linear infinite; }
+    @keyframes fillOk {
+      0%,70% { fill:#e0e0e0; }
+      72%,100%{ fill:#2ecc71; }
+    }
+
+    /* traveling payload (small square) */
+    .pkt   { fill:#e67e22; animation: travel 6s linear infinite; }
+    @keyframes travel { to { transform:translateX(575px);} }
+
+    /* phasing so packet hits the bins exactly when bins turn green */
+    .pkt   { animation-delay:.4s; }
+    .bin1.ok{ animation-delay:.4s; }
+    .bin2.ok{ animation-delay:1.5s; }
+    .bin3.ok{ animation-delay:2.6s; }
+
+  ]]></style>
+
+  <!-- ───────────────  STRAIGHT BUS LINE  ─────────────── -->
+  <line class="bus"  x1="50" y1="90" x2="650" y2="90"/>
+
+  <!-- travelling payload -->
+  <rect class="pkt" x="42" y="82" width="16" height="16" rx="3"/>
+
+  <!-- ───────────────  GEAR DEFINITIONS  ─────────────── -->
+  <defs>
+    <g id="gear12">
+      <circle r="22"/>
+      <g stroke-linecap="round">
+        <line x1="-22" y1="0" x2="-28" y2="0"/>
+        <line x1="22"  y1="0" x2="28"  y2="0"/>
+        <line x1="0" y1="-22" x2="0" y2="-28"/>
+        <line x1="0" y1="22"  x2="0" y2="28"/>
+      </g>
+    </g>
+  </defs>
+
+  <!-- ───────────────  FIVE STAGES  ─────────────── -->
+  <g transform="translate(130 90)" class="gear"><use href="#gear12"/><text y="42">Validate</text></g>
+  <g transform="translate(250 90)" class="gear"><use href="#gear12"/><text y="42">Index</text></g>
+  <g transform="translate(370 90)" class="gear"><use href="#gear12"/><text y="42">Rank</text></g>
+  <g transform="translate(490 90)" class="gear"><use href="#gear12"/><text y="42">Route</text></g>
+  <g transform="translate(610 90)" class="gear"><use href="#gear12"/><text y="42">Serve</text></g>
+
+  <!-- ───────────────  OUTPUT BINS  ─────────────── -->
+  <g transform="translate(90 140)">
+    <rect class="bin bin1 ok" x="0"   y="0" width="80" height="28" rx="4"/>
+    <rect class="bin bin2 ok" x="230" y="0" width="80" height="28" rx="4"/>
+    <rect class="bin bin3 ok" x="460" y="0" width="80" height="28" rx="4"/>
+    <text x="40"  y="20" fill="#555">Archive</text>
+    <text x="270" y="20" fill="#555">Alerts</text>
+    <text x="500" y="20" fill="#555">Dash</text>
+  </g>
+
+</svg>
