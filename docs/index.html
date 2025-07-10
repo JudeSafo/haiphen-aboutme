@@ -285,13 +285,67 @@
     .onepager-arrow:hover {
       background: rgba(0,0,0,0.8);
     }
+
+    /* 2️⃣  drop this anywhere in a <style> block (after the existing .tech-right rule) */
+    .svg-stack{
+      display:flex;               /* turn the column itself into a flex-box            */
+      flex-direction:column;      /* stack children vertically                         */
+      gap:1.5rem;                 /* space between the two illustrations               */
+      align-items:center;         /* centre them horizontally                          */
+      overflow-x:auto;            /* safety-net: allow horizontal scroll if ever needed*/
+    }
+    .svg-stack .tech-svg {
+      width: 100%;
+      max-width: 600px;
+      height: auto;
+      min-height: 220px; /* ✅ Give each SVG a visible presence */
+      display: block;
+    }
+
+
+    #ethos.flash {
+      background: #fff8b0;
+      transition: background 2s ease;
+    }
+    .tech-bullets ul {
+      columns: 2; /* easy responsive layout */
+      -webkit-columns: 2;
+      -moz-columns: 2;
+      list-style-type: disc;
+      padding-left: 1.5rem;
+      font-size: 1rem;
+      line-height: 1.6;
+      margin-top: 0.5rem;
+    }
+    .inline-bullets {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;         /* ✅ Center the list */
+      gap: 0.75rem 1.5rem;             /* ✅ Row gap, column gap */
+      padding: 0;
+      margin: 0.5rem auto 1rem;  /* ⬅️ top margin reduced from 1rem to 0.5rem */
+      list-style: none;                /* Remove default bullets */
+      max-width: 700px;                /* Optional: cap total width */
+    }
+
+    .inline-bullets li::before {
+      content: "•";
+      color: #5A9BD4;
+      margin-right: 0.4rem;
+      font-weight: bold;
+    }
+
+    .inline-bullets li {
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
     /* ============================================================
        Tech animated
     ============================================================ */
       .tech-container {
         display: flex;
         gap: 1rem;
-        align-items: center;
+        align-items: stretch;
         justify-content: center;
         flex-wrap: wrap;
         text-align: left;
@@ -377,19 +431,19 @@
       <img src="assets/logo.png" alt="Haiphen Logo">
     </div>
     <div class="nav-links">
-      <a href="javascript:void(0)" onclick="showSection('OnePager')">About</a>
+      <a href="javascript:void(0)" onclick="showSection('Services')">About</a>
       <a href="javascript:void(0)" onclick="showSection('Contact')">Contact</a>
     </div>
   </nav>
   
   <!-- Left-hand sidebar of clickable entities -->
   <div class="left-widget">
-    <a href="#" onclick="showSection('OpSec')">OpSec</a>
+    <a href="#" onclick="showSection('Services'); scrollToEthos();">OpSec</a>
     <a href="#" onclick="showSection('Signals')">Signals</a>
     <a href="#" onclick="showSection('Engines')">Engines</a>
     <a href="#" onclick="showSection('Embedded')">Embedded</a>
     <a href="#" onclick="showSection('Robotics')">Robotics</a>
-    <a href="#" onclick="showSection('Welding')">Welding</a>
+    <a href="#" onclick="showSection('Metallury')">Metallurgy</a>
   </div>
 
   <!-- Main Content -->
@@ -406,7 +460,7 @@
     <div class="section-menu">
       <button onclick="showSection('Services')">Services</button>
       <button onclick="showSection('OnePager')">One Pager</button>
-      <button onclick="showSection('Portfolio')">Portfolio</button>
+      <button onclick="showSection('Inventory')">Inventory</button>
       <button onclick="showSection('Tech')">Tech</button>
       <button onclick="showSection('Contact')">Contact</button>
     </div>
@@ -472,7 +526,9 @@
       {file: '7.jpeg', cap: 'Fig. 7'},
       {file: '8.png', cap: 'Fig. 8'},
       {file: '9.png', cap: 'Fig. 9'},
-      {file: '10.png', cap: 'Fig. 10'}
+      {file: '10.png', cap: 'Fig. 10'},
+      {file: 'signals_screenshot.png', cap: 'Fig. 11: Signals'},
+      {file: 'signals_2.png', cap: 'Fig. 11: Signals 2'}
     ];
     /* ------------------------------------------------------------
        2) OnePager Carousel Logic
@@ -518,7 +574,7 @@
           <h2>Mission</h2>
           <br>
           <p>
-            <a href="https://haiphen.io" target="_blank" rel="noopener noreferrer"><strong>Haiphen</strong></a>: A small tech startup focused on delivering custom, open src solutions to various cloud, edge, and infra obstacles in a variety of technical, business, and scientific domains.
+            <a href="https://haiphen.io" target="_blank" rel="noopener noreferrer"><strong>Haiphen</strong></a>[Hi-fen]: A nifty tech startup focused on delivering custom, open src solutions to various cloud, edge, and infra obstacles in a variety of technical, business, and scientific domains.
           </p>
           <br>
           <!-- New Steps Row -->
@@ -552,14 +608,143 @@
 
           <!-- about/paragraph placeholders -->
           <div class="services-about">
-            <h3>Embedded Customizations</h3>
-            <p>[Placeholder] Robotic custom enhancements to everyday household products (e.g. tractors, smart locks, cameras, etc.) are offered on a one-off basis. This has extended our toolbase and skillset into welding, masonry, carpentry and hardware (in particular embedded devices)  </p>
-            <p><!-- paragraph 2 --></p>          
+            <h3>Services</h3>
+            <p>The current landscape of 'Tech' problems go beyond traditional verticals that can be arbitrarily segregated by legacy labels and/or specialists. We've taken the 'hacker-centric', solve first ask later, domain agnostic approach of simply meeting problems where they reside. The rest of our copmny is built around that. We freelance with commercial and residential clients putting out current fires wherever they reside. This removes the frothy silicon valley VC environment of contrived 'luxury' solutions to problems that don't exist.</p>
+            <ul class="inline-bullets">
+              <li>Robotics</li>
+              <li>Operational Security</li>
+              <li>Event Detection</li>
+              <li>Welding</li>
+              <li>Carpentry</li>
+            </ul>            
           </div>
-          <br>
+
+          <div class="tech-container">
+            <div class="tech-right svg-stack style="display: flex; justify-content: center; align-items: center; padding: 1rem 0;">
+              <object type="image/svg+xml" data="assets/signal_chain.svg" class="tech-svg">
+                Your browser does not support SVG.
+              </object>
+              <br>
+              <object type="image/svg+xml" data="assets/data_sorter.svg" class="tech-svg">
+                Your browser does not support SVG.
+              </object>              
+            </div>
+            <div class="tech-left">
+              <h3>Signals</h3>
+              <p style="text-indent: 2em;">
+                The difference between the Google(s), Amazon(s), Twitter(s) big tech giants and the consumers using those products comes down to signals. Users are always handicapped by an asymmetry in information and ability to act on them. This is not un-intentional. The infrastructure needed to <strong>scale</strong>, process and automate your <strong>decision making</strong> are the cornerstone of any business no matter the industry or the product. We're building infrastructure to make this accessible to every participant on the internet, as it should be.
+              </p>
+              <br>
+              <p>Building <strong>infrastructure</strong> to scale, process and automate your decision making in a variety of scenarios is the only way to transition from being a passive consumer to contributor
+              </p>
+              <br>
+              <div class="tech-bullets">
+                <ul>
+                  <li>Decision engines</li>
+                  <li>Algorithmic day trading</li>
+                  <li>Risk analysis</li>
+                  <li>Portfolio optimization</li>
+                  <li>News alert feed</li>
+                  <li>Underwriting</li>
+                  <li>Data pruning</li>
+                  <li>Data enrichment</li>
+                  <li>Concept mapping</li>
+                  <li>Domain segregation</li>
+                  <li>QA</li>
+                </ul>
+              </div> 
+              <br>             
+              <p>
+                <strong>Note</strong>: On a given day, in a given month of a given year our [redacted] engine processed 268,640 signals, flagged 5821 opportunities, executed on 980 events and saw a +7.80% appreciation in the value of those assets. You can envision applying this any speculative industry where returns are driven event driven input.
+              </p>              
+            </div>            
+          </div>
+
+          <style>
+            .tech-container {
+              display: flex; gap: 2rem; align-items: center;
+              justify-content: center; flex-wrap: wrap; text-align: left;
+              margin-top: 2rem;
+            }
+            .tech-left {
+              flex: 1; min-width: 280px;
+            }
+            .tech-right {
+              flex: 1; min-width: 280px;
+            }
+            .tech-list {
+              list-style-type: disc; padding-left: 20px;
+              font-size: 1rem; line-height: 1.8;
+            }
+            .tech-list li i {
+              font-style: italic; font-weight: normal;
+            }
+          </style>          
+
+          <div class="tech-container">
+            <div class="tech-left">
+              <h3 id="ethos">Ethos</h3>
+              <p style="text-indent: 2em;">
+                <strong>Open Source</strong> everything: We spent years building our own stand alone OS environment
+                to train, test and deploy all of our models. Hence we're able to provide unmatched
+                value proposition: chain of custody insight and transparency into every asset
+                build so you minimize <strong>vulnerabilities</strong>. That includes the website your viewing now. 
+                All the code available via github. You're free to contribute as you see fit. 
+              </p>
+              <br>
+              <h3>Stack</h3>
+              <ul class="tech-list">
+                <li><i>Backend:</i> Apache Framework, Redis, Postgres</li>
+                <li><i>Data:</i> Scala, HDFS, Postgres</li>
+                <li><i>Network:</i> Istio, SD-WAN solutions</li>
+                <li><i>Platform:</i> Ansible, Terraform, Kubernetes</li>
+                <li><i>Access Control:</i> Keycloak, OpenFGA</li>
+                <li><i>Telemetry:</i> Prometheus, Grafana, ELK Stack</li>
+              </ul>
+              <br>
+              <h3>Secure</h3>
+              <p>
+                Our <strong>security protocols</strong> incorporate industry best practices
+                with proactive threat detection and mitigation to protect
+                your critical systems.
+              </p>
+            </div>
+            <div class="tech-right">
+              <object type="image/svg+xml" data="assets/tech_animated.svg" class="tech-svg">
+                Your browser does not support SVG.
+              </object>
+            </div>
+          </div>
+          <style>
+            .tech-container {
+              display: flex; gap: 2rem; align-items: center;
+              justify-content: center; flex-wrap: wrap; text-align: left;
+              margin-top: 2rem;
+            }
+            .tech-left {
+              flex: 1; min-width: 280px;
+            }
+            .tech-right {
+              flex: 1; min-width: 280px;
+            }
+            .tech-list {
+              list-style-type: disc; padding-left: 20px;
+              font-size: 1rem; line-height: 1.8;
+            }
+            .tech-list li i {
+              font-style: italic; font-weight: normal;
+            }
+          </style>
           <div id="lightbox" onclick="closeLightbox()">
             <img src="" alt="preview">
           </div>
+          <br>
+          <div class="services-about">
+            <h3>Collaborate</h3>
+            <p>Contact us here, schedule a service appointment here, look through our past client work here  </p>
+            <p><!-- paragraph 2 --></p>          
+          </div>
+          <br>          
           <!-- scrollable gallery -->
           <h3>Gallery</h3>
           <div class="services-gallery-wrapper">
@@ -638,7 +823,7 @@
           <button id="onepager-next" class="onepager-arrow onepager-next" onclick="changePage(1)">&#10095;</button>
         </div>
       `,
-      "Portfolio": `
+      "Inventory": `
         <h2>Portfolio</h2>
         <br>
         <ul>
@@ -814,6 +999,18 @@
     function openTechModal() {
       alert("Tech Modal placeholder. Implement as needed.");
     }
+    function scrollToEthos() {
+      // slight delay so innerHTML has rendered
+      setTimeout(() => {
+        const el = document.getElementById("ethos");
+        if (!el) return;
+        el.scrollIntoView({ behavior: "smooth", block: "start" });
+        el.classList.add("flash");
+        // remove highlight after a couple seconds
+        setTimeout(() => el.classList.remove("flash"), 2000);
+      }, 200);
+    }
+
   </script>
 </body>
 </html>

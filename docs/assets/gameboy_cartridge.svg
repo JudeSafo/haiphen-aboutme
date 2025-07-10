@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--  Simplified animated GameBoy + cartridge (inline CSS / SMIL‑compatible).  -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 240" width="320" height="240" style="overflow:visible">
+  <defs>
+    <style><![CDATA[
+      /* Basic colours */
+      .gb-body{fill:#dcdcdc;stroke:#888;stroke-width:2}
+      .gb-screen{fill:#3a3a3a}
+      .btn{fill:#555}
+      .cart-shell{fill:#c0c0c0;stroke:#666;stroke-width:1.2}
+      .pcb{fill:#1b602a}
+      .chip{fill:#2e2e2e}
+      .label{text-anchor:middle;font-family:Helvetica,Arial,sans-serif;font-size:8px;fill:#fff}
+
+      /* --- Animation keyframes (CSS‑based) --- */
+      @keyframes rotatePerspective{
+        0%{transform:perspective(500px) rotateY(0deg)}
+        100%{transform:perspective(500px) rotateY(-75deg)}
+      }
+      @keyframes cartEject{
+        0%{transform:translateY(0) rotateZ(0deg)}
+        60%{transform:translateY(-60px) rotateZ(-90deg)}
+        100%{transform:translateY(-60px) rotateZ(-90deg)}
+      }
+      @keyframes internalsFade{
+        0%{opacity:0}
+        70%{opacity:0}
+        100%{opacity:1}
+      }
+
+      /*  Sequence */
+      #gameboy{animation:rotatePerspective 4s ease-out forwards}
+      #cartridge-group{animation:cartEject 3s 3.5s ease-out forwards}
+      #internals{animation:internalsFade 2s 4.5s linear forwards}
+    ]]></style>
+  </defs>
+
+  <!-- ===== GameBoy body ===== -->
+  <g id="gameboy" transform-origin="160 200">
+    <rect class="gb-body" x="80" y="40" width="160" height="200" rx="10"/>
+    <rect class="gb-screen" x="110" y="60" width="100" height="70"/>
+    <!-- buttons -->
+    <circle class="btn" cx="120" cy="160" r="8"/>
+    <circle class="btn" cx="200" cy="160" r="8"/>
+  </g>
+
+  <!-- ===== Cartridge (initially inserted) ===== -->
+  <g id="cartridge-group" transform="translate(0 0)" transform-origin="160 40">
+    <!-- outer shell -->
+    <rect class="cart-shell" x="110" y="20" width="100" height="50" rx="4"/>
+
+    <!-- Internal PCB that will fade in -->
+    <g id="internals" opacity="0">
+      <rect class="pcb" x="115" y="25" width="90" height="40" rx="2"/>
+      <!-- chips -->
+      <rect class="chip" x="130" y="35" width="25" height="15"/>
+      <rect class="chip" x="170" y="35" width="20" height="12"/>
+      <!-- labels -->
+      <text class="label" x="142" y="31">CPU</text>
+      <text class="label" x="182" y="31">ROM</text>
+      <text class="label" x="142" y="60">RAM</text>
+      <text class="label" x="182" y="60">I/O</text>
+    </g>
+  </g>
+</svg>

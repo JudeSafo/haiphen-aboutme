@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- =============================================
+     Frequency Grid Analyzer – SVG Animation
+     4×4 matrix of sine-wave traces that jitter then
+     converge and highlight one cell ("Intercepted").
+     Self-contained: no external JS or CSS needed.
+     Author: ChatGPT refinement – July 2025
+     ============================================= -->
+<svg viewBox="0 0 220 220"
+     xmlns="http://www.w3.org/2000/svg"
+     font-family="Helvetica,Arial,sans-serif"
+     font-size="6" text-anchor="middle">
+
+  <!-- ===================== Embedded CSS ===================== -->
+  <style><![CDATA[
+    /* grid */
+    .grid{stroke:#bbb;stroke-width:.5;fill:none}
+
+    /* wave traces */
+    .trace{fill:none;stroke-linecap:round;stroke-linejoin:round;stroke-width:1}
+    .choppy{stroke:#5A9BD4}
+    .clean {stroke:#27ae60}
+
+    /* 1. Jitter – choppy random waveform */
+    @keyframes jitter{
+      0%{d:path("M0 10 Q5 4 10 12 T20 11 T30 7 T40 14 T50 9 T60 5 T70 13 T80 6")}
+      20%{d:path("M0 10 Q5 14 10 6 T20 13 T30 5 T40 15 T50 7 T60 12 T70 4 T80 11")}
+      40%{d:path("M0 10 Q5 3 10 16 T20 4 T30 15 T40 5 T50 14 T60 6 T70 12 T80 8")}
+      60%{d:path("M0 10 Q5 17 10 3 T20 16 T30 4 T40 12 T50 5 T60 16 T70 4 T80 14")}
+      80%{d:path("M0 10 Q5 4 10 14 T20 6 T30 13 T40 5 T50 14 T60 7 T70 9 T80 11")}
+      100%{d:path("M0 10 Q5 15 10 5 T20 15 T30 5 T40 15 T50 5 T60 15 T70 5 T80 15")}
+    }
+
+    /* 2. Align – morph to perfect sine + recolor */
+    @keyframes align{
+      to{d:path("M0 10 Q10 0 20 10 T40 10 T60 10 T80 10");stroke:#27ae60}
+    }
+
+    /* attach both animations */
+    .animate{
+      animation:jitter 2s ease-in-out forwards,
+               align 1s 2s forwards;
+    }
+
+    /* highlight cell background */
+    .highlight-cell rect{
+      fill:rgba(255,215,0,.25);
+      animation:fadeHighlight 1s 2s forwards;
+    }
+    @keyframes fadeHighlight{from{fill-opacity:.7}to{fill-opacity:0}}
+
+    /* label pop */
+    .label{
+      opacity:0;
+      font-size:8px;fill:#333;
+      animation:showLabel .6s 2.6s forwards;
+    }
+    @keyframes showLabel{
+      0%  {opacity:0;transform:translateY(5px) scale(.8)}
+      50% {opacity:1;transform:translateY(0)   scale(1.1)}
+      100%{opacity:1;transform:translateY(0)   scale(1)}
+    }
+  ]]></style>
+
+  <!-- ===================== Scene ===================== -->
+  <g transform="translate(20 20)">
+
+    <!-- Grid background -->
+    <g class="grid">
+      <rect width="180" height="180"/>
+      <path d="M45 0V180M90 0V180M135 0V180M0 45H180M0 90H180M0 135H180"/>
+    </g>
+
+    <!-- Wave cell reusable symbol -->
+    <symbol id="waveCell">
+      <path class="trace choppy animate" d="M0 10 Q5 4 10 12 T20 11 T30 7 T40 14 T50 9 T60 5 T70 13 T80 6"/>
+    </symbol>
+
+    <!-- 4×4 matrix of waves (explicitly repeated) -->
+    <!-- Row 0 -->
+    <g transform="translate(  5   5)"><use href="#waveCell"/></g>
+    <g transform="translate( 50   5)"><use href="#waveCell"/></g>
+    <g transform="translate( 95   5)"><use href="#waveCell"/></g>
+    <g transform="translate(140   5)"><use href="#waveCell"/></g>
+    <!-- Row 1 -->
+    <g transform="translate(  5  50)"><use href="#waveCell"/></g>
+    <g transform="translate( 50  50)"><use href="#waveCell"/></g>
+    <!-- ⭐ Highlighted cell (col 2, row 1) -->
+    <g class="highlight-cell" transform="translate(95 50)">
+      <rect x="-5" y="-5" width="90" height="25" rx="4" ry="4"/>
+      <use href="#waveCell"/>
+    </g>
+    <g transform="translate(140 50)"><use href="#waveCell"/></g>
+    <!-- Row 2 -->
+    <g transform="translate(  5  95)"><use href="#waveCell"/></g>
+    <g transform="translate( 50  95)"><use href="#waveCell"/></g>
+    <g transform="translate( 95  95)"><use href="#waveCell"/></g>
+    <g transform="translate(140  95)"><use href="#waveCell"/></g>
+    <!-- Row 3 -->
+    <g transform="translate(  5 140)"><use href="#waveCell"/></g>
+    <g transform="translate( 50 140)"><use href="#waveCell"/></g>
+    <g transform="translate( 95 140)"><use href="#waveCell"/></g>
+    <g transform="translate(140 140)"><use href="#waveCell"/></g>
+
+    <!-- Label outside the grid so it never clips -->
+    <text class="label" x="140" y="40">Intercepted</text>
+  </g>
+</svg>

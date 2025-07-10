@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--  🛠️  “Signal → Action Chain”  -->
+<svg viewBox="0 0 640 180" xmlns="http://www.w3.org/2000/svg"
+     font-family="Helvetica,Arial,sans-serif" font-size="12"
+     text-anchor="middle">
+
+  <!-- ===============  STYLE & KEYFRAMES  =================== -->
+  <style><![CDATA[
+    .wave    { fill:none; stroke:#3498db; stroke-width:2;
+               stroke-linecap:round; stroke-dasharray:3 5;
+               animation: dash 4s linear infinite; }
+
+    .link    { stroke:#bbb; stroke-width:2; fill:none }
+    .gear    { fill:#eaeaea; stroke:#666; stroke-width:1.2;
+               transform-origin:center; }
+    .pulse   { animation: spin 4s linear infinite,
+                         glow 4s linear infinite; }
+
+    /* waveform “marches” to the right */
+    @keyframes dash  { to { stroke-dashoffset:-100; } }
+
+    /* gears rotate */
+    @keyframes spin  { to { transform: rotate(360deg); } }
+
+    /* node highlight travels left→right in 5 equal slices */
+    @keyframes glow  {
+      0%,20%   { filter: none; }
+      2%,18%   { filter: drop-shadow(0 0 6px #5A9BD4); }
+      100%     { filter: none; }
+    }
+
+    /* apply phase-offset so the pulse walks from 1→5 */
+    #g1.pulse { animation-delay:0s; }
+    #g2.pulse { animation-delay:.8s; }
+    #g3.pulse { animation-delay:1.6s; }
+    #g4.pulse { animation-delay:2.4s; }
+    #g5.pulse { animation-delay:3.2s; }
+
+    /* output decision text flash */
+    #decision {
+      font-weight:bold; fill:#c0392b; opacity:0;
+      animation: flash 4s linear infinite;
+      animation-delay:3.8s;
+    }
+    @keyframes flash {
+      0%   { opacity:0; }
+      10%  { opacity:1; }
+      30%  { opacity:0; }
+      100% { opacity:0; }
+    }
+  ]]></style>
+
+  <!-- ===============  INCOMING WAVEFORM  =================== -->
+  <path class="wave"
+        d="M10 90 q15 -40 30 0 t30 0 t30 0 t30 0 t30 0"/>
+
+  <!-- ===============  CONNECTING LINE  ===================== -->
+  <line class="link"  x1="130" y1="90" x2="540" y2="90"/>
+
+  <!-- ===============  GEAR SYMBOL  ========================= -->
+  <defs>
+    <!-- very small, 12-tooth flat gear (simplified) -->
+    <g id="gear-shape">
+      <circle cx="0" cy="0" r="24"/>
+      <!-- teeth -->
+      <g stroke-linecap="round">
+        <line x1="-24" y1="0"  x2="-30" y2="0"/>
+        <line x1=" 24" y1="0"  x2=" 30" y2="0"/>
+        <line x1="0" y1="-24"  x2="0"  y2="-30"/>
+        <line x1="0" y1=" 24"  x2="0"  y2=" 30"/>
+        <line x1="17" y1="17"  x2="22" y2="22"/>
+        <line x1="-17" y1="-17" x2="-22" y2="-22"/>
+        <line x1="17" y1="-17" x2="22" y2="-22"/>
+        <line x1="-17" y1="17" x2="-22" y2="22"/>
+      </g>
+    </g>
+  </defs>
+
+  <!-- ===============  5 PROCESS NODES  ===================== -->
+  <!-- positions along the chain -->
+  <g id="g1" class="gear pulse" transform="translate(160 90)">
+    <use href="#gear-shape" class="gear"/>
+    <text y="42">Capture</text>
+  </g>
+
+  <g id="g2" class="gear pulse" transform="translate(250 90)">
+    <use href="#gear-shape" class="gear"/>
+    <text y="42">Clean</text>
+  </g>
+
+  <g id="g3" class="gear pulse" transform="translate(340 90)">
+    <use href="#gear-shape" class="gear"/>
+    <text y="42">Detect</text>
+  </g>
+
+  <g id="g4" class="gear pulse" transform="translate(430 90)">
+    <use href="#gear-shape" class="gear"/>
+    <text y="42">Classify</text>
+  </g>
+
+  <g id="g5" class="gear pulse" transform="translate(520 90)">
+    <use href="#gear-shape" class="gear"/>
+    <text y="42">Act</text>
+  </g>
+
+  <!-- decision output -->
+  <text id="decision" x="600" y="94">FLAGGED</text>
+
+</svg>
