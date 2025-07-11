@@ -2,6 +2,7 @@
 <svg width="150" height="150" viewBox="0 0 150 150" xmlns="http://www.w3.org/2000/svg">
   <rect width="150" height="150" fill="#C8E6C9" stroke="#388E3C" stroke-width="2"/>
   <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#1B5E20" font-size="24" font-family="Helvetica, Arial, sans-serif">
-    Step 2
+    <tspan x="50%" dy="-0.6em">Step 2</tspan>
+    <tspan x="50%" dy="1.2em">🛠️</tspan>
   </text>
 </svg>
