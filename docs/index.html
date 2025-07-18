@@ -119,6 +119,20 @@
       font-size: 1.05rem; color: #555; margin-bottom: 3rem; margin-top: 0rem;  transform: translateX(-40px) translateY(-45px); /* shift left by 20px */
     }
     
+    /* Navbar “Login” button */
+    nav.navbar .login-btn {
+      background: #5A9BD4;           /* your brand blue */
+      color: #fff;                   /* white text */
+      padding: 0.4rem 0.9rem;        /* a little breathing room */
+      border-radius: 9999px;         /* pill-shape */
+      text-decoration: none;         /* remove underline */
+      font-weight: bold;
+      margin-left: 1rem;             /* space from the other links */
+      transition: background 0.2s ease;
+    }
+    nav.navbar .login-btn:hover {
+      background: #34495e;           /* darker on hover */
+    }    
     /* ============================================================
        Section Menu
     ============================================================ */
@@ -177,6 +191,41 @@
     }
     .contact-widget:hover .contact-popup {
       display: block;
+    }
+
+
+
+    /* ============================================================
+       Session Avatar
+    ============================================================ */
+    /* === Session display (replaces Login after auth) === */
+    .session-user {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      border: 2px solid #5A9BD4;
+      background: rgba(90,155,212,0.1);
+      color: #2c3e50;
+      font-size: 0.9rem;
+      font-weight: bold;
+      line-height: 1;
+    }
+    .session-user img {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+    }
+    .session-user .logout-link {
+      margin-left: 0.25rem;
+      font-weight: bold;
+      text-decoration: none;
+      color: #5A9BD4;
+    }
+    .session-user .logout-link:hover {
+      text-decoration: underline;
+      color: #34495e;
     }
     
     /* ============================================================
@@ -470,9 +519,11 @@
     <div class="logo" onclick="resetLanding()">
       <img src="assets/logo.png" alt="Haiphen Logo">
     </div>
-    <div class="nav-links">
-      <a href="javascript:void(0)" onclick="showSection('Services')">About</a>
+    <div class="nav-links" id="nav-links">
       <a href="javascript:void(0)" onclick="showSection('Contact')">Contact</a>
+      <span id="session-slot">
+        <a href="https://auth.haiphen.io/login" class="login-btn">Login</a>
+      </span>
     </div>
   </nav>
   
@@ -1056,6 +1107,51 @@
         setTimeout(() => el.classList.remove("flash"), 2000);
       }, 200);
     }
+
+    /* ------------------------------------------------------------
+       Session widget: detect login state & update navbar
+    ------------------------------------------------------------ */
+    const AUTH_ORIGIN = 'https://auth.haiphen.io';  // change if needed
+
+    async function updateSessionWidget() {
+      const slot = document.getElementById('session-slot');
+      if (!slot) return;
+
+      // Helper: show Login pill
+      function showLogin() {
+        slot.innerHTML = `<a href="${AUTH_ORIGIN}/login" class="login-btn">Login</a>`;
+      }
+
+      try {
+        const resp = await fetch(`${AUTH_ORIGIN}/me`, {
+          credentials: 'include', // send auth cookie across subdomain
+        });
+
+        if (!resp.ok) {
+          showLogin();
+          return;
+        }
+
+        const user = await resp.json(); // {sub, name, avatar, email, ...}
+        const displayName = user.name || user.sub || 'User';
+        const avatar = user.avatar || 'assets/profile.png';
+
+        slot.innerHTML = `
+          <span class="session-user">
+            <img src="${avatar}" alt="">
+            ${displayName}
+            <a class="logout-link" href="${AUTH_ORIGIN}/logout" title="Logout">×</a>
+          </span>
+        `;
+      } catch (err) {
+        console.warn('[session] failed to fetch /me', err);
+        showLogin();
+      }
+    }
+
+    // run on load & periodically refresh
+    document.addEventListener('DOMContentLoaded', updateSessionWidget);
+    setInterval(updateSessionWidget, 5 * 60 * 1000); // refresh every 5m (optional)
 
   </script>
 </body>
