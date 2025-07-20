@@ -1,4 +1,4 @@
-**Semantic Edge Protocol Intelligence Platform: Business Proposal**
+<h2>Semantic Edge Protocol Intelligence Platform: Business Proposal</h2>
 
 ---
 
