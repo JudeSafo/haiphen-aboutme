@@ -1,0 +1,29 @@
+name: edge-runner
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+jobs:
+  runner:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install deps
+        working-directory: runners/node-runner
+        run: npm ci
+
+      - name: Run runner
+        working-directory: runners/node-runner
+        env:
+          ORCH_URL: https://orchestrator.haiphen.io
+          INGEST_HMAC_SECRET: ${{ secrets.INGEST_HMAC_SECRET }}
+          RUNNER_ID: gha-${{ github.run_id }}
+          SHODAN_API_KEY: ${{ secrets.SHODAN_API_KEY }}
+        run: node runner.js

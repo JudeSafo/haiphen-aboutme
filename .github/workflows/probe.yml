@@ -1,0 +1,106 @@
+name: probe-mqtt
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install mosquitto-clients & jq
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y mosquitto-clients jq
+
+      - name: Fetch candidates from CF worker
+        env:
+          CRAWLER_URL: https://crawler.haiphen.io/api/candidates?limit=50
+        run: |
+          curl -s "$CRAWLER_URL" > candidates.json
+          jq '.candidates | map(.ip)' candidates.json > ips.json
+          echo "IPs:"
+          cat ips.json
+
+      - name: Probe retained MQTT messages
+        id: probe
+        run: |
+          set -e
+          TS=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          echo "[]" > results.json
+
+          for ip in $(jq -r '.[]' ips.json); do
+            echo "🔍 $ip"
+            first=$(timeout 7 mosquitto_sub -h "$ip" -t '#' -C 1 --retained-only --id gha-feed 2>/dev/null | head -n1 || true)
+            if [ -z "$first" ]; then
+              # try $SYS/ topic fallback
+              first=$(timeout 7 mosquitto_sub -h "$ip" -t '$SYS/#' -C 1 --retained-only --id gha-feed 2>/dev/null | head -n1 || true)
+            fi
+
+            if [ -n "$first" ]; then
+              topic="${first%% *}"
+              payload="${first#* }"
+
+              # append JSON
+              jq --arg ip "$ip" --arg topic "$topic" --arg payload "$payload" --arg ts "$TS" \
+                '. + [{"ip":$ip,"topic":$topic,"payload":$payload,"ts":$ts}]' results.json > tmp.json && mv tmp.json results.json
+
+              echo "  ✅ $topic -> $(echo "$payload" | head -c 80)"
+            else
+              echo "  ❌ no retained"
+            fi
+          done
+
+          cat results.json
+
+      - name: Post results back to CF Worker
+        env:
+          WORKER_INGEST: https://crawler.haiphen.io/api/ingest
+        run: |
+          curl -s -X POST -H "Content-Type: application/json" --data @results.json "$WORKER_INGEST" | tee ingest_resp.json
+
+      - name: Prepare feed snapshot & commit
+        env:
+          TS: ${{ steps.probe.outputs.ts }}
+        run: |
+          DATE=$(date -u +"%Y%m%d-%H%M%S")
+          mkdir -p feeds
+          cp results.json "feeds/mqtt-open-${DATE}.json"
+
+          git config user.email "bot@haiphen.io"
+          git config user.name "edge-probe-bot"
+          git add feeds/*.json
+          git commit -m "probe: ${DATE}"
+          git push origin HEAD:refs/heads/edge-probe-${DATE} || true
+
+      - name: Open PR
+        if: always()
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: "edge probe snapshot"
+          branch: "edge-probe-${{ github.run_id }}"
+          title: "Edge probe snapshot - ${{ github.run_id }}"
+          body: "Automated probe results batch"
+          labels: "edge,probe"
+
+      - name: Post results back to CF Worker (HMAC-protected)
+        env:
+          WORKER_INGEST: https://crawler.haiphen.io/api/ingest
+          INGEST_HMAC_SECRET: ${{ secrets.INGEST_HMAC_SECRET }}
+        run: |
+          TS=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          BODY="$(cat results.json)"
+          # signature over `${timestamp}.${body}`
+          SIG=$(printf "%s.%s" "$TS" "$BODY" \
+            | openssl dgst -sha256 -hmac "$INGEST_HMAC_SECRET" -binary \
+            | xxd -p -c 256)
+
+          curl -s -X POST "$WORKER_INGEST" \
+            -H "Content-Type: application/json" \
+            -H "X-Timestamp: $TS" \
+            -H "X-Signature: $SIG" \
+            --data "$BODY" \
+            | tee ingest_resp.json

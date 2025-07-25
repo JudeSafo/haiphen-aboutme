@@ -1,0 +1,10 @@
+app = "haiphen-runner-fly"
+primary_region = "ord"
+
+[env]
+  ORCH_URL = "https://orchestrator.haiphen.io"
+  RUNNER_ID = "fly-1"
+
+[metrics]
+port = 8080
+path = "/metrics"

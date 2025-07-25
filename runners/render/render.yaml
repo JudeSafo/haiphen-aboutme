@@ -1,0 +1,13 @@
+services:
+  - type: worker
+    name: haiphen-runner-render
+    env: node
+    buildCommand: "cd runners/node-runner && npm ci"
+    startCommand: "cd runners/node-runner && node runner.js"
+    envVars:
+      - key: ORCH_URL
+        value: https://orchestrator.haiphen.io
+      - key: INGEST_HMAC_SECRET
+        sync: false
+      - key: RUNNER_ID
+        value: render-1

@@ -1,0 +1,22 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "edge-crawler",
+  "main": "src/edge-crawler.js",
+  "compatibility_date": "2025-07-24",
+  "compatibility_flags": ["nodejs_compat"],
+
+  "kv_namespaces": [
+    {
+      "binding": "CRAWL_KV",
+      "id": "c84b671810d644f78652f6d7ad4dcf2f"
+    }
+  ],
+
+  "triggers": {
+    "crons": ["*/30 * * * *"]
+  },
+
+  "routes": [
+    "crawler.haiphen.io/*"
+  ]
+}

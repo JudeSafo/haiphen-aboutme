@@ -1,0 +1,34 @@
+name: Sync Entitlements
+
+on:
+  schedule:
+    - cron: "0 * * * *"   # every hour
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout pages branch
+        uses: actions/checkout@v4
+        with:
+          ref: entitlements
+
+      - name: Fetch GitHub members
+        env:
+          GH_TOKEN: ${{ secrets.ADMIN_GH_TOKEN }}
+        run: |
+          curl -H "Authorization: bearer $GH_TOKEN" \
+               -H "Accept: application/vnd.github+json" \
+               -d '{ "query":"query{ organization(login:\"HaiphenOrg\"){ membersWithRole(first:100){ nodes { login } } } }" }' \
+               https://api.github.com/graphql > resp.json
+          jq '{updated: (now|floor), members: [.data.organization.membersWithRole.nodes[].login] }' resp.json > entitlements.json
+
+      - name: Commit and push
+        run: |
+          git config user.email "bot@haiphen.io"
+          git config user.name "Entitlement Bot"
+          mv entitlements.json docs/entitlements.json
+          git add docs/entitlements.json
+          git commit -m "Update entitlements.json" || echo "No changes"
+          git push origin entitlements

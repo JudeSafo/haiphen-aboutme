@@ -1,0 +1,24 @@
+{
+  "name": "haiphen-orchestrator",
+  "main": "src/orchestrator.js",
+  "compatibility_date": "2025-07-24",
+  "compatibility_flags": ["nodejs_compat"],
+
+  "kv_namespaces": [
+    { "binding": "STATE_KV", "id": "7d2da0c60e7740e7b3119fce40cbee62" }
+  ],
+  "durable_objects": {
+    "bindings": [
+      { "name": "WORK_QUEUE", "class_name": "WorkQueueDO" }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_classes": ["WorkQueueDO"]
+    }
+  ],
+  "routes": [
+    "orchestrator.haiphen.io/*"
+  ]
+}
