@@ -15,26 +15,39 @@ async function main() {
   }
 
   console.log(`runner ${RUNNER_ID} starting against ${ORCH}`);
+  let idleDelay = 5000;            // start at 5s
+  const IDLE_MAX = 60000;          // cap at 60s
 
   while (true) {
     try {
       const leased = await call("/tasks/lease", {
         runnerId: RUNNER_ID,
-        max: MAX_TASKS,
+        labels: LABELS,
+        max: 1,
         leaseMs: LEASE_MS
       });
 
-      for (const task of leased.leased || []) {
-        handleTask(task).catch(err => console.error("task error", err));
+      const tasks = leased.leased || [];
+      if (tasks.length === 0) {
+        // use server hint if provided; else backoff exponentially
+        idleDelay = Math.min(leased.backoffMs || idleDelay * 2, IDLE_MAX);
+        await sleep(idleDelay);
+        continue;
+      }
+
+      // got work: reset delay
+      idleDelay = 5000;
+
+      for (const task of tasks) {
+        if (task.type !== "lan-scan") { /* skip */ continue; }
+        await handleLanScan(task);
       }
     } catch (e) {
-      console.error("lease error", e);
-      await sleep(5000);
+      console.error("lease err", e);
+      idleDelay = Math.min(idleDelay * 2, IDLE_MAX);
+      await sleep(idleDelay);
     }
-
-    await sleep(5000);
   }
-}
 
 async function handleTask(task) {
   const leaseId = task.leaseId;

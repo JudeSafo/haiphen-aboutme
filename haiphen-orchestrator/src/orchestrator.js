@@ -3,10 +3,12 @@
 const HMAC_HEADER = "x-signature";
 const TS_HEADER = "x-timestamp";
 const DRIFT_MS = 5 * 60 * 1000; // 5 min
+const RUNNERS_KV_KEY = "runners:registry";
 
 export default {
   async fetch(req, env) {
     const url = new URL(req.url);
+    const method = req.method;
 
     try {
       if (url.pathname === "/health") {
@@ -18,35 +20,143 @@ export default {
         });
       }
 
+      // Route to DO
       const id = env.WORK_QUEUE.idFromName("global");
       const stub = env.WORK_QUEUE.get(id);
 
-      if (url.pathname === "/tasks/submit" && req.method === "POST") {
+      // ---- TASK ENDPOINTS (HMAC then forward to DO) ----
+      if (url.pathname === "/tasks/submit" && method === "POST") {
         const { valid } = await verifyAndRead(req, env.INGEST_HMAC_SECRET);
         if (!valid) return json({ error: "unauthorized" }, 401);
         return stub.fetch(req);
       }
-
-      if (url.pathname === "/tasks/lease" && req.method === "POST") {
+      if (url.pathname === "/tasks/lease" && method === "POST") {
+        const { valid, body } = await verifyAndRead(req, env.INGEST_HMAC_SECRET);
+        if (!valid) return json({ error: "unauthorized" }, 401);
+        console.log("lease req from", body?.runnerId || "?", "labels=", body?.labels);
+        const id = env.WORK_QUEUE.idFromName("global");
+        const stub = env.WORK_QUEUE.get(id);
+        return stub.fetch(req);
+      }
+      if (url.pathname === "/tasks/heartbeat" && method === "POST") {
         const { valid } = await verifyAndRead(req, env.INGEST_HMAC_SECRET);
         if (!valid) return json({ error: "unauthorized" }, 401);
         return stub.fetch(req);
       }
-
-      if (url.pathname === "/tasks/heartbeat" && req.method === "POST") {
+      if (url.pathname === "/tasks/result" && method === "POST") {
         const { valid } = await verifyAndRead(req, env.INGEST_HMAC_SECRET);
         if (!valid) return json({ error: "unauthorized" }, 401);
         return stub.fetch(req);
       }
-
-      if (url.pathname === "/tasks/result" && req.method === "POST") {
-        const { valid } = await verifyAndRead(req, env.INGEST_HMAC_SECRET);
-        if (!valid) return json({ error: "unauthorized" }, 401);
+      if (url.pathname === "/tasks/stats" && method === "GET") {
+        // stats can be public; add HMAC if you want it private
         return stub.fetch(req);
       }
+      // ---------------------------------------------------
 
-      if (url.pathname === "/tasks/stats" && req.method === "GET") {
-        return stub.fetch(req);
+      // ---- /shodan/enqueue-mqtt (kept as you had it) ----
+      if (url.pathname === "/shodan/enqueue-mqtt" && method === "POST") {
+        const { valid, body } = await verifyAndRead(req, env.INGEST_HMAC_SECRET);
+        if (!valid) return json({ error: "unauthorized" }, 401);
+
+        const limit = Number(url.searchParams.get("limit") || body?.limit || 50);
+        const batchSize = Number(url.searchParams.get("batch") || body?.batch || 10);
+        const query = body?.query || 'port:1883 mqtt "Topics:"';
+
+        const ips = await fetchShodanIPs(env, query, limit);
+
+        const tasks = [];
+        for (let i = 0; i < ips.length; i += batchSize) {
+          const slice = ips.slice(i, i + batchSize);
+          tasks.push({
+            type: "mqtt-probe",
+            payload: { ips: slice, timeout: 7 },
+            priority: 10,
+            maxRetries: 2,
+            shardKey: `mqtt:${new Date().toISOString().slice(0, 10)}`
+          });
+        }
+
+        const submitReq = new Request("https://do/tasks/submit", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(tasks)
+        });
+        const r = await stub.fetch(submitReq);
+        const j = await r.json();
+
+        return json({ ok: true, enqueued: tasks.length, ips: ips.length, stats: j });
+      }
+
+      // ---- runner registry & LAN endpoints (unchanged) ----
+      if (url.pathname === "/runners/register" && method === "POST") {
+        const { valid, body } = await verifyAndRead(req, env.INGEST_HMAC_SECRET);
+        if (!valid) return json({ error: "unauthorized" }, 401);
+
+        const { runnerId, labels = [], meta = {} } = body || {};
+        if (!runnerId) return json({ error: "runnerId required" }, 400);
+
+        const existingRaw = await env.STATE_KV.get(RUNNERS_KV_KEY);
+        const registry = existingRaw ? JSON.parse(existingRaw) : {};
+        registry[runnerId] = { labels, meta, updatedAt: Date.now() };
+        await env.STATE_KV.put(RUNNERS_KV_KEY, JSON.stringify(registry));
+
+        return json({ ok: true, runnerId, labels });
+      }
+
+      if (url.pathname === "/lan/enqueue-scan" && method === "POST") {
+        const { valid, body } = await verifyAndRead(req, env.INGEST_HMAC_SECRET);
+        if (!valid) return json({ error: "unauthorized" }, 401);
+
+        const { cidr, ports = [22,80,443,1883,2375], runnerId, labels = ["lan"], batch = 256 } = body || {};
+        if (!cidr) return json({ error: "cidr required" }, 400);
+
+        const task = {
+          type: "lan-scan",
+          payload: { cidr, ports, batch },
+          priority: 10,
+          maxRetries: 1,
+          selector: { runnerId, labels }
+        };
+
+        const submitReq = new Request("https://do/tasks/submit", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify([task])
+        });
+        const r = await stub.fetch(submitReq);
+        const stats = await r.json();
+        return json({ ok: true, enqueued: 1, stats });
+      }
+
+      if (url.pathname === "/lan/submit-inventory" && method === "POST") {
+        const { valid, body } = await verifyAndRead(req, env.INGEST_HMAC_SECRET);
+        if (!valid) return json({ error: "unauthorized" }, 401);
+
+        const { runnerId, leaseId, taskId, hosts = [] } = body || {};
+        if (!runnerId || !leaseId || !taskId) return json({ error: "invalid payload" }, 400);
+
+        const INVENTORY_KEY = `lan:inventory:${runnerId}:${Date.now()}`;
+        await env.STATE_KV.put(INVENTORY_KEY, JSON.stringify({ hosts, ts: Date.now() }), {
+          expirationTtl: 7 * 24 * 3600
+        });
+
+        const resultReq = new Request("https://do/tasks/result", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            runnerId, leaseId, taskId,
+            status: "succeeded",
+            result: { inventoryKey: INVENTORY_KEY, count: hosts.length }
+          })
+        });
+        const r = await stub.fetch(resultReq);
+        const j = await r.json();
+        return json({ ok: true, stored: hosts.length, kvKey: INVENTORY_KEY, result: j });
+      }
+
+      if (url.pathname === "/lan/inventory" && method === "GET") {
+        return json({ todo: "implement listing via DO/D1/R2" });
       }
 
       return json({ error: "not found" }, 404);
@@ -88,24 +198,40 @@ export class WorkQueueDO {
     }
 
     if (url.pathname === "/tasks/lease" && method === "POST") {
-      const { runnerId, max = 1, leaseMs = 60_000 } = await req.json();
+      const { runnerId, max = 1, leaseMs = 60_000, labels = [] } = await req.json();
       const leased = [];
       const now = Date.now();
       const deadline = now + leaseMs;
 
+      // (optional) enforce selector & runner registry in the DO if you pass it in tasks
+
       for (let i = 0; i < this.queue.length && leased.length < max; i++) {
         const task = this.queue[i];
-        if (task.state === "pending") {
-          task.state = "leased";
-          task.leaseId = crypto.randomUUID();
-          task.leaseDeadline = deadline;
-          task.runnerId = runnerId;
-          this.leases.set(task.leaseId, { taskId: task.id, deadline, runnerId });
-          leased.push(task);
+        if (task.state !== "pending") continue;
+
+        // (optional) task.selector support
+        if (task.selector) {
+          const sel = task.selector;
+          if (sel.runnerId && sel.runnerId !== runnerId) continue;
+          if (sel.labels && sel.labels.length) {
+            const hasAny = labels?.some(l => sel.labels.includes(l));
+            if (!hasAny) continue;
+          }
         }
+
+        task.state = "leased";
+        task.leaseId = crypto.randomUUID();
+        task.leaseDeadline = deadline;
+        task.runnerId = runnerId;
+        this.leases.set(task.leaseId, { taskId: task.id, deadline, runnerId });
+        leased.push(task);
       }
+
       await this.persist();
-      return json({ ok: true, leased });
+
+      // If nothing to lease, suggest a backoff (e.g., 30s). You can make this dynamic.
+      const backoffMs = leased.length === 0 ? 30_000 : 5_000;
+      return json({ ok: true, leased, backoffMs });
     }
 
     if (url.pathname === "/tasks/heartbeat" && method === "POST") {
@@ -253,4 +379,27 @@ function json(obj, status = 200) {
     status,
     headers: { "Content-Type": "application/json; charset=utf-8" }
   });
+}
+
+async function fetchShodanIPs(env, query, limit) {
+  const pageSize = 100; // Shodan's default page size
+  const pages = Math.ceil(limit / pageSize);
+  const out = [];
+
+  for (let p = 1; p <= pages; p++) {
+    if (out.length >= limit) break;
+    const endpoint = `https://api.shodan.io/shodan/host/search?key=${encodeURIComponent(
+      env.SHODAN_API_KEY
+    )}&query=${encodeURIComponent(query)}&page=${p}`;
+
+    const r = await fetch(endpoint);
+    if (!r.ok) {
+      const txt = await r.text();
+      throw new Error(`Shodan error: ${r.status} ${txt}`);
+    }
+    const j = await r.json();
+    const ips = (j.matches || []).map((m) => m.ip_str);
+    out.push(...ips);
+  }
+  return out.slice(0, limit);
 }
