@@ -52,6 +52,18 @@ export default {
         // stats can be public; add HMAC if you want it private
         return stub.fetch(req);
       }
+      // ---- TASK ENDPOINTS (HMAC then forward to DO) ----
+      if (url.pathname === "/tasks/admin/clear" && method === "POST") {
+        const { valid } = await verifyAndRead(req, env.INGEST_HMAC_SECRET);
+        if (!valid) return json({ error: "unauthorized" }, 401);
+        // Forward to the DO's internal endpoint
+        const forward = new Request("https://do/tasks/admin/clear", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: "{}"
+        });
+        return stub.fetch(forward);
+      }      
       // ---------------------------------------------------
 
       // ---- /shodan/enqueue-mqtt (kept as you had it) ----
@@ -159,6 +171,34 @@ export default {
         return json({ todo: "implement listing via DO/D1/R2" });
       }
 
+      // list inventories for a runner
+      if (url.pathname === "/lan/inventory/list" && method === "GET") {
+        const runnerId = url.searchParams.get("runnerId");
+        if (!runnerId) return json({ error: "runnerId required" }, 400);
+        const prefix = `lan:inventory:${runnerId}:`;
+        const { keys } = await env.STATE_KV.list({ prefix, limit: 50 });
+        // sort newest last segment (timestamp) desc
+        const sorted = keys.sort((a,b) => b.name.localeCompare(a.name));
+        return json({ ok: true, keys: sorted.map(k => k.name) });
+      }
+
+      if (url.pathname === "/lan/inventory/get" && method === "GET") {
+        const key = url.searchParams.get("key");
+        if (!key) return json({ error: "key required" }, 400);
+        const raw = await env.STATE_KV.get(key);
+        return raw ? json(JSON.parse(raw)) : json({ error: "not found" }, 404);
+      }
+
+      if (url.pathname === "/lan/inventory/latest" && method === "GET") {
+        const runnerId = url.searchParams.get("runnerId");
+        if (!runnerId) return json({ error: "runnerId required" }, 400);
+        const prefix = `lan:inventory:${runnerId}:`;
+        const { keys } = await env.STATE_KV.list({ prefix, limit: 50 });
+        if (!keys.length) return json({ ok: true, latest: null });
+        const latest = keys.sort((a,b) => b.name.localeCompare(a.name))[0].name;
+        const raw = await env.STATE_KV.get(latest);
+        return json({ ok: true, key: latest, data: raw ? JSON.parse(raw) : null });
+      }
       return json({ error: "not found" }, 404);
     } catch (e) {
       console.error("orchestrator error", e);
@@ -290,6 +330,12 @@ export class WorkQueueDO {
       });
     }
 
+    if (url.pathname === "/tasks/admin/clear" && method === "POST") {
+      this.queue = [];
+      this.leases.clear();
+      await this.persist();
+      return json({ ok: true, cleared: true });
+    }
     return json({ error: "not found" }, 404);
   }
 
