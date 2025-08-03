@@ -1,0 +1,21 @@
+headscale.haiphen.io {
+  encode gzip
+
+  # Use the Docker service/container name + port (NOT 127.0.0.1)
+  reverse_proxy http://headscale-headscale-1:8080 {
+    # Make origin aware of the external scheme/host
+    header_up Host {host}
+    header_up X-Forwarded-Host {host}
+    header_up X-Forwarded-Proto https
+  }
+
+  tls devops@haiphen.io
+
+  header {
+    Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+  }
+  log {
+    output file /var/log/caddy/access.log
+    format console
+  }
+}

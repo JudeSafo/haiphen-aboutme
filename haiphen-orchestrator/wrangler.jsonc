@@ -3,7 +3,6 @@
   "main": "src/orchestrator.js",
   "compatibility_date": "2025-07-24",
   "compatibility_flags": ["nodejs_compat"],
-
   "kv_namespaces": [
     { "binding": "STATE_KV", "id": "7d2da0c60e7740e7b3119fce40cbee62" }
   ],
@@ -20,5 +19,9 @@
   ],
   "routes": [
     "orchestrator.haiphen.io/*"
-  ]
+  ],
+  "vars": {
+    "HEADSCALE_URLS": "https://headscale.haiphen.io",
+    "HEADSCALE_API_KEY": "WVeJx0K.gpPbaoo4NBeJrhSl3MPh4Bj0tEuCzpTJ"
+  }
 }

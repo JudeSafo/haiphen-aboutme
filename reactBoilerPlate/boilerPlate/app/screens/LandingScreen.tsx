@@ -1,5 +1,5 @@
 import React, { useEffect } from "react"
-import { View, Switch, Image } from "react-native"
+import { View, Switch, Image, Alert, Linking } from "react-native"
 import { observer } from "mobx-react-lite"
 import { Screen, Text, Button, Card } from "../components"
 import { useStores } from "app/models"
@@ -42,6 +42,27 @@ export const LandingScreen = observer(function LandingScreen() {
               <Text text={`Last registered: ${new Date(deviceStore.lastRegisteredAt).toLocaleTimeString()}`} />
             ) : null}
           </View>
+        }
+      />
+
+      <Card
+        style={{ padding:16 }}
+        HeadingComponent={<Text preset="subheading" text="Mesh VPN" />}
+        ContentComponent={
+          <>
+            <Text text="Generate a one-time key and open Tailscale" />
+            <Button
+              text="Join Mesh"
+              onPress={async () => {
+                try {
+                  const { authKey, base } = await deviceStore.joinMesh()
+                  const deeplink = `tailscale://login?server=${encodeURIComponent(base)}&authkey=${authKey}`
+                  Linking.openURL(deeplink)           // Android
+                  // On iOS simply copy to clipboard or show QR
+                } catch (e) { Alert.alert("Error", String(e)) }
+              }}
+            />
+          </>
         }
       />
 

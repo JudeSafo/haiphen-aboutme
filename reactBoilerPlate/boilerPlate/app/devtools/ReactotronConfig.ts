@@ -4,6 +4,7 @@
  * @see https://github.com/infinitered/reactotron
  */
 import { Platform, NativeModules } from "react-native"
+import { DevSettings } from "react-native"
 
 import AsyncStorage from "@react-native-async-storage/async-storage"
 import { ArgType } from "reactotron-core-client"
@@ -53,7 +54,17 @@ reactotron.onCustomCommand({
   command: "showDevMenu",
   handler: () => {
     Reactotron.log("Showing React Native dev menu")
-    NativeModules.DevMenu.show()
+    if (DevSettings && typeof DevSettings.show === "function") {
+      DevSettings.show()
+    }
+    if (
+      NativeModules.DevMenu != null &&
+      typeof NativeModules.DevMenu.show === "function"
+    ) {
+      NativeModules.DevMenu.show()
+    } else {
+      Reactotron.log("DevMenu native module not available")
+    }
   },
 })
 

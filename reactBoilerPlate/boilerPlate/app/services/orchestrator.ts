@@ -1,6 +1,35 @@
 import Config from "app/config"
 import { createHmacHeaders } from "app/utils/crypto"
 
+const ORCH = Config.ORCH_URL
+
+export async function discoverHeads(): Promise<string[]> {
+  const res = await fetch(`${ORCH}/vpn/discover`)
+  const j   = await res.json()
+  return j?.urls ?? []
+}
+
+export async function getPreauthKey(user = "mobile", expiry = "24h") {
+  const body = { user, expiry }
+  const { "X-Timestamp": ts, "X-Signature": sig } = createHmacHeaders(
+    Config.INGEST_HMAC_SECRET,
+    body
+  )
+
+  const res = await fetch(`${ORCH}/vpn/preauth`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Timestamp": ts,
+      "X-Signature": sig,
+    },
+    body: JSON.stringify(body),
+  })
+  const j = await res.json()
+  if (!res.ok) throw new Error(j?.error || "preauth-failed")
+  return j as { authKey: string; base: string }
+}
+
 // --- Simple HTTP helper
 async function jfetch(url: string, init: RequestInit = {}) {
   const r = await fetch(url, init)

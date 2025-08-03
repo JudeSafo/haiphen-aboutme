@@ -38,7 +38,7 @@ export function createHmacHeaders(
   if (!secret) {
     console.error("[crypto] INGEST_HMAC_SECRET is missing!", secret)
   }  
-  const timestamp = Date.now().toString();
+  const timestamp = new Date().toISOString();  
   const signature = hmacSignatureHex(secret, timestamp, body);
   console.debug("[crypto] createHmacHeaders", { timestamp, signature });
   return {

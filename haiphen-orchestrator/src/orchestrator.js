@@ -11,6 +11,15 @@ export default {
     const method = req.method;
 
     try {
+      // ---- Discovery: clients learn which control-plane URLs to try
+      if (url.pathname === "/vpn/discover" && method === "GET") {
+        const urls = (env.HEADSCALE_URLS || env.HEADSCALE_BASE_URL || "")
+          .split(",")
+          .map(s => s.trim())
+          .filter(Boolean);
+        return json({ ok: true, urls, ts: new Date().toISOString() });
+      }
+
       if (url.pathname === "/health") {
         return json({
           ok: true,
@@ -21,8 +30,81 @@ export default {
       }
 
       // Route to DO
+      const TS_API_BASE = env.TS_API_BASE;      
       const id = env.WORK_QUEUE.idFromName("global");
       const stub = env.WORK_QUEUE.get(id);
+
+      if (url.pathname === "/subnet/join" && method === "POST") {
+        // Require HMAC or public join code
+        const { valid, body } = await verifyAndRead(req, env.INGEST_HMAC_SECRET);
+        if (!valid) return json({ error: "unauthorized" }, 401);
+
+        const { subnetId } = body;
+        if (!subnetId) return json({ error: "subnetId required" }, 400);
+        const raw = await env.STATE_KV.get(`subnet:${subnetId}`);
+        if (!raw) return json({ error: "subnet not found" }, 404);
+        const record = JSON.parse(raw);
+        return json({ ok: true, subnetId, authKey: record.authKey, expireAt: record.expireAt });
+      }
+
+      // -- Open-source control-plane: issue Headscale pre-auth key -------------
+      if (url.pathname === "/vpn/preauth" && method === "POST") {
+        const { valid, body } = await verifyAndRead(req, env.INGEST_HMAC_SECRET)
+        if (!valid) return json({ error: "unauthorized" }, 401)
+
+        const expiry = body?.expiry || "24h";
+        const wanted = body?.user ?? body?.userId ?? body?.namespace ?? "mobile";
+        const isNumeric = typeof wanted === "number" || /^\d+$/.test(String(wanted));
+
+        // optional env mapping: "mobile:2,orchestrator:1"
+        function resolveUserId(w, env) {
+          if (typeof w === "number" || /^\d+$/.test(String(w))) return Number(w);
+          const map = Object.fromEntries(
+            (env.HEADSCALE_USER_MAP || "")
+              .split(",")
+              .map(s => s.trim())
+              .filter(Boolean)
+              .map(pair => {
+                const [k, v] = pair.split(":").map(t => t.trim());
+                return [k, Number(v)];
+              })
+          );
+          return map[String(w)] ?? null;
+        }
+        const userId = resolveUserId(wanted, env);
+        if (!userId) return json({ error: "unknown-user", wanted }, 400);
+
+        for (const base of (env.HEADSCALE_URLS || "").split(",").filter(Boolean)) {
+          // Build payload: if numeric -> {user:<id>}, else -> {namespace:"name"}
+          const payload = {
+            reusable: false,
+            ephemeral: true,
+            expiration: expiryToRFC3339(expiry),
+            ...(isNumeric ? { user: Number(wanted) } : { namespace: String(wanted) }),
+            user: userId,
+          };
+
+          const r = await fetch(`${base}/api/v1/preauthkey`, {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${env.HEADSCALE_API_KEY}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(payload),
+            redirect: "manual",
+          })
+          if (r.ok) {
+            const { preAuthKey } = await r.json()
+            return json({ ok: true, authKey: preAuthKey.key, base })
+          } else {
+            let bodyTxt;
+            try { bodyTxt = await r.text(); } catch (_) { bodyTxt = ""; }
+            // Return immediately with the upstream error (helps a ton when debugging)
+            return json({ error: "headscale-error", base, status: r.status, body: bodyTxt }, r.status);
+          }
+        }
+        return json({ error: "headscale-unreachable" }, 503)
+      }
 
       // ---- TASK ENDPOINTS (HMAC then forward to DO) ----
       if (url.pathname === "/tasks/submit" && method === "POST") {
@@ -139,6 +221,63 @@ export default {
         const r = await stub.fetch(submitReq);
         const stats = await r.json();
         return json({ ok: true, enqueued: 1, stats });
+      }
+
+      // Inside `async fetch(req, env)` before your existing routes:
+
+      if (url.pathname === "/vpn/discover" && method === "GET") {
+        const urls = (env.HEADSCALE_URLS || "").split(",").map((u) => u.trim()).filter(Boolean);
+        return json({ ok: true, urls, ts: new Date().toISOString() });
+      }
+
+      // -- Open-source control-plane: Headscale preauth key (alias /subnet/create)
+      if (url.pathname === "/subnet/create" && method === "POST") {
+        const { valid, body } = await verifyAndRead(req, env.INGEST_HMAC_SECRET);
+        if (!valid) return json({ error: "unauthorized" }, 401);
+
+        const urls = (env.HEADSCALE_URLS || env.HEADSCALE_BASE_URL || "")
+          .split(",").map(s => s.trim()).filter(Boolean);
+        if (!urls.length) return json({ error: "HEADSCALE_URLS or HEADSCALE_BASE_URL not configured" }, 500);
+
+        const expiry = body?.expiry || "24h";
+        const user = body?.user || "orchestrator";
+
+        let lastErr = null;
+        for (const base of urls) {
+          try {
+            const resp = await fetch(`${base}/api/v1/preauthkey`, {
+              method: "POST",
+              headers: {
+                "Authorization": `Bearer ${env.HEADSCALE_API_KEY}`,
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({
+                namespace: user,
+                reusable: false,
+                ephemeral: true,
+                expiration: expiryToRFC3339(expiry),
+              }),
+              redirect: "manual",
+            });
+            if (!resp.ok) {
+              lastErr = new Error(`Headscale ${base} -> ${resp.status} ${await resp.text()}`);
+              continue;
+            }
+            const { preAuthKey } = await resp.json();
+            const subnetId = crypto.randomUUID();
+            const record = {
+              authKey: preAuthKey.key,
+              expireAt: preAuthKey.expiresAt,
+              createdAt: Date.now(),
+              base
+            };
+            await env.STATE_KV.put(`subnet:${subnetId}`, JSON.stringify(record), { expirationTtl: 24 * 3600 });
+            return json({ ok: true, subnetId, authKey: record.authKey, expireAt: record.expireAt, base });
+          } catch (e) {
+            lastErr = e;
+          }
+        }
+        throw lastErr || new Error("no-headscale-endpoint-reachable");
       }
 
       if (url.pathname === "/lan/submit-inventory" && method === "POST") {
@@ -425,6 +564,26 @@ function json(obj, status = 200) {
     status,
     headers: { "Content-Type": "application/json; charset=utf-8" }
   });
+}
+
+function parseDurationMs(s) {
+  if (typeof s !== "string") return null;
+  const m = s.trim().match(/^(\d+)\s*(s|m|h|d|w)$/i);
+  if (!m) return null;
+  const n = Number(m[1]);
+  const unit = m[2].toLowerCase();
+  const mult = { s: 1000, m: 60_000, h: 3_600_000, d: 86_400_000, w: 604_800_000 }[unit];
+  return n * mult;
+}
+function expiryToRFC3339(expiry) {
+  // If user passed an absolute time, accept it
+  const asDate = new Date(expiry);
+  if (!isNaN(asDate.valueOf())) return asDate.toISOString();
+
+  // Otherwise treat as duration like "24h"
+  const ms = parseDurationMs(expiry);
+  const dt = new Date(Date.now() + (ms ?? 24 * 60 * 60 * 1000)); // default 24h
+  return dt.toISOString();
 }
 
 async function fetchShodanIPs(env, query, limit) {

@@ -4,7 +4,7 @@ import * as Application from "expo-application"
 import * as Network from "expo-network"
 import Config from "app/config"
 import { getOrCreateRunnerId } from "app/utils/identity"
-import { registerRunner, pingOrchestrator } from "app/services/orchestrator"
+import { registerRunner, pingOrchestrator, getPreauthKey } from "app/services/orchestrator"
 
 export const DeviceStore = types
   .model("DeviceStore", {
@@ -78,7 +78,22 @@ export const DeviceStore = types
       checkPing()
     }
 
-    return { register, startHeartbeat, stopHeartbeat, setOptIn, afterCreate, fetchRunnerId, checkPing }
+    const joinMesh = flow(function* () {
+      try {
+        const HEADSCALE_USER = "mobile"    // must match one of your HEADSCALE_USER_MAP keys
+        const { authKey, base } = yield getPreauthKey(HEADSCALE_USER)
+        // Save for UI
+        self.labels.replace(["mesh"])
+        // Kick user to Tailscale/TorGuard/etc via deep-link QR
+        self.lastRegisteredAt = Date.now()
+        return { authKey, base }
+      } catch (e) {
+        console.error("joinMesh error", e)
+        throw e
+      }
+    })
+
+    return { joinMesh, register, startHeartbeat, stopHeartbeat, setOptIn, afterCreate, fetchRunnerId, checkPing }
   })
 
 export interface DeviceStoreType extends Instance<typeof DeviceStore> {}

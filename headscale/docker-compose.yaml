@@ -1,0 +1,33 @@
+version: "3.9"
+
+services:
+  headscale:
+    image: headscale/headscale:v0.26.0
+    command: serve
+    # Headscale stays on localhost; Caddy terminates TLS & exposes 443
+    ports:
+      - "127.0.0.1:8080:8080"
+      - "127.0.0.1:9090:9090"
+      - "127.0.0.1:50443:50443"
+      # If you later enable the embedded DERP server, also expose:
+      # - "3478:3478/udp"
+    volumes:
+      - ./config:/etc/headscale
+      - ./data:/var/lib/headscale
+    restart: unless-stopped
+
+  caddy:
+    image: caddy:2
+    depends_on: [headscale]
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    restart: unless-stopped
+
+volumes:
+  caddy_data:
+  caddy_config:
