@@ -1,0 +1,28 @@
+{
+  "date": "2025-12-12",
+  "updated_at": "2025-12-12T20:07:22.088Z",
+  "headline": "Paper trading snapshot (dummy metrics)",
+  "summary": "Signals fired, positions adjusted, and risk stayed inside the rails. Next step: wire this to live metrics exported from twitterBot.js.",
+  "rows": [
+    {
+      "kpi": "Opportunities flagged",
+      "value": "5821"
+    },
+    {
+      "kpi": "Events executed",
+      "value": "980"
+    },
+    {
+      "kpi": "Daily PnL",
+      "value": "+7.80%"
+    },
+    {
+      "kpi": "Win rate",
+      "value": "61%"
+    },
+    {
+      "kpi": "Max drawdown",
+      "value": "-1.2%"
+    }
+  ]
+}

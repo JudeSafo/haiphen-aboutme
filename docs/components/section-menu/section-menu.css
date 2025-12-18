@@ -1,0 +1,49 @@
+/* docs/components/section-menu/section-menu.css */
+.section-menu{
+  display: flex;
+  width: min(760px, 100%);
+  margin: 0 auto 5rem;
+  padding: 0 1rem;
+
+  /* equal spacing + symmetric edges */
+  justify-content: space-evenly;
+  gap: 1rem;              /* space-evenly already creates spacing */
+  flex-wrap: wrap;
+}
+
+/* Re-center relative to the full viewport (undo half the sidebar reservation) */
+@media (min-width: 920px){
+  .section-menu{
+    transform: translateX(calc(-1 * var(--sidebar-w) / 2));
+  }
+}
+
+.section-menu__btn {
+  appearance: none;
+  border: 1px solid rgba(90,155,212,0.35);
+  background: rgba(255,255,255,0.86);
+  color: var(--brand-ink);
+
+  padding: 0.70rem 1.15rem;
+  border-radius: 9999px;
+  cursor: pointer;
+
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: 0.01em;
+
+  box-shadow: 0 6px 18px rgba(17,24,39,0.08);
+  transition: transform 120ms ease, background 160ms ease, border-color 160ms ease;
+}
+
+.section-menu__btn:hover {
+  transform: translateY(-1px);
+  background: rgba(90,155,212,0.10);
+  border-color: rgba(90,155,212,0.55);
+}
+
+.section-menu__btn.is-active {
+  background: var(--brand);
+  color: #fff;
+  border-color: var(--brand);
+}

@@ -1,0 +1,109 @@
+{
+  "date": "2025-12-16",
+  "updated_at": "2025-12-16T21:40:55.954Z",
+  "headline": "Paper trading snapshot (fallback metrics)",
+  "summary": "DB unreachable for this run. Showing fallback metrics.",
+  "rows": [
+    {
+      "kpi": "Signals scanned",
+      "value": "—"
+    },
+    {
+      "kpi": "Opportunities flagged",
+      "value": "—"
+    },
+    {
+      "kpi": "Notifications sent",
+      "value": "—"
+    },
+    {
+      "kpi": "Entries opened",
+      "value": "—"
+    },
+    {
+      "kpi": "Exits closed",
+      "value": "—"
+    },
+    {
+      "kpi": "Avg hold time",
+      "value": "—"
+    },
+    {
+      "kpi": "Daily PnL",
+      "value": "—"
+    },
+    {
+      "kpi": "Win rate",
+      "value": "—"
+    },
+    {
+      "kpi": "Max drawdown",
+      "value": "—"
+    },
+    {
+      "kpi": "Sharpe ratio",
+      "value": "—"
+    },
+    {
+      "kpi": "Delta",
+      "value": "—"
+    },
+    {
+      "kpi": "Gamma",
+      "value": "—"
+    },
+    {
+      "kpi": "Theta",
+      "value": "—"
+    },
+    {
+      "kpi": "Vega",
+      "value": "—"
+    },
+    {
+      "kpi": "Rho",
+      "value": "—"
+    },
+    {
+      "kpi": "Historical Volatility",
+      "value": "—"
+    },
+    {
+      "kpi": "Uncertainty",
+      "value": "—"
+    },
+    {
+      "kpi": "Fair Market Price",
+      "value": "—"
+    },
+    {
+      "kpi": "IV Skew",
+      "value": "—"
+    },
+    {
+      "kpi": "Decay Rate",
+      "value": "—"
+    },
+    {
+      "kpi": "Gamma Exposure",
+      "value": "—"
+    },
+    {
+      "kpi": "Volume Ratio",
+      "value": "—"
+    },
+    {
+      "kpi": "OI Ratio",
+      "value": "—"
+    },
+    {
+      "kpi": "Liquidity Ratios",
+      "value": "—"
+    },
+    {
+      "kpi": "Decay Weight",
+      "value": "—"
+    }
+  ],
+  "source": "fallback"
+}

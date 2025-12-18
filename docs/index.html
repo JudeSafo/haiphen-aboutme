@@ -19,6 +19,17 @@
   <meta name="twitter:description" content="Custom signal processing + ML/NLP infrastructure. We build real systems for real problems. API everything." />
   <meta name="twitter:image" content="https://judesafo.github.io/haiphen-aboutme/assets/robot_haiphen.svg" />
  
+  <link rel="stylesheet" href="assets/base.css" />
+
+  <script src="components/headers/site-header.js"></script>
+  <script src="components/sidebar/site-sidebar.js"></script>
+  <script src="components/section-menu/section-menu.js"></script>
+  <script src="components/footers/site-footer.js"></script>
+  <script src="components/sidebar/sidebar-nav.js"></script>
+  <script src="components/trades-overlay/trades-overlay.js"></script>
+  <script src="components/services-plans/services-plans.js"></script>
+  <script src="components/services/services-section.js"></script>
+  
   <!-- 🔽 Structured Data for SEO -->
   <script type="application/ld+json">
   {
@@ -54,11 +65,11 @@
       padding: 0;
     }
     body {
-      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      font-family: var(--font-sans);
+      color: var(--text);
       background: url('./assets/background.svg') no-repeat center center fixed;
       background-size: cover;
-      color: #333;
-      padding-top: 70px; /* Space for fixed navbar */
+      padding-top: 70px;
       min-height: 100vh;
     }
     
@@ -92,15 +103,6 @@
     }
     
     /* ============================================================
-       Main Container
-    ============================================================ */
-    .main-container {
-      min-height: 100vh;
-      display: flex; flex-direction: column; align-items: center;
-      padding: 4rem 2rem; text-align: center;
-    }
-    
-    /* ============================================================
        Hero Section (with solid background for readability)
     ============================================================ */
     .hero {
@@ -113,10 +115,10 @@
     }
     .hero-logo img {
       max-width: 400px; width: 100%; height: auto;
-      display: block; margin: 0 auto 10px; transform: translateX(-40px) translateY(-45px); /* shift left by 20px */
+      display: block; margin: 0 auto 10px; transform: translateX(-115px) translateY(-55px); /* shift left by 20px */
     }
     .hero p {
-      font-size: 1.05rem; color: #555; margin-bottom: 3rem; margin-top: 0rem;  transform: translateX(-40px) translateY(-45px); /* shift left by 20px */
+      font-size: 1.05rem; color: #555; margin-bottom: 3rem; margin-top: 0rem;  transform: translateX(-110px) translateY(-45px); /* shift left by 20px */
     }
     
     /* Navbar “Login” button */
@@ -227,7 +229,27 @@
       text-decoration: underline;
       color: #34495e;
     }
-    
+
+	:root{
+	  --sidebar-w: 220px;
+	  --header-h: 70px;
+	}
+
+	.main-container{
+	  min-height: 100vh;
+	  display: flex;
+	  flex-direction: column;
+	  align-items: center;
+	  padding: 4rem 2rem;
+	  text-align: center;
+	}
+
+	/* If sidebar is present on desktop, reserve space consistently */
+	@media (min-width: 920px){
+	  .main-container{
+	    padding-left: calc(2rem + var(--sidebar-w));
+	  }
+	}  
     /* ============================================================
        Service Keys Popup Styling
     ============================================================ */
@@ -431,79 +453,382 @@
     /* ============================================================
        Tech animated
     ============================================================ */
-      .tech-container {
-        display: flex;
-        gap: 1rem;
-        align-items: stretch;
-        justify-content: center;
-        flex-wrap: wrap;
-        text-align: left;
-        margin-top: 1rem;
-      }
-      .tech-left {
-        flex: 0.1;      /* smaller width for text column */
-        min-width: 280px;
-      }
-      .tech-right {
-        flex: 1.2;      /* larger width for SVG */
-        min-width: 280px;
-      }
-      .tech-svg {
-        width: 100%;
-        max-width: 600px; /* increased size for better legibility */
-        height: auto;
-        display: block;
-        margin: auto;
-      }
+	  .tech-container {
+	    display: flex;
+	    gap: 1rem;
+	    align-items: stretch;
+	    justify-content: center;
+	    flex-wrap: wrap;
+	    text-align: left;
+	    margin-top: 1rem;
+	  }
+	  .tech-left {
+	    flex: 0.1;      /* smaller width for text column */
+	    min-width: 280px;
+	  }
+	  .tech-right {
+	    flex: 1.2;      /* larger width for SVG */
+	    min-width: 280px;
+	  }
+	  .tech-svg {
+	    width: 100%;
+	    max-width: 600px; /* increased size for better legibility */
+	    height: auto;
+	    display: block;
+	    margin: auto;
+	  }
 
+	/* give space so content doesn't sit under sidebar on wide screens */
+	@media (min-width: 920px) {
+	  .main-container { padding-left: 220px; }
+	}
+    /* ============================================================
+      Trades KPI Grid
+    ============================================================ */
 
-    /* === Left-hand sidebar tweaks === */
-    .left-widget {
-      position: fixed;
-      top: 170px;                     /* push down from top of page */
-      left: 0;
-      width: 7.666%;                 /* 1/6th */
-      background: #f2f2f2;            /* light gray */
-      padding: 1rem;
-      box-shadow: 2px 0 5px rgba(0,0,0,0.1);
-      z-index: 900;
-
-      /* ✅ let the height be dictated by content */
-      height: auto;                   
-      overflow: visible;              /* no more full-height scroll */
-
-      /* ✅ add a neat bottom border just under the last link */
-      border-bottom: 1px solid #ccc;  
+    .trades-kpi-strip {
+      margin-top: 1.2rem;
+      padding-bottom: 0.25rem;
+      overflow-x: auto;
+      overflow-y: hidden;
     }
 
-    .left-widget a {
-      display: block;
+    .trades-kpi-grid {
+      display: grid;
+      grid-auto-flow: column;
+      grid-auto-columns: minmax(130px, 1fr);
+      grid-template-rows: repeat(2, auto); /* 2 rows visible = 8x2 feel */
+      gap: 0.75rem;
+      padding-bottom: 0.5rem;
+    }
+
+    .trades-kpi-card {
+      background: linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%);
+      border: 1px solid #e6ecf3;
+      border-radius: 14px;
+      padding: 0.75rem 0.8rem;
+      cursor: pointer;
+      user-select: none;
+      transition:
+        transform 0.12s ease,
+        box-shadow 0.12s ease,
+        border-color 0.12s ease;
+      min-height: 96px;
+    }
+
+    .trades-kpi-card:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 24px rgba(0,0,0,0.08);
+      border-color: rgba(90,155,212,0.45);
+    }
+
+    .trades-kpi-card:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(90,155,212,0.25);
+    }
+
+    .trades-kpi-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 10px;
+      background: rgba(90,155,212,0.12);
+      border: 1px solid rgba(90,155,212,0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 0.45rem;
+    }
+
+    .trades-kpi-icon img {
+      width: 16px;
+      height: 16px;
+    }
+
+    .trades-kpi-name {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #667;
+      line-height: 1.2;
+    }
+
+    .trades-kpi-value {
+      font-size: 1.05rem;
+      font-weight: 800;
       color: #2c3e50;
+      margin-top: 0.15rem;
+    }
+
+    /* Mobile: fewer visible columns */
+    @media (max-width: 640px) {
+      .trades-kpi-grid {
+        grid-auto-columns: minmax(150px, 1fr);
+        grid-template-rows: repeat(1, auto);
+      }
+    }	
+    /* ============================================================
+      Trades Pro UI
+    ============================================================ */
+    #trades-lightbox{
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,.85);
+      z-index: 3000;
+      padding: 2rem;
+    }
+    #trades-lightbox img{
+      max-width: 92%;
+      max-height: 92%;
+      border-radius: 14px;
+    }
+
+    /* make header actually center in the widget */
+    .trades-wrap{
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    .trades-header{
+      align-items: center;            /* instead of flex-start */
+    }
+
+    .trades-title{
+      text-align: left;               /* keep text readable */
+    }
+
+    .trades-cta{
+      margin-left: auto;
+    }
+
+    /* --- archive strip --- */
+    .trades-archive{
+      margin-top: 1.1rem;
+    }
+
+    .trades-archive-grid{
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr)); /* 3 across */
+      gap: .65rem;
+      margin-top: .65rem;
+    }
+
+    @media (max-width: 720px){
+      .trades-archive-grid{ grid-template-columns: 1fr; } /* stack on mobile */
+    }
+
+    .trades-thumb{
+      border: 1px solid #e6ecf3;
+      background: #fff;
+      border-radius: 12px;
+      padding: .5rem;
+      cursor: pointer;
+      user-select: none;
+      transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+      outline: none;
+    }
+
+    .trades-thumb:hover{
+      transform: translateY(-1px);
+      box-shadow: 0 10px 24px rgba(0,0,0,0.08);
+      border-color: rgba(90,155,212,0.45);
+    }
+
+    .trades-thumb:focus-visible{
+      box-shadow: 0 0 0 3px rgba(90,155,212,0.25);
+    }
+
+    .trades-thumb.active{
+      border-color: #5A9BD4;
+      box-shadow: 0 0 0 3px rgba(90,155,212,0.15);
+    }
+
+    .trades-thumb-date{
+      font-size: .78rem;
+      font-weight: 800;
+      color: #2c3e50;
+      margin-bottom: .35rem;
+    }
+
+    .trades-thumb img{
+      width: 100%;
+      height: 92px;              /* small thumbnail height */
+      object-fit: cover;
+      border-radius: 10px;
+      display: block;
+      pointer-events: none;      /* ensures parent gets click */
+    }
+    .trades-pro h2 { margin-top: 0.25rem; }
+
+    .trades-header{
+      display:flex;
+      justify-content: space-between;
+      align-items: center;  /* was flex-start */
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .trades-title{
+      flex: 1;
+      min-width: 280px;
+    }
+
+    .trades-cta{
+      margin-left: auto;          /* ensures it hugs right cleanly */
+      justify-content: flex-end;
+    }
+    .trades-subtitle{ color:#555; margin-top:.25rem; line-height:1.55; }
+
+    .trades-badge{
+      display:inline-flex;
+      align-items:center;
+      gap:.5rem;
+      font-size:.85rem;
+      color:#34495e;
+      background: rgba(90,155,212,0.10);
+      border: 1px solid rgba(90,155,212,0.25);
+      padding: .25rem .6rem;
+      border-radius: 9999px;
+    }
+    .trades-badge .dot{
+      width:8px; height:8px; border-radius:50%;
+      background:#2ecc71;
+      box-shadow: 0 0 0 3px rgba(46,204,113,0.15);
+    }
+
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      gap:.5rem;
+      padding:.55rem .85rem;
+      border-radius: 10px;
+      font-weight: 700;
       text-decoration: none;
-      padding: 0.5rem 0;
+      border: 1px solid #e6ecf3;
+      background:#fff;
+      cursor:pointer;
+      transition: transform .12s ease, box-shadow .12s ease, background .12s ease;
+    }
+    .btn:hover{
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    }
+    .btn-ic img{ width: 16px; height: 16px; display:block; }
 
-      /* ✅ smaller, non-bold font */
-      font-size: 0.775rem;
-      font-weight: normal;
+    .btn-primary{
+      background:#5A9BD4;
+      color:#fff;
+      border-color:#5A9BD4;
+    }
+    .btn-primary:hover{ background:#3c7fb8; }
 
-      border-bottom: 1px solid #ddd;
-    }
-    .left-widget a:last-child {
-      border-bottom: none;
-    }
-    .left-widget a:hover {
-      background: #e0e0e0;
-    }
-
-    /* push the main content over so it clears the sidebar */
-    .main-container {
-      margin-left: 16.666%;
-    }
-    /* push your main content over so it doesn’t sit under the sidebar */
-    .main-container {
-      margin-left: 0.666%;
+    .btn-ghost{
+      color:#2c3e50;
+      background: #fff;
     }
 
+    .trades-stats{
+      display:grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: .85rem;
+      margin: 1rem 0 1.15rem;
+    }
+    .stat{
+      border: 1px solid #e6ecf3;
+      background: linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%);
+      border-radius: 14px;
+      padding: .85rem .9rem;
+      box-shadow: 0 2px 10px rgba(0,0,0,.05);
+    }
+    .stat-ic{
+      width: 34px; height: 34px;
+      border-radius: 10px;
+      display:flex; align-items:center; justify-content:center;
+      background: rgba(90,155,212,0.12);
+      border: 1px solid rgba(90,155,212,0.25);
+      margin-bottom: .55rem;
+      color:#2c3e50;
+    }
+    .stat-ic img{ width:18px; height:18px; }
+    .stat-k{ font-size:.82rem; color:#667; }
+    .stat-v{ font-size:1.05rem; margin-top:.15rem; }
+    .stat-s{ font-size:.82rem; color:#667; margin-top:.25rem; line-height:1.35; }
+
+    .trades-panel{
+      border: 1px solid #e6ecf3;
+      background: #fff;
+      border-radius: 14px;
+      padding: 1rem;
+      margin-bottom: 1.1rem;
+    }
+
+    .panel-head h3{ margin-bottom: .2rem; }
+    .pipeline{
+      display:flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: .55rem;
+      margin-top: .75rem;
+      margin-bottom: .85rem;
+    }
+    .pipe-step{
+      display:flex;
+      align-items:center;
+      gap:.6rem;
+      border: 1px solid #eef2f7;
+      background: #fbfcfe;
+      border-radius: 12px;
+      padding: .55rem .7rem;
+    }
+    .pipe-node{
+      width: 28px; height: 28px;
+      border-radius: 10px;
+      display:flex; align-items:center; justify-content:center;
+      font-weight:800;
+      color:#2c3e50;
+      background: rgba(90,155,212,0.14);
+      border: 1px solid rgba(90,155,212,0.28);
+    }
+    .pipe-title{ font-weight:800; color:#2c3e50; line-height:1.1; }
+    .pipe-sub{ font-size:.82rem; color:#667; margin-top:.1rem; }
+    .pipe-arrow{ color:#99a; font-weight:900; }
+
+    .trades-accordions{
+      display:grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: .75rem;
+    }
+    .acc{
+      border: 1px solid #eef2f7;
+      border-radius: 12px;
+      padding: .65rem .75rem;
+      background: #fbfcfe;
+    }
+    .acc summary{
+      cursor:pointer;
+      font-weight: 800;
+      color:#2c3e50;
+    }
+    .acc ul{ margin-top: .55rem; padding-left: 1.15rem; line-height: 1.6; color:#555; }
+
+    /* reuse your existing .trades-summary-box; make it look more premium */
+    .trades-summary-box{
+      background: #fbfcfe;
+      border: 1px solid #e6ecf3;
+      border-left: 4px solid #5A9BD4;
+      border-radius: 12px;
+    }
+
+    /* Responsive */
+    @media (max-width: 920px){
+      .trades-stats{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 620px){
+      .trades-stats{ grid-template-columns: 1fr; }
+      .trades-accordions{ grid-template-columns: 1fr; }
+      .trades-cta{ justify-content:flex-start; }
+    }
     /* ============================================================
        Responsive Adjustments
     ============================================================ */
@@ -515,27 +840,9 @@
 </head>
 <body>
   <!-- Fixed Navbar -->
-  <nav class="navbar">
-    <div class="logo" onclick="resetLanding()">
-      <img src="assets/logo.png" alt="Haiphen Logo">
-    </div>
-    <div class="nav-links" id="nav-links">
-      <a href="javascript:void(0)" onclick="showSection('Contact')">Contact</a>
-      <span id="session-slot">
-        <a href="https://auth.haiphen.io/login" class="login-btn">Login</a>
-      </span>
-    </div>
-  </nav>
+  <div id="header-mount"></div>
   
-  <!-- Left-hand sidebar of clickable entities -->
-  <div class="left-widget">
-    <a href="#" onclick="showSection('Services'); scrollToEthos();">OpSec</a>
-    <a href="#" onclick="showSection('Signals')">Signals</a>
-    <a href="#" onclick="showSection('Engines')">Encryption</a>
-    <a href="#" onclick="showSection('Embedded')">Embedded</a>
-    <a href="#" onclick="showSection('Robotics')">Robotics</a>
-    <a href="#" onclick="showSection('Metallury')">Edge</a>
-  </div>
+  <div id="sidebar-mount"></div>
 
   <!-- Main Content -->
   <div class="main-container">
@@ -549,15 +856,8 @@
 
     </section>
     
-    <!-- Section Menu -->
-    <div class="section-menu">
-      <button onclick="showSection('Services')">Services</button>
-      <button onclick="showSection('OnePager')">Papers</button>
-      <button onclick="showSection('Inventory')">Inventory</button>
-      <button onclick="showSection('Tech')">Tech</button>
-      <button onclick="showSection('Contact')">Contact</button>
-    </div>
-    
+    <div id="section-menu-mount"></div>
+
     <!-- Content Widget (Appears on Click) -->
     <div id="content-widget" class="content-widget"></div>
   </div>
@@ -572,9 +872,229 @@
       <p>Phone: (512) 910-4544</p>
     </div>
   </div>
-  
+	<div id="trades-lightbox" onclick="closeTradesLightbox()" style="display:none;">
+	  <img src="" alt="trades preview">
+	</div>  
+	<!-- Footer sentinel: becomes visible only when user scrolls to the very bottom -->
+	<div id="footer-sentinel" aria-hidden="true" style="height: 1px;"></div>
+
+	<!-- Footer mount: injected footer lives here -->
+	<div id="footer-mount"></div>  
+	<div id="trades-overlay-mount"></div>	
   <!-- JavaScript for Interactivity -->
   <script>
+    /* ------------------------------------------------------------
+       0) Trades Section Helpers
+    ------------------------------------------------------------ */
+	function openTradesLightbox(src){
+	  const lb = document.getElementById('trades-lightbox');
+	  const img = lb?.querySelector('img');
+	  if (!lb || !img) return;
+	  img.src = src;
+	  lb.style.display = 'flex';
+	}
+	function closeTradesLightbox(){
+	  const lb = document.getElementById('trades-lightbox');
+	  if (lb) lb.style.display = 'none';
+	}    
+	async function fetchJson(url) {
+	  const resp = await fetch(url, { cache: 'no-store' });
+	  if (!resp.ok) throw new Error(`HTTP ${resp.status} for ${url}`);
+	  return await resp.json();
+	}
+
+	function setActiveThumb(dateKey) {
+	  document.querySelectorAll('.trades-thumb').forEach((el) => {
+	    el.classList.toggle('active', el.getAttribute('data-date') === dateKey);
+	  });
+	}
+
+    async function loadTradesByJsonUrl(jsonUrl, screenshotUrl, dateKey) {
+      const dateEl = document.getElementById('trades-date');
+      const updatedEl = document.getElementById('trades-updated');
+      const headlineEl = document.getElementById('trades-headline');
+      const summaryEl = document.getElementById('trades-summary');
+      const img = document.getElementById('trades-img');
+
+      try {
+        const data = await fetchJson(jsonUrl);
+
+        // KPI grid is the UI now
+        renderTradesKpiGrid(data.rows);
+
+        if (dateEl) dateEl.textContent = dateKey || data.date || '—';
+        if (updatedEl) updatedEl.textContent = data.updated_at || '—';
+        if (headlineEl) headlineEl.textContent = data.headline || '—';
+        if (summaryEl) summaryEl.textContent = data.summary || '—';
+
+        if (img && screenshotUrl) {
+          img.style.display = '';
+          document.getElementById('trades-img-missing').style.display = 'none';
+          img.src = screenshotUrl;
+        }
+
+        if (dateKey) setActiveThumb(dateKey);
+      } catch (err) {
+        console.warn('[trades] failed to load', { jsonUrl, err });
+        // Optional: clear grid or show fallback card state
+        renderTradesKpiGrid([]);
+      }
+    }
+
+	async function loadTradesData() {
+	  const grid = document.getElementById('trades-archive-grid');
+
+	  // Always load “latest” first (current behavior)
+	  await loadTradesByJsonUrl('assets/trades/trades.json', 'assets/trades/alpaca_screenshot.png', null);
+
+	  // Then attempt archive strip
+	  if (!grid) return;
+
+	  try {
+	    const idx = await fetchJson('assets/trades/trades_index.json');
+	    const items = Array.isArray(idx.items) ? idx.items : [];
+
+	    if (items.length === 0) {
+	      grid.innerHTML = `<div class="trades-muted">No archive yet.</div>`;
+	      return;
+	    }
+
+	    grid.innerHTML = items
+	      .map((it) => {
+	        const date = it.date || '—';
+	        const thumbSrc = it.screenshot || '';
+	        return `
+	          <div class="trades-thumb" data-date="${escapeHtml(date)}" role="button" tabindex="0">
+	            <div class="trades-thumb-date">${escapeHtml(date)}</div>
+	            <img src="${escapeHtml(thumbSrc)}" alt="Trades ${escapeHtml(date)}" />
+	          </div>
+	        `;
+	      })
+	      .join('');
+
+        // Click-to-focus behavior
+        grid.querySelectorAll('.trades-thumb').forEach((el) => {
+          const dateKey = el.getAttribute('data-date');
+          const item = items.find((x) => (x.date || '') === (dateKey || ''));
+          if (!item) return;
+
+		  const handler = () => {
+		    const focusPng = deriveTradesScreenshotUrl(item);
+		    loadTradesByJsonUrl(item.json, focusPng, item.date);
+		  };
+
+          el.addEventListener('click', handler);
+          el.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault(); // prevent page scroll on Space
+              handler();
+            }
+          });
+        });
+
+	    // Default focus: newest archived day (first item) OR keep “latest” as default.
+	    // If you want auto-focus to newest archive, uncomment:
+	    // await loadTradesByJsonUrl(items[0].json, items[0].screenshot, items[0].date);
+
+	  } catch (err) {
+	    console.warn('[trades] failed to load trades_index.json', err);
+	    grid.innerHTML = `<div class="trades-muted">Archive unavailable.</div>`;
+	  }
+	}
+
+	function escapeHtml(s) {
+	  return (s || '')
+	    .replaceAll('&', '&amp;')
+	    .replaceAll('<', '&lt;')
+	    .replaceAll('>', '&gt;')
+	    .replaceAll('"', '&quot;')
+	    .replaceAll("'", '&#039;');
+	}  	
+
+    const KPI_ICON_MAP = {
+      'Signals scanned': 'radar.svg',
+      'Opportunities flagged': 'flag.svg',
+      'Notifications sent': 'bell.svg',
+      'Entries opened': 'enter.svg',
+      'Exits closed': 'exit.svg',
+      'Avg hold time': 'clock.svg',
+      'Daily PnL': 'dollar.svg',
+      'Win rate': 'percent.svg',
+      'Max drawdown': 'downtrend.svg',
+      'Sharpe ratio': 'chart.svg',
+      'Delta': 'delta.svg',
+      'Gamma': 'gamma.svg',
+      'Theta': 'theta.svg',
+      'Vega': 'vega.svg',
+      'Rho': 'rho.svg',
+      'Liquidity Ratios': 'liquidity.svg',
+    };
+
+	function renderTradesKpiGrid(rows) {
+	  const grid = document.getElementById('trades-kpi-grid');
+	  if (!grid) return;
+
+	  const safeRows = Array.isArray(rows) ? rows : [];
+
+	  grid.innerHTML = safeRows.map((r, idx) => {
+	    const kpi = escapeHtml(r.kpi || '');
+	    const value = escapeHtml(r.value || '—');
+	    const icon = KPI_ICON_MAP[r.kpi] || 'chart.svg';
+
+	    return `
+	      <div
+	        class="trades-kpi-card"
+	        role="button"
+	        tabindex="0"
+	        data-kpi="${kpi}"
+	        data-value="${value}"
+	        data-idx="${idx}"
+	        aria-label="${kpi}: ${value}"
+	      >
+	        <div class="trades-kpi-icon">
+	          <img src="assets/icons/kpi/${icon}" alt="" aria-hidden="true" />
+	        </div>
+	        <div class="trades-kpi-name">${kpi}</div>
+	        <div class="trades-kpi-value">${value}</div>
+	      </div>
+	    `;
+	  }).join('');
+
+	  // Wire interactions after injection
+	  const cards = grid.querySelectorAll('.trades-kpi-card');
+	  cards.forEach((card) => {
+	    const open = () => {
+	      const title = card.getAttribute('data-kpi') || 'Metric';
+	      const value = card.getAttribute('data-value') || '—';
+
+	      // prefer currently-loaded screenshot in the Trades section
+	      const img = document.getElementById('trades-img');
+	      const screenshotUrl = img?.getAttribute('src') || img?.src || 'assets/trades/alpaca_screenshot.png';
+
+	      const subtitle = `Current: ${value} • synthetic series for now`;
+
+	      if (typeof window.HAIPHEN?.TradesOverlay?.open === 'function') {
+	        window.HAIPHEN.TradesOverlay.open({
+	          title,
+	          subtitle,
+	          screenshotUrl,
+	          // optional stable seed per KPI:
+	          seed: undefined,
+	        });
+	      } else {
+	        console.warn('[kpi] overlay not loaded yet');
+	      }
+	    };
+
+	    card.addEventListener('click', open);
+	    card.addEventListener('keydown', (e) => {
+	      if (e.key === 'Enter' || e.key === ' ') {
+	        e.preventDefault();
+	        open();
+	      }
+	    });
+	  });
+	}	
     /* ------------------------------------------------------------
        1) Global Variables: OnePager Carousel
     ------------------------------------------------------------ */
@@ -663,35 +1183,223 @@
        3) Section Content (Accordion-Like) with new OnePager
     ------------------------------------------------------------ */
     const sectionContent = {
+        "Trades": `
+          <section id="trades-top" class="trades-wrap trades-pro">
+
+            <!-- Header -->
+            <header class="trades-header">
+              <div class="trades-title">
+                <div class="trades-badge">
+                  <span class="dot"></span>
+                  <span>Live • automated • intraday</span>
+                </div>
+                <h2>Trades</h2>
+                <p class="trades-subtitle">
+                  Production-grade <strong>options execution + risk assessment</strong> system.
+                  Every day starts flat, trades rapidly, and returns to flat by close.
+                </p>
+              </div>
+
+              <!-- CTA Buttons -->
+              <div class="trades-cta">
+                <button class="btn btn-primary" onclick="showSection('Contact')">
+                  <span class="btn-ic"><img src="assets/icons/link.svg" alt=""></span>
+                  Request API access
+                </button>
+
+                <a class="btn btn-ghost" href="https://haiphen.io" target="_blank" rel="noopener noreferrer">
+                  <span class="btn-ic"><img src="assets/icons/external.svg" alt=""></span>
+                  Docs / Lineage
+                </a>
+
+                <a class="btn btn-ghost" href="https://twitter.com/" target="_blank" rel="noopener noreferrer">
+                  <span class="btn-ic"><img src="assets/icons/external.svg" alt=""></span>
+                  Follow daily bot
+                </a>
+              </div>
+            </header>
+            <!-- Stat Cards -->
+            <div class="trades-stats">
+              <div class="stat">
+                <div class="stat-ic"><img src="assets/icons/cpu.svg" alt=""></div>
+                <div class="stat-k">Signals/day</div>
+                <div class="stat-v"><strong>300K – 800K</strong></div>
+                <div class="stat-s">Scanned for pricing dislocations</div>
+              </div>
+
+              <div class="stat">
+                <div class="stat-ic"><img src="assets/icons/chart.svg" alt=""></div>
+                <div class="stat-k">Contracts/day</div>
+                <div class="stat-v"><strong>100 – 400</strong></div>
+                <div class="stat-s">Automated entry + exit</div>
+              </div>
+
+              <div class="stat">
+                <div class="stat-ic"><img src="assets/icons/bolt.svg" alt=""></div>
+                <div class="stat-k">Avg hold time</div>
+                <div class="stat-v"><strong>~6s</strong></div>
+                <div class="stat-s">Designed for speed & repeatability</div>
+              </div>
+
+              <div class="stat">
+                <div class="stat-ic"><img src="assets/icons/shield.svg" alt=""></div>
+                <div class="stat-k">Overnight exposure</div>
+                <div class="stat-v"><strong>None</strong></div>
+                <div class="stat-s">Portfolio returns flat daily</div>
+              </div>
+            </div>
+
+            <!-- Screenshot + meta (KEEP IDS) -->
+            <div class="trades-hero">
+              <img
+                id="trades-img"
+                class="trades-img"
+                src="assets/trades/alpaca_screenshot.png"
+                alt="Alpaca dashboard screenshot"
+                onerror="this.style.display='none'; document.getElementById('trades-img-missing').style.display='block';"
+              />
+              <div id="trades-img-missing" class="trades-muted" style="display:none;">
+                Screenshot not found yet. Run:
+                <code>node twitter-bot/src/screenshot.js</code> →
+                <code>node twitter-bot/src/crop-screenshot.js</code> →
+                <code>node twitter-bot/src/publish-aboutme-trades.js</code>
+              </div>
+
+            </div>
+
+            <!-- Summary (KEEP ID) -->
+            <div class="trades-summary-box">
+              <p id="trades-summary">—</p>
+            </div>
+			<div class="trades-kpi-strip" aria-label="KPI strip">
+			  <div id="trades-kpi-grid" class="trades-kpi-grid"></div>
+			</div>
+
+            <!-- Archive (KEEP IDS) -->
+            <div class="trades-archive">
+              <h3>Archive (last 3 days)</h3>
+              <div id="trades-archive-grid" class="trades-archive-grid">
+                <div class="trades-muted">Loading archive…</div>
+              </div>
+              <div class="trades-meta">
+                <div><strong>Date:</strong> <span id="trades-date">—</span></div>
+                <div><strong>Updated:</strong> <span id="trades-updated">—</span></div>
+                <div><strong>Headline:</strong> <span id="trades-headline">—</span></div>
+              </div>              
+            </div>
+
+
+
+
+          </section>
+        `,
         "Services": `
+          <div id="services-plans-mount"></div>
+
           <h2>Mission</h2>
           <br>
           <p>
             <a href="https://haiphen.io" target="_blank" rel="noopener noreferrer"><strong>Haiphen</strong></a>[Hi-fen]: A <strong>signals intelligence</strong> tech startup focused on delivering custom, open src solutions to various cloud, edge, and infra obstacles across a variety of technical, business, and scientific domains.
           </p>
-          <br>
-          <!-- New Steps Row -->
-          <div class="steps-container">
-            <div class="step">
-              <a href="https://example.com/step1" target="_blank" rel="noopener noreferrer">
-                <img src="assets/step1.svg" alt="Step 1">
-              </a>
-              <p>Diagnose &amp; Draft</p>
-            </div>
-            <div class="step">
-              <a href="https://example.com/step2" target="_blank" rel="noopener noreferrer">
-                <img src="assets/step2.svg" alt="Step 2">
-              </a>
-              <p>Execute &amp; Enrich</p>
-            </div>
-            <div class="step">
-              <a href="https://example.com/step3" target="_blank" rel="noopener noreferrer">
-                <img src="assets/step3.svg" alt="Step 3">
-              </a>
-              <p>Review &amp; Revise</p>
-            </div>
-          </div>
-          <br>
+
+            <!-- How it works (compact visual) -->
+            <div class="trades-panel">
+              <div class="panel-head">
+                <h3>How it works</h3>
+                <p class="trades-muted">A high-level pipeline view (details expandable below).</p>
+              </div>
+
+              <div id="trades-pipeline" class="pipeline">
+                <div class="pipe-step">
+                  <div class="pipe-node">1</div>
+                  <div class="pipe-text">
+                    <div class="pipe-title">Ingest</div>
+                    <div class="pipe-sub">Market data + signals</div>
+                  </div>
+                </div>
+                <div class="pipe-arrow">→</div>
+
+                <div class="pipe-step">
+                  <div class="pipe-node">2</div>
+                  <div class="pipe-text">
+                    <div class="pipe-title">Score</div>
+                    <div class="pipe-sub">Arb & risk filters</div>
+                  </div>
+                </div>
+                <div class="pipe-arrow">→</div>
+
+                <div class="pipe-step">
+                  <div class="pipe-node">3</div>
+                  <div class="pipe-text">
+                    <div class="pipe-title">Execute</div>
+                    <div class="pipe-sub">Orders + guardrails</div>
+                  </div>
+                </div>
+                <div class="pipe-arrow">→</div>
+
+                <div class="pipe-step">
+                  <div class="pipe-node">4</div>
+                  <div class="pipe-text">
+                    <div class="pipe-title">Monitor</div>
+                    <div class="pipe-sub">Telemetry + exits</div>
+                  </div>
+                </div>
+                <div class="pipe-arrow">→</div>
+
+                <div class="pipe-step">
+                  <div class="pipe-node">5</div>
+                  <div class="pipe-text">
+                    <div class="pipe-title">Report</div>
+                    <div class="pipe-sub">KPIs + archive</div>
+                  </div>
+                </div>
+              </div>
+
+
+	          <br>
+	          <!-- New Steps Row -->
+	          <div class="steps-container">
+	            <div class="step">
+	              <a href="https://example.com/step1" target="_blank" rel="noopener noreferrer">
+	                <img src="assets/step1.svg" alt="Step 1">
+	              </a>
+	              <p>Diagnose &amp; Draft</p>
+	            </div>
+	            <div class="step">
+	              <a href="https://example.com/step2" target="_blank" rel="noopener noreferrer">
+	                <img src="assets/step2.svg" alt="Step 2">
+	              </a>
+	              <p>Execute &amp; Enrich</p>
+	            </div>
+	            <div class="step">
+	              <a href="https://example.com/step3" target="_blank" rel="noopener noreferrer">
+	                <img src="assets/step3.svg" alt="Step 3">
+	              </a>
+	              <p>Review &amp; Revise</p>
+	            </div>
+	          </div>
+	          <br>
+
+              <div class="trades-accordions">
+                <details class="acc" open>
+                  <summary>Risk posture & controls</summary>
+                  <ul>
+                    <li><strong>Intraday only:</strong> no overnight holdings; exposure is exited daily.</li>
+                    <li><strong>Speed-first strategy:</strong> short-lived positions, frequent reuse of edges.</li>
+                    <li><strong>Monitoring & exits:</strong> automated close logic + portfolio teardown.</li>
+                    <li><em>(You can expand this list with your real controls: locks, limits, slippage checks, etc.)</em></li>
+                  </ul>
+                </details>
+
+                <details class="acc">
+                  <summary>What these metrics represent</summary>
+                  <p class="trades-muted" style="margin-top:.5rem;">
+                    The table below is populated from daily runs. It summarizes execution volume, P&L deltas,
+                    and stability indicators. Archive cards allow day-to-day comparison.
+                  </p>
+                </details>
+              </div>
+            </div>          
           <div class="about-columns">
             <div class="about-col"> 
               <p>
@@ -719,7 +1427,7 @@
           </div>
 
           <div class="tech-container">
-            <div class="tech-right svg-stack style="display: flex; justify-content: center; align-items: center; padding: 1rem 0;">
+			<div class="tech-right svg-stack" style="display:flex; justify-content:center; align-items:center; padding:1rem 0;">
               <object type="image/svg+xml" data="assets/signal_chain.svg" class="tech-svg">
                 Your browser does not support SVG.
               </object>
@@ -729,7 +1437,7 @@
               </object>              
             </div>
             <div class="tech-left">
-              <h3>Signals</h3>
+              <h3 id="services-signals">Signals</h3>
               <p style="text-indent: 2em;">
                 The difference between the Google(s), Amazon(s), Twitter(s) big tech giants and the consumers using those products comes down to signals. Users are always handicapped by an asymmetry in information and ability to act on them. This is not un-intentional. 
               </p>
@@ -845,7 +1553,7 @@
           </div>
           <br>          
           <!-- scrollable gallery -->
-          <h3>Gallery</h3>
+          <h3 id="services-gallery">Gallery</h3>
           <div class="services-gallery-wrapper">
             <div class="services-gallery">
               ${servicesImages
@@ -923,7 +1631,7 @@
         </div>
       `,
       "Inventory": `
-        <h2>Portfolio</h2>
+        <h2 id="portfolio-top">Portfolio</h2>
         <br>
         <ul>
           <!-- First Portfolio Item: ETL Ingestion Engine -->
@@ -1073,16 +1781,68 @@
     /* ------------------------------------------------------------
        4) Show Section (Accordion-Like Display)
     ------------------------------------------------------------ */
+	function deriveTradesScreenshotUrl({ json, screenshot, date }) {
+	  // If index provides a screenshot, use it.
+	  if (screenshot) return screenshot;
+
+	  // If archive json is like: assets/trades/archive/2025-12-16.json
+	  // then focus screenshot should be: assets/trades/archive/2025-12-16.png
+	  if (json && json.endsWith('.json')) return json.replace(/\.json$/i, '.png');
+
+	  // Fallback (latest)
+	  return 'assets/trades/alpaca_screenshot.png';
+	}    
+    function scrollToWithHeaderOffset(targetEl, extra = 12) {
+      if (!targetEl) return;
+
+      const header =
+        document.querySelector('.site-header') ||
+        document.querySelector('#site-header .site-header') ||
+        document.querySelector('nav.navbar');
+
+      const headerH =
+        header?.getBoundingClientRect().height ||
+        parseInt(getComputedStyle(document.documentElement).getPropertyValue('--header-h') || '70', 10) ||
+        70;
+
+      const y = window.scrollY + targetEl.getBoundingClientRect().top - headerH - extra;
+      window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
+    }
+
     function showSection(sectionName) {
-      const contentWidget = document.getElementById("content-widget");
-      contentWidget.innerHTML = sectionContent[sectionName] || "<p>No content available.</p>";
-      contentWidget.classList.add("active");
-      // If OnePager is loaded, reset to page 0 & show the first page
-      if (sectionName === "OnePager") {
+        const contentWidget = document.getElementById("content-widget");
+        contentWidget.innerHTML = sectionContent[sectionName] || "<p>No content available.</p>";
+        contentWidget.classList.add("active");
+    	if (sectionName === "Services") {
+		  try { window.HAIPHEN?.loadServicesPlans?.(); } catch (e) { console.warn('[Services] loadServicesPlans failed', e); }
+		}
+        if (sectionName === "OnePager") {
         currentPageIndex = 0;
         renderOnePagerPage();
-      }
-      contentWidget.scrollIntoView({ behavior: "smooth" });
+        }
+    
+        // Default scroll behavior for non-Trades sections
+        if (sectionName !== "Trades") {
+        requestAnimationFrame(() => {
+            scrollToWithHeaderOffset(contentWidget, 12);
+        });
+        return;
+        }
+    
+        // Trades: wait for async content + DOM inflation, then scroll
+        (async () => {
+        try {
+            await loadTradesData(); // ✅ ensures KPI grid + archive are injected first
+        } catch (e) {
+            console.warn('[Trades] loadTradesData failed', e);
+        }
+    
+        // Wait a frame so layout is stable *after* injections
+        requestAnimationFrame(() => {
+            const tradesTop = document.getElementById('trades-top');
+            scrollToWithHeaderOffset(tradesTop || contentWidget, 12);
+        });
+        })();
     }
 
     /* ------------------------------------------------------------
@@ -1155,6 +1915,22 @@
     document.addEventListener('DOMContentLoaded', updateSessionWidget);
     setInterval(updateSessionWidget, 5 * 60 * 1000); // refresh every 5m (optional)
 
+	document.addEventListener('DOMContentLoaded', () => {
+	  const H = window.HAIPHEN || {};
+	  const safe = (fn, name) => {
+	    if (typeof fn !== 'function') return;
+	    fn().catch((err) => console.warn(`[${name}] load failed`, err));
+	  };
+
+	  safe(H.loadHeader, 'header');
+	  safe(H.loadSidebar, 'sidebar');
+	  safe(H.loadSectionMenu, 'section-menu');
+	  safe(H.loadFooter, 'footer');
+	  // 🔽 add this:
+	  safe(H.loadTradesOverlay, 'trades-overlay');
+
+	  updateSessionWidget();
+	});
   </script>
 </body>
 </html>

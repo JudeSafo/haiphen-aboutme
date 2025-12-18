@@ -1,0 +1,109 @@
+{
+  "date": "2025-12-15",
+  "updated_at": "2025-12-17T19:39:54.794Z",
+  "headline": "Paper trading snapshot (2025-12-15)",
+  "summary": "57,715 signals scanned • 20,221 opportunities flagged • 476 entries opened • 5 exits closed.",
+  "rows": [
+    {
+      "kpi": "Signals scanned",
+      "value": "57,715"
+    },
+    {
+      "kpi": "Opportunities flagged",
+      "value": "20,221"
+    },
+    {
+      "kpi": "Notifications sent",
+      "value": "497"
+    },
+    {
+      "kpi": "Entries opened",
+      "value": "476"
+    },
+    {
+      "kpi": "Exits closed",
+      "value": "5"
+    },
+    {
+      "kpi": "Avg hold time",
+      "value": "15s"
+    },
+    {
+      "kpi": "Daily PnL",
+      "value": "—"
+    },
+    {
+      "kpi": "Win rate",
+      "value": "62.15%"
+    },
+    {
+      "kpi": "Max drawdown",
+      "value": "5.62%"
+    },
+    {
+      "kpi": "Sharpe ratio",
+      "value": "1.02"
+    },
+    {
+      "kpi": "Delta",
+      "value": "-0.5294"
+    },
+    {
+      "kpi": "Gamma",
+      "value": "0.008863"
+    },
+    {
+      "kpi": "Theta",
+      "value": "1.4836"
+    },
+    {
+      "kpi": "Vega",
+      "value": "2.2252"
+    },
+    {
+      "kpi": "Rho",
+      "value": "-41.8223"
+    },
+    {
+      "kpi": "Historical Volatility",
+      "value": "—"
+    },
+    {
+      "kpi": "Uncertainty",
+      "value": "9.1186"
+    },
+    {
+      "kpi": "Fair Market Price",
+      "value": "$39.49"
+    },
+    {
+      "kpi": "IV Skew",
+      "value": "-0.0671"
+    },
+    {
+      "kpi": "Decay Rate",
+      "value": "3.202786"
+    },
+    {
+      "kpi": "Gamma Exposure",
+      "value": "0.015584"
+    },
+    {
+      "kpi": "Volume Ratio",
+      "value": "6.8027"
+    },
+    {
+      "kpi": "OI Ratio",
+      "value": "8.9831"
+    },
+    {
+      "kpi": "Liquidity Ratios",
+      "value": "7.8929"
+    },
+    {
+      "kpi": "Decay Weight",
+      "value": "—"
+    }
+  ],
+  "source": "db+filled"
+}

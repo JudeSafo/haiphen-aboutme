@@ -1,1 +1,25 @@
 .DS_Store
+
+# --- secrets ---
+.env
+.env.*
+*.pem
+*.key
+
+# --- OS/editor junk ---
+.DS_Store
+*.swp
+*.swo
+*.tmp
+.tmp_*
+
+# --- deps/build ---
+**/node_modules/
+**/.next/
+**/dist/
+**/build/
+
+# --- local DBs ---
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm

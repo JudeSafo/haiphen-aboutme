@@ -1,0 +1,379 @@
+<section class="svc">
+  <!-- Mission / Positioning -->
+  <div class="svc-grid">
+    <article class="svc-card svc-hero">
+      <header class="svc-card-head">
+        <div class="svc-ic">
+          <img src="assets/icons/menu/company.svg" alt="" aria-hidden="true" />
+        </div>
+        <div>
+          <h2 class="svc-title">Services</h2>
+          <p class="svc-subtitle">
+            Open-source, production-grade engineering for data, ML, infra, security, and edge systems.
+          </p>
+        </div>
+      </header>
+
+      <div class="svc-callout">
+        <div class="svc-callout-row">
+          <span class="svc-pill">API Everything</span>
+          <span class="svc-pill">Inspectability</span>
+          <span class="svc-pill">Measured outcomes</span>
+          <span class="svc-pill">No fluff</span>
+        </div>
+        <p class="svc-muted" style="margin-top:.6rem;">
+          Haiphen builds custom systems where complexity is real: ambiguous data, messy pipelines, “works on my machine” infra,
+          and security constraints that actually matter.
+        </p>
+      </div>
+
+      <div class="svc-cta-row">
+        <a class="svc-btn svc-btn-primary" href="javascript:void(0)" onclick="showSection('Contact')">
+          <span class="svc-btn-ic"><img src="assets/icons/link.svg" alt="" aria-hidden="true"/></span>
+          Start a project
+        </a>
+
+        <a class="svc-btn" href="https://haiphen.io" target="_blank" rel="noopener noreferrer">
+          <span class="svc-btn-ic"><img src="assets/icons/external.svg" alt="" aria-hidden="true"/></span>
+          Docs / Lineage
+        </a>
+
+        <a class="svc-btn" href="https://github.com/judesafo" target="_blank" rel="noopener noreferrer">
+          <span class="svc-btn-ic"><img src="assets/icons/external.svg" alt="" aria-hidden="true"/></span>
+          Open source
+        </a>
+      </div>
+    </article>
+
+    <!-- Quick “Capabilities” cards -->
+    <article class="svc-card">
+      <header class="svc-card-head">
+        <div class="svc-ic">
+          <img src="assets/icons/menu/ai.svg" alt="" aria-hidden="true" />
+        </div>
+        <div>
+          <h3>AI / ML Systems</h3>
+          <p class="svc-muted">Deployable pipelines, evals, reliability, and real telemetry.</p>
+        </div>
+      </header>
+
+      <details class="svc-acc" open>
+        <summary>What we ship</summary>
+        <ul>
+          <li>RAG + retrieval pipelines with measurable evaluation harnesses</li>
+          <li>ETL → feature store → training → deployment (with rollback)</li>
+          <li>Data quality gates + drift detection + alerting</li>
+          <li>Batch + streaming inference (Kafka / queues) with SLOs</li>
+        </ul>
+      </details>
+
+      <details class="svc-acc">
+        <summary>Common outcomes</summary>
+        <ul>
+          <li>Reduced latency & cost per inference</li>
+          <li>Fewer “silent failures” via dashboards + alerts</li>
+          <li>Higher precision/recall through structured feedback loops</li>
+        </ul>
+      </details>
+    </article>
+
+    <article class="svc-card">
+      <header class="svc-card-head">
+        <div class="svc-ic">
+          <img src="assets/icons/menu/infra.svg" alt="" aria-hidden="true" />
+        </div>
+        <div>
+          <h3>Infrastructure</h3>
+          <p class="svc-muted">Kubernetes, Terraform, CI/CD, observability, cost control.</p>
+        </div>
+      </header>
+
+      <details class="svc-acc" open>
+        <summary>Focus areas</summary>
+        <ul>
+          <li>Infra-as-code (Terraform/Ansible) + reproducible environments</li>
+          <li>Containerization + K8s deployments + runtime guardrails</li>
+          <li>Monitoring (Prometheus/Grafana) + logs (ELK) + tracing</li>
+          <li>Cost optimization + capacity planning</li>
+        </ul>
+      </details>
+
+      <details class="svc-acc">
+        <summary>Typical deliverables</summary>
+        <ul>
+          <li>Terraform modules + documented runbooks</li>
+          <li>Dashboards + alert rules aligned to SLOs</li>
+          <li>CI pipelines (lint/test/security scans) + release strategy</li>
+        </ul>
+      </details>
+    </article>
+
+    <article class="svc-card">
+      <header class="svc-card-head">
+        <div class="svc-ic">
+          <img src="assets/icons/menu/trade-engine.svg" alt="" aria-hidden="true" />
+        </div>
+        <div>
+          <h3>Decision Engines</h3>
+          <p class="svc-muted">Signals → scoring → execution → monitoring → reporting.</p>
+        </div>
+      </header>
+
+      <div class="svc-mini-pipeline" aria-label="Decision engine pipeline">
+        <div class="svc-node">Ingest</div><div class="svc-arrow">→</div>
+        <div class="svc-node">Normalize</div><div class="svc-arrow">→</div>
+        <div class="svc-node">Score</div><div class="svc-arrow">→</div>
+        <div class="svc-node">Act</div><div class="svc-arrow">→</div>
+        <div class="svc-node">Audit</div>
+      </div>
+
+      <details class="svc-acc">
+        <summary>Use cases</summary>
+        <ul>
+          <li>Event detection + alerting (news, markets, ops incidents)</li>
+          <li>Risk analysis + policy enforcement</li>
+          <li>Automated decision routing + human-in-the-loop review</li>
+        </ul>
+      </details>
+    </article>
+
+    <article class="svc-card">
+      <header class="svc-card-head">
+        <div class="svc-ic">
+          <img src="assets/icons/menu/rss.svg" alt="" aria-hidden="true" />
+        </div>
+        <div>
+          <h3>Signals & Data</h3>
+          <p class="svc-muted">Entity extraction, enrichment, clustering, lineage, KG foundations.</p>
+        </div>
+      </header>
+
+      <details class="svc-acc" open>
+        <summary>What this means in practice</summary>
+        <ul>
+          <li>Scrapers + parsers for “hostile” formats (PDFs, HTML, feeds)</li>
+          <li>Entity extraction + dedupe + normalization</li>
+          <li>Storage design (Postgres / Redis / object storage) + lineage</li>
+          <li>Knowledge graph bootstrapping (schema + ingestion + query)</li>
+        </ul>
+      </details>
+
+      <details class="svc-acc">
+        <summary>When you know you need this</summary>
+        <ul>
+          <li>Your data is “technically there” but unusable</li>
+          <li>Teams disagree on definitions (same term, different meaning)</li>
+          <li>You can’t explain where a number came from</li>
+        </ul>
+      </details>
+    </article>
+
+    <article class="svc-card">
+      <header class="svc-card-head">
+        <div class="svc-ic">
+          <img src="assets/icons/menu/email.svg" alt="" aria-hidden="true" />
+        </div>
+        <div>
+          <h3>Security & OpSec</h3>
+          <p class="svc-muted">Zero-trust patterns, hardening, threat modeling, safe-by-default builds.</p>
+        </div>
+      </header>
+
+      <details class="svc-acc" open>
+        <summary>What we do</summary>
+        <ul>
+          <li>Secure deployment patterns (least privilege, secrets hygiene)</li>
+          <li>Supply chain hygiene + provenance + dependency scanning</li>
+          <li>Access control models (RBAC/ABAC), auditability</li>
+          <li>Runbooks: incident response + recovery drills</li>
+        </ul>
+      </details>
+    </article>
+  </div>
+
+  <!-- Process / Engagement -->
+  <div class="svc-split">
+    <article class="svc-card">
+      <header class="svc-card-head">
+        <div class="svc-ic">
+          <img src="assets/icons/bolt.svg" alt="" aria-hidden="true" />
+        </div>
+        <div>
+          <h3>How we work</h3>
+          <p class="svc-muted">Clear phases, visible progress, and a paper trail you can reuse.</p>
+        </div>
+      </header>
+
+      <div class="svc-timeline">
+        <div class="svc-step">
+          <div class="svc-step-badge">1</div>
+          <div class="svc-step-body">
+            <div class="svc-step-title">Diagnose</div>
+            <div class="svc-muted">Requirements, constraints, “what breaks first,” and success metrics.</div>
+          </div>
+        </div>
+
+        <div class="svc-step">
+          <div class="svc-step-badge">2</div>
+          <div class="svc-step-body">
+            <div class="svc-step-title">Prototype</div>
+            <div class="svc-muted">Small demo with real data paths (no fake slides).</div>
+          </div>
+        </div>
+
+        <div class="svc-step">
+          <div class="svc-step-badge">3</div>
+          <div class="svc-step-body">
+            <div class="svc-step-title">Harden</div>
+            <div class="svc-muted">Observability, tests, failure modes, and secure defaults.</div>
+          </div>
+        </div>
+
+        <div class="svc-step">
+          <div class="svc-step-badge">4</div>
+          <div class="svc-step-body">
+            <div class="svc-step-title">Ship</div>
+            <div class="svc-muted">Deploy with runbooks + rollback + “how to operate it.”</div>
+          </div>
+        </div>
+      </div>
+
+      <details class="svc-acc">
+        <summary>What you get (every time)</summary>
+        <ul>
+          <li>Architecture diagram + system boundaries</li>
+          <li>Deployment/runbook docs + operational checklist</li>
+          <li>Tests + monitoring + measurable KPIs</li>
+          <li>Source code you can own and extend</li>
+        </ul>
+      </details>
+    </article>
+
+    <article class="svc-card">
+      <header class="svc-card-head">
+        <div class="svc-ic">
+          <img src="assets/icons/shield.svg" alt="" aria-hidden="true" />
+        </div>
+        <div>
+          <h3>Deliverables menu</h3>
+          <p class="svc-muted">Pick what you need. We’ll tell you what you don’t.</p>
+        </div>
+      </header>
+
+      <div class="svc-deliverables">
+        <div class="svc-chip">Architecture + threat model</div>
+        <div class="svc-chip">Infra-as-code</div>
+        <div class="svc-chip">K8s deployment</div>
+        <div class="svc-chip">ETL + pipelines</div>
+        <div class="svc-chip">Model eval harness</div>
+        <div class="svc-chip">Dashboards + alerts</div>
+        <div class="svc-chip">Data contracts</div>
+        <div class="svc-chip">Runbooks + oncall</div>
+        <div class="svc-chip">Security hardening</div>
+        <div class="svc-chip">Cost optimization</div>
+      </div>
+
+      <details class="svc-acc">
+        <summary>Engagement modes</summary>
+        <ul>
+          <li><strong>One-off build:</strong> scoped delivery with a finish line</li>
+          <li><strong>Retainer:</strong> ongoing systems ownership + improvements</li>
+          <li><strong>Advisory:</strong> architecture, reviews, and unblockers</li>
+        </ul>
+      </details>
+
+      <div class="svc-note">
+        <strong>Rule:</strong> if it can’t be explained, measured, and operated, it isn’t “done.”
+      </div>
+    </article>
+  </div>
+
+  <!-- Proof / Visuals you already have -->
+  <article class="svc-card">
+    <header class="svc-card-head">
+      <div class="svc-ic">
+        <img src="assets/icons/chart.svg" alt="" aria-hidden="true" />
+      </div>
+      <div>
+        <h3>Visuals & artifacts</h3>
+        <p class="svc-muted">These are already in your repo—now they’re presented like a product page.</p>
+      </div>
+    </header>
+
+    <div class="svc-artifacts">
+      <div class="svc-art">
+        <div class="svc-art-title">Signal chain</div>
+        <object type="image/svg+xml" data="assets/signal_chain.svg" class="svc-svg">SVG unsupported.</object>
+      </div>
+
+      <div class="svc-art">
+        <div class="svc-art-title">Data sorter</div>
+        <object type="image/svg+xml" data="assets/data_sorter1.svg" class="svc-svg">SVG unsupported.</object>
+      </div>
+
+      <div class="svc-art">
+        <div class="svc-art-title">System animation</div>
+        <object type="image/svg+xml" data="assets/tech_animated.svg" class="svc-svg">SVG unsupported.</object>
+      </div>
+    </div>
+  </article>
+
+  <!-- FAQ -->
+  <article class="svc-card">
+    <header class="svc-card-head">
+      <div class="svc-ic">
+        <img src="assets/icons/link.svg" alt="" aria-hidden="true" />
+      </div>
+      <div>
+        <h3>FAQ</h3>
+        <p class="svc-muted">Short answers. No mysticism.</p>
+      </div>
+    </header>
+
+    <div class="svc-faq">
+      <details class="svc-acc">
+        <summary>Do you only do “big company” work?</summary>
+        <div class="svc-muted svc-acc-body">
+          No. The constraint is seriousness, not brand size. If the work matters and the inputs are real, we’ll talk.
+        </div>
+      </details>
+
+      <details class="svc-acc">
+        <summary>How do you keep projects from ballooning?</summary>
+        <div class="svc-muted svc-acc-body">
+          We agree on measurable outcomes early (latency, cost, quality, reliability). If a task doesn’t move a metric, it’s optional.
+        </div>
+      </details>
+
+      <details class="svc-acc">
+        <summary>What do you need from us to start?</summary>
+        <div class="svc-muted svc-acc-body">
+          A short problem statement, access to a representative sample of data/logs, and clarity on constraints (budget, time, security).
+        </div>
+      </details>
+    </div>
+  </article>
+
+  <!-- Closing CTA -->
+  <article class="svc-card svc-final">
+    <div class="svc-final-inner">
+      <div>
+        <h3>Ready to build something real?</h3>
+        <p class="svc-muted">
+          We can start with a short diagnostic and turn it into a plan you can execute with or without us.
+        </p>
+      </div>
+      <div class="svc-cta-row">
+        <a class="svc-btn svc-btn-primary" href="javascript:void(0)" onclick="showSection('Contact')">
+          <span class="svc-btn-ic"><img src="assets/icons/link.svg" alt="" aria-hidden="true"/></span>
+          Contact
+        </a>
+        <a class="svc-btn" href="https://docs.google.com/forms/d/e/1FAIpQLSc8HhR9nIEE-DBgtKq2CQ-Y4PJ8Mr0pbE07fzGE15FhcfqG6g/viewform?usp=header"
+           target="_blank" rel="noopener noreferrer">
+          <span class="svc-btn-ic"><img src="assets/icons/external.svg" alt="" aria-hidden="true"/></span>
+          Intake form
+        </a>
+      </div>
+    </div>
+  </article>
+</section>

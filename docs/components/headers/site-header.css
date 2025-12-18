@@ -1,0 +1,194 @@
+/* site-header.css */
+
+:root{
+  --hdr-bg: rgba(255,255,255,.72);
+  --hdr-border: rgba(15,23,42,.10);
+  --hdr-text: #0f172a;
+  --hdr-muted: rgba(15,23,42,.70);
+  --hdr-accent: #2563eb; /* tasteful blue */
+  --hdr-shadow: 0 12px 30px rgba(2, 6, 23, 0.10);
+  --menu-shadow: 0 18px 50px rgba(2, 6, 23, 0.16);
+}
+
+.site-header{
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 1500;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  background: var(--hdr-bg);
+  border-bottom: 1px solid var(--hdr-border);
+}
+
+.site-header__inner{
+  max-width: 1180px;
+  margin: 0 auto;
+  height: 64px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+/* Brand */
+.site-header__brand{
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  border-radius: 12px;
+  padding: 8px;
+  outline: none;
+}
+.site-header__brand:focus-visible{
+  box-shadow: 0 0 0 3px rgba(37,99,235,.22);
+}
+.site-header__logo{
+  height: 34px;
+  width: auto;
+  display: block;
+}
+
+/* Menu */
+.site-header__menu{
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+.site-header__items{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.55);
+  border: 1px solid rgba(15,23,42,.08);
+}
+
+/* Menu item / link */
+.site-header__item{
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.site-header__link{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  text-decoration: none;
+  color: var(--hdr-text);
+  font: 600 13px/1.0 ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+  letter-spacing: .2px;
+  transition: background .15s ease, color .15s ease;
+  user-select: none;
+  outline: none;
+}
+
+.site-header__link:hover{
+  background: rgba(15,23,42,.06);
+}
+
+.site-header__item:hover .site-header__link,
+.site-header__item:focus-within .site-header__link{
+  background: rgba(37,99,235,.10);
+  color: var(--hdr-text);
+}
+
+/* Dropdown (IMPORTANT: open on item hover/focus-within, NOT link hover) */
+.site-header__dropdown{
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%) translateY(-6px);
+  min-width: 220px;
+  padding: 8px;
+  border-radius: 14px;
+  background: var(--surface-2);
+  border: 1px solid rgba(15,23,42,.10);
+  box-shadow: var(--menu-shadow);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none; /* prevents “dead hover zones” when hidden */
+  transition: opacity .14s ease, transform .14s ease, visibility .14s ease;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.site-header__item:hover .site-header__dropdown,
+.site-header__item:focus-within .site-header__dropdown{
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Give the dropdown a little “hover bridge” so moving down doesn’t flicker */
+.site-header__dropdown::before{
+  content: "";
+  position: absolute;
+  top: -10px;
+  left: 0;
+  right: 0;
+  height: 12px;
+}
+
+/* Dropdown links */
+.site-header__drop-link{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 10px;
+  border-radius: 10px;
+  text-decoration: none;
+  color: var(--hdr-text);
+  font: 500 13px/1.2 ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+  transition: background .12s ease;
+}
+
+.site-header__drop-link:hover{
+  background: rgba(15,23,42,.06);
+}
+
+.site-header__icon{
+  width: 16px;
+  height: 16px;
+  display: block;
+  opacity: .9;
+}
+
+/* Session area */
+.site-header__session{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* If your login button class is used site-wide, keep this modest */
+.site-header .login-btn{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 14px;
+  border-radius: 999px;
+  text-decoration: none;
+  font: 700 13px/1 ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+  color: white;
+  background: linear-gradient(180deg, rgba(37,99,235,1), rgba(29,78,216,1));
+  box-shadow: 0 10px 22px rgba(37,99,235,.22);
+  transition: transform .12s ease, box-shadow .12s ease, filter .12s ease;
+}
+.site-header .login-btn:hover{
+  transform: translateY(-1px);
+  filter: brightness(1.02);
+  box-shadow: 0 14px 28px rgba(37,99,235,.28);
+}
+
+/* Mobile */
+@media (max-width: 860px){
+  .site-header__menu{ display:none; } /* keep it simple for now */
+  .site-header__inner{ justify-content: space-between; }
+}
