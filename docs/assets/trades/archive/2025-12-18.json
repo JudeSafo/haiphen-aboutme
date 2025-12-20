@@ -1,28 +1,28 @@
 {
-  "date": "2025-12-19",
-  "updated_at": "2025-12-20T01:03:46.157Z",
-  "headline": "Paper trading snapshot ($9,715.00 on 2025-12-19)",
-  "summary": "214,790 signals scanned • 25,222 opportunities flagged • 823 entries opened • 112 exits closed • $9,715.00 pnl.",
+  "date": "2025-12-18",
+  "updated_at": "2025-12-18T21:24:18.840Z",
+  "headline": "Paper trading snapshot ($12,609.00 on 2025-12-18)",
+  "summary": "140,110 signals scanned • 23,137 opportunities flagged • 1,841 entries opened • 180 exits closed • $12,609.00 pnl.",
   "rows": [
     {
       "kpi": "Signals scanned",
-      "value": "214,790"
+      "value": "140,110"
     },
     {
       "kpi": "Opportunities flagged",
-      "value": "25,222"
+      "value": "23,137"
     },
     {
       "kpi": "Notifications sent",
-      "value": "607"
+      "value": "728"
     },
     {
       "kpi": "Entries opened",
-      "value": "823"
+      "value": "1,841"
     },
     {
       "kpi": "Exits closed",
-      "value": "112"
+      "value": "180"
     },
     {
       "kpi": "Avg hold time",
@@ -30,79 +30,79 @@
     },
     {
       "kpi": "Daily PnL",
-      "value": "$9,715.00"
+      "value": "$12,609.00"
     },
     {
       "kpi": "Win rate",
-      "value": "53.33%"
+      "value": "63.66%"
     },
     {
       "kpi": "Max drawdown",
-      "value": "1.08%"
+      "value": "6.69%"
     },
     {
       "kpi": "Sharpe ratio",
-      "value": "1.79"
+      "value": "2.03"
     },
     {
       "kpi": "Delta",
-      "value": "-0.4199"
+      "value": "-0.4116"
     },
     {
       "kpi": "Gamma",
-      "value": "0.005294"
+      "value": "0.004676"
     },
     {
       "kpi": "Theta",
-      "value": "-0.4611"
+      "value": "-10.9204"
     },
     {
       "kpi": "Vega",
-      "value": "5.8479"
+      "value": "7.9085"
     },
     {
       "kpi": "Rho",
-      "value": "-74.2598"
+      "value": "-73.0724"
     },
     {
       "kpi": "Historical Volatility",
-      "value": "0.8531"
+      "value": "0.8251"
     },
     {
       "kpi": "Uncertainty",
-      "value": "24.2610"
+      "value": "29.3832"
     },
     {
       "kpi": "Fair Market Price",
-      "value": "$87.23"
+      "value": "$95.60"
     },
     {
       "kpi": "IV Skew",
-      "value": "-0.0470"
+      "value": "-0.0723"
     },
     {
       "kpi": "Decay Rate",
-      "value": "8.087343"
+      "value": "8.179492"
     },
     {
       "kpi": "Gamma Exposure",
-      "value": "0.008325"
+      "value": "0.008523"
     },
     {
       "kpi": "Volume Ratio",
-      "value": "13.9503"
+      "value": "8.7918"
     },
     {
       "kpi": "OI Ratio",
-      "value": "20.1286"
+      "value": "10.3365"
     },
     {
       "kpi": "Liquidity Ratios",
-      "value": "17.0394"
+      "value": "9.5641"
     },
     {
       "kpi": "Decay Weight",
-      "value": "1.1176"
+      "value": "1.3139"
     }
   ],
   "source": "mv"

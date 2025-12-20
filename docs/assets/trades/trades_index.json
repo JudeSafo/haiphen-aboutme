@@ -1,7 +1,23 @@
 {
-  "updated_at": "2025-12-18T03:09:41.832Z",
+  "updated_at": "2025-12-20T01:03:46.161Z",
   "max_days": 3,
   "items": [
+    {
+      "date": "2025-12-19",
+      "screenshot": "assets/trades/archive/2025-12-19.png",
+      "balance_screenshot": "assets/trades/archive/balance_2025-12-19.png",
+      "json": "assets/trades/archive/2025-12-19.json",
+      "updated_at": "2025-12-20T01:03:46.157Z",
+      "headline": "Paper trading snapshot ($9,715.00 on 2025-12-19)"
+    },
+    {
+      "date": "2025-12-18",
+      "screenshot": "assets/trades/archive/2025-12-18.png",
+      "balance_screenshot": "assets/trades/archive/balance_2025-12-18.png",
+      "json": "assets/trades/archive/2025-12-18.json",
+      "updated_at": "2025-12-18T21:24:18.840Z",
+      "headline": "Paper trading snapshot ($12,609.00 on 2025-12-18)"
+    },
     {
       "date": "2025-12-17",
       "screenshot": "assets/trades/archive/2025-12-17.png",
@@ -9,22 +25,6 @@
       "json": "assets/trades/archive/2025-12-17.json",
       "updated_at": "2025-12-18T03:09:41.829Z",
       "headline": "Paper trading snapshot (2025-12-17)"
-    },
-    {
-      "date": "2025-12-16",
-      "screenshot": "assets/trades/archive/2025-12-16.png",
-      "balance_screenshot": "assets/trades/archive/balance_2025-12-16.png",
-      "json": "assets/trades/archive/2025-12-16.json",
-      "updated_at": "2025-12-16T21:40:55.954Z",
-      "headline": "Haiphen Day trading Snapshot"
-    },
-    {
-      "date": "2025-12-15",
-      "screenshot": "assets/trades/archive/2025-12-15.png",
-      "balance_screenshot": "assets/trades/archive/balance_2025-12-15.png",
-      "json": "assets/trades/archive/2025-12-15.json",
-      "updated_at": "2025-12-17T19:39:54.794Z",
-      "headline": "Paper trading snapshot (2025-12-15)"
     }
   ]
 }
