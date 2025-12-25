@@ -29,7 +29,7 @@
   <script src="components/trades-overlay/trades-overlay.js"></script>
   <script src="components/services-plans/services-plans.js"></script>
   <script src="components/services/services-section.js"></script>
-  
+
   <!-- 🔽 Structured Data for SEO -->
   <script type="application/ld+json">
   {
@@ -486,6 +486,73 @@
       Trades KPI Grid
     ============================================================ */
 
+	/* Let the user scroll/drag on the strip; only the actual button is clickable */
+	.trades-archive-viewport { position: relative; }
+	.archive-nav {
+	  pointer-events: auto; /* button itself is clickable */
+	}
+
+	.trades-archive-viewport{
+	  position: relative;
+	  display: flex;                 /* <-- add */
+	  align-items: center;           /* <-- add */
+	  gap: .35rem;                   /* space so buttons don't cover content */
+	  overflow-x: auto;
+	  overflow-y: hidden;
+	  scroll-behavior: smooth;
+	  -webkit-overflow-scrolling: touch;
+	  scrollbar-width: none;
+	}
+	.trades-archive-viewport::-webkit-scrollbar {
+	  display: none;                    /* Chrome/Safari */
+	}
+
+	.trades-archive-track {
+	  display: flex;
+	  gap: .65rem;
+	  padding: .1rem;                   /* tiny padding so focus rings aren't clipped */
+	}
+
+	.trades-thumb {
+	  flex: 0 0 calc((100% - 2 * .65rem) / 3);  /* 3 visible */
+	}
+
+	/* nav buttons stay pinned to the viewport edges while content scrolls */
+	.archive-nav{
+	  position: sticky;              /* <-- key change */
+	  top: 50%;
+	  transform: translateY(-50%);
+	  background: rgba(0,0,0,0.35);
+	  color: #fff;
+	  border: none;
+	  width: 36px;
+	  height: 36px;
+	  border-radius: 9999px;
+	  font-size: 1.6rem;
+	  cursor: pointer;
+	  opacity: 0;
+	  transition: opacity .2s ease, background .2s ease;
+	  z-index: 5;                    /* above thumbnails */
+	  flex: 0 0 auto;                /* don’t shrink */
+	  pointer-events: auto;
+	}
+
+	.archive-prev{ left: 6px; }
+	.archive-next{ right: 6px; }
+
+	.trades-archive-viewport:hover .archive-nav{ opacity: 1; }
+	.archive-nav:hover{ background: rgba(0,0,0,0.55); }
+
+	.trades-archive-viewport:hover .archive-nav {
+	  opacity: 1;
+	}
+
+	.archive-prev { left: 6px; }
+	.archive-next { right: 6px; }
+
+	.trades-archive-dropdown {
+	  margin-top: .75rem;
+	}
     .trades-kpi-strip {
       margin-top: 1.2rem;
       padding-bottom: 0.25rem;
@@ -909,96 +976,178 @@
 	  });
 	}
 
-    async function loadTradesByJsonUrl(jsonUrl, screenshotUrl, dateKey) {
-      const dateEl = document.getElementById('trades-date');
-      const updatedEl = document.getElementById('trades-updated');
-      const headlineEl = document.getElementById('trades-headline');
-      const summaryEl = document.getElementById('trades-summary');
-      const img = document.getElementById('trades-img');
+	async function loadTradesByJsonUrl(jsonUrl, screenshotUrl, dateKey) {
+	  const dateEl = document.getElementById('trades-date');
+	  const updatedEl = document.getElementById('trades-updated');
+	  const headlineEl = document.getElementById('trades-headline');
+	  const summaryEl = document.getElementById('trades-summary');
+	  const img = document.getElementById('trades-img');
 
-      try {
-        const data = await fetchJson(jsonUrl);
+	  try {
+	    const data = await fetchJson(jsonUrl);
 
-        // KPI grid is the UI now
-        renderTradesKpiGrid(data.rows);
+	    window.HAIPHEN = window.HAIPHEN || {};
+	    window.HAIPHEN.CurrentTradesDay = data; // ✅ after fetch
 
-        if (dateEl) dateEl.textContent = dateKey || data.date || '—';
-        if (updatedEl) updatedEl.textContent = data.updated_at || '—';
-        if (headlineEl) headlineEl.textContent = data.headline || '—';
-        if (summaryEl) summaryEl.textContent = data.summary || '—';
+	    renderTradesKpiGrid(data.rows);
 
-        if (img && screenshotUrl) {
-          img.style.display = '';
-          document.getElementById('trades-img-missing').style.display = 'none';
-          img.src = screenshotUrl;
+	    if (dateEl) dateEl.textContent = dateKey || data.date || '—';
+	    if (updatedEl) updatedEl.textContent = data.updated_at || '—';
+	    if (headlineEl) headlineEl.textContent = data.headline || '—';
+	    if (summaryEl) summaryEl.textContent = data.summary || '—';
+
+	    if (img && screenshotUrl) {
+	      img.style.display = '';
+	      document.getElementById('trades-img-missing').style.display = 'none';
+	      img.src = screenshotUrl;
+	    }
+
+	    if (dateKey) setActiveThumb(dateKey);
+	  } catch (err) {
+	    console.warn('[trades] failed to load', { jsonUrl, err });
+	    renderTradesKpiGrid([]);
+	  }
+	}
+
+	const PAGE_SIZE = 3;
+	const CAROUSEL_MAX_THUMBS = 15; // still fine, dropdown shows full history
+
+	function renderArchive(allItems) {
+	  const track = document.getElementById('trades-archive-track');
+	  const viewport = track?.parentElement; // .trades-archive-viewport
+	  const nextBtn = document.querySelector('.archive-next');
+	  const prevBtn = document.querySelector('.archive-prev');
+	  const dropdownWrap = document.getElementById('trades-archive-dropdown');
+	  const select = document.getElementById('trades-archive-select');
+	  
+	  let userHasPannedRight = false;
+
+	  if (!track || !viewport || !nextBtn || !prevBtn || !dropdownWrap || !select) {
+	    console.warn('[trades] archive elements missing; check ids/classes in Trades template');
+	    return;
+	  }
+
+	  const items = Array.isArray(allItems) ? allItems : [];
+	  const carouselItems = items.slice(0, CAROUSEL_MAX_THUMBS);
+
+	  track.innerHTML = carouselItems.map(it => `
+	    <div class="trades-thumb" data-date="${escapeHtml(it.date)}" tabindex="0">
+	      <div class="trades-thumb-date">${escapeHtml(it.date)}</div>
+	      <img src="${escapeHtml(it.screenshot)}" alt="">
+	    </div>
+	  `).join('');
+
+	  const byDate = new Map(items.map(it => [String(it.date), it]));
+
+	  // thumb clicks (carousel subset)
+	  track.querySelectorAll('.trades-thumb').forEach(el => {
+	    const date = el.dataset.date;
+	    const it = byDate.get(String(date));
+	    if (!it) return;
+
+	    const open = () => loadTradesByJsonUrl(it.json, deriveTradesScreenshotUrl(it), it.date);
+
+	    el.addEventListener('click', open);
+	    el.addEventListener('keydown', e => {
+	      if (e.key === 'Enter' || e.key === ' ') {
+	        e.preventDefault();
+	        open();
+	      }
+	    });
+	  });
+
+	  // dropdown (FULL history)
+	  select.innerHTML = items.map(it =>
+	    `<option value="${escapeHtml(it.date)}">${escapeHtml(it.date)}</option>`
+	  ).join('');
+
+	  select.onchange = () => {
+	    const it = byDate.get(String(select.value));
+	    if (it) loadTradesByJsonUrl(it.json, deriveTradesScreenshotUrl(it), it.date);
+	  };
+
+      function setNavVisibility() {
+        const maxScrollLeft = viewport.scrollWidth - viewport.clientWidth;
+        const atStart = viewport.scrollLeft <= 2;
+        const atEnd = viewport.scrollLeft >= (maxScrollLeft - 2);
+
+        // Requested behavior:
+        // - once user pans right even a little, hide both arrows
+        // - only show arrows again when they return fully left
+        if (!atStart) userHasPannedRight = true;
+        if (atStart) userHasPannedRight = false;
+
+        // If you haven't panned right yet, behave normally (show only what’s usable)
+        const show = !userHasPannedRight && maxScrollLeft > 2;
+
+        prevBtn.hidden = !(show && !atStart);
+        nextBtn.hidden = !(show && !atEnd);
+      }
+
+      function updateNav() {
+        dropdownWrap.hidden = items.length <= carouselItems.length;
+
+        // If there isn't more than one page worth, no nav needed.
+        const needsNav = carouselItems.length > PAGE_SIZE;
+        if (!needsNav) {
+          prevBtn.hidden = true;
+          nextBtn.hidden = true;
+          return;
         }
 
-        if (dateKey) setActiveThumb(dateKey);
-      } catch (err) {
-        console.warn('[trades] failed to load', { jsonUrl, err });
-        // Optional: clear grid or show fallback card state
-        renderTradesKpiGrid([]);
+        setNavVisibility();
       }
-    }
+
+	  prevBtn.onclick = () => {
+	    viewport.scrollBy({ left: -viewport.clientWidth, behavior: 'smooth' });
+	  };
+	  nextBtn.onclick = () => {
+	    viewport.scrollBy({ left: viewport.clientWidth, behavior: 'smooth' });
+	  };
+
+	  viewport.addEventListener('scroll', updateNav, { passive: true });
+	  window.addEventListener('resize', updateNav, { passive: true });
+
+	  // reset to start (newest)
+      viewport.scrollLeft = 0;
+      userHasPannedRight = false;
+      updateNav();
+	}
 
 	async function loadTradesData() {
-	  const grid = document.getElementById('trades-archive-grid');
+	  // Always load “latest” first
+	  await loadTradesByJsonUrl(
+	    'assets/trades/trades.json',
+	    'assets/trades/alpaca_screenshot.png',
+	    null
+	  );
 
-	  // Always load “latest” first (current behavior)
-	  await loadTradesByJsonUrl('assets/trades/trades.json', 'assets/trades/alpaca_screenshot.png', null);
-
-	  // Then attempt archive strip
-	  if (!grid) return;
+	  // If Trades section isn't mounted yet, bail quietly
+	  const track = document.getElementById('trades-archive-track');
+	  if (!track) return;
 
 	  try {
 	    const idx = await fetchJson('assets/trades/trades_index.json');
 	    const items = Array.isArray(idx.items) ? idx.items : [];
 
 	    if (items.length === 0) {
-	      grid.innerHTML = `<div class="trades-muted">No archive yet.</div>`;
+	      track.innerHTML = `<div class="trades-muted">No archive yet.</div>`;
 	      return;
 	    }
 
-	    grid.innerHTML = items
-	      .map((it) => {
-	        const date = it.date || '—';
-	        const thumbSrc = it.screenshot || '';
-	        return `
-	          <div class="trades-thumb" data-date="${escapeHtml(date)}" role="button" tabindex="0">
-	            <div class="trades-thumb-date">${escapeHtml(date)}</div>
-	            <img src="${escapeHtml(thumbSrc)}" alt="Trades ${escapeHtml(date)}" />
-	          </div>
-	        `;
-	      })
-	      .join('');
+	    // Optional: sort newest first if dates are YYYY-MM-DD
+	    items.sort((a, b) => String(b.date).localeCompare(String(a.date)));
 
-        // Click-to-focus behavior
-        grid.querySelectorAll('.trades-thumb').forEach((el) => {
-          const dateKey = el.getAttribute('data-date');
-          const item = items.find((x) => (x.date || '') === (dateKey || ''));
-          if (!item) return;
+	    // ✅ THIS WAS MISSING
+	    renderArchive(items);
 
-		  const handler = () => {
-		    const focusPng = deriveTradesScreenshotUrl(item);
-		    loadTradesByJsonUrl(item.json, focusPng, item.date);
-		  };
-
-          el.addEventListener('click', handler);
-          el.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault(); // prevent page scroll on Space
-              handler();
-            }
-          });
-        });
-
-	    // Default focus: newest archived day (first item) OR keep “latest” as default.
-	    // If you want auto-focus to newest archive, uncomment:
-	    // await loadTradesByJsonUrl(items[0].json, items[0].screenshot, items[0].date);
+	    // Optional: auto-load newest archive item immediately (instead of leaving “latest”)
+	    // const first = items[0];
+	    // if (first) loadTradesByJsonUrl(first.json, deriveTradesScreenshotUrl(first), first.date);
 
 	  } catch (err) {
 	    console.warn('[trades] failed to load trades_index.json', err);
-	    grid.innerHTML = `<div class="trades-muted">Archive unavailable.</div>`;
+	    track.innerHTML = `<div class="trades-muted">Archive unavailable.</div>`;
 	  }
 	}
 
@@ -1063,28 +1212,46 @@
 	  // Wire interactions after injection
 	  const cards = grid.querySelectorAll('.trades-kpi-card');
 	  cards.forEach((card) => {
-	    const open = () => {
-	      const title = card.getAttribute('data-kpi') || 'Metric';
-	      const value = card.getAttribute('data-value') || '—';
+		const open = () => {
+		  try {
+		    const title = card.getAttribute('data-kpi') || 'Metric';
+		    const value = card.getAttribute('data-value') || '—';
 
-	      // prefer currently-loaded screenshot in the Trades section
-	      const img = document.getElementById('trades-img');
-	      const screenshotUrl = img?.getAttribute('src') || img?.src || 'assets/trades/alpaca_screenshot.png';
+		    // prefer currently-loaded screenshot in the Trades section
+		    const img = document.getElementById('trades-img');
+		    const screenshotUrl =
+		      img?.getAttribute('src') ||
+		      img?.src ||
+		      'assets/trades/alpaca_screenshot.png';
 
-	      const subtitle = `Current: ${value} • synthetic series for now`;
+		    const day = window.HAIPHEN?.CurrentTradesDay;
+		    const overlay = day?.overlay || {};
 
-	      if (typeof window.HAIPHEN?.TradesOverlay?.open === 'function') {
-	        window.HAIPHEN.TradesOverlay.open({
-	          title,
-	          subtitle,
-	          screenshotUrl,
-	          // optional stable seed per KPI:
-	          seed: undefined,
-	        });
-	      } else {
-	        console.warn('[kpi] overlay not loaded yet');
-	      }
-	    };
+		    const series = overlay?.seriesByKpi?.[title] || null;
+		    const hasSeries = Array.isArray(series) && series.length > 0;
+
+		    const subtitle = `Current: ${value} • ${hasSeries ? 'real+synthetic hybrid' : 'synthetic fallback'}`;
+
+		    const extremes = overlay?.extremes || { hi: [], lo: [] };
+		    const portfolioAssets = overlay?.portfolioAssets || [];
+
+		    const opener = window.HAIPHEN?.TradesOverlay?.open;
+		    if (typeof opener === 'function') {
+		      opener({
+		        title,
+		        subtitle,
+		        screenshotUrl,
+		        series,
+		        extremes,
+		        portfolioAssets,
+		      });
+		    } else {
+		      console.warn('[kpi] overlay not loaded yet');
+		    }
+		  } catch (err) {
+		    console.warn('[kpi] failed to open overlay', err);
+		  }
+		};
 
 	    card.addEventListener('click', open);
 	    card.addEventListener('keydown', (e) => {
@@ -1195,8 +1362,8 @@
                 </div>
                 <h2>Trades</h2>
                 <p class="trades-subtitle">
-                  Production-grade <strong>options execution + risk assessment</strong> system.
-                  Every day starts flat, trades rapidly, and returns to flat by close.
+                  Semi High-frequency, End of day portfolio close out (no overnight holiding), Transparent daily pnl & metrics, Production-grade <strong>options execution + risk assessment</strong> system. 
+                  
                 </p>
               </div>
 
@@ -1223,21 +1390,21 @@
               <div class="stat">
                 <div class="stat-ic"><img src="assets/icons/cpu.svg" alt=""></div>
                 <div class="stat-k">Signals/day</div>
-                <div class="stat-v"><strong>300K – 800K</strong></div>
+                <div class="stat-v"><strong>800K – 1.5M</strong></div>
                 <div class="stat-s">Scanned for pricing dislocations</div>
               </div>
 
               <div class="stat">
                 <div class="stat-ic"><img src="assets/icons/chart.svg" alt=""></div>
                 <div class="stat-k">Contracts/day</div>
-                <div class="stat-v"><strong>100 – 400</strong></div>
+                <div class="stat-v"><strong>2K – 15K</strong></div>
                 <div class="stat-s">Automated entry + exit</div>
               </div>
 
               <div class="stat">
                 <div class="stat-ic"><img src="assets/icons/bolt.svg" alt=""></div>
                 <div class="stat-k">Avg hold time</div>
-                <div class="stat-v"><strong>~6s</strong></div>
+                <div class="stat-v"><strong>~6.7s</strong></div>
                 <div class="stat-s">Designed for speed & repeatability</div>
               </div>
 
@@ -1276,17 +1443,32 @@
 			</div>
 
             <!-- Archive (KEEP IDS) -->
-            <div class="trades-archive">
-              <h3>Archive (last 3 days)</h3>
-              <div id="trades-archive-grid" class="trades-archive-grid">
-                <div class="trades-muted">Loading archive…</div>
-              </div>
-              <div class="trades-meta">
-                <div><strong>Date:</strong> <span id="trades-date">—</span></div>
-                <div><strong>Updated:</strong> <span id="trades-updated">—</span></div>
-                <div><strong>Headline:</strong> <span id="trades-headline">—</span></div>
-              </div>              
-            </div>
+			<div class="trades-archive">
+			  <h3>Archive</h3>
+
+			  <div class="trades-archive-viewport">
+			    <button class="archive-nav archive-prev" aria-label="Previous" hidden>‹</button>
+
+			    <div id="trades-archive-track" class="trades-archive-track">
+			      <!-- thumbs injected here -->
+			    </div>
+
+			    <button class="archive-nav archive-next" aria-label="Next">›</button>
+			  </div>
+
+			  <div id="trades-archive-dropdown" class="trades-archive-dropdown" hidden>
+			    <label>
+			      Jump to date
+			      <select id="trades-archive-select"></select>
+			    </label>
+			  </div>
+
+			  <div class="trades-meta">
+			    <div><strong>Date:</strong> <span id="trades-date">—</span></div>
+			    <div><strong>Updated:</strong> <span id="trades-updated">—</span></div>
+			    <div><strong>Headline:</strong> <span id="trades-headline">—</span></div>
+			  </div>
+			</div>
 
 
 
@@ -1760,21 +1942,23 @@
         </style>
       `,
       "Contact": `
-        <h2>Contact Us</h2>
-        <p>Founder: <a href="https://linkedin.com/in/judesafo"
-          target="_blank" rel="noopener noreferrer">Jude Safo</a></p>
-        <p>Email: <a href="mailto:pi@haiphenai.com">pi@haiphenai.com</a></p>
-        <p>Phone: (512) 910-4544</p>
-        <p>Address: Manhattan, New York, USA</p>
-        <br><br>
-        <div style="text-align: center;">
-          <a href="https://docs.google.com/forms/d/e/1FAIpQLSc8HhR9nIEE-DBgtKq2CQ-Y4PJ8Mr0pbE07fzGE15FhcfqG6g/viewform?usp=header"
-            target="_blank" rel="noopener noreferrer">
-            <img src="assets/nature.png" alt="Nature" style="max-width:80%; border-radius: 4px;">
-          </a>
-        </div>
-        <br><br>
-        <p>"No man is a failure who has friends" - Angel Clarence</p>
+        <section id="contact-us">
+          <h2>Contact Us</h2>
+          <p>Founder: <a href="https://linkedin.com/in/judesafo"
+            target="_blank" rel="noopener noreferrer">Jude Safo</a></p>
+          <p>Email: <a href="mailto:pi@haiphenai.com">pi@haiphenai.com</a></p>
+          <p>Phone: (512) 910-4544</p>
+          <p>Address: Manhattan, New York, USA</p>
+          <br><br>
+          <div style="text-align: center;">
+            <a href="https://docs.google.com/forms/d/e/1FAIpQLSc8HhR9nIEE-DBgtKq2CQ-Y4PJ8Mr0pbE07fzGE15FhcfqG6g/viewform?usp=header"
+              target="_blank" rel="noopener noreferrer">
+              <img src="assets/nature.png" alt="Nature" style="max-width:80%; border-radius: 4px;">
+            </a>
+          </div>
+          <br><br>
+          <p>"No man is a failure who has friends" - Angel Clarence</p>
+        </section>
       `
     };
     
@@ -1844,6 +2028,91 @@
         });
         })();
     }
+
+	// ------------------------------------------------------------
+	// Hash routing (shareable URLs for injected sections)
+	// ------------------------------------------------------------
+	const SECTION_HASH = {
+	  Trades: 'fintech',
+	  Services: 'services',
+	  OnePager: 'collaborate',
+	  Inventory: 'archives',
+	  Contact: 'contact-us',
+	};
+
+	const HASH_SECTION = Object.fromEntries(
+	  Object.entries(SECTION_HASH).map(([k, v]) => [v, k])
+	);
+
+	function normalizeHash(raw) {
+	  return String(raw || '')
+	    .replace(/^#/, '')
+	    .trim()
+	    .toLowerCase();
+	}
+
+	function setHashForSection(sectionName, { replace = false } = {}) {
+	  const slug = SECTION_HASH[sectionName];
+	  if (!slug) return;
+
+	  const next = `#${slug}`;
+	  if (window.location.hash === next) return;
+
+	  if (replace) history.replaceState(null, '', next);
+	  else history.pushState(null, '', next);
+	}
+
+	function clearHash({ replace = false } = {}) {
+	  const url = window.location.pathname + window.location.search;
+	  if (replace) history.replaceState(null, '', url);
+	  else history.pushState(null, '', url);
+	}
+
+	function activateSectionMenuFor(sectionName) {
+	  // Let section-menu own the styling if it’s loaded
+	  const api = window.HAIPHEN?.SectionMenu;
+	  if (api?.setActive) api.setActive(sectionName);
+	}
+
+	function routeFromHash() {
+	  const slug = normalizeHash(window.location.hash);
+
+	  // Home / landing
+	  if (!slug) {
+	    // Optional: collapse content widget if you want hash-less = home state
+	    // document.getElementById("content-widget")?.classList.remove("active");
+	    activateSectionMenuFor(null);
+	    return;
+	  }
+
+	  const section = HASH_SECTION[slug];
+	  if (!section) return;
+
+	  // Open the injected content
+	  if (typeof window.showSection === 'function') {
+	    window.showSection(section);
+	    activateSectionMenuFor(section);
+	  }
+
+	  // Special-case: Contact wants to land on the actual <section id="contact-us">
+	  if (slug === 'contact-us') {
+	    requestAnimationFrame(() => {
+	      const el = document.getElementById('contact-us');
+	      if (el) scrollToWithHeaderOffset(el, 12);
+	    });
+	  }
+	}
+
+	// Run once on load + whenever hash changes
+	window.addEventListener('hashchange', routeFromHash);
+	document.addEventListener('DOMContentLoaded', routeFromHash);
+
+	// Also: make resetLanding clear the hash so home is shareable as the base URL
+	const _resetLanding = window.resetLanding;
+	window.resetLanding = function resetLandingWithHashClear() {
+	  clearHash({ replace: true });
+	  if (typeof _resetLanding === 'function') _resetLanding();
+	};
 
     /* ------------------------------------------------------------
        5) Reset Landing

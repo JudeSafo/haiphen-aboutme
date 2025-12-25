@@ -34,6 +34,21 @@
   }
 
   function wire(root) {
+    const SECTION_HASH = {
+      Trades: 'fintech',
+      Services: 'services',
+      OnePager: 'collaborate',
+      Inventory: 'archives',
+      Contact: 'contact-us',
+    };
+
+    function setHash(section) {
+      const slug = SECTION_HASH[section];
+      if (!slug) return;
+      const next = `#${slug}`;
+      if (window.location.hash !== next) window.location.hash = next;
+    }
+
     root.addEventListener('click', (e) => {
       const btn = e.target.closest('button[data-section]');
       if (!btn) return;
@@ -41,6 +56,11 @@
       const section = btn.getAttribute('data-section');
       if (!section) return;
 
+      // Set hash first (so sharing / history is correct)
+      setHash(section);
+
+      // Then render content (hash router will also do this on hashchange,
+      // but doing it here makes UI feel instant even if hashchange is delayed)
       if (typeof window.showSection === 'function') {
         window.showSection(section);
         setActive(root, section);

@@ -44,6 +44,22 @@
         </div>
       </div>
 
+      <!-- Add inside .haiphen-overlay__body, under the chartWrap (or after it) -->
+
+      <div class="haiphen-overlay__entityRow">
+        <div class="haiphen-overlay__badge" id="haiphen-overlay-badge">synthetic</div>
+        <div class="haiphen-overlay__meta" id="haiphen-overlay-meta">—</div>
+      </div>
+
+      <!-- Portfolio mode -->
+      <div class="haiphen-overlay__portfolio" id="haiphen-portfolio" hidden>
+        <label for="haiphen-portfolio-select">Portfolio assets</label>
+        <select id="haiphen-portfolio-select"></select>
+        <div class="haiphen-overlay__portfolioMeta" id="haiphen-portfolio-meta"></div>
+      </div>
+
+      <!-- Extremes (hi/lo contracts) -->
+      <div class="haiphen-overlay__extremes" id="haiphen-extremes" hidden></div>
       <aside class="haiphen-overlay__controls" aria-label="Controls">
         <div class="haiphen-overlay__control">
           <label for="haiphen-chart-type">Chart</label>
@@ -77,7 +93,7 @@
         </div>
 
         <div class="haiphen-overlay__note">
-          Tip: later you can pass real series + metadata from your entity JSON. This overlay already supports swapping inputs.
+          Disclaimer: Not a financial adviser, use discretion for personal finances.
         </div>
       </aside>
     </section>

@@ -1,30 +1,94 @@
 {
-  "updated_at": "2025-12-20T01:03:46.161Z",
-  "max_days": 3,
+  "updated_at": "2025-12-24T18:33:06.194Z",
+  "max_days": null,
   "items": [
+    {
+      "date": "2025-12-24",
+      "screenshot": "assets/trades/archive/2025-12-24.png",
+      "balance_screenshot": "assets/trades/archive/balance_2025-12-24.png",
+      "json": "assets/trades/archive/2025-12-24.json",
+      "updated_at": "2025-12-24T18:33:06.185Z",
+      "headline": "Haiphen Day Trading snapshot (2025-12-24)",
+      "has_screenshot": true,
+      "has_balance_screenshot": true,
+      "has_json": true
+    },
+    {
+      "date": "2025-12-22",
+      "screenshot": "assets/trades/archive/2025-12-22.png",
+      "balance_screenshot": "assets/trades/archive/balance_2025-12-22.png",
+      "json": "assets/trades/archive/2025-12-22.json",
+      "updated_at": "2025-12-22T19:27:41.081Z",
+      "headline": "Haiphen Day Trading snapshot (fallback metrics)",
+      "has_screenshot": true,
+      "has_balance_screenshot": true,
+      "has_json": true
+    },
     {
       "date": "2025-12-19",
       "screenshot": "assets/trades/archive/2025-12-19.png",
       "balance_screenshot": "assets/trades/archive/balance_2025-12-19.png",
       "json": "assets/trades/archive/2025-12-19.json",
-      "updated_at": "2025-12-20T01:03:46.157Z",
-      "headline": "Paper trading snapshot ($9,715.00 on 2025-12-19)"
+      "updated_at": "2025-12-20T01:03:46.159Z",
+      "headline": "Haiphen day trading snapshot ($9,715.00 on 2025-12-19)",
+      "has_screenshot": true,
+      "has_balance_screenshot": true,
+      "has_json": true
     },
     {
       "date": "2025-12-18",
       "screenshot": "assets/trades/archive/2025-12-18.png",
       "balance_screenshot": "assets/trades/archive/balance_2025-12-18.png",
       "json": "assets/trades/archive/2025-12-18.json",
-      "updated_at": "2025-12-18T21:24:18.840Z",
-      "headline": "Paper trading snapshot ($12,609.00 on 2025-12-18)"
+      "updated_at": "2025-12-18T21:24:18.841Z",
+      "headline": "Haiphen Day Trading snapshot ($12,609.00 on 2025-12-18)",
+      "has_screenshot": true,
+      "has_balance_screenshot": true,
+      "has_json": true
     },
     {
       "date": "2025-12-17",
       "screenshot": "assets/trades/archive/2025-12-17.png",
       "balance_screenshot": "assets/trades/archive/balance_2025-12-17.png",
       "json": "assets/trades/archive/2025-12-17.json",
-      "updated_at": "2025-12-18T03:09:41.829Z",
-      "headline": "Paper trading snapshot (2025-12-17)"
+      "updated_at": "2025-12-18T03:09:41.830Z",
+      "headline": "Haiphen Day Trading snapshot (2025-12-17)",
+      "has_screenshot": true,
+      "has_balance_screenshot": true,
+      "has_json": true
+    },
+    {
+      "date": "2025-12-16",
+      "screenshot": "assets/trades/archive/2025-12-16.png",
+      "balance_screenshot": "assets/trades/archive/balance_2025-12-16.png",
+      "json": "assets/trades/archive/2025-12-16.json",
+      "updated_at": "2025-12-16T21:40:55.956Z",
+      "headline": "Haiphen Day Trading snapshot (fallback metrics)",
+      "has_screenshot": true,
+      "has_balance_screenshot": true,
+      "has_json": true
+    },
+    {
+      "date": "2025-12-15",
+      "screenshot": "assets/trades/archive/2025-12-15.png",
+      "balance_screenshot": "assets/trades/archive/balance_2025-12-15.png",
+      "json": "assets/trades/archive/2025-12-15.json",
+      "updated_at": "2025-12-17T19:39:54.795Z",
+      "headline": "Haiphen Day Trading snapshot (2025-12-15)",
+      "has_screenshot": true,
+      "has_balance_screenshot": true,
+      "has_json": true
+    },
+    {
+      "date": "2025-12-12",
+      "screenshot": "assets/trades/archive/2025-12-12.png",
+      "balance_screenshot": "assets/trades/archive/balance_2025-12-12.png",
+      "json": "assets/trades/archive/2025-12-12.json",
+      "updated_at": "2025-12-12T20:07:22.090Z",
+      "headline": "Haiphen Day Trading snapshot (dummy metrics)",
+      "has_screenshot": true,
+      "has_balance_screenshot": false,
+      "has_json": true
     }
   ]
 }

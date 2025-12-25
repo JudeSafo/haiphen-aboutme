@@ -93,6 +93,7 @@
       if (typeof window.resetLanding === 'function') window.resetLanding();
       else window.scrollTo({ top: 0, behavior: 'smooth' });
     });
+    
   }
 
   async function loadHeader() {

@@ -76,6 +76,103 @@
     return x.toFixed(2);
   }
 
+  function escapeHtml(s) {
+    return String(s ?? '')
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#39;');
+  }
+
+  function renderExtremes(extremes) {
+    const el = qs('haiphen-extremes');
+    if (!el) return;
+
+    const hi = extremes?.hi || [];
+    const lo = extremes?.lo || [];
+    el.hidden = (hi.length + lo.length) === 0;
+
+    const row = (r) => `
+      <div class="xrow">
+        <div class="cn">${escapeHtml(r.contract_name || '')}</div>
+        <div class="sym">${escapeHtml(r.symbol || '')}</div>
+        <div class="pnl">${Number(r.individual_pnl).toFixed(2)}</div>
+      </div>
+    `;
+
+    el.innerHTML = `
+      <div class="xbox">
+        <div class="xtitle">Top impact (abs PnL)</div>
+        ${hi.map(row).join('') || '<div class="muted">—</div>'}
+      </div>
+      <div class="xbox">
+        <div class="xtitle">Lowest impact (abs PnL)</div>
+        ${lo.map(row).join('') || '<div class="muted">—</div>'}
+      </div>
+    `;
+  }
+
+  function renderPortfolio(portfolioAssets) {
+    const wrap = qs('haiphen-portfolio');
+    const sel = qs('haiphen-portfolio-select');
+    const meta = qs('haiphen-portfolio-meta');
+    if (!wrap || !sel || !meta) return;
+
+    const assets = Array.isArray(portfolioAssets) ? portfolioAssets : [];
+    wrap.hidden = assets.length === 0;
+
+    sel.innerHTML = assets.map((a, i) => {
+      const label = `${a.symbol} • ${a.contract_name}`;
+      return `<option value="${i}">${escapeHtml(label)}</option>`;
+    }).join('');
+
+    function show(i) {
+      const a = assets[i];
+      if (!a) { meta.textContent = '—'; return; }
+      meta.innerHTML = `
+        <div><b>${escapeHtml(a.symbol)}</b> ${escapeHtml(a.contract_name)}</div>
+        <div>Strategy: ${escapeHtml(a.strategy || '—')}</div>
+        <div>Last: ${escapeHtml(a.current_last_price)} • PT: ${escapeHtml(a.profit_target)} • SL: ${escapeHtml(a.stop_loss)}</div>
+        <div>Strike: ${escapeHtml(a.strike_price)} • Exp: ${escapeHtml(a.expiration_date)} • Start: ${escapeHtml(a.trade_start_time)}</div>
+      `;
+    }
+
+    sel.onchange = () => show(Number(sel.value));
+    show(0);
+  }
+
+  function computeSeriesSourceBadge(seriesMeta) {
+    // seriesMeta items look like {t,v,src} where src is 'real' or 'synthetic'
+    const badge = qs('haiphen-overlay-badge');
+    const meta = qs('haiphen-overlay-meta');
+    if (!badge || !meta) return;
+
+    const pts = Array.isArray(seriesMeta) ? seriesMeta : [];
+    const real = pts.filter(p => p?.src === 'real').length;
+    const syn = pts.filter(p => p?.src === 'synthetic').length;
+
+    badge.classList.remove('is-real', 'is-mixed');
+
+    if (pts.length === 0) {
+      badge.textContent = 'synthetic';
+      meta.textContent = 'No published series points for this KPI.';
+      return;
+    }
+
+    if (syn === 0 && real > 0) {
+      badge.textContent = 'real';
+      badge.classList.add('is-real');
+    } else if (real === 0 && syn > 0) {
+      badge.textContent = 'synthetic';
+    } else {
+      badge.textContent = 'hybrid';
+      badge.classList.add('is-mixed');
+    }
+
+    meta.textContent = `${real} real • ${syn} synthetic • ${pts.length} total`;
+  }  
+
   function drawChart(ctx, opts) {
     const { w, h, type, series, smooth } = opts;
 
@@ -256,7 +353,15 @@
       title: 'Metric',
       subtitle: '—',
       seed: 12345,
+
+      // NEW: seriesMeta is authoritative if provided
       series: [],
+      seriesMeta: null,     // [{t,v,src}]
+      isReal: false,
+
+      // NEW: entity drilldowns
+      extremes: { hi: [], lo: [] },
+      portfolioAssets: [],
     };
 
     function resizeCanvasAndRender() {
@@ -287,30 +392,67 @@
       if (statDelta) statDelta.textContent = formatNum(delta);
     }
 
-    function open({ title, subtitle, screenshotUrl, seed } = {}) {
+    function open({ title, subtitle, screenshotUrl, seed, series, extremes, portfolioAssets } = {}) {
       state.title = title || 'Metric';
-      state.subtitle = subtitle || 'Synthetic series • interactive controls';
+      state.subtitle = subtitle || '';
       state.seed = Number.isFinite(seed) ? seed : hashSeedFromString(state.title);
 
+      // Accept published entity series: [{t,v,src}] (already hybrid-filled in your publisher)
+      state.seriesMeta = Array.isArray(series) ? series : null;
+      state.isReal = Boolean(state.seriesMeta && state.seriesMeta.length);
+
+      state.extremes = extremes || { hi: [], lo: [] };
+      state.portfolioAssets = Array.isArray(portfolioAssets) ? portfolioAssets : [];
+
       if (titleEl) titleEl.textContent = state.title;
-      if (subtitleEl) subtitleEl.textContent = state.subtitle;
+
+      // Update the “kicker”/subtitle in a truthy way
+      if (subtitleEl) {
+        const base = state.subtitle || (state.isReal ? 'Published series • entity drilldown' : 'Synthetic preview (no published series)');
+        subtitleEl.textContent = base;
+      }
 
       const bgUrl = screenshotUrl || getCurrentTradesScreenshotUrl();
       bg.style.backgroundImage = `url("${bgUrl}")`;
 
-      // sync labels
+      // Show portfolio UI only for Portfolio tile
+      const isPortfolio = (state.title || '').toLowerCase() === 'portfolio';
+      const canvasEl = qs('haiphen-overlay-chart');
+      const chartWrap = canvasEl?.closest('.haiphen-overlay__chartWrap');
+
+      if (chartWrap) chartWrap.style.display = isPortfolio ? 'none' : '';
+      renderPortfolio(isPortfolio ? state.portfolioAssets : []);
+      renderExtremes(isPortfolio ? { hi: [], lo: [] } : state.extremes);
+
+      // Sync labels
       if (pointsLabel && pointsEl) pointsLabel.textContent = String(pointsEl.value);
       if (volLabel && volEl) volLabel.textContent = String(volEl.value);
 
-      // generate new series for current controls
-      const points = Number(pointsEl?.value || 96);
-      const vol = Number(volEl?.value || 0.65);
-      state.series = genSeries({ points, vol, seed: state.seed });
+      // IMPORTANT:
+      // - if real series exists, DO NOT generate with genSeries()
+      // - instead, use the published seriesMeta and slice to requested points
+      if (!isPortfolio) {
+        const points = Number(pointsEl?.value || 96);
+
+        if (state.isReal) {
+          const meta = state.seriesMeta.slice(-points);
+          state.series = meta.map(p => Number(p.v));
+          computeSeriesSourceBadge(meta);
+        } else {
+          // fallback synthetic
+          const vol = Number(volEl?.value || 0.65);
+          state.series = genSeries({ points, vol, seed: state.seed });
+          computeSeriesSourceBadge([]);
+        }
+      } else {
+        computeSeriesSourceBadge([]);
+      }
+
+      // Disable “regenerate” if we have real series
+      if (regenBtn) regenBtn.disabled = state.isReal;
 
       overlay.classList.add('is-open');
       overlay.setAttribute('aria-hidden', 'false');
-
-      // lock scroll
       document.documentElement.classList.add('haiphen-overlay-lock');
       document.body.style.overflow = 'hidden';
 
@@ -339,10 +481,17 @@
       if (pointsLabel && pointsEl) pointsLabel.textContent = String(pointsEl.value);
       if (volLabel && volEl) volLabel.textContent = String(volEl.value);
 
-      // regenerate when points/vol changes
       const points = Number(pointsEl?.value || 96);
-      const vol = Number(volEl?.value || 0.65);
-      state.series = genSeries({ points, vol, seed: state.seed });
+
+      if (state.isReal && state.seriesMeta && state.seriesMeta.length) {
+        const meta = state.seriesMeta.slice(-points);
+        state.series = meta.map(p => Number(p.v));
+        computeSeriesSourceBadge(meta);
+      } else {
+        const vol = Number(volEl?.value || 0.65);
+        state.series = genSeries({ points, vol, seed: state.seed });
+        computeSeriesSourceBadge([]);
+      }
 
       resizeCanvasAndRender();
     }
@@ -353,7 +502,7 @@
     smoothEl?.addEventListener('change', resizeCanvasAndRender);
 
     regenBtn?.addEventListener('click', () => {
-      // bump seed so it visibly changes
+      if (state.isReal) return; // ignore regenerate when real data provided
       state.seed = (state.seed + 1337) >>> 0;
       onControlChange();
     });

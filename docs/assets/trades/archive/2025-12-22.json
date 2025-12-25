@@ -1,20 +1,20 @@
 {
-  "date": "2025-12-17",
-  "updated_at": "2025-12-18T03:09:41.829Z",
-  "headline": "Haiphen day trading snapshot (2025-12-17)",
-  "summary": "15,970 signals scanned • 5,349 opportunities flagged • 14 exits closed.",
+  "date": "2025-12-22",
+  "updated_at": "2025-12-23T05:41:34.377Z",
+  "headline": "Haiphen Day Trading snapshot (fallback metrics)",
+  "summary": "DB unreachable for this run. Showing fallback metrics.",
   "rows": [
     {
       "kpi": "Signals scanned",
-      "value": "15,970"
+      "value": "—"
     },
     {
       "kpi": "Opportunities flagged",
-      "value": "5,349"
+      "value": "—"
     },
     {
       "kpi": "Notifications sent",
-      "value": "483"
+      "value": "—"
     },
     {
       "kpi": "Entries opened",
@@ -22,11 +22,11 @@
     },
     {
       "kpi": "Exits closed",
-      "value": "14"
+      "value": "—"
     },
     {
       "kpi": "Avg hold time",
-      "value": "7s"
+      "value": "—"
     },
     {
       "kpi": "Daily PnL",
@@ -34,35 +34,35 @@
     },
     {
       "kpi": "Win rate",
-      "value": "53.42%"
+      "value": "—"
     },
     {
       "kpi": "Max drawdown",
-      "value": "8.65%"
+      "value": "—"
     },
     {
       "kpi": "Sharpe ratio",
-      "value": "1.87"
+      "value": "—"
     },
     {
       "kpi": "Delta",
-      "value": "-0.5285"
+      "value": "—"
     },
     {
       "kpi": "Gamma",
-      "value": "0.008465"
+      "value": "—"
     },
     {
       "kpi": "Theta",
-      "value": "1.4268"
+      "value": "—"
     },
     {
       "kpi": "Vega",
-      "value": "2.6413"
+      "value": "—"
     },
     {
       "kpi": "Rho",
-      "value": "-44.3895"
+      "value": "—"
     },
     {
       "kpi": "Historical Volatility",
@@ -70,40 +70,48 @@
     },
     {
       "kpi": "Uncertainty",
-      "value": "10.0524"
+      "value": "—"
     },
     {
       "kpi": "Fair Market Price",
-      "value": "$40.61"
+      "value": "—"
     },
     {
       "kpi": "IV Skew",
-      "value": "-0.0902"
+      "value": "—"
     },
     {
       "kpi": "Decay Rate",
-      "value": "3.414254"
+      "value": "—"
     },
     {
       "kpi": "Gamma Exposure",
-      "value": "0.015263"
+      "value": "—"
     },
     {
       "kpi": "Volume Ratio",
-      "value": "16.9493"
+      "value": "—"
     },
     {
       "kpi": "OI Ratio",
-      "value": "8.5754"
+      "value": "—"
     },
     {
       "kpi": "Liquidity Ratios",
-      "value": "12.7624"
+      "value": "—"
     },
     {
       "kpi": "Decay Weight",
       "value": "—"
     }
   ],
-  "source": "db+filled"
+  "overlay": {
+    "seriesByKpi": {},
+    "extremes": {
+      "hi": [],
+      "lo": []
+    },
+    "portfolioAssets": []
+  },
+  "source": "fallback"
 }

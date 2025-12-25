@@ -63,6 +63,12 @@
   }
 
   async function handleSubscribe(planKey) {
+    const ok = await isLoggedIn();
+    if (!ok) {
+      // after login, return to same page (you can later pass a plan param too)
+      redirectToLogin(window.location.href);
+      return;
+    }
     goToSquare(planKey);
   }
 
