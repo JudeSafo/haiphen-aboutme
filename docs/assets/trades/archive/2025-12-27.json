@@ -1,108 +1,108 @@
 {
-  "date": "2025-12-28",
-  "updated_at": "2025-12-28T19:13:46.205Z",
-  "headline": "Haiphen day trading snapshot (2025-12-28)",
-  "summary": "39,435 signals scanned • 5,096 opportunities flagged • 192 entries opened.",
+  "date": "2025-12-27",
+  "updated_at": "2025-12-28T05:39:44.418Z",
+  "headline": "Haiphen day trading snapshot ($300.00 on 2025-12-27)",
+  "summary": "16,947 signals scanned • 1,676 opportunities flagged • 6 entries opened • 9 exits closed • $300.00 pnl.",
   "rows": [
     {
       "kpi": "Signals scanned",
-      "value": "39,435"
+      "value": "16,947"
     },
     {
       "kpi": "Opportunities flagged",
-      "value": "5,096"
+      "value": "1,676"
     },
     {
       "kpi": "Notifications sent",
-      "value": "984"
+      "value": "657"
     },
     {
       "kpi": "Entries opened",
-      "value": "192"
+      "value": "6"
     },
     {
       "kpi": "Exits closed",
-      "value": "—"
+      "value": "9"
     },
     {
       "kpi": "Avg hold time",
-      "value": "11s"
+      "value": "15s"
     },
     {
       "kpi": "Daily PnL",
-      "value": "—"
+      "value": "$300.00"
     },
     {
       "kpi": "Win rate",
-      "value": "47.11%"
+      "value": "52.26%"
     },
     {
       "kpi": "Max drawdown",
-      "value": "7.13%"
+      "value": "5.97%"
     },
     {
       "kpi": "Sharpe ratio",
-      "value": "2.19"
+      "value": "0.70"
     },
     {
       "kpi": "Delta",
-      "value": "-0.3094"
+      "value": "-0.2970"
     },
     {
       "kpi": "Gamma",
-      "value": "0.006880"
+      "value": "0.006286"
     },
     {
       "kpi": "Theta",
-      "value": "-4.5598"
+      "value": "-9.8966"
     },
     {
       "kpi": "Vega",
-      "value": "16.1168"
+      "value": "4.8998"
     },
     {
       "kpi": "Rho",
-      "value": "-93.8674"
+      "value": "-31.3569"
     },
     {
       "kpi": "Historical Volatility",
-      "value": "0.6376"
+      "value": "0.6360"
     },
     {
       "kpi": "Uncertainty",
-      "value": "55.8887"
+      "value": "24.4957"
     },
     {
       "kpi": "Fair Market Price",
-      "value": "$101.41"
+      "value": "$69.82"
     },
     {
       "kpi": "IV Skew",
-      "value": "-0.0781"
+      "value": "-0.0578"
     },
     {
       "kpi": "Decay Rate",
-      "value": "9.170493"
+      "value": "8.354271"
     },
     {
       "kpi": "Gamma Exposure",
-      "value": "0.006938"
+      "value": "0.010536"
     },
     {
       "kpi": "Volume Ratio",
-      "value": "15.3420"
+      "value": "20.5548"
     },
     {
       "kpi": "OI Ratio",
-      "value": "46.6055"
+      "value": "28.3468"
     },
     {
       "kpi": "Liquidity Ratios",
-      "value": "30.9737"
+      "value": "24.4508"
     },
     {
       "kpi": "Decay Weight",
-      "value": "1.5718"
+      "value": "1.5724"
     },
     {
       "kpi": "Portfolio",
@@ -113,6 +113,10 @@
     "seriesByKpi": {
       "Portfolio": [],
       "Signals scanned": [
+        {
+          "t": "2025-11-28T06:00:00.000Z",
+          "v": 201454
+        },
         {
           "t": "2025-11-29T06:00:00.000Z",
           "v": 0
@@ -228,13 +232,13 @@
         {
           "t": "2025-12-27T06:00:00.000Z",
           "v": 16947
-        },
-        {
-          "t": "2025-12-28T06:00:00.000Z",
-          "v": 0
         }
       ],
       "Opportunities flagged": [
+        {
+          "t": "2025-11-28T06:00:00.000Z",
+          "v": 25620
+        },
         {
           "t": "2025-11-29T06:00:00.000Z",
           "v": 0
@@ -350,14 +354,14 @@
         {
           "t": "2025-12-27T06:00:00.000Z",
           "v": 1676
-        },
-        {
-          "t": "2025-12-28T06:00:00.000Z",
-          "v": 0
         }
       ],
       "Notifications sent": [],
       "Entries opened": [
+        {
+          "t": "2025-11-28T06:00:00.000Z",
+          "v": 21895
+        },
         {
           "t": "2025-11-29T06:00:00.000Z",
           "v": 0
@@ -473,13 +477,13 @@
         {
           "t": "2025-12-27T06:00:00.000Z",
           "v": 6
-        },
-        {
-          "t": "2025-12-28T06:00:00.000Z",
-          "v": 0
         }
       ],
       "Exits closed": [
+        {
+          "t": "2025-11-28T06:00:00.000Z",
+          "v": 0
+        },
         {
           "t": "2025-11-29T06:00:00.000Z",
           "v": 0
@@ -595,14 +599,14 @@
         {
           "t": "2025-12-27T06:00:00.000Z",
           "v": 9
-        },
-        {
-          "t": "2025-12-28T06:00:00.000Z",
-          "v": 0
         }
       ],
       "Avg hold time": [],
       "Daily PnL": [
+        {
+          "t": "2025-11-28T06:00:00.000Z",
+          "v": -20755
+        },
         {
           "t": "2025-11-29T06:00:00.000Z",
           "v": 0
@@ -718,16 +722,16 @@
         {
           "t": "2025-12-27T06:00:00.000Z",
           "v": -300
-        },
-        {
-          "t": "2025-12-28T06:00:00.000Z",
-          "v": 0
         }
       ],
       "Win rate": [],
       "Max drawdown": [],
       "Sharpe ratio": [],
       "Delta": [
+        {
+          "t": "2025-11-28T06:00:00.000Z",
+          "v": -0.16642466986729118
+        },
         {
           "t": "2025-12-01T06:00:00.000Z",
           "v": -0.30430688058032046
@@ -811,6 +815,10 @@
       ],
       "Gamma": [
         {
+          "t": "2025-11-28T06:00:00.000Z",
+          "v": 0.008107272161592505
+        },
+        {
           "t": "2025-12-01T06:00:00.000Z",
           "v": 0.008360682816351684
         },
@@ -892,6 +900,10 @@
         }
       ],
       "Theta": [
+        {
+          "t": "2025-11-28T06:00:00.000Z",
+          "v": -7.073215200957455
+        },
         {
           "t": "2025-12-01T06:00:00.000Z",
           "v": -13.29655229941249
@@ -975,6 +987,10 @@
       ],
       "Vega": [
         {
+          "t": "2025-11-28T06:00:00.000Z",
+          "v": 50.45928488184036
+        },
+        {
           "t": "2025-12-01T06:00:00.000Z",
           "v": 10.637852510426253
         },
@@ -1056,6 +1072,10 @@
         }
       ],
       "Rho": [
+        {
+          "t": "2025-11-28T06:00:00.000Z",
+          "v": -195.62896333771897
+        },
         {
           "t": "2025-12-01T06:00:00.000Z",
           "v": -36.52832400261504
@@ -1139,6 +1159,10 @@
       ],
       "Historical Volatility": [
         {
+          "t": "2025-11-28T06:00:00.000Z",
+          "v": 0.81147
+        },
+        {
           "t": "2025-12-01T06:00:00.000Z",
           "v": 0.8923817985611511
         },
@@ -1188,6 +1212,10 @@
         }
       ],
       "Uncertainty": [
+        {
+          "t": "2025-11-28T06:00:00.000Z",
+          "v": 119.85233620123302
+        },
         {
           "t": "2025-12-01T06:00:00.000Z",
           "v": 40.80081197110312
@@ -1271,6 +1299,10 @@
       ],
       "Fair Market Price": [
         {
+          "t": "2025-11-28T06:00:00.000Z",
+          "v": 92.3705206020167
+        },
+        {
           "t": "2025-12-01T06:00:00.000Z",
           "v": 71.40291502958294
         },
@@ -1352,6 +1384,10 @@
         }
       ],
       "IV Skew": [
+        {
+          "t": "2025-11-28T06:00:00.000Z",
+          "v": -0.19413466790978512
+        },
         {
           "t": "2025-12-01T06:00:00.000Z",
           "v": -0.07961224815724816
@@ -1435,6 +1471,10 @@
       ],
       "Decay Rate": [
         {
+          "t": "2025-11-28T06:00:00.000Z",
+          "v": 13.04864689034541
+        },
+        {
           "t": "2025-12-01T06:00:00.000Z",
           "v": 8.006272493533988
         },
@@ -1516,6 +1556,10 @@
         }
       ],
       "Gamma Exposure": [
+        {
+          "t": "2025-11-28T06:00:00.000Z",
+          "v": 0.01563792652193216
+        },
         {
           "t": "2025-12-01T06:00:00.000Z",
           "v": 0.018815836244881246
@@ -1599,6 +1643,10 @@
       ],
       "Volume Ratio": [
         {
+          "t": "2025-11-28T06:00:00.000Z",
+          "v": 6.711024874674172
+        },
+        {
           "t": "2025-12-01T06:00:00.000Z",
           "v": 23.486470001537995
         },
@@ -1680,6 +1728,10 @@
         }
       ],
       "OI Ratio": [
+        {
+          "t": "2025-11-28T06:00:00.000Z",
+          "v": 4.260342034986418
+        },
         {
           "t": "2025-12-01T06:00:00.000Z",
           "v": 26.471930378249684
@@ -1763,6 +1815,10 @@
       ],
       "Liquidity Ratios": [
         {
+          "t": "2025-11-28T06:00:00.000Z",
+          "v": 5.485683454830295
+        },
+        {
           "t": "2025-12-01T06:00:00.000Z",
           "v": 24.979200189893838
         },
@@ -1845,6 +1901,10 @@
       ],
       "Decay Weight": [
         {
+          "t": "2025-11-28T06:00:00.000Z",
+          "v": 1.2323314478662182
+        },
+        {
           "t": "2025-12-01T06:00:00.000Z",
           "v": 1.1261419106704598
         },
@@ -1893,7 +1953,7 @@
     "extremes": {
       "byKpi": {
         "Daily PnL": {
-          "items": [
+          "hi": [
             {
               "day": "Sat Dec 27",
               "kpi": "Daily PnL",
@@ -1971,7 +2031,9 @@
               "mid_ts": "2025-12-28T04:01:26.818Z",
               "mid_mark_pnl": -80,
               "liquidity_drag": -85
-            },
+            }
+          ],
+          "lo": [
             {
               "day": "Sat Dec 27",
               "kpi": "Daily PnL",
@@ -2053,7 +2115,7 @@
           ]
         },
         "Liquidity Drag": {
-          "items": [
+          "hi": [
             {
               "day": "Sat Dec 27",
               "kpi": "Liquidity Drag",
@@ -2131,7 +2193,9 @@
               "mid_ts": "2025-12-28T04:01:26.818Z",
               "mid_mark_pnl": -80,
               "liquidity_drag": -85
-            },
+            }
+          ],
+          "lo": [
             {
               "day": "Sat Dec 27",
               "kpi": "Liquidity Drag",
@@ -2213,7 +2277,7 @@
           ]
         },
         "Mid Mark PnL": {
-          "items": [
+          "hi": [
             {
               "day": "Sat Dec 27",
               "kpi": "Mid Mark PnL",
@@ -2291,7 +2355,9 @@
               "mid_ts": "2025-12-28T04:01:26.818Z",
               "mid_mark_pnl": -80,
               "liquidity_drag": -85
-            },
+            }
+          ],
+          "lo": [
             {
               "day": "Sat Dec 27",
               "kpi": "Mid Mark PnL",
@@ -2373,7 +2439,7 @@
           ]
         },
         "Percent Change": {
-          "items": [
+          "hi": [
             {
               "day": "Sat Dec 27",
               "kpi": "Percent Change",
@@ -2451,7 +2517,9 @@
               "mid_ts": "2025-12-28T04:01:26.818Z",
               "mid_mark_pnl": -80,
               "liquidity_drag": -85
-            },
+            }
+          ],
+          "lo": [
             {
               "day": "Sat Dec 27",
               "kpi": "Percent Change",
@@ -2533,7 +2601,7 @@
           ]
         },
         "Unrealized P/L": {
-          "items": [
+          "hi": [
             {
               "day": "Sat Dec 27",
               "kpi": "Unrealized P/L",
@@ -2611,7 +2679,9 @@
               "mid_ts": "2025-12-28T04:01:26.818Z",
               "mid_mark_pnl": -80,
               "liquidity_drag": -85
-            },
+            }
+          ],
+          "lo": [
             {
               "day": "Sat Dec 27",
               "kpi": "Unrealized P/L",
@@ -2692,7 +2762,169 @@
             }
           ]
         }
-      }
+      },
+      "legacyKpi": "Daily PnL",
+      "hi": [
+        {
+          "day": "Sat Dec 27",
+          "kpi": "Daily PnL",
+          "side": "hi",
+          "rank": 1,
+          "trade_id": 807616,
+          "symbol": "TSLA",
+          "contract_name": "TSLA270115P00600000",
+          "metric_raw": -60,
+          "metric_abs": 60,
+          "individual_pnl": -60,
+          "abs_individual_pnl": 60,
+          "percent_change": -0.34,
+          "cost_basis": -17685,
+          "qty": 1,
+          "broker_unrealized_pl": -60,
+          "broker_unrealized_plpc": -0.00339271,
+          "broker_market_value": -17745,
+          "broker_avg_entry_price": 176.85,
+          "bid_price": 176.75,
+          "ask_price": 177.45,
+          "mid_price": 177.1,
+          "mid_ts": "2025-12-28T04:01:27.833Z",
+          "mid_mark_pnl": -25,
+          "liquidity_drag": -35
+        },
+        {
+          "day": "Sat Dec 27",
+          "kpi": "Daily PnL",
+          "side": "hi",
+          "rank": 2,
+          "trade_id": 807611,
+          "symbol": "TSLA",
+          "contract_name": "TSLA270115P00650000",
+          "metric_raw": -75,
+          "metric_abs": 75,
+          "individual_pnl": -75,
+          "abs_individual_pnl": 75,
+          "percent_change": -0.35,
+          "cost_basis": -21520,
+          "qty": 1,
+          "broker_unrealized_pl": -75,
+          "broker_unrealized_plpc": -0.00348513,
+          "broker_market_value": -21595,
+          "broker_avg_entry_price": 215.2,
+          "bid_price": 215.05,
+          "ask_price": 215.95,
+          "mid_price": 215.5,
+          "mid_ts": "2025-12-28T04:01:27.893Z",
+          "mid_mark_pnl": -30,
+          "liquidity_drag": -45
+        },
+        {
+          "day": "Sat Dec 27",
+          "kpi": "Daily PnL",
+          "side": "hi",
+          "rank": 3,
+          "trade_id": 808057,
+          "symbol": "TSLA",
+          "contract_name": "TSLA261218P00650000",
+          "metric_raw": -165,
+          "metric_abs": 165,
+          "individual_pnl": -165,
+          "abs_individual_pnl": 165,
+          "percent_change": -0.39,
+          "cost_basis": -42465,
+          "qty": 2,
+          "broker_unrealized_pl": -165,
+          "broker_unrealized_plpc": -0.00388555,
+          "broker_market_value": -42630,
+          "broker_avg_entry_price": 212.325,
+          "bid_price": 212.3,
+          "ask_price": 213.15,
+          "mid_price": 212.725,
+          "mid_ts": "2025-12-28T04:01:26.818Z",
+          "mid_mark_pnl": -80,
+          "liquidity_drag": -85
+        }
+      ],
+      "lo": [
+        {
+          "day": "Sat Dec 27",
+          "kpi": "Daily PnL",
+          "side": "lo",
+          "rank": 1,
+          "trade_id": 808057,
+          "symbol": "TSLA",
+          "contract_name": "TSLA261218P00650000",
+          "metric_raw": -165,
+          "metric_abs": 165,
+          "individual_pnl": -165,
+          "abs_individual_pnl": 165,
+          "percent_change": -0.39,
+          "cost_basis": -42465,
+          "qty": 2,
+          "broker_unrealized_pl": -165,
+          "broker_unrealized_plpc": -0.00388555,
+          "broker_market_value": -42630,
+          "broker_avg_entry_price": 212.325,
+          "bid_price": 212.3,
+          "ask_price": 213.15,
+          "mid_price": 212.725,
+          "mid_ts": "2025-12-28T04:01:26.818Z",
+          "mid_mark_pnl": -80,
+          "liquidity_drag": -85
+        },
+        {
+          "day": "Sat Dec 27",
+          "kpi": "Daily PnL",
+          "side": "lo",
+          "rank": 2,
+          "trade_id": 807611,
+          "symbol": "TSLA",
+          "contract_name": "TSLA270115P00650000",
+          "metric_raw": -75,
+          "metric_abs": 75,
+          "individual_pnl": -75,
+          "abs_individual_pnl": 75,
+          "percent_change": -0.35,
+          "cost_basis": -21520,
+          "qty": 1,
+          "broker_unrealized_pl": -75,
+          "broker_unrealized_plpc": -0.00348513,
+          "broker_market_value": -21595,
+          "broker_avg_entry_price": 215.2,
+          "bid_price": 215.05,
+          "ask_price": 215.95,
+          "mid_price": 215.5,
+          "mid_ts": "2025-12-28T04:01:27.893Z",
+          "mid_mark_pnl": -30,
+          "liquidity_drag": -45
+        },
+        {
+          "day": "Sat Dec 27",
+          "kpi": "Daily PnL",
+          "side": "lo",
+          "rank": 3,
+          "trade_id": 807616,
+          "symbol": "TSLA",
+          "contract_name": "TSLA270115P00600000",
+          "metric_raw": -60,
+          "metric_abs": 60,
+          "individual_pnl": -60,
+          "abs_individual_pnl": 60,
+          "percent_change": -0.34,
+          "cost_basis": -17685,
+          "qty": 1,
+          "broker_unrealized_pl": -60,
+          "broker_unrealized_plpc": -0.00339271,
+          "broker_market_value": -17745,
+          "broker_avg_entry_price": 176.85,
+          "bid_price": 176.75,
+          "ask_price": 177.45,
+          "mid_price": 177.1,
+          "mid_ts": "2025-12-28T04:01:27.833Z",
+          "mid_mark_pnl": -25,
+          "liquidity_drag": -35
+        }
+      ],
+      "source": "utils_statistics.trades_contract_extremes_by_kpi_mv"
     },
     "portfolioAssets": [
       {
@@ -2997,5 +3229,5 @@
       }
     ]
   },
-  "source": "db+filled"
+  "source": "mv"
 }

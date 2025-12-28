@@ -58,6 +58,29 @@ a {
 }
 a:hover { text-decoration: underline; }
 
+/* Collapsed subsections: hidden until sentinel is reached */
+.subsection {
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transform: translateY(24px);
+  transition: max-height 600ms ease, opacity 350ms ease, transform 350ms ease;
+  will-change: max-height, opacity, transform;
+}
+
+.subsection.is-revealed {
+  max-height: 5000px; /* big enough for your content */
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Make anchor jumps land nicely under fixed header */
+.subsection,
+[id^="fintech-"],
+[id^="services-"] {
+  scroll-margin-top: 90px;
+}
+
 /* A shared “card” feel you can reuse */
 .hp-card {
   background: rgba(255,255,255,0.96);
@@ -77,4 +100,9 @@ a:hover { text-decoration: underline; }
 /* Nice anchor landing behavior even without JS scrolling */
 .haiphen-nav-target{
   scroll-margin-top: calc(var(--header-h, 70px) + 16px);
+}
+
+/* Ensure subsections remain layout participants; collapse is controlled by max-height/opacity */
+.fintech-subsections > .subsection {
+  display: block;
 }

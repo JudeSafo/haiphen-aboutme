@@ -1230,7 +1230,7 @@
 		    const series = overlay?.seriesByKpi?.[title] || null;
 		    const hasSeries = Array.isArray(series) && series.length > 0;
 
-		    const subtitle = `Current: ${value} • ${hasSeries ? 'real+synthetic hybrid' : 'synthetic fallback'}`;
+		    const subtitle = `Current: ${value} • ${hasSeries ? 'Options day trading metrics' : 'day trading'}`;
 
 		    const extremes = overlay?.extremes || { hi: [], lo: [] };
 		    const portfolioAssets = overlay?.portfolioAssets || [];
@@ -1358,7 +1358,7 @@
               <div class="trades-title">
                 <div class="trades-badge">
                   <span class="dot"></span>
-                  <span>Live • automated • intraday</span>
+                  <span>High-freq. • automated • intraday</span>
                 </div>
                 <h2>Trades</h2>
                 <p class="trades-subtitle">

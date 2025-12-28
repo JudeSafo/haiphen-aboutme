@@ -25,10 +25,17 @@
   opacity: 0.35;
 }
 
+/* ✅ Fit-to-viewport: panel becomes a flex column with bounded height */
 .haiphen-overlay__panel{
   position: relative;
   width: min(1100px, calc(100vw - 2rem));
   margin: 1rem auto;
+
+  /* NEW */
+  max-height: calc(100vh - 2rem);
+  display: flex;
+  flex-direction: column;
+
   border-radius: 18px;
   overflow: hidden;
   border: 1px solid rgba(255,255,255,0.14);
@@ -37,8 +44,14 @@
   backdrop-filter: blur(10px);
 }
 
+/* On taller screens you used bigger margins; keep height math consistent */
 @media (min-height: 700px){
-  .haiphen-overlay__panel{ margin: 2.0rem auto; }
+  .haiphen-overlay__panel{
+    margin: 2.0rem auto;
+
+    /* NEW */
+    max-height: calc(100vh - 4rem);
+  }
 }
 
 .haiphen-overlay__header{
@@ -49,6 +62,9 @@
   padding: 1rem 1.1rem;
   background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(255,255,255,0.86));
   border-bottom: 1px solid rgba(10,20,40,0.08);
+
+  /* NEW */
+  flex: 0 0 auto;
 }
 
 .haiphen-overlay__kicker{
@@ -91,23 +107,40 @@
   box-shadow: 0 8px 18px rgba(0,0,0,0.12);
 }
 
+/* ✅ Body fills remaining panel height and is allowed to shrink */
 .haiphen-overlay__body{
   display: grid;
   grid-template-columns: 1fr 300px;
   gap: 0;
+
+  /* NEW */
+  flex: 1 1 auto;
+  min-height: 0; /* critical: allows grid children to shrink */
 }
 
 @media (max-width: 980px){
   .haiphen-overlay__body{ grid-template-columns: 1fr; }
 }
 
+/* ✅ ChartWrap becomes a flex column so canvas can flex */
 .haiphen-overlay__chartWrap{
   padding: 1rem 1.1rem 1.1rem;
+
+  /* NEW */
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
 }
 
 .haiphen-overlay__canvas{
   width: 100%;
-  height: 420px;
+
+  /* CHANGED: remove fixed 420px height; let it flex */
+  height: auto;
+  flex: 1 1 auto;
+  min-height: 180px;
+
   border-radius: 16px;
   border: 1px solid rgba(10,20,40,0.08);
   background: linear-gradient(180deg, #ffffff, #fbfcfe);
@@ -118,6 +151,9 @@
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: .6rem;
+
+  /* NEW */
+  flex: 0 0 auto;
 }
 
 @media (max-width: 980px){
@@ -142,10 +178,15 @@
   color: #142033;
 }
 
+/* ✅ Controls can shrink (no panel overflow); keep your look */
 .haiphen-overlay__controls{
   padding: 1rem 1rem 1.1rem;
   border-left: 1px solid rgba(10,20,40,0.08);
   background: rgba(250,252,255,0.85);
+
+  /* NEW */
+  min-height: 0;
+  overflow: hidden;
 }
 
 @media (max-width: 980px){
@@ -207,6 +248,8 @@
   line-height: 1.45;
 }
 
+/* NOTE: entityRow / extremes / portfolio are children of __body
+   and will appear before controls. Keep them compact and allow shrink. */
 .haiphen-overlay__entityRow {
   display: flex;
   align-items: center;
@@ -236,6 +279,9 @@
 .haiphen-overlay__meta {
   font-size: 12px;
   color: rgba(20,32,51,0.65);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .haiphen-overlay__extremes {
@@ -272,10 +318,44 @@
   border-top: 0;
 }
 
+/* Portfolio block */
 .haiphen-overlay__portfolio {
   margin-top: 12px;
   padding: 10px;
   border: 1px solid rgba(20,32,51,0.10);
   border-radius: 12px;
   background: rgba(255,255,255,0.75);
+}
+
+/* Portfolio should feel intentionally minimal */
+.haiphen-overlay__portfolio {
+  margin-top: 14px;
+}
+.haiphen-overlay__portfolio label {
+  display: block;
+  font-size: 12px;
+  opacity: 0.75;
+  margin-bottom: 8px;
+}
+.haiphen-overlay__portfolio select {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+}
+
+/* ------------------------------------------------------------------
+   Short viewports: reduce density slightly (no scrolling, fit better)
+   ------------------------------------------------------------------ */
+@media (max-height: 720px){
+  .haiphen-overlay__header{ padding: .85rem .95rem; }
+  .haiphen-overlay__chartWrap{ padding: .85rem .95rem .95rem; }
+  .haiphen-overlay__controls{ padding: .85rem .9rem .95rem; }
+
+  .haiphen-overlay__stats{
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .haiphen-overlay__canvas{
+    min-height: 150px;
+  }
 }
