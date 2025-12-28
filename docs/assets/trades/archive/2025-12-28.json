@@ -1,16 +1,16 @@
 {
   "date": "2025-12-28",
-  "updated_at": "2025-12-28T19:13:46.205Z",
+  "updated_at": "2025-12-28T22:19:06.502Z",
   "headline": "Haiphen day trading snapshot (2025-12-28)",
-  "summary": "39,435 signals scanned • 5,096 opportunities flagged • 192 entries opened.",
+  "summary": "140,225 signals scanned • 20,300 opportunities flagged • 248 entries opened.",
   "rows": [
     {
       "kpi": "Signals scanned",
-      "value": "39,435"
+      "value": "140,225"
     },
     {
       "kpi": "Opportunities flagged",
-      "value": "5,096"
+      "value": "20,300"
     },
     {
       "kpi": "Notifications sent",
@@ -18,7 +18,7 @@
     },
     {
       "kpi": "Entries opened",
-      "value": "192"
+      "value": "248"
     },
     {
       "kpi": "Exits closed",
@@ -46,63 +46,63 @@
     },
     {
       "kpi": "Delta",
-      "value": "-0.3094"
+      "value": "-0.3432"
     },
     {
       "kpi": "Gamma",
-      "value": "0.006880"
+      "value": "0.006563"
     },
     {
       "kpi": "Theta",
-      "value": "-4.5598"
+      "value": "-4.6846"
     },
     {
       "kpi": "Vega",
-      "value": "16.1168"
+      "value": "8.3082"
     },
     {
       "kpi": "Rho",
-      "value": "-93.8674"
+      "value": "-61.2088"
     },
     {
       "kpi": "Historical Volatility",
-      "value": "0.6376"
+      "value": "0.7188"
     },
     {
       "kpi": "Uncertainty",
-      "value": "55.8887"
+      "value": "32.6613"
     },
     {
       "kpi": "Fair Market Price",
-      "value": "$101.41"
+      "value": "$90.35"
     },
     {
       "kpi": "IV Skew",
-      "value": "-0.0781"
+      "value": "-0.0605"
     },
     {
       "kpi": "Decay Rate",
-      "value": "9.170493"
+      "value": "9.561703"
     },
     {
       "kpi": "Gamma Exposure",
-      "value": "0.006938"
+      "value": "0.008504"
     },
     {
       "kpi": "Volume Ratio",
-      "value": "15.3420"
+      "value": "16.7035"
     },
     {
       "kpi": "OI Ratio",
-      "value": "46.6055"
+      "value": "29.5677"
     },
     {
       "kpi": "Liquidity Ratios",
-      "value": "30.9737"
+      "value": "23.1356"
     },
     {
       "kpi": "Decay Weight",
-      "value": "1.5718"
+      "value": "1.5836"
     },
     {
       "kpi": "Portfolio",
