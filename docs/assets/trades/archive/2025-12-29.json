@@ -1,729 +1,117 @@
 {
   "date": "2025-12-29",
-  "updated_at": "2025-12-29T16:45:45.161Z",
-  "headline": "Haiphen day trading snapshot ($240.00 on 2025-12-29)",
-  "summary": "55,610 signals scanned • 6,037 opportunities flagged • 3 entries opened • 3 exits closed • $240.00 pnl.",
+  "updated_at": "2025-12-29T19:42:24.666Z",
+  "headline": "Haiphen Day Trading snapshot (fallback metrics)",
+  "summary": "DB unreachable for this run. Showing fallback metrics.",
   "rows": [
     {
       "kpi": "Signals scanned",
-      "value": "55,610"
+      "value": "—"
     },
     {
       "kpi": "Opportunities flagged",
-      "value": "6,037"
+      "value": "—"
     },
     {
       "kpi": "Notifications sent",
-      "value": "982"
+      "value": "—"
     },
     {
       "kpi": "Entries opened",
-      "value": "3"
+      "value": "—"
     },
     {
       "kpi": "Exits closed",
-      "value": "3"
+      "value": "—"
     },
     {
       "kpi": "Avg hold time",
-      "value": "7s"
+      "value": "—"
     },
     {
       "kpi": "Daily PnL",
-      "value": "$240.00"
+      "value": "—"
     },
     {
       "kpi": "Win rate",
-      "value": "58.64%"
+      "value": "—"
     },
     {
       "kpi": "Max drawdown",
-      "value": "6.43%"
+      "value": "—"
     },
     {
       "kpi": "Sharpe ratio",
-      "value": "0.31"
+      "value": "—"
     },
     {
       "kpi": "Delta",
-      "value": "-0.4830"
+      "value": "—"
     },
     {
       "kpi": "Gamma",
-      "value": "0.006092"
+      "value": "—"
     },
     {
       "kpi": "Theta",
-      "value": "-0.7893"
+      "value": "—"
     },
     {
       "kpi": "Vega",
-      "value": "4.7400"
+      "value": "—"
     },
     {
       "kpi": "Rho",
-      "value": "-50.4165"
+      "value": "—"
     },
     {
       "kpi": "Historical Volatility",
-      "value": "0.5250"
+      "value": "—"
     },
     {
       "kpi": "Uncertainty",
-      "value": "19.2171"
+      "value": "—"
     },
     {
       "kpi": "Fair Market Price",
-      "value": "$69.53"
+      "value": "—"
     },
     {
       "kpi": "IV Skew",
-      "value": "-0.0322"
+      "value": "—"
     },
     {
       "kpi": "Decay Rate",
-      "value": "7.106608"
+      "value": "—"
     },
     {
       "kpi": "Gamma Exposure",
-      "value": "0.006896"
+      "value": "—"
     },
     {
       "kpi": "Volume Ratio",
-      "value": "20.4257"
+      "value": "—"
     },
     {
       "kpi": "OI Ratio",
-      "value": "33.6737"
+      "value": "—"
     },
     {
       "kpi": "Liquidity Ratios",
-      "value": "27.0497"
+      "value": "—"
     },
     {
       "kpi": "Decay Weight",
-      "value": "1.9215"
-    },
-    {
-      "kpi": "Portfolio",
-      "value": "60"
+      "value": "—"
     }
   ],
   "overlay": {
-    "seriesByKpi": {
-      "Portfolio": [],
-      "Signals scanned": [],
-      "Opportunities flagged": [],
-      "Notifications sent": [],
-      "Entries opened": [],
-      "Exits closed": [],
-      "Avg hold time": [],
-      "Daily PnL": [],
-      "Win rate": [],
-      "Max drawdown": [],
-      "Sharpe ratio": [],
-      "Delta": [],
-      "Gamma": [],
-      "Theta": [],
-      "Vega": [],
-      "Rho": [],
-      "Historical Volatility": [],
-      "Uncertainty": [],
-      "Fair Market Price": [],
-      "IV Skew": [],
-      "Decay Rate": [],
-      "Gamma Exposure": [],
-      "Volume Ratio": [],
-      "OI Ratio": [],
-      "Liquidity Ratios": [],
-      "Decay Weight": []
-    },
+    "seriesByKpi": {},
     "extremes": {
-      "byKpi": {
-        "Daily PnL": {
-          "items": [
-            {
-              "day": "Mon Dec 29",
-              "kpi": "Daily PnL",
-              "side": "hi",
-              "rank": 1,
-              "trade_id": 808092,
-              "symbol": "TSLA",
-              "contract_name": "TSLA280616P00730000",
-              "metric_raw": -185,
-              "metric_abs": 185,
-              "individual_pnl": -185,
-              "abs_individual_pnl": 185,
-              "percent_change": -0.57,
-              "cost_basis": -32430,
-              "qty": 1,
-              "broker_unrealized_pl": -185,
-              "broker_unrealized_plpc": -0.00570459,
-              "broker_market_value": -32615,
-              "broker_avg_entry_price": 324.3,
-              "bid_price": 324.8,
-              "ask_price": 326.7,
-              "mid_price": 325.75,
-              "mid_ts": "2025-12-29T22:44:35.446Z",
-              "mid_mark_pnl": -145,
-              "liquidity_drag": -40
-            },
-            {
-              "day": "Mon Dec 29",
-              "kpi": "Daily PnL",
-              "side": "lo",
-              "rank": 1,
-              "trade_id": 808092,
-              "symbol": "TSLA",
-              "contract_name": "TSLA280616P00730000",
-              "metric_raw": -185,
-              "metric_abs": 185,
-              "individual_pnl": -185,
-              "abs_individual_pnl": 185,
-              "percent_change": -0.57,
-              "cost_basis": -32430,
-              "qty": 1,
-              "broker_unrealized_pl": -185,
-              "broker_unrealized_plpc": -0.00570459,
-              "broker_market_value": -32615,
-              "broker_avg_entry_price": 324.3,
-              "bid_price": 324.8,
-              "ask_price": 326.7,
-              "mid_price": 325.75,
-              "mid_ts": "2025-12-29T22:44:35.446Z",
-              "mid_mark_pnl": -145,
-              "liquidity_drag": -40
-            }
-          ]
-        },
-        "Liquidity Drag": {
-          "items": [
-            {
-              "day": "Mon Dec 29",
-              "kpi": "Liquidity Drag",
-              "side": "hi",
-              "rank": 1,
-              "trade_id": 808092,
-              "symbol": "TSLA",
-              "contract_name": "TSLA280616P00730000",
-              "metric_raw": -40,
-              "metric_abs": 40,
-              "individual_pnl": -185,
-              "abs_individual_pnl": 185,
-              "percent_change": -0.57,
-              "cost_basis": -32430,
-              "qty": 1,
-              "broker_unrealized_pl": -185,
-              "broker_unrealized_plpc": -0.00570459,
-              "broker_market_value": -32615,
-              "broker_avg_entry_price": 324.3,
-              "bid_price": 324.8,
-              "ask_price": 326.7,
-              "mid_price": 325.75,
-              "mid_ts": "2025-12-29T22:44:35.446Z",
-              "mid_mark_pnl": -145,
-              "liquidity_drag": -40
-            },
-            {
-              "day": "Mon Dec 29",
-              "kpi": "Liquidity Drag",
-              "side": "lo",
-              "rank": 1,
-              "trade_id": 808092,
-              "symbol": "TSLA",
-              "contract_name": "TSLA280616P00730000",
-              "metric_raw": -40,
-              "metric_abs": 40,
-              "individual_pnl": -185,
-              "abs_individual_pnl": 185,
-              "percent_change": -0.57,
-              "cost_basis": -32430,
-              "qty": 1,
-              "broker_unrealized_pl": -185,
-              "broker_unrealized_plpc": -0.00570459,
-              "broker_market_value": -32615,
-              "broker_avg_entry_price": 324.3,
-              "bid_price": 324.8,
-              "ask_price": 326.7,
-              "mid_price": 325.75,
-              "mid_ts": "2025-12-29T22:44:35.446Z",
-              "mid_mark_pnl": -145,
-              "liquidity_drag": -40
-            }
-          ]
-        },
-        "Mid Mark PnL": {
-          "items": [
-            {
-              "day": "Mon Dec 29",
-              "kpi": "Mid Mark PnL",
-              "side": "hi",
-              "rank": 1,
-              "trade_id": 808092,
-              "symbol": "TSLA",
-              "contract_name": "TSLA280616P00730000",
-              "metric_raw": -145,
-              "metric_abs": 145,
-              "individual_pnl": -185,
-              "abs_individual_pnl": 185,
-              "percent_change": -0.57,
-              "cost_basis": -32430,
-              "qty": 1,
-              "broker_unrealized_pl": -185,
-              "broker_unrealized_plpc": -0.00570459,
-              "broker_market_value": -32615,
-              "broker_avg_entry_price": 324.3,
-              "bid_price": 324.8,
-              "ask_price": 326.7,
-              "mid_price": 325.75,
-              "mid_ts": "2025-12-29T22:44:35.446Z",
-              "mid_mark_pnl": -145,
-              "liquidity_drag": -40
-            },
-            {
-              "day": "Mon Dec 29",
-              "kpi": "Mid Mark PnL",
-              "side": "lo",
-              "rank": 1,
-              "trade_id": 808092,
-              "symbol": "TSLA",
-              "contract_name": "TSLA280616P00730000",
-              "metric_raw": -145,
-              "metric_abs": 145,
-              "individual_pnl": -185,
-              "abs_individual_pnl": 185,
-              "percent_change": -0.57,
-              "cost_basis": -32430,
-              "qty": 1,
-              "broker_unrealized_pl": -185,
-              "broker_unrealized_plpc": -0.00570459,
-              "broker_market_value": -32615,
-              "broker_avg_entry_price": 324.3,
-              "bid_price": 324.8,
-              "ask_price": 326.7,
-              "mid_price": 325.75,
-              "mid_ts": "2025-12-29T22:44:35.446Z",
-              "mid_mark_pnl": -145,
-              "liquidity_drag": -40
-            }
-          ]
-        },
-        "Percent Change": {
-          "items": [
-            {
-              "day": "Mon Dec 29",
-              "kpi": "Percent Change",
-              "side": "hi",
-              "rank": 1,
-              "trade_id": 808092,
-              "symbol": "TSLA",
-              "contract_name": "TSLA280616P00730000",
-              "metric_raw": -0.57,
-              "metric_abs": 0.57,
-              "individual_pnl": -185,
-              "abs_individual_pnl": 185,
-              "percent_change": -0.57,
-              "cost_basis": -32430,
-              "qty": 1,
-              "broker_unrealized_pl": -185,
-              "broker_unrealized_plpc": -0.00570459,
-              "broker_market_value": -32615,
-              "broker_avg_entry_price": 324.3,
-              "bid_price": 324.8,
-              "ask_price": 326.7,
-              "mid_price": 325.75,
-              "mid_ts": "2025-12-29T22:44:35.446Z",
-              "mid_mark_pnl": -145,
-              "liquidity_drag": -40
-            },
-            {
-              "day": "Mon Dec 29",
-              "kpi": "Percent Change",
-              "side": "lo",
-              "rank": 1,
-              "trade_id": 808092,
-              "symbol": "TSLA",
-              "contract_name": "TSLA280616P00730000",
-              "metric_raw": -0.57,
-              "metric_abs": 0.57,
-              "individual_pnl": -185,
-              "abs_individual_pnl": 185,
-              "percent_change": -0.57,
-              "cost_basis": -32430,
-              "qty": 1,
-              "broker_unrealized_pl": -185,
-              "broker_unrealized_plpc": -0.00570459,
-              "broker_market_value": -32615,
-              "broker_avg_entry_price": 324.3,
-              "bid_price": 324.8,
-              "ask_price": 326.7,
-              "mid_price": 325.75,
-              "mid_ts": "2025-12-29T22:44:35.446Z",
-              "mid_mark_pnl": -145,
-              "liquidity_drag": -40
-            }
-          ]
-        },
-        "Unrealized P/L": {
-          "items": [
-            {
-              "day": "Mon Dec 29",
-              "kpi": "Unrealized P/L",
-              "side": "hi",
-              "rank": 1,
-              "trade_id": 808092,
-              "symbol": "TSLA",
-              "contract_name": "TSLA280616P00730000",
-              "metric_raw": -185,
-              "metric_abs": 185,
-              "individual_pnl": -185,
-              "abs_individual_pnl": 185,
-              "percent_change": -0.57,
-              "cost_basis": -32430,
-              "qty": 1,
-              "broker_unrealized_pl": -185,
-              "broker_unrealized_plpc": -0.00570459,
-              "broker_market_value": -32615,
-              "broker_avg_entry_price": 324.3,
-              "bid_price": 324.8,
-              "ask_price": 326.7,
-              "mid_price": 325.75,
-              "mid_ts": "2025-12-29T22:44:35.446Z",
-              "mid_mark_pnl": -145,
-              "liquidity_drag": -40
-            },
-            {
-              "day": "Mon Dec 29",
-              "kpi": "Unrealized P/L",
-              "side": "lo",
-              "rank": 1,
-              "trade_id": 808092,
-              "symbol": "TSLA",
-              "contract_name": "TSLA280616P00730000",
-              "metric_raw": -185,
-              "metric_abs": 185,
-              "individual_pnl": -185,
-              "abs_individual_pnl": 185,
-              "percent_change": -0.57,
-              "cost_basis": -32430,
-              "qty": 1,
-              "broker_unrealized_pl": -185,
-              "broker_unrealized_plpc": -0.00570459,
-              "broker_market_value": -32615,
-              "broker_avg_entry_price": 324.3,
-              "bid_price": 324.8,
-              "ask_price": 326.7,
-              "mid_price": 325.75,
-              "mid_ts": "2025-12-29T22:44:35.446Z",
-              "mid_mark_pnl": -145,
-              "liquidity_drag": -40
-            }
-          ]
-        }
-      }
+      "hi": [],
+      "lo": []
     },
-    "portfolioAssets": [
-      {
-        "trade_id": 797864,
-        "symbol": "MRVL",
-        "contract_name": "MRVL260220C00095000"
-      },
-      {
-        "trade_id": 797884,
-        "symbol": "MRVL",
-        "contract_name": "MRVL260220P00095000"
-      },
-      {
-        "trade_id": 797869,
-        "symbol": "MRVL",
-        "contract_name": "MRVL260320C00100000"
-      },
-      {
-        "trade_id": 797870,
-        "symbol": "MRVL",
-        "contract_name": "MRVL260320C00105000"
-      },
-      {
-        "trade_id": 797886,
-        "symbol": "MRVL",
-        "contract_name": "MRVL260320P00100000"
-      },
-      {
-        "trade_id": 797871,
-        "symbol": "MRVL",
-        "contract_name": "MRVL260618C00110000"
-      },
-      {
-        "trade_id": 797890,
-        "symbol": "MRVL",
-        "contract_name": "MRVL260618P00100000"
-      },
-      {
-        "trade_id": 797887,
-        "symbol": "MRVL",
-        "contract_name": "MRVL260618P00110000"
-      },
-      {
-        "trade_id": 797856,
-        "symbol": "MRVL",
-        "contract_name": "MRVL260918C00110000"
-      },
-      {
-        "trade_id": 797857,
-        "symbol": "MRVL",
-        "contract_name": "MRVL260918P00110000"
-      },
-      {
-        "trade_id": 797872,
-        "symbol": "MRVL",
-        "contract_name": "MRVL261218C00097500"
-      },
-      {
-        "trade_id": 797874,
-        "symbol": "MRVL",
-        "contract_name": "MRVL261218C00100000"
-      },
-      {
-        "trade_id": 797859,
-        "symbol": "MRVL",
-        "contract_name": "MRVL261218C00110000"
-      },
-      {
-        "trade_id": 797844,
-        "symbol": "MRVL",
-        "contract_name": "MRVL261218C00120000"
-      },
-      {
-        "trade_id": 797889,
-        "symbol": "MRVL",
-        "contract_name": "MRVL261218P00100000"
-      },
-      {
-        "trade_id": 797860,
-        "symbol": "MRVL",
-        "contract_name": "MRVL261218P00110000"
-      },
-      {
-        "trade_id": 797845,
-        "symbol": "MRVL",
-        "contract_name": "MRVL261218P00120000"
-      },
-      {
-        "trade_id": 797875,
-        "symbol": "MRVL",
-        "contract_name": "MRVL270115C00062500"
-      },
-      {
-        "trade_id": 797862,
-        "symbol": "MRVL",
-        "contract_name": "MRVL270115C00062500"
-      },
-      {
-        "trade_id": 797876,
-        "symbol": "MRVL",
-        "contract_name": "MRVL270115C00077500"
-      },
-      {
-        "trade_id": 797841,
-        "symbol": "MRVL",
-        "contract_name": "MRVL270115C00115000"
-      },
-      {
-        "trade_id": 797877,
-        "symbol": "MRVL",
-        "contract_name": "MRVL270115C00140000"
-      },
-      {
-        "trade_id": 797842,
-        "symbol": "MRVL",
-        "contract_name": "MRVL270115P00115000"
-      },
-      {
-        "trade_id": 797832,
-        "symbol": "MRVL",
-        "contract_name": "MRVL270617C00085000"
-      },
-      {
-        "trade_id": 797880,
-        "symbol": "MRVL",
-        "contract_name": "MRVL270617C00100000"
-      },
-      {
-        "trade_id": 797853,
-        "symbol": "MRVL",
-        "contract_name": "MRVL270617C00110000"
-      },
-      {
-        "trade_id": 797831,
-        "symbol": "MRVL",
-        "contract_name": "MRVL270617P00080000"
-      },
-      {
-        "trade_id": 798057,
-        "symbol": "MRVL",
-        "contract_name": "MRVL270617P00100000"
-      },
-      {
-        "trade_id": 797854,
-        "symbol": "MRVL",
-        "contract_name": "MRVL270617P00110000"
-      },
-      {
-        "trade_id": 797879,
-        "symbol": "PEP",
-        "contract_name": "PEP260320C00160000"
-      },
-      {
-        "trade_id": 797894,
-        "symbol": "PEP",
-        "contract_name": "PEP260320P00160000"
-      },
-      {
-        "trade_id": 797835,
-        "symbol": "PEP",
-        "contract_name": "PEP260417C00160000"
-      },
-      {
-        "trade_id": 797836,
-        "symbol": "PEP",
-        "contract_name": "PEP260417P00160000"
-      },
-      {
-        "trade_id": 797838,
-        "symbol": "PRAX",
-        "contract_name": "PRAX280121C00280000"
-      },
-      {
-        "trade_id": 797837,
-        "symbol": "PRAX",
-        "contract_name": "PRAX280121P00260000"
-      },
-      {
-        "trade_id": 797839,
-        "symbol": "PRAX",
-        "contract_name": "PRAX280121P00280000"
-      },
-      {
-        "trade_id": 798832,
-        "symbol": "QUBT",
-        "contract_name": "QUBT260102C00014500"
-      },
-      {
-        "trade_id": 797865,
-        "symbol": "SOFI",
-        "contract_name": "SOFI260417C00026000"
-      },
-      {
-        "trade_id": 797883,
-        "symbol": "SOFI",
-        "contract_name": "SOFI260417P00025000"
-      },
-      {
-        "trade_id": 798125,
-        "symbol": "SOFI",
-        "contract_name": "SOFI260515C00032000"
-      },
-      {
-        "trade_id": 798126,
-        "symbol": "SOFI",
-        "contract_name": "SOFI260515P00032000"
-      },
-      {
-        "trade_id": 798137,
-        "symbol": "SOFI",
-        "contract_name": "SOFI260717C00034000"
-      },
-      {
-        "trade_id": 798138,
-        "symbol": "SOFI",
-        "contract_name": "SOFI260717P00034000"
-      },
-      {
-        "trade_id": 807594,
-        "symbol": "TSLA",
-        "contract_name": "TSLA261218P00650000"
-      },
-      {
-        "trade_id": 808057,
-        "symbol": "TSLA",
-        "contract_name": "TSLA261218P00650000"
-      },
-      {
-        "trade_id": 807616,
-        "symbol": "TSLA",
-        "contract_name": "TSLA270115P00600000"
-      },
-      {
-        "trade_id": 807611,
-        "symbol": "TSLA",
-        "contract_name": "TSLA270115P00650000"
-      },
-      {
-        "trade_id": 807629,
-        "symbol": "TSLA",
-        "contract_name": "TSLA270115P00940000"
-      },
-      {
-        "trade_id": 808092,
-        "symbol": "TSLA",
-        "contract_name": "TSLA280616P00730000"
-      },
-      {
-        "trade_id": 797850,
-        "symbol": "VEEV",
-        "contract_name": "VEEV270115C00250000"
-      },
-      {
-        "trade_id": 797849,
-        "symbol": "VEEV",
-        "contract_name": "VEEV270115P00240000"
-      },
-      {
-        "trade_id": 797851,
-        "symbol": "VEEV",
-        "contract_name": "VEEV270115P00250000"
-      },
-      {
-        "trade_id": 797881,
-        "symbol": "VEEV",
-        "contract_name": "VEEV280121C00230000"
-      },
-      {
-        "trade_id": 798122,
-        "symbol": "WULF",
-        "contract_name": "WULF260515C00015000"
-      },
-      {
-        "trade_id": 798146,
-        "symbol": "WULF",
-        "contract_name": "WULF260515C00017000"
-      },
-      {
-        "trade_id": 798149,
-        "symbol": "WULF",
-        "contract_name": "WULF260515C00020000"
-      },
-      {
-        "trade_id": 798121,
-        "symbol": "WULF",
-        "contract_name": "WULF260515P00014000"
-      },
-      {
-        "trade_id": 798145,
-        "symbol": "WULF",
-        "contract_name": "WULF260515P00016000"
-      },
-      {
-        "trade_id": 798147,
-        "symbol": "WULF",
-        "contract_name": "WULF260515P00017000"
-      },
-      {
-        "trade_id": 798150,
-        "symbol": "WULF",
-        "contract_name": "WULF260515P00020000"
-      }
-    ]
+    "portfolioAssets": []
   },
-  "source": "mv"
+  "source": "fallback"
 }
