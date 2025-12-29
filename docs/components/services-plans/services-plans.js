@@ -1,24 +1,22 @@
-/* docs/components/services-plans/services-plans.js
- * Renders a pricing/subscription block for Services.
- * - Mount inside the Services section via <div id="services-plans-mount"></div>
- * - Click handlers:
- *    - Subscribe: ensure login, then redirect to Square hosted link (placeholder)
- *    - Contact: jumps to Contact section
- */
+/* docs/components/services-plans/services-plans.js */
 (function () {
   'use strict';
 
   const LOG = '[services-plans]';
-  const MOUNT_ID = 'services-plans-mount';
 
-  // Keep consistent with index.html
   const AUTH_ORIGIN = 'https://auth.haiphen.io';
 
   // TODO: replace with real Square hosted checkout links (per plan)
   const SQUARE_CHECKOUT = {
+    // Streaming / existing
     signals_starter: 'https://square.link/u/f3nO4ktd',
     fintech_pro: 'https://square.link/u/f3nO4ktd',
     enterprise_custom: 'https://square.link/u/f3nO4ktd',
+
+    // Hard Tech (new)
+    hardtech_starter: 'https://square.link/u/f3nO4ktd',
+    hardtech_pro: 'https://square.link/u/f3nO4ktd',
+    hardtech_enterprise: 'https://square.link/u/f3nO4ktd',
   };
 
   function qs(id) { return document.getElementById(id); }
@@ -63,6 +61,11 @@
   }
 
   async function handleSubscribe(planKey) {
+    const ok = await isLoggedIn();
+    if (!ok) {
+      redirectToLogin(window.location.href);
+      return;
+    }
     goToSquare(planKey);
   }
 
@@ -73,7 +76,7 @@
 
   function wire(root) {
     root.addEventListener('click', async (e) => {
-      const btn = e.target.closest('button[data-action]');
+      const btn = e.target.closest('[data-action]');
       if (!btn) return;
 
       const action = btn.getAttribute('data-action');
@@ -91,22 +94,33 @@
     });
   }
 
-  async function loadServicesPlans() {
-    const mount = qs(MOUNT_ID);
-    if (!mount) {
-      // Not an error: only exists when Services section is rendered
-      return;
-    }
+  async function mountBlock({ mountId, htmlUrl }) {
+    const mount = qs(mountId);
+    if (!mount) return;
 
     // Avoid double insert
     if (mount.querySelector('.services-plans')) return;
 
+    const html = await fetchText(htmlUrl);
+    mount.innerHTML = html;
+    wire(mount);
+  }
+
+  async function loadServicesPlans() {
+    // Shared styles for both blocks
     await injectCssOnce('components/services-plans/services-plans.css');
 
-    const html = await fetchText('components/services-plans/services-plans.html');
-    mount.innerHTML = html;
+    // Existing “Streaming” block (already in services-plans.html)
+    await mountBlock({
+      mountId: 'services-plans-mount',
+      htmlUrl: 'components/services-plans/services-plans.html',
+    });
 
-    wire(mount);
+    // New “Hard Tech” block
+    await mountBlock({
+      mountId: 'services-hardtech-mount',
+      htmlUrl: 'components/services-plans/services-hardtech.html',
+    });
   }
 
   window.HAIPHEN = window.HAIPHEN || {};

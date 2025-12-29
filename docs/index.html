@@ -482,6 +482,60 @@
 	@media (min-width: 920px) {
 	  .main-container { padding-left: 220px; }
 	}
+
+	/* ============================================================
+	   Snap Sections (one full section visible at a time)
+	============================================================ */
+
+	/* A scrollable stack that snap-locks to each child panel */
+	.snap-stack{
+	  /* viewport minus fixed header and a little breathing room */
+	  height: calc(100vh - var(--header-h) - 24px);
+	  overflow-y: auto;
+	  overscroll-behavior: contain;
+	  scroll-snap-type: y mandatory;
+	  scroll-behavior: smooth;
+
+	  /* spacer so one panel sits “alone” in the viewport */
+	  padding: 12vh 0;
+
+	  /* nicer on iOS */
+	  -webkit-overflow-scrolling: touch;
+	}
+
+	/* Each snap panel is a full “screen” */
+	.snap-panel{
+	  scroll-snap-align: center;
+	  scroll-snap-stop: always;
+
+	  min-height: calc(100vh - var(--header-h) - 24px);
+	  display: flex;
+	  align-items: center;
+	  justify-content: center;
+
+	  padding: 2rem 0;
+
+	  /* “hide” non-active panels until you scroll */
+	  opacity: 0.18;
+	  filter: blur(1px);
+	  transform: scale(0.985);
+	  pointer-events: none;
+
+	  transition: opacity 220ms ease, filter 220ms ease, transform 220ms ease;
+	}
+
+	.snap-panel.is-active{
+	  opacity: 1;
+	  filter: none;
+	  transform: scale(1);
+	  pointer-events: auto;
+	}
+
+	/* Respect reduced motion */
+	@media (prefers-reduced-motion: reduce){
+	  .snap-stack{ scroll-behavior: auto; }
+	  .snap-panel{ transition: none; }
+	}	
     /* ============================================================
       Trades KPI Grid
     ============================================================ */
@@ -1475,323 +1529,38 @@
 
           </section>
         `,
-        "Services": `
-          <div id="services-plans-mount"></div>
+		"Services": `
+		  <div class="snap-stack" data-snap-stack="services">
+		    <section class="snap-panel">
+		      <div id="services-plans-mount"></div>
+		    </section>
 
-          <h2>Mission</h2>
-          <br>
-          <p>
-            <a href="https://haiphen.io" target="_blank" rel="noopener noreferrer"><strong>Haiphen</strong></a>[Hi-fen]: A <strong>signals intelligence</strong> tech startup focused on delivering custom, open src solutions to various cloud, edge, and infra obstacles across a variety of technical, business, and scientific domains.
-          </p>
-
-            <!-- How it works (compact visual) -->
-            <div class="trades-panel">
-              <div class="panel-head">
-                <h3>How it works</h3>
-                <p class="trades-muted">A high-level pipeline view (details expandable below).</p>
-              </div>
-
-              <div id="trades-pipeline" class="pipeline">
-                <div class="pipe-step">
-                  <div class="pipe-node">1</div>
-                  <div class="pipe-text">
-                    <div class="pipe-title">Ingest</div>
-                    <div class="pipe-sub">Market data + signals</div>
-                  </div>
-                </div>
-                <div class="pipe-arrow">→</div>
-
-                <div class="pipe-step">
-                  <div class="pipe-node">2</div>
-                  <div class="pipe-text">
-                    <div class="pipe-title">Score</div>
-                    <div class="pipe-sub">Arb & risk filters</div>
-                  </div>
-                </div>
-                <div class="pipe-arrow">→</div>
-
-                <div class="pipe-step">
-                  <div class="pipe-node">3</div>
-                  <div class="pipe-text">
-                    <div class="pipe-title">Execute</div>
-                    <div class="pipe-sub">Orders + guardrails</div>
-                  </div>
-                </div>
-                <div class="pipe-arrow">→</div>
-
-                <div class="pipe-step">
-                  <div class="pipe-node">4</div>
-                  <div class="pipe-text">
-                    <div class="pipe-title">Monitor</div>
-                    <div class="pipe-sub">Telemetry + exits</div>
-                  </div>
-                </div>
-                <div class="pipe-arrow">→</div>
-
-                <div class="pipe-step">
-                  <div class="pipe-node">5</div>
-                  <div class="pipe-text">
-                    <div class="pipe-title">Report</div>
-                    <div class="pipe-sub">KPIs + archive</div>
-                  </div>
-                </div>
-              </div>
-
-
-	          <br>
-	          <!-- New Steps Row -->
-	          <div class="steps-container">
-	            <div class="step">
-	              <a href="https://example.com/step1" target="_blank" rel="noopener noreferrer">
-	                <img src="assets/step1.svg" alt="Step 1">
-	              </a>
-	              <p>Diagnose &amp; Draft</p>
-	            </div>
-	            <div class="step">
-	              <a href="https://example.com/step2" target="_blank" rel="noopener noreferrer">
-	                <img src="assets/step2.svg" alt="Step 2">
-	              </a>
-	              <p>Execute &amp; Enrich</p>
-	            </div>
-	            <div class="step">
-	              <a href="https://example.com/step3" target="_blank" rel="noopener noreferrer">
-	                <img src="assets/step3.svg" alt="Step 3">
-	              </a>
-	              <p>Review &amp; Revise</p>
-	            </div>
-	          </div>
-	          <br>
-
-              <div class="trades-accordions">
-                <details class="acc" open>
-                  <summary>Risk posture & controls</summary>
-                  <ul>
-                    <li><strong>Intraday only:</strong> no overnight holdings; exposure is exited daily.</li>
-                    <li><strong>Speed-first strategy:</strong> short-lived positions, frequent reuse of edges.</li>
-                    <li><strong>Monitoring & exits:</strong> automated close logic + portfolio teardown.</li>
-                    <li><em>(You can expand this list with your real controls: locks, limits, slippage checks, etc.)</em></li>
-                  </ul>
-                </details>
-
-                <details class="acc">
-                  <summary>What these metrics represent</summary>
-                  <p class="trades-muted" style="margin-top:.5rem;">
-                    The table below is populated from daily runs. It summarizes execution volume, P&L deltas,
-                    and stability indicators. Archive cards allow day-to-day comparison.
-                  </p>
-                </details>
-              </div>
-            </div>          
-          <div class="about-columns">
-            <div class="about-col"> 
-              <p>
-                We process 2M+ signals across the internet each day for downstream applications and usecases. With a deep foundation in <strong>Computational Linguistics</strong>, <strong>NLP</strong>, and <strong>ML</strong>, we geek out over building the plumbing and infra (e.g. data pipelines, ETL, entity extraction, pruning, clustering) that simplifies unwanted haziness into reliable API calls. Consider us your personal DBA (database admin) but with a domain expertise that actively persists in your data through its entire lifecycle.
-              </p>
-            </div>
-            <div class="about-col">
-              <p>
-                We're excited about the future: the more <strong>custom solutions</strong> we're able deliver, the closer we move towards our vision of productizing <strong>knowledge graphs</strong> into every company (without the headache). <i>Note</i>: we're intentional barebones as you may have noticed. We believe good software was and should be transparent, inspectable and about what's under the hood.
-              </p>
-            </div>
-          </div>
-
-          <!-- about/paragraph placeholders -->
-          <div class="services-about">
-            <h3>Services</h3>
-            <p>The current landscape of 'Tech' problems go beyond traditional verticals that can be arbitrarily segregated by legacy labels and/or specialties. We've taken a 'hacker-centric', solve first ask later, domain agnostic approach of simply meeting problems where they reside. That can be anywhere from the knowledge graph db powering a Harvard research lab to the firmware needed to customize your lawn mower. We freelance with commercial and residential clients putting out current fires wherever they reside. This removes the frothy silicon valley VC environment of contrived 'luxury' solutions to problems that don't exist.</p>
-            <ul class="inline-bullets">
-              <li><a href="https://example.com/robotics" target="_blank" rel="noopener noreferrer">Robotics</a></li>
-              <li><a href="https://example.com/opsec" target="_blank" rel="noopener noreferrer">Operational Security</a></li>
-              <li><a href="https://example.com/event-detection" target="_blank" rel="noopener noreferrer">Event Detection</a></li>
-              <li><a href="https://example.com/welding" target="_blank" rel="noopener noreferrer">Decision Engine</a></li>
-              <li><a href="https://example.com/carpentry" target="_blank" rel="noopener noreferrer">Dissasemblers</a></li>
-            </ul>            
-          </div>
-
-          <div class="tech-container">
-			<div class="tech-right svg-stack" style="display:flex; justify-content:center; align-items:center; padding:1rem 0;">
-              <object type="image/svg+xml" data="assets/signal_chain.svg" class="tech-svg">
-                Your browser does not support SVG.
-              </object>
-              <br>
-              <object type="image/svg+xml" data="assets/data_sorter1.svg" class="tech-svg">
-                Your browser does not support SVG.
-              </object>              
-            </div>
-            <div class="tech-left">
-              <h3 id="services-signals">Signals</h3>
-              <p style="text-indent: 2em;">
-                The difference between the Google(s), Amazon(s), Twitter(s) big tech giants and the consumers using those products comes down to signals. Users are always handicapped by an asymmetry in information and ability to act on them. This is not un-intentional. 
-              </p>
-              <p style="text-indent: 2em;">
-              The infrastructure needed to <strong>scale</strong>, process and automate your <strong>decision making</strong> are the cornerstone of any business no matter the industry or the product. We're building infrastructure to make this accessible to every participant on the internet, as it should be.
-              </p>
-              <br>
-              <div class="tech-bullets">
-                <ul>
-                  <li>Decision engines</li>
-                  <li>Algorithmic day trading</li>
-                  <li>Risk analysis</li>
-                  <li>Portfolio optimization</li>
-                  <li>News alert feed</li>
-                  <li>Underwriting</li>
-                  <li>Data pruning</li>
-                  <li>Data enrichment</li>
-                  <li>Concept mapping</li>
-                  <li>Domain segregation</li>
-                  <li>QA</li>
-                </ul>
-              </div> 
-              <br>             
-              <p>
-                <strong>Note</strong>: On a given day, in a given month of a given year our [redacted] engine processed 268,640 signals, flagged 5821 opportunities, executed on 980 events and saw a +7.80% appreciation in the value of those assets. You can envision applying this any speculative industry where returns are driven event driven input.
-              </p>              
-            </div>            
-          </div>
-
-          <style>
-            .tech-container {
-              display: flex; gap: 2rem; align-items: center;
-              justify-content: center; flex-wrap: wrap; text-align: left;
-              margin-top: 2rem;
-            }
-            .tech-left {
-              flex: 1; min-width: 280px;
-            }
-            .tech-right {
-              flex: 1; min-width: 280px;
-            }
-            .tech-list {
-              list-style-type: disc; padding-left: 20px;
-              font-size: 1rem; line-height: 1.8;
-            }
-            .tech-list li i {
-              font-style: italic; font-weight: normal;
-            }
-          </style>          
-
-          <div class="tech-container">
-            <div class="tech-left">
-              <h3 id="ethos">Ethos</h3>
-              <p style="text-indent: 2em;">
-                <strong>Open Source</strong> everything: We spent years building our own stand alone OS environment
-                to train, test and deploy all of our models. Hence we're able to provide unmatched
-                value proposition: chain of custody insight and transparency into every asset
-                build so you minimize <strong>vulnerabilities</strong>. That includes the website your viewing now. 
-                All the code available via github. You're free to contribute as you see fit. 
-              </p>
-              <br>
-              <h3>Stack</h3>
-              <ul class="tech-list">
-                <li><i>Backend:</i> Apache Framework, Redis, Postgres</li>
-                <li><i>Data:</i> Scala, HDFS, Postgres</li>
-                <li><i>Network:</i> Istio, SD-WAN solutions</li>
-                <li><i>Platform:</i> Ansible, Terraform, Kubernetes</li>
-                <li><i>Access Control:</i> Keycloak, OpenFGA</li>
-                <li><i>Telemetry:</i> Prometheus, Grafana, ELK Stack</li>
-              </ul>
-              <br>
-              <h3>Secure</h3>
-              <p style="text-indent: 2em;">
-                Industry best practices, zero-trust <strong>security protocols</strong> (e.g. SALSA, GUAC) alongside 
-                with proactive threat detection and mitigation to protect
-                your critical systems.
-              </p>
-            </div>
-            <div class="tech-right">
-              <object type="image/svg+xml" data="assets/tech_animated.svg" class="tech-svg">
-                Your browser does not support SVG.
-              </object>
-            </div>
-          </div>
-          <style>
-            .tech-container {
-              display: flex; gap: 2rem; align-items: center;
-              justify-content: center; flex-wrap: wrap; text-align: left;
-              margin-top: 2rem;
-            }
-            .tech-left {
-              flex: 1; min-width: 280px;
-            }
-            .tech-right {
-              flex: 1; min-width: 280px;
-            }
-            .tech-list {
-              list-style-type: disc; padding-left: 20px;
-              font-size: 1rem; line-height: 1.8;
-            }
-            .tech-list li i {
-              font-style: italic; font-weight: normal;
-            }
-          </style>
-          <div id="lightbox" onclick="closeLightbox()">
-            <img src="" alt="preview">
-          </div>
-          <br>
-          <div class="services-about">
-            <h3>Collaborate</h3>
-            <p>Contact us here, schedule a service appointment here, look through our past client work here  </p>
-            <p><!-- paragraph 2 --></p>          
-          </div>
-          <br>          
-          <!-- scrollable gallery -->
-          <h3 id="services-gallery">Gallery</h3>
-          <div class="services-gallery-wrapper">
-            <div class="services-gallery">
-              ${servicesImages
-                .map(({file,cap}) =>
-                  `<figure class="gallery-item">
-                     <img src="assets/robotics/${file}" alt="${cap}"
-                          onclick="openLightbox(this.src)">
-                     <figcaption>${cap}</figcaption>
-                   </figure>`
-                ).join('')}
-            </div>
-          </div>
-
-
-          <p class="service-keys">
-            <strong>Services:</strong>
-            <a class="service-key" href="https://docs.google.com/forms/d/e/1FAIpQLSc8HhR9nIEE-DBgtKq2CQ-Y4PJ8Mr0pbE07fzGE15FhcfqG6g/viewform?usp=header" target="_blank" rel="noopener noreferrer">
-              Consulting
-              <span class="service-tooltip">Hardvard, Fidelity, Techstars: Be our next collaborater. Fill in your information (below) or contact us directly to get started</span>
-            </a>,
-            <a class="service-key" href="https://en.wikipedia.org/wiki/Consultant" target="_blank" rel="noopener noreferrer">
-              Knowledge Graph DB
-              <span class="service-tooltip"><strong>Intelligent persistent data-store</strong>: We build machine learning intelligence into the foundation of your data pipeline so you get predictable, reliable intelligence downstream.</span>
-            </a>,
-            <a class="service-key" href="https://en.wikipedia.org/wiki/Quality_assurance" target="_blank" rel="noopener noreferrer">
-              QA
-              <span class="service-tooltip"><strong>AI/ML QA</strong> can be surprisingly different from normal. Leverage in-built elements of our event driven architecture for real-time detection, telemetry, pruning and improvement from the time of inception of your data.</span>
-            </a>, 
-            <a class="service-key" href="https://en.wikipedia.org/wiki/Access_control" target="_blank" rel="noopener noreferrer">
-              Access Control
-              <span class="service-tooltip">Beyond authentication, full <strong>ZeroTrust</strong>, real-time, tracking of assets and data <strong>telemetry</strong> built directly into your data pipeline</span>
-            </a>,
-            <a class="service-key" href="https://en.wikipedia.org/wiki/Open_source" target="_blank" rel="noopener noreferrer">
-              Open Src
-              <span class="service-tooltip">Most importantly, we build everything on open src so you have full transparency and ownership</span>
-            </a>,
-            <a class="service-key" href="javascript:void(0);" onclick="showSection('Tech')">
-              Infra.
-              <span class="service-tooltip">Robust infrastructure design and management.</span>
-            </a>
-          </p>
-          <style>
-            .about-columns {
-              display: flex;
-              gap: 2rem;
-              margin: 2rem 0;
-              flex-wrap: wrap;
-            }
-            .about-col {
-              flex: 1;
-              min-width: 280px;
-              text-align: left;
-            }
-          </style>
-        `,
+		    <section class="snap-panel">
+		      <div id="services-hardtech-mount"></div>
+		    </section>
+		  </div>
+		`,
       "OnePager": `
+        <h2>Mission</h2>
+        <br>
+        <p>
+          <a href="https://haiphen.io" target="_blank" rel="noopener noreferrer"><strong>Haiphen</strong></a>[Hi-fen]: Haiphen is a <strong>signals intelligence</strong> software startup focused on delivering custom, open src solutions to various cloud, edge, and infra obstacles across a variety of technical, business, and scientific domains.
+        </p>
+
+        <div class="about-columns">
+          <div class="about-col">
+            <p>
+              We process 2M+ signals across the internet each day for downstream applications and usecases. With a deep foundation in <strong>Computational Linguistics</strong>, <strong>NLP</strong>, and <strong>ML</strong>, we geek out over building the plumbing and infra (e.g. data pipelines, ETL, entity extraction, pruning, clustering) that simplifies unwanted haziness into reliable API calls. Consider us your personal DBA (database admin) but with a domain expertise that actively persists in your data through its entire lifecycle.
+            </p>
+          </div>
+
+          <div class="about-col">
+            <p>
+              We're excited about the future: the more <strong>custom solutions</strong> we're able deliver, the closer we move towards our vision of productizing <strong>knowledge graphs</strong> into every company (without the headache). <i>Note</i>: we're intentional barebones as you may have noticed. We believe good software was and should be transparent, inspectable and about what's under the hood.
+            </p>
+          </div>
+        </div>
+        </div>
         <h2>Haiphen One Pager</h2>
         <div id="onepager-buttons" style="margin-bottom: 1rem;">
           <button onclick="toggleOnePager('default')">Genomics</button>
@@ -1811,6 +1580,300 @@
           <button id="onepager-prev" class="onepager-arrow onepager-prev" onclick="changePage(-1)">&#10094;</button>
           <button id="onepager-next" class="onepager-arrow onepager-next" onclick="changePage(1)">&#10095;</button>
         </div>
+          <!-- How it works (compact visual) -->
+          <div class="trades-panel">
+            <div class="panel-head">
+              <h3>How it works</h3>
+              <p class="trades-muted">Derivatives ingestion, processing pipeline (details expandable below).</p>
+            </div>
+
+            <div id="trades-pipeline" class="pipeline">
+              <div class="pipe-step">
+                <div class="pipe-node">1</div>
+                <div class="pipe-text">
+                  <div class="pipe-title">Ingest</div>
+                  <div class="pipe-sub">Market data + signals</div>
+                </div>
+              </div>
+              <div class="pipe-arrow">→</div>
+
+              <div class="pipe-step">
+                <div class="pipe-node">2</div>
+                <div class="pipe-text">
+                  <div class="pipe-title">Score</div>
+                  <div class="pipe-sub">Arb & risk filters</div>
+                </div>
+              </div>
+              <div class="pipe-arrow">→</div>
+
+              <div class="pipe-step">
+                <div class="pipe-node">3</div>
+                <div class="pipe-text">
+                  <div class="pipe-title">Execute</div>
+                  <div class="pipe-sub">Orders + guardrails</div>
+                </div>
+              </div>
+              <div class="pipe-arrow">→</div>
+
+              <div class="pipe-step">
+                <div class="pipe-node">4</div>
+                <div class="pipe-text">
+                  <div class="pipe-title">Monitor</div>
+                  <div class="pipe-sub">Telemetry + exits</div>
+                </div>
+              </div>
+              <div class="pipe-arrow">→</div>
+
+              <div class="pipe-step">
+                <div class="pipe-node">5</div>
+                <div class="pipe-text">
+                  <div class="pipe-title">Report</div>
+                  <div class="pipe-sub">KPIs + archive</div>
+                </div>
+              </div>
+            </div>
+
+
+            <br>
+            <!-- New Steps Row -->
+            <div class="steps-container">
+              <div class="step">
+                <a href="https://example.com/step1" target="_blank" rel="noopener noreferrer">
+                  <img src="assets/step1.svg" alt="Step 1">
+                </a>
+                <p>Diagnose &amp; Draft</p>
+              </div>
+              <div class="step">
+                <a href="https://example.com/step2" target="_blank" rel="noopener noreferrer">
+                  <img src="assets/step2.svg" alt="Step 2">
+                </a>
+                <p>Execute &amp; Enrich</p>
+              </div>
+              <div class="step">
+                <a href="https://example.com/step3" target="_blank" rel="noopener noreferrer">
+                  <img src="assets/step3.svg" alt="Step 3">
+                </a>
+                <p>Review &amp; Revise</p>
+              </div>
+            </div>
+            <br>
+
+            <div class="trades-accordions">
+              <details class="acc" open>
+                <summary>Risk posture & controls</summary>
+                <ul>
+                  <li><strong>Intraday only:</strong> no overnight holdings; exposure is exited daily.</li>
+                  <li><strong>Speed-first strategy:</strong> short-lived positions, frequent reuse of edges.</li>
+                  <li><strong>Monitoring & exits:</strong> automated close logic + portfolio teardown.</li>
+                  <li><em>(You can expand this list with your real controls: locks, limits, slippage checks, etc.)</em></li>
+                </ul>
+              </details>
+
+              <details class="acc">
+                <summary>What these metrics represent</summary>
+                <p class="trades-muted" style="margin-top:.5rem;">
+                  The table below is populated from daily runs. It summarizes execution volume, P&L deltas,
+                  and stability indicators. Archive cards allow day-to-day comparison.
+                </p>
+              </details>
+            </div>
+          </div>          
+        <div class="about-columns">
+        <!-- about/paragraph placeholders -->
+        <div class="services-about">
+          <h3>Services</h3>
+          <p>The current landscape of 'Tech' problems go beyond traditional verticals that can be arbitrarily segregated by legacy labels and/or specialties. We've taken a 'hacker-centric', solve first ask later, domain agnostic approach of simply meeting problems where they reside. That can be anywhere from the knowledge graph db powering a Harvard research lab to the firmware needed to customize your lawn mower. We freelance with commercial and residential clients putting out current fires wherever they reside. This removes the frothy silicon valley VC environment of contrived 'luxury' solutions to problems that don't exist.</p>
+          <ul class="inline-bullets">
+            <li><a href="https://example.com/robotics" target="_blank" rel="noopener noreferrer">Robotics</a></li>
+            <li><a href="https://example.com/opsec" target="_blank" rel="noopener noreferrer">Operational Security</a></li>
+            <li><a href="https://example.com/event-detection" target="_blank" rel="noopener noreferrer">Event Detection</a></li>
+            <li><a href="https://example.com/welding" target="_blank" rel="noopener noreferrer">Decision Engine</a></li>
+            <li><a href="https://example.com/carpentry" target="_blank" rel="noopener noreferrer">Dissasemblers</a></li>
+          </ul>            
+        </div>
+
+        <div class="tech-container">
+        <div class="tech-right svg-stack" style="display:flex; justify-content:center; align-items:center; padding:1rem 0;">
+            <object type="image/svg+xml" data="assets/signal_chain.svg" class="tech-svg">
+              Your browser does not support SVG.
+            </object>
+            <br>
+            <object type="image/svg+xml" data="assets/data_sorter1.svg" class="tech-svg">
+              Your browser does not support SVG.
+            </object>              
+          </div>
+          <div class="tech-left">
+            <h3 id="services-signals">Signals</h3>
+            <p style="text-indent: 2em;">
+              The difference between the Google(s), Amazon(s), Twitter(s) big tech giants and the consumers using those products comes down to signals. Users are always handicapped by an asymmetry in information and ability to act on them. This is not un-intentional. 
+            </p>
+            <p style="text-indent: 2em;">
+            The infrastructure needed to <strong>scale</strong>, process and automate your <strong>decision making</strong> are the cornerstone of any business no matter the industry or the product. We're building infrastructure to make this accessible to every participant on the internet, as it should be.
+            </p>
+            <br>
+            <div class="tech-bullets">
+              <ul>
+                <li>Decision engines</li>
+                <li>Algorithmic day trading</li>
+                <li>Risk analysis</li>
+                <li>Portfolio optimization</li>
+                <li>News alert feed</li>
+                <li>Underwriting</li>
+                <li>Data pruning</li>
+                <li>Data enrichment</li>
+                <li>Concept mapping</li>
+                <li>Domain segregation</li>
+                <li>QA</li>
+              </ul>
+            </div> 
+            <br>             
+            <p>
+              <strong>Note</strong>: On a given day, in a given month of a given year our [redacted] engine processed 268,640 signals, flagged 5821 opportunities, executed on 980 events and saw a +7.80% appreciation in the value of those assets. You can envision applying this any speculative industry where returns are driven event driven input.
+            </p>              
+          </div>            
+        </div>
+
+        <style>
+          .tech-container {
+            display: flex; gap: 2rem; align-items: center;
+            justify-content: center; flex-wrap: wrap; text-align: left;
+            margin-top: 2rem;
+          }
+          .tech-left {
+            flex: 1; min-width: 280px;
+          }
+          .tech-right {
+            flex: 1; min-width: 280px;
+          }
+          .tech-list {
+            list-style-type: disc; padding-left: 20px;
+            font-size: 1rem; line-height: 1.8;
+          }
+          .tech-list li i {
+            font-style: italic; font-weight: normal;
+          }
+        </style>          
+
+        <div class="tech-container">
+          <div class="tech-left">
+            <h3 id="ethos">Ethos</h3>
+            <p style="text-indent: 2em;">
+              <strong>Open Source</strong> everything: We spent years building our own stand alone OS environment
+              to train, test and deploy all of our models. Hence we're able to provide unmatched
+              value proposition: chain of custody insight and transparency into every asset
+              build so you minimize <strong>vulnerabilities</strong>. That includes the website your viewing now. 
+              All the code available via github. You're free to contribute as you see fit. 
+            </p>
+            <br>
+            <h3>Stack</h3>
+            <ul class="tech-list">
+              <li><i>Backend:</i> Apache Framework, Redis, Postgres</li>
+              <li><i>Data:</i> Scala, HDFS, Postgres</li>
+              <li><i>Network:</i> Istio, SD-WAN solutions</li>
+              <li><i>Platform:</i> Ansible, Terraform, Kubernetes</li>
+              <li><i>Access Control:</i> Keycloak, OpenFGA</li>
+              <li><i>Telemetry:</i> Prometheus, Grafana, ELK Stack</li>
+            </ul>
+            <br>
+            <h3>Secure</h3>
+            <p style="text-indent: 2em;">
+              Industry best practices, zero-trust <strong>security protocols</strong> (e.g. SALSA, GUAC) alongside 
+              with proactive threat detection and mitigation to protect
+              your critical systems.
+            </p>
+          </div>
+          <div class="tech-right">
+            <object type="image/svg+xml" data="assets/tech_animated.svg" class="tech-svg">
+              Your browser does not support SVG.
+            </object>
+          </div>
+        </div>
+        <style>
+          .tech-container {
+            display: flex; gap: 2rem; align-items: center;
+            justify-content: center; flex-wrap: wrap; text-align: left;
+            margin-top: 2rem;
+          }
+          .tech-left {
+            flex: 1; min-width: 280px;
+          }
+          .tech-right {
+            flex: 1; min-width: 280px;
+          }
+          .tech-list {
+            list-style-type: disc; padding-left: 20px;
+            font-size: 1rem; line-height: 1.8;
+          }
+          .tech-list li i {
+            font-style: italic; font-weight: normal;
+          }
+        </style>
+        <div id="lightbox" onclick="closeLightbox()">
+          <img src="" alt="preview">
+        </div>
+        <br>
+        <div class="services-about">
+          <h3>Collaborate</h3>
+          <p>Contact us here, schedule a service appointment here, look through our past client work here  </p>
+          <p><!-- paragraph 2 --></p>          
+        </div>
+        <br>          
+        <!-- scrollable gallery -->
+        <h3 id="services-gallery">Gallery</h3>
+        <div class="services-gallery-wrapper">
+          <div class="services-gallery">
+            ${servicesImages
+              .map(({file,cap}) =>
+                `<figure class="gallery-item">
+                  <img src="assets/robotics/${file}" alt="${cap}"
+                        onclick="openLightbox(this.src)">
+                  <figcaption>${cap}</figcaption>
+                </figure>`
+              ).join('')}
+          </div>
+        </div>
+
+
+        <p class="service-keys">
+          <strong>Services:</strong>
+          <a class="service-key" href="https://docs.google.com/forms/d/e/1FAIpQLSc8HhR9nIEE-DBgtKq2CQ-Y4PJ8Mr0pbE07fzGE15FhcfqG6g/viewform?usp=header" target="_blank" rel="noopener noreferrer">
+            Consulting
+            <span class="service-tooltip">Hardvard, Fidelity, Techstars: Be our next collaborater. Fill in your information (below) or contact us directly to get started</span>
+          </a>,
+          <a class="service-key" href="https://en.wikipedia.org/wiki/Consultant" target="_blank" rel="noopener noreferrer">
+            Knowledge Graph DB
+            <span class="service-tooltip"><strong>Intelligent persistent data-store</strong>: We build machine learning intelligence into the foundation of your data pipeline so you get predictable, reliable intelligence downstream.</span>
+          </a>,
+          <a class="service-key" href="https://en.wikipedia.org/wiki/Quality_assurance" target="_blank" rel="noopener noreferrer">
+            QA
+            <span class="service-tooltip"><strong>AI/ML QA</strong> can be surprisingly different from normal. Leverage in-built elements of our event driven architecture for real-time detection, telemetry, pruning and improvement from the time of inception of your data.</span>
+          </a>, 
+          <a class="service-key" href="https://en.wikipedia.org/wiki/Access_control" target="_blank" rel="noopener noreferrer">
+            Access Control
+            <span class="service-tooltip">Beyond authentication, full <strong>ZeroTrust</strong>, real-time, tracking of assets and data <strong>telemetry</strong> built directly into your data pipeline</span>
+          </a>,
+          <a class="service-key" href="https://en.wikipedia.org/wiki/Open_source" target="_blank" rel="noopener noreferrer">
+            Open Src
+            <span class="service-tooltip">Most importantly, we build everything on open src so you have full transparency and ownership</span>
+          </a>,
+          <a class="service-key" href="javascript:void(0);" onclick="showSection('Tech')">
+            Infra.
+            <span class="service-tooltip">Robust infrastructure design and management.</span>
+          </a>
+        </p>
+        <style>
+          .about-columns {
+            display: flex;
+            gap: 2rem;
+            margin: 2rem 0;
+            flex-wrap: wrap;
+          }
+          .about-col {
+            flex: 1;
+            min-width: 280px;
+            text-align: left;
+          }
+        </style>        
       `,
       "Inventory": `
         <h2 id="portfolio-top">Portfolio</h2>
@@ -1993,12 +2056,59 @@
       window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
     }
 
+	/* ------------------------------------------------------------
+	   Snap stacks: highlight the section currently in view
+	------------------------------------------------------------ */
+	function initSnapStacks(rootEl = document) {
+	  const stacks = rootEl.querySelectorAll('[data-snap-stack]');
+	  stacks.forEach((stack) => {
+	    // Avoid double wiring
+	    if (stack.__snapWired) return;
+	    stack.__snapWired = true;
+
+	    const panels = Array.from(stack.querySelectorAll('.snap-panel'));
+	    if (panels.length === 0) return;
+
+	    // Default active = first
+	    panels.forEach((p, i) => p.classList.toggle('is-active', i === 0));
+
+	    const obs = new IntersectionObserver(
+	      (entries) => {
+	        // pick the most visible panel as active
+	        let best = null;
+	        for (const e of entries) {
+	          if (!best || e.intersectionRatio > best.intersectionRatio) best = e;
+	        }
+	        if (!best) return;
+
+	        panels.forEach((p) => p.classList.remove('is-active'));
+	        best.target.classList.add('is-active');
+	      },
+	      {
+	        root: stack,
+	        threshold: [0.35, 0.5, 0.65, 0.8],
+	      }
+	    );
+
+	    panels.forEach((p) => obs.observe(p));
+
+	    // keep a handle for cleanup if you ever need it
+	    stack.__snapObserver = obs;
+	  });
+	}
+
     function showSection(sectionName) {
         const contentWidget = document.getElementById("content-widget");
         contentWidget.innerHTML = sectionContent[sectionName] || "<p>No content available.</p>";
         contentWidget.classList.add("active");
-    	if (sectionName === "Services") {
-		  try { window.HAIPHEN?.loadServicesPlans?.(); } catch (e) { console.warn('[Services] loadServicesPlans failed', e); }
+        initSnapStacks(contentWidget);
+		if (sectionName === "Services") {
+		  (async () => {
+		    try { await window.HAIPHEN?.loadServicesPlans?.(); }
+		    catch (e) { console.warn('[Services] loadServicesPlans failed', e); }
+		    // plans are now mounted; re-init snap in case heights changed
+		    initSnapStacks(contentWidget);
+		  })();
 		}
         if (sectionName === "OnePager") {
         currentPageIndex = 0;
