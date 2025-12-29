@@ -1,7 +1,18 @@
 {
-  "updated_at": "2025-12-28T22:19:06.521Z",
+  "updated_at": "2025-12-29T16:45:45.186Z",
   "max_days": 3,
   "items": [
+    {
+      "date": "2025-12-29",
+      "screenshot": "assets/trades/archive/2025-12-29.png",
+      "balance_screenshot": "assets/trades/archive/balance_2025-12-29.png",
+      "json": "assets/trades/archive/2025-12-29.json",
+      "updated_at": "2025-12-29T16:45:45.166Z",
+      "headline": "Haiphen day trading snapshot ($240.00 on 2025-12-29)",
+      "has_screenshot": true,
+      "has_balance_screenshot": true,
+      "has_json": true
+    },
     {
       "date": "2025-12-28",
       "screenshot": "assets/trades/archive/2025-12-28.png",

@@ -463,7 +463,7 @@
       if (/liquidity/i.test(k)) return { xLabel: 'Time', yLabel: 'Liquidity drag (USD)' };
       if (/unrealized/i.test(k)) return { xLabel: 'Time', yLabel: 'Unrealized P/L (USD)' };
 
-      return { xLabel: 'Time', yLabel: 'Value' };
+      return { xLabel: 'Time', yLabel: '' };
     }
 
     function hashSeedFromString(s) {
