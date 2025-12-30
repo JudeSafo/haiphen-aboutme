@@ -359,3 +359,84 @@
     min-height: 150px;
   }
 }
+
+/* =========================
+   Extremes: compact + scroll
+   ========================= */
+
+/* Ensure extremes never bully the chart/stats above */
+.haiphen-overlay__extremes{
+  margin-top: 10px;
+}
+
+/* 2 columns side-by-side, but allow wrap on tight screens */
+.haiphen-overlay__extremes{
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  align-items: start;
+}
+
+/* Each box: cap height so it doesn’t cover stats/graph */
+.haiphen-overlay__extremes .xbox{
+  /* Key: stop vertical takeover on TVs */
+  max-height: clamp(140px, 22vh, 220px);
+  overflow: auto;
+
+  /* Make it feel smaller */
+  padding: 10px 10px;
+  border-radius: 12px;
+}
+
+/* Title tighter */
+.haiphen-overlay__extremes .xtitle{
+  font-size: 0.85rem;
+  line-height: 1.15;
+  margin-bottom: 6px;
+}
+
+/* Rows tighter */
+.haiphen-overlay__extremes .xrow{
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 8px;
+
+  padding: 4px 0;
+  line-height: 1.15;
+}
+
+/* Slightly smaller text so 3–6 items fit comfortably */
+.haiphen-overlay__extremes .cn{
+  font-size: 0.82rem;
+}
+.haiphen-overlay__extremes .sym,
+.haiphen-overlay__extremes .pnl{
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+
+/* Muted placeholder tighter too */
+.haiphen-overlay__extremes .muted{
+  padding: 6px 0;
+  font-size: 0.82rem;
+}
+
+/* On very short/tight viewports (TVs, zoom, etc), stack boxes */
+@media (max-height: 740px), (max-width: 720px){
+  .haiphen-overlay__extremes{
+    grid-template-columns: 1fr;
+  }
+
+  .haiphen-overlay__extremes .xbox{
+    max-height: clamp(120px, 18vh, 180px);
+  }
+}
+
+/* (Optional) If you want even more compression, make the list 2 columns
+   inside each box when there are many rows. This is safe because you rarely
+   have >5, but it helps on tiny viewports. */
+@media (max-height: 740px){
+  .haiphen-overlay__extremes .xbox{
+    column-count: 1; /* keep 1 by default */
+  }
+}

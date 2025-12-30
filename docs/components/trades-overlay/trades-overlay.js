@@ -131,7 +131,7 @@
         const k = String(kpiTitle || '');
         if (/pnl/i.test(k)) return 'Impact (USD)';
         if (/percent/i.test(k)) return 'Impact (%)';
-        if (/liquidity/i.test(k)) return 'Impact (USD)';
+        if (/liquidity/i.test(k)) return 'Impact';
         if (/unrealized/i.test(k)) return 'Impact (USD)';
         return 'Impact';
       })();
@@ -460,7 +460,7 @@
       // Keep these aligned with your KPI tile names / DB kpi names
       if (/pnl/i.test(k)) return { xLabel: 'Time', yLabel: 'PnL (USD)' };
       if (/percent/i.test(k)) return { xLabel: 'Time', yLabel: 'Percent change (%)' };
-      if (/liquidity/i.test(k)) return { xLabel: 'Time', yLabel: 'Liquidity drag (USD)' };
+      if (/liquidity/i.test(k)) return { xLabel: 'Time', yLabel: 'Liquidity ratio' };
       if (/unrealized/i.test(k)) return { xLabel: 'Time', yLabel: 'Unrealized P/L (USD)' };
 
       return { xLabel: 'Time', yLabel: '' };
