@@ -1,14 +1,36 @@
 {
-  "updated_at": "2025-12-31T21:00:43.476Z",
+  "updated_at": "2026-01-02T14:00:23.249Z",
   "max_days": 3,
   "items": [
+    {
+      "date": "2026-01-02",
+      "screenshot": "assets/trades/archive/2026-01-02.png",
+      "balance_screenshot": "assets/trades/archive/balance_2026-01-02.png",
+      "json": "assets/trades/archive/2026-01-02.json",
+      "updated_at": "2026-01-02T14:00:23.218Z",
+      "headline": "Haiphen Day Trading snapshot (fallback metrics)",
+      "has_screenshot": true,
+      "has_balance_screenshot": true,
+      "has_json": true
+    },
+    {
+      "date": "2026-01-01",
+      "screenshot": "assets/trades/archive/2026-01-01.png",
+      "balance_screenshot": "assets/trades/archive/balance_2026-01-01.png",
+      "json": "assets/trades/archive/2026-01-01.json",
+      "updated_at": "2026-01-01T22:31:47.997Z",
+      "headline": "Haiphen Day Trading snapshot (fallback metrics)",
+      "has_screenshot": true,
+      "has_balance_screenshot": true,
+      "has_json": true
+    },
     {
       "date": "2025-12-31",
       "screenshot": "assets/trades/archive/2025-12-31.png",
       "balance_screenshot": "assets/trades/archive/balance_2025-12-31.png",
       "json": "assets/trades/archive/2025-12-31.json",
-      "updated_at": "2025-12-31T21:00:43.422Z",
-      "headline": "Haiphen day trading snapshot (2025-12-31)",
+      "updated_at": "2025-12-31T22:15:21.961Z",
+      "headline": "Haiphen Day Trading snapshot (fallback metrics)",
       "has_screenshot": true,
       "has_balance_screenshot": true,
       "has_json": true
