@@ -1,35 +1,56 @@
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1.0" />
-<title>Haiphen</title>
-<link rel="icon" href="assets/favicon.ico">
-<-rw-r--r--    1 jks142857  staff     668 Feb  6 13:25 package.json ✅
-<-rw-r--r--    1 jks142857  staff     668 Feb  6 13:25 package.json paste from <meta name="description"> down to the </script> closing tag -->
-<meta name="description" content="Haiphen is a signals intelligence tech company ...">
-… (same meta / og / twitter / JSON-LD you already have) …
-<style>
-/* paste the entire <style> block from index.html  */
-</style>
+  <!-- Basic SEO -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Haiphen — Services</title>
+  <link rel="icon" href="assets/favicon.ico">
+
+  <!-- Keep your existing OG/Twitter/JSON-LD blocks here (copy from index.html) -->
+
+  <link rel="stylesheet" href="assets/base.css" />
+
+  <!-- Component loaders -->
+  <script src="components/headers/site-header.js"></script>
+  <script src="components/sidebar/site-sidebar.js"></script>
+  <script src="components/footers/site-footer.js"></script>
+
+  <!-- Shared bootloader -->
+  <script src="assets/site.js"></script>
 </head>
+
 <body>
-<nav class="navbar">
-  <div class="logo"><a href="index.html"><img src="assets/logo.png" alt="logo"></a></div>
-  <div class="nav-links">
-    <a href="services.html">Services</a>
-    <a href="inventory.html">Inventory</a>
-    <a href="tech.html">Tech</a>
-    <a href="contact.html">Contact</a>
-  </div>
-</nav>
-<div class="main-container">
-<h1>Services</h1>
-<p><strong>Haiphen</strong> [Hi-fen] is a signals-intelligence tech startup …</p>
+  <div id="header-mount"></div>
+  <div id="sidebar-mount"></div>
 
-<!-- copy the full Services section content from index.html -->
-<!-- (Mission, Steps, about-columns, Signals, Ethos etc.) -->
+  <main class="main-container">
+    <h1>Services</h1>
 
-</div> <-rw-r--r--    1 jks142857  staff     668 Feb  6 13:25 package.json /.main-container -->
-<script src="main.js"></script>
+    <!-- Snap stack (this is your injected “Services” section, but now it’s a real page) -->
+    <div class="snap-stack" data-snap-stack="services">
+      <section class="snap-panel">
+        <div id="services-plans-mount"></div>
+      </section>
+
+      <section class="snap-panel">
+        <div id="services-hardtech-mount"></div>
+      </section>
+    </div>
+  </main>
+
+  <div id="footer-sentinel" aria-hidden="true" style="height:1px;"></div>
+  <div id="footer-mount"></div>
+
+  <script>
+    // If your services components provide a loader, call it here:
+    document.addEventListener('DOMContentLoaded', async () => {
+      try { await window.HAIPHEN?.loadServicesPlans?.(); }
+      catch (e) { console.warn('[Services] loadServicesPlans failed', e); }
+
+      // Re-init snap stacks after async mount changes height
+      window.HAIPHEN?.initSnapStacks?.(document);
+    });
+  </script>
 </body>
 </html>

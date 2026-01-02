@@ -1,33 +1,47 @@
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1.0" />
-<title>Haiphen</title>
-<link rel="icon" href="assets/favicon.ico">
-<-rw-r--r--    1 jks142857  staff     668 Feb  6 13:25 package.json ✅
-<-rw-r--r--    1 jks142857  staff     668 Feb  6 13:25 package.json paste from <meta name="description"> down to the </script> closing tag -->
-<meta name="description" content="Haiphen is a signals intelligence tech company ...">
-… (same meta / og / twitter / JSON-LD you already have) …
-<style>
-/* paste the entire <style> block from index.html  */
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Haiphen — Portfolio</title>
+  <link rel="icon" href="assets/favicon.ico">
+
+  <!-- Keep your existing OG/Twitter/JSON-LD blocks here (copy from index.html) -->
+
+  <link rel="stylesheet" href="assets/base.css" />
+
+  <script src="components/headers/site-header.js"></script>
+  <script src="components/sidebar/site-sidebar.js"></script>
+  <script src="components/footers/site-footer.js"></script>
+  <script src="assets/site.js"></script>
 </head>
+
 <body>
-<nav class="navbar">
-  <div class="logo"><a href="index.html"><img src="assets/logo.png" alt="logo"></a></div>
-  <div class="nav-links">
-    <a href="services.html">Services</a>
-    <a href="inventory.html">Inventory</a>
-    <a href="tech.html">Tech</a>
-    <a href="contact.html">Contact</a>
-  </div>
-</nav>
-<div class="main-container">
-<h1>Portfolio / Inventory</h1>
+  <div id="header-mount"></div>
+  <div id="sidebar-mount"></div>
 
-<!-- copy the <ul> … </ul> block from the Inventory accordion -->
+  <main class="main-container">
+    <h1>Portfolio</h1>
 
-</div> <-rw-r--r--    1 jks142857  staff     668 Feb  6 13:25 package.json /.main-container -->
-<script src="main.js"></script>
+    <!-- Paste your portfolio <ul> here (from sectionContent["Inventory"]) -->
+    <ul>
+      <!-- Example item (keep your real content) -->
+      <li style="list-style: disc; margin-bottom: 2rem;">
+        <p style="margin-bottom: 0.5rem; font-size: 1.1rem; text-align: center;">
+          <strong>ETL Ingestion Engine:</strong> Prior work with a DEI tech startup...
+        </p>
+        <div style="text-align: center;">
+          <a href="https://github.com/JudeSafo/All_Language_Model" target="_blank" rel="noopener noreferrer">
+            <img src="assets/gitPortfolio_esg.png" alt="All Language Model"
+              style="max-width:80%; height:auto; border: 1px solid #ccc; border-radius: 4px;">
+          </a>
+        </div>
+      </li>
+      <!-- ...rest of your items -->
+    </ul>
+  </main>
+
+  <div id="footer-sentinel" aria-hidden="true" style="height:1px;"></div>
+  <div id="footer-mount"></div>
 </body>
 </html>
