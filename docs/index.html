@@ -29,6 +29,7 @@
   <script src="components/trades-overlay/trades-overlay.js"></script>
   <script src="components/services-plans/services-plans.js"></script>
   <script src="components/services/services-section.js"></script>
+  <script src="components/faq/faq.js"></script>
 
   <!-- 🔽 Structured Data for SEO -->
   <script type="application/ld+json">
@@ -1478,7 +1479,7 @@
                 </div>
                 <h2>Trades</h2>
                 <p class="trades-subtitle">
-                  High frequency, Risk profile, No overnight holiding, Transparent daily pnl & metrics, Production-grade <strong>options execution + risk assessment</strong> system. 
+                  High frequency, Risk exposure, No overnight holiding, Transparent daily pnl & metrics, Production-grade <strong>options execution + risk assessment</strong> system. 
                   
                 </p>
               </div>
@@ -1588,9 +1589,77 @@
 			    <div><strong>Headline:</strong> <span id="trades-headline">—</span></div>
 			  </div>
 			</div>
-
-
-
+	        <h2 id="portfolio-top">Tech</h2>
+	        <br>
+	        <ul>
+	          <!-- First Portfolio Item: ETL Ingestion Engine -->
+	          <li style="list-style: disc; margin-bottom: 2rem;">
+	            <p style="margin-bottom: 0.5rem; font-size: 1.1rem; text-align: center;">
+	              <strong>ETL Ingestion Engine:</strong> Prior work with a DEI tech startup
+	              to build out their data infrastructure pipeline from crawling raw
+	              unstructured pdf data to building a basic KG database.
+	            </p>
+	            <div style="text-align: center;">
+	              <a href="https://github.com/JudeSafo/All_Language_Model" target="_blank" rel="noopener noreferrer">
+	                <img src="assets/gitPortfolio_esg.png" alt="All Language Model"
+	                  style="max-width:80%; height:auto; border: 1px solid #ccc; border-radius: 4px;">
+	              </a>
+	            </div>
+	          </li>
+	          
+	          <!-- Second Portfolio Item: Protein Biomarker Indexing (Genomics Use Case) -->
+	          <li style="list-style: disc; margin-bottom: 2rem;">
+	            <p style="margin-bottom: 0.5rem; font-size: 1.1rem; text-align: center;">
+	              <strong>Protein Biomarker Indexing:</strong> Engagmenet with a Harvard Genetics research lab,
+	              crawling PubMed articles to identify co-occurrences of diseases and biomarker
+	              conditions for potential overlapping treatment options.
+	            </p>
+	            <div style="text-align: center;">
+	              <a href="javascript:void(0)" onclick="showSection('OnePager')">
+	                <img src="assets/genomics_usecase.png" alt="Genomics Use Case"
+	                  style="max-width:80%; height:auto; border: 1px solid #ccc; border-radius: 4px;">
+	              </a>
+	            </div>
+	          </li>
+	          
+	          <!-- Third Portfolio Item: Web Crawler -->
+	          <li style="list-style: disc; margin-bottom: 2rem;">
+	            <p style="margin-bottom: 0.5rem; font-size: 1.1rem; text-align: center;">
+	              <strong>Web Crawler:</strong> Custom, open src search engine for curating and parsing
+	              unstructured pdf data (e.g. research, financials) for downstream applications.
+	            </p>
+	            <div style="text-align: center;">
+	              <img src="assets/haiphen-gif5.gif" alt="Haiphen AI Showcase"
+	                style="max-width:80%; height:auto; border: 1px solid #ccc; border-radius: 4px;">
+	            </div>
+	          </li>
+	  
+	          <!-- Fourth Portfolio Item: Distilled LLM -->
+	          <li style="list-style: disc; margin-bottom: 2rem;">
+	            <p style="margin-bottom: 0.5rem; font-size: 1.1rem;">
+	              <strong>Distilled RAG LLM:</strong> Custom open src LLM for specific business use cases,
+	              e.g. answering DEI questions.
+	            </p>
+	            <div style="text-align: center;">
+	              <img src="assets/haiphen-gif3.gif" alt="LLM"
+	                style="max-width:80%; height:auto; border: 1px solid #ccc; border-radius: 4px;">
+	            </div>
+	          </li>
+	          
+	          <!-- Fifth Portfolio Item: ZeroDays Follina Investigation -->
+	          <li style="list-style: disc; margin-bottom: 2rem;">
+	            <p style="margin-bottom: 0.5rem; font-size: 1.1rem; text-align: center;">
+	              <strong>ZeroDays Follina Investigation:</strong> An in-depth investigation
+	              of Confluence vulnerabilities with Follina, producing actionable security insights.
+	            </p>
+	            <div style="text-align: center;">
+	              <a href="javascript:void(0)" onclick="showSection('OnePager')">
+	                <img src="assets/haiphen-follina-screenshot.png" alt="ZeroDays Investigation"
+	                  style="max-width:80%; height:auto; border: 1px solid #ccc; border-radius: 4px;">
+	              </a>
+	            </div>
+	          </li>
+	        </ul>
 
           </section>
         `,
@@ -1940,78 +2009,8 @@
           }
         </style>        
       `,
-      "Inventory": `
-        <h2 id="portfolio-top">Portfolio</h2>
-        <br>
-        <ul>
-          <!-- First Portfolio Item: ETL Ingestion Engine -->
-          <li style="list-style: disc; margin-bottom: 2rem;">
-            <p style="margin-bottom: 0.5rem; font-size: 1.1rem; text-align: center;">
-              <strong>ETL Ingestion Engine:</strong> Prior work with a DEI tech startup
-              to build out their data infrastructure pipeline from crawling raw
-              unstructured pdf data to building a basic KG database.
-            </p>
-            <div style="text-align: center;">
-              <a href="https://github.com/JudeSafo/All_Language_Model" target="_blank" rel="noopener noreferrer">
-                <img src="assets/gitPortfolio_esg.png" alt="All Language Model"
-                  style="max-width:80%; height:auto; border: 1px solid #ccc; border-radius: 4px;">
-              </a>
-            </div>
-          </li>
-          
-          <!-- Second Portfolio Item: Protein Biomarker Indexing (Genomics Use Case) -->
-          <li style="list-style: disc; margin-bottom: 2rem;">
-            <p style="margin-bottom: 0.5rem; font-size: 1.1rem; text-align: center;">
-              <strong>Protein Biomarker Indexing:</strong> Engagmenet with a Harvard Genetics research lab,
-              crawling PubMed articles to identify co-occurrences of diseases and biomarker
-              conditions for potential overlapping treatment options.
-            </p>
-            <div style="text-align: center;">
-              <a href="javascript:void(0)" onclick="showSection('OnePager')">
-                <img src="assets/genomics_usecase.png" alt="Genomics Use Case"
-                  style="max-width:80%; height:auto; border: 1px solid #ccc; border-radius: 4px;">
-              </a>
-            </div>
-          </li>
-          
-          <!-- Third Portfolio Item: Web Crawler -->
-          <li style="list-style: disc; margin-bottom: 2rem;">
-            <p style="margin-bottom: 0.5rem; font-size: 1.1rem; text-align: center;">
-              <strong>Web Crawler:</strong> Custom, open src search engine for curating and parsing
-              unstructured pdf data (e.g. research, financials) for downstream applications.
-            </p>
-            <div style="text-align: center;">
-              <img src="assets/haiphen-gif5.gif" alt="Haiphen AI Showcase"
-                style="max-width:80%; height:auto; border: 1px solid #ccc; border-radius: 4px;">
-            </div>
-          </li>
-  
-          <!-- Fourth Portfolio Item: Distilled LLM -->
-          <li style="list-style: disc; margin-bottom: 2rem;">
-            <p style="margin-bottom: 0.5rem; font-size: 1.1rem;">
-              <strong>Distilled RAG LLM:</strong> Custom open src LLM for specific business use cases,
-              e.g. answering DEI questions.
-            </p>
-            <div style="text-align: center;">
-              <img src="assets/haiphen-gif3.gif" alt="LLM"
-                style="max-width:80%; height:auto; border: 1px solid #ccc; border-radius: 4px;">
-            </div>
-          </li>
-          
-          <!-- Fifth Portfolio Item: ZeroDays Follina Investigation -->
-          <li style="list-style: disc; margin-bottom: 2rem;">
-            <p style="margin-bottom: 0.5rem; font-size: 1.1rem; text-align: center;">
-              <strong>ZeroDays Follina Investigation:</strong> An in-depth investigation
-              of Confluence vulnerabilities with Follina, producing actionable security insights.
-            </p>
-            <div style="text-align: center;">
-              <a href="javascript:void(0)" onclick="showSection('OnePager')">
-                <img src="assets/haiphen-follina-screenshot.png" alt="ZeroDays Investigation"
-                  style="max-width:80%; height:auto; border: 1px solid #ccc; border-radius: 4px;">
-              </a>
-            </div>
-          </li>
-        </ul>
+      "FAQ": `
+		  <div id="faq-mount"></div>
       `,
       "Tech": `
         <h2>Tech Stack</h2>
@@ -2162,47 +2161,75 @@
 	  });
 	}
 
-    function showSection(sectionName) {
-        const contentWidget = document.getElementById("content-widget");
-        contentWidget.innerHTML = sectionContent[sectionName] || "<p>No content available.</p>";
-        contentWidget.classList.add("active");
-        initSnapStacks(contentWidget);
-		if (sectionName === "Services") {
-		  (async () => {
-		    try { await window.HAIPHEN?.loadServicesPlans?.(); }
-		    catch (e) { console.warn('[Services] loadServicesPlans failed', e); }
-		    // plans are now mounted; re-init snap in case heights changed
-		    initSnapStacks(contentWidget);
-		  })();
-		}
-        if (sectionName === "OnePager") {
-        currentPageIndex = 0;
-        renderOnePagerPage();
-        }
-    
-        // Default scroll behavior for non-Trades sections
-        if (sectionName !== "Trades") {
-        requestAnimationFrame(() => {
-            scrollToWithHeaderOffset(contentWidget, 12);
-        });
-        return;
-        }
-    
-        // Trades: wait for async content + DOM inflation, then scroll
-        (async () => {
-        try {
-            await loadTradesData(); // ✅ ensures KPI grid + archive are injected first
-        } catch (e) {
-            console.warn('[Trades] loadTradesData failed', e);
-        }
-    
-        // Wait a frame so layout is stable *after* injections
-        requestAnimationFrame(() => {
-            const tradesTop = document.getElementById('trades-top');
-            scrollToWithHeaderOffset(tradesTop || contentWidget, 12);
-        });
-        })();
-    }
+	function showSection(sectionName) {
+	  const contentWidget = document.getElementById("content-widget");
+	  if (!contentWidget) return;
+
+	  // Normalize + alias (prevents case/whitespace mismatches from menu components)
+	  const raw = String(sectionName || "");
+	  const key = raw.trim();
+
+	  const ALIASES = {
+	    faq: "FAQ",
+	    Faq: "FAQ",
+	    "Faq ": "faq",
+	    collaborate: "OnePager",
+	    Collaborate: "OnePager",
+	    fintech: "Trades",
+	    Fintech: "Trades",
+	  };
+
+	  const resolved = ALIASES[key] || ALIASES[key.toLowerCase()] || key;
+
+	  const html = sectionContent[resolved];
+	  contentWidget.innerHTML = html || `<p>No content available.</p>`;
+	  contentWidget.classList.add("active");
+
+	  initSnapStacks(contentWidget);
+
+	  // Section-specific bootstrapping
+	  if (resolved === "Services") {
+	    (async () => {
+	      try { await window.HAIPHEN?.loadServicesPlans?.(); }
+	      catch (e) { console.warn("[Services] loadServicesPlans failed", e); }
+	      initSnapStacks(contentWidget);
+	    })();
+	  }
+
+	  if (resolved === "FAQ") {
+	    (async () => {
+	      try { await window.HAIPHEN?.loadFAQ?.(); }
+	      catch (e) { console.warn("[FAQ] loadFAQ failed", e); }
+	    })();
+	  }
+
+	  if (resolved === "OnePager") {
+	    currentPageIndex = 0;
+	    renderOnePagerPage();
+	  }
+
+	  // Default scroll behavior for non-Trades sections
+	  if (resolved !== "Trades") {
+	    requestAnimationFrame(() => {
+	      scrollToWithHeaderOffset(contentWidget, 12);
+	    });
+	    return;
+	  }
+
+	  // Trades: wait for async content + DOM inflation, then scroll
+	  (async () => {
+	    try {
+	      await loadTradesData();
+	    } catch (e) {
+	      console.warn("[Trades] loadTradesData failed", e);
+	    }
+
+	    requestAnimationFrame(() => {
+	      const tradesTop = document.getElementById("trades-top");
+	      scrollToWithHeaderOffset(tradesTop || contentWidget, 12);
+	    });
+	  })();
+	}
 
 	// ------------------------------------------------------------
 	// Hash routing (shareable URLs for injected sections)
@@ -2211,7 +2238,7 @@
 	  Trades: 'fintech',
 	  Services: 'services',
 	  OnePager: 'collaborate',
-	  Inventory: 'archives',
+	  Faq: 'faq',
 	  Contact: 'contact-us',
 	};
 

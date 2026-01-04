@@ -1,0 +1,127 @@
+.faq{
+  text-align:left;
+}
+
+.faq-head h2{
+  margin: .25rem 0 .35rem;
+  color:#2c3e50;
+}
+
+.faq-subtitle{
+  color:#556;
+  line-height:1.55;
+  margin-bottom: 1rem;
+}
+
+.faq-controls{
+  display:flex;
+  gap:.75rem;
+  align-items:center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  margin: .75rem 0 1rem;
+}
+
+.faq-search{
+  flex: 1;
+  min-width: 240px;
+}
+
+.faq-search input{
+  width: 100%;
+  padding: .65rem .8rem;
+  border: 1px solid #e6ecf3;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%);
+  box-shadow: 0 2px 10px rgba(0,0,0,.04);
+  font-size: .95rem;
+  outline: none;
+}
+
+.faq-search input:focus{
+  box-shadow: 0 0 0 3px rgba(90,155,212,0.25);
+  border-color: rgba(90,155,212,0.45);
+}
+
+.faq-tags{
+  display:flex;
+  gap:.5rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.faq-tag{
+  border: 1px solid #e6ecf3;
+  background:#fff;
+  border-radius: 9999px;
+  padding: .35rem .6rem;
+  font-weight: 800;
+  font-size: .82rem;
+  color:#2c3e50;
+  cursor:pointer;
+  transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+}
+
+.faq-tag:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(0,0,0,.08);
+}
+
+.faq-tag[aria-pressed="true"]{
+  background: rgba(90,155,212,0.10);
+  border-color: rgba(90,155,212,0.45);
+}
+
+.faq-list{
+  display:grid;
+  gap: .65rem;
+}
+
+.faq-item{
+  border: 1px solid #eef2f7;
+  background: #fbfcfe;
+  border-radius: 14px;
+  padding: .65rem .75rem;
+}
+
+.faq-item summary{
+  cursor: pointer;
+  font-weight: 900;
+  color:#2c3e50;
+  list-style: none;
+}
+
+.faq-item summary::-webkit-details-marker{
+  display:none;
+}
+
+.faq-item summary:after{
+  content:"＋";
+  float:right;
+  font-weight:900;
+  color:#667;
+}
+
+.faq-item[open] summary:after{
+  content:"–";
+}
+
+.faq-item .faq-a{
+  color:#444;
+  line-height:1.6;
+  margin-top:.55rem;
+}
+
+.faq-empty{
+  margin-top: 1rem;
+  color:#667;
+  font-weight: 700;
+}
+
+.sr-only{
+  position:absolute;
+  width:1px;height:1px;
+  padding:0;margin:-1px;
+  overflow:hidden;clip:rect(0,0,0,0);
+  white-space:nowrap;border:0;
+}
