@@ -536,6 +536,29 @@
 	  .snap-stack{ scroll-behavior: auto; }
 	  .snap-panel{ transition: none; }
 	}	
+	.stat-btn{
+	  appearance: none;
+	  -webkit-appearance: none;
+	  border: 1px solid #e6ecf3;
+	  background: linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%);
+	  border-radius: 14px;
+	  padding: .85rem .9rem;
+	  box-shadow: 0 2px 10px rgba(0,0,0,.05);
+	  text-align: left;
+	  width: 100%;
+	  cursor: pointer;
+	}
+
+	.stat-btn:hover{
+	  transform: translateY(-1px);
+	  box-shadow: 0 10px 24px rgba(0,0,0,0.08);
+	  border-color: rgba(90,155,212,0.45);
+	}
+
+	.stat-btn:focus-visible{
+	  outline: none;
+	  box-shadow: 0 0 0 3px rgba(90,155,212,0.25);
+	}	
     /* ============================================================
       Trades KPI Grid
     ============================================================ */
@@ -1029,7 +1052,46 @@
 	    el.classList.toggle('active', el.getAttribute('data-date') === dateKey);
 	  });
 	}
+	async function openFintechMetricByIdx(kpiIdx) {
+	  try {
+	    // 1) Scroll to metrics anchor (above KPI strip, above Archive)
+	    const anchor = document.getElementById('fintech-metrics') || document.getElementById('trades-kpi-grid');
+	    if (anchor) scrollToWithHeaderOffset(anchor, 12);
 
+	    // 2) Ensure KPI grid exists; if not, try loading trades data (safe no-op if already loaded)
+	    const grid = document.getElementById('trades-kpi-grid');
+	    if (!grid) {
+	      console.warn('[fintech] KPI grid missing; are we in Trades section?');
+	      return;
+	    }
+
+	    // Helper to attempt opening a KPI card by idx
+	    const tryOpen = () => {
+	      const card = grid.querySelector(`.trades-kpi-card[data-idx="${String(kpiIdx)}"]`);
+	      if (!card) return false;
+	      card.click(); // uses the existing renderTradesKpiGrid() open() logic
+	      return true;
+	    };
+
+	    // If cards not present yet (async render), wait a tick and retry.
+	    if (tryOpen()) return;
+
+	    // If nothing rendered yet, attempt to (re)load trades data once, then retry.
+	    try {
+	      await loadTradesData();
+	    } catch (e) {
+	      console.warn('[fintech] loadTradesData failed while opening KPI overlay', e);
+	    }
+
+	    requestAnimationFrame(() => {
+	      if (!tryOpen()) {
+	        console.warn('[fintech] KPI idx not found in grid', { kpiIdx });
+	      }
+	    });
+	  } catch (err) {
+	    console.warn('[fintech] openFintechMetricByIdx failed', err);
+	  }
+	}
 	async function loadTradesByJsonUrl(jsonUrl, screenshotUrl, dateKey) {
 	  const dateEl = document.getElementById('trades-date');
 	  const updatedEl = document.getElementById('trades-updated');
@@ -1416,7 +1478,7 @@
                 </div>
                 <h2>Trades</h2>
                 <p class="trades-subtitle">
-                  Medium frequency, Full risk assesment, No overnight holiding, Transparent daily pnl & metrics, Production-grade <strong>options execution + risk assessment</strong> system. 
+                  High frequency, Risk profile, No overnight holiding, Transparent daily pnl & metrics, Production-grade <strong>options execution + risk assessment</strong> system. 
                   
                 </p>
               </div>
@@ -1440,35 +1502,35 @@
               </div>
             </header>
             <!-- Stat Cards -->
-            <div class="trades-stats">
-              <div class="stat">
-                <div class="stat-ic"><img src="assets/icons/cpu.svg" alt=""></div>
-                <div class="stat-k">Signals/day</div>
-                <div class="stat-v"><strong>800K – 1.5M</strong></div>
-                <div class="stat-s">Scanned for pricing dislocations</div>
-              </div>
+			<div class="trades-stats">
+			  <button class="stat stat-btn" type="button" data-kpi-idx="0" onclick="openFintechMetricByIdx(0)">
+			    <div class="stat-ic"><img src="assets/icons/cpu.svg" alt=""></div>
+			    <div class="stat-k">Signals/day</div>
+			    <div class="stat-v"><strong>800K – 1.5M</strong></div>
+			    <div class="stat-s">Scanned for pricing dislocations</div>
+			  </button>
 
-              <div class="stat">
-                <div class="stat-ic"><img src="assets/icons/chart.svg" alt=""></div>
-                <div class="stat-k">Contracts/day</div>
-                <div class="stat-v"><strong>2K – 15K</strong></div>
-                <div class="stat-s">Automated entry + exit</div>
-              </div>
+			  <button class="stat stat-btn" type="button" data-kpi-idx="1" onclick="openFintechMetricByIdx(1)">
+			    <div class="stat-ic"><img src="assets/icons/chart.svg" alt=""></div>
+			    <div class="stat-k">Contracts/day</div>
+			    <div class="stat-v"><strong>2K – 15K</strong></div>
+			    <div class="stat-s">Automated entry + exit</div>
+			  </button>
 
-              <div class="stat">
-                <div class="stat-ic"><img src="assets/icons/bolt.svg" alt=""></div>
-                <div class="stat-k">Avg hold time</div>
-                <div class="stat-v"><strong>~6.7s</strong></div>
-                <div class="stat-s">Designed for speed & repeatability</div>
-              </div>
+			  <button class="stat stat-btn" type="button" data-kpi-idx="2" onclick="openFintechMetricByIdx(2)">
+			    <div class="stat-ic"><img src="assets/icons/bolt.svg" alt=""></div>
+			    <div class="stat-k">Avg hold time</div>
+			    <div class="stat-v"><strong>~6.7s</strong></div>
+			    <div class="stat-s">Designed for speed & repeatability</div>
+			  </button>
 
-              <div class="stat">
-                <div class="stat-ic"><img src="assets/icons/shield.svg" alt=""></div>
-                <div class="stat-k">Overnight exposure</div>
-                <div class="stat-v"><strong>None</strong></div>
-                <div class="stat-s">Portfolio returns flat daily</div>
-              </div>
-            </div>
+			  <button class="stat stat-btn" type="button" data-kpi-idx="3" onclick="openFintechMetricByIdx(3)">
+			    <div class="stat-ic"><img src="assets/icons/shield.svg" alt=""></div>
+			    <div class="stat-k">Overnight exposure</div>
+			    <div class="stat-v"><strong>None</strong></div>
+			    <div class="stat-s">Portfolio returns flat daily</div>
+			  </button>
+			</div>
 
             <!-- Screenshot + meta (KEEP IDS) -->
             <div class="trades-hero">
@@ -1492,6 +1554,9 @@
             <div class="trades-summary-box">
               <p id="trades-summary">—</p>
             </div>
+			<!-- Metrics anchor (stat cards scroll here) -->
+			<div id="fintech-metrics"></div>
+
 			<div class="trades-kpi-strip" aria-label="KPI strip">
 			  <div id="trades-kpi-grid" class="trades-kpi-grid"></div>
 			</div>
