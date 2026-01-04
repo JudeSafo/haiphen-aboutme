@@ -38,6 +38,7 @@
       Trades: 'fintech',
       Services: 'services',
       OnePager: 'collaborate',
+      FAQ: 'faq',
       Inventory: 'archives',
       Contact: 'contact-us',
     };

@@ -30,6 +30,8 @@
   <script src="components/services-plans/services-plans.js"></script>
   <script src="components/services/services-section.js"></script>
   <script src="components/faq/faq.js"></script>
+  <script src="components/site-search/site-search.js"></script>
+  <script src="components/site-search/site-search-index.js"></script>
 
   <!-- 🔽 Structured Data for SEO -->
   <script type="application/ld+json">
@@ -559,6 +561,51 @@
 	.stat-btn:focus-visible{
 	  outline: none;
 	  box-shadow: 0 0 0 3px rgba(90,155,212,0.25);
+	}	
+	/* ============================================================
+	   Fintech/Trades: Collapsible "Tech" subsection
+	============================================================ */
+	.fintech-tech {
+	  margin-top: 1.75rem;
+	  border-top: 1px solid #eef2f7;
+	  padding-top: 1.25rem;
+	  text-align: left;
+	}
+
+	.fintech-tech > summary {
+	  list-style: none; /* remove default marker */
+	  cursor: pointer;
+	  display: flex;
+	  align-items: center;
+	  justify-content: center; /* keeps your centered vibe */
+	  gap: 0.6rem;
+	  user-select: none;
+	  font-weight: 800;
+	  color: #2c3e50;
+	  font-size: 1.6rem; /* close to h2 */
+	  margin: 0.25rem 0 0.75rem;
+	}
+
+	/* hide the default triangle in Chrome/Safari */
+	.fintech-tech > summary::-webkit-details-marker {
+	  display: none;
+	}
+
+	.fintech-tech > summary::after {
+	  content: "▾";
+	  font-size: 1.1rem;
+	  transform: translateY(1px);
+	  transition: transform 160ms ease;
+	  opacity: 0.85;
+	}
+
+	.fintech-tech[open] > summary::after {
+	  transform: rotate(180deg) translateY(-1px);
+	}
+
+	/* a subtle hover state */
+	.fintech-tech > summary:hover {
+	  color: #34495e;
 	}	
     /* ============================================================
       Trades KPI Grid
@@ -1589,77 +1636,79 @@
 			    <div><strong>Headline:</strong> <span id="trades-headline">—</span></div>
 			  </div>
 			</div>
-	        <h2 id="portfolio-top">Tech</h2>
-	        <br>
-	        <ul>
-	          <!-- First Portfolio Item: ETL Ingestion Engine -->
-	          <li style="list-style: disc; margin-bottom: 2rem;">
-	            <p style="margin-bottom: 0.5rem; font-size: 1.1rem; text-align: center;">
-	              <strong>ETL Ingestion Engine:</strong> Prior work with a DEI tech startup
-	              to build out their data infrastructure pipeline from crawling raw
-	              unstructured pdf data to building a basic KG database.
-	            </p>
-	            <div style="text-align: center;">
-	              <a href="https://github.com/JudeSafo/All_Language_Model" target="_blank" rel="noopener noreferrer">
-	                <img src="assets/gitPortfolio_esg.png" alt="All Language Model"
-	                  style="max-width:80%; height:auto; border: 1px solid #ccc; border-radius: 4px;">
-	              </a>
-	            </div>
-	          </li>
-	          
-	          <!-- Second Portfolio Item: Protein Biomarker Indexing (Genomics Use Case) -->
-	          <li style="list-style: disc; margin-bottom: 2rem;">
-	            <p style="margin-bottom: 0.5rem; font-size: 1.1rem; text-align: center;">
-	              <strong>Protein Biomarker Indexing:</strong> Engagmenet with a Harvard Genetics research lab,
-	              crawling PubMed articles to identify co-occurrences of diseases and biomarker
-	              conditions for potential overlapping treatment options.
-	            </p>
-	            <div style="text-align: center;">
-	              <a href="javascript:void(0)" onclick="showSection('OnePager')">
-	                <img src="assets/genomics_usecase.png" alt="Genomics Use Case"
-	                  style="max-width:80%; height:auto; border: 1px solid #ccc; border-radius: 4px;">
-	              </a>
-	            </div>
-	          </li>
-	          
-	          <!-- Third Portfolio Item: Web Crawler -->
-	          <li style="list-style: disc; margin-bottom: 2rem;">
-	            <p style="margin-bottom: 0.5rem; font-size: 1.1rem; text-align: center;">
-	              <strong>Web Crawler:</strong> Custom, open src search engine for curating and parsing
-	              unstructured pdf data (e.g. research, financials) for downstream applications.
-	            </p>
-	            <div style="text-align: center;">
-	              <img src="assets/haiphen-gif5.gif" alt="Haiphen AI Showcase"
-	                style="max-width:80%; height:auto; border: 1px solid #ccc; border-radius: 4px;">
-	            </div>
-	          </li>
-	  
-	          <!-- Fourth Portfolio Item: Distilled LLM -->
-	          <li style="list-style: disc; margin-bottom: 2rem;">
-	            <p style="margin-bottom: 0.5rem; font-size: 1.1rem;">
-	              <strong>Distilled RAG LLM:</strong> Custom open src LLM for specific business use cases,
-	              e.g. answering DEI questions.
-	            </p>
-	            <div style="text-align: center;">
-	              <img src="assets/haiphen-gif3.gif" alt="LLM"
-	                style="max-width:80%; height:auto; border: 1px solid #ccc; border-radius: 4px;">
-	            </div>
-	          </li>
-	          
-	          <!-- Fifth Portfolio Item: ZeroDays Follina Investigation -->
-	          <li style="list-style: disc; margin-bottom: 2rem;">
-	            <p style="margin-bottom: 0.5rem; font-size: 1.1rem; text-align: center;">
-	              <strong>ZeroDays Follina Investigation:</strong> An in-depth investigation
-	              of Confluence vulnerabilities with Follina, producing actionable security insights.
-	            </p>
-	            <div style="text-align: center;">
-	              <a href="javascript:void(0)" onclick="showSection('OnePager')">
-	                <img src="assets/haiphen-follina-screenshot.png" alt="ZeroDays Investigation"
-	                  style="max-width:80%; height:auto; border: 1px solid #ccc; border-radius: 4px;">
-	              </a>
-	            </div>
-	          </li>
-	        </ul>
+			<details class="fintech-tech" id="fintech-tech">
+			  <summary id="portfolio-top">Tech</summary>
+
+			  <ul style="margin-top: 0.5rem;">
+			    <!-- First Portfolio Item: ETL Ingestion Engine -->
+			    <li style="list-style: disc; margin-bottom: 2rem;">
+			      <p style="margin-bottom: 0.5rem; font-size: 1.1rem; text-align: center;">
+			        <strong>ETL Ingestion Engine:</strong> Prior work with a DEI tech startup
+			        to build out their data infrastructure pipeline from crawling raw
+			        unstructured pdf data to building a basic KG database.
+			      </p>
+			      <div style="text-align: center;">
+			        <a href="https://github.com/JudeSafo/All_Language_Model" target="_blank" rel="noopener noreferrer">
+			          <img src="assets/gitPortfolio_esg.png" alt="All Language Model"
+			            style="max-width:80%; height:auto; border: 1px solid #ccc; border-radius: 4px;">
+			        </a>
+			      </div>
+			    </li>
+
+			    <!-- Second Portfolio Item: Protein Biomarker Indexing (Genomics Use Case) -->
+			    <li style="list-style: disc; margin-bottom: 2rem;">
+			      <p style="margin-bottom: 0.5rem; font-size: 1.1rem; text-align: center;">
+			        <strong>Protein Biomarker Indexing:</strong> Engagmenet with a Harvard Genetics research lab,
+			        crawling PubMed articles to identify co-occurrences of diseases and biomarker
+			        conditions for potential overlapping treatment options.
+			      </p>
+			      <div style="text-align: center;">
+			        <a href="javascript:void(0)" onclick="showSection('OnePager')">
+			          <img src="assets/genomics_usecase.png" alt="Genomics Use Case"
+			            style="max-width:80%; height:auto; border: 1px solid #ccc; border-radius: 4px;">
+			        </a>
+			      </div>
+			    </li>
+
+			    <!-- Third Portfolio Item: Web Crawler -->
+			    <li style="list-style: disc; margin-bottom: 2rem;">
+			      <p style="margin-bottom: 0.5rem; font-size: 1.1rem; text-align: center;">
+			        <strong>Web Crawler:</strong> Custom, open src search engine for curating and parsing
+			        unstructured pdf data (e.g. research, financials) for downstream applications.
+			      </p>
+			      <div style="text-align: center;">
+			        <img src="assets/haiphen-gif5.gif" alt="Haiphen AI Showcase"
+			          style="max-width:80%; height:auto; border: 1px solid #ccc; border-radius: 4px;">
+			      </div>
+			    </li>
+
+			    <!-- Fourth Portfolio Item: Distilled LLM -->
+			    <li style="list-style: disc; margin-bottom: 2rem;">
+			      <p style="margin-bottom: 0.5rem; font-size: 1.1rem;">
+			        <strong>Distilled RAG LLM:</strong> Custom open src LLM for specific business use cases,
+			        e.g. answering DEI questions.
+			      </p>
+			      <div style="text-align: center;">
+			        <img src="assets/haiphen-gif3.gif" alt="LLM"
+			          style="max-width:80%; height:auto; border: 1px solid #ccc; border-radius: 4px;">
+			      </div>
+			    </li>
+
+			    <!-- Fifth Portfolio Item: ZeroDays Follina Investigation -->
+			    <li style="list-style: disc; margin-bottom: 2rem;">
+			      <p style="margin-bottom: 0.5rem; font-size: 1.1rem; text-align: center;">
+			        <strong>ZeroDays Follina Investigation:</strong> An in-depth investigation
+			        of Confluence vulnerabilities with Follina, producing actionable security insights.
+			      </p>
+			      <div style="text-align: center;">
+			        <a href="javascript:void(0)" onclick="showSection('OnePager')">
+			          <img src="assets/haiphen-follina-screenshot.png" alt="ZeroDays Investigation"
+			            style="max-width:80%; height:auto; border: 1px solid #ccc; border-radius: 4px;">
+			        </a>
+			      </div>
+			    </li>
+			  </ul>
+			</details>
 
           </section>
         `,
@@ -2008,10 +2057,82 @@
             text-align: left;
           }
         </style>        
+
+		<ul style="margin-top: 0.5rem;">
+		  <!-- First Portfolio Item: ETL Ingestion Engine -->
+		  <li style="list-style: disc; margin-bottom: 2rem;">
+		    <p style="margin-bottom: 0.5rem; font-size: 1.1rem; text-align: center;">
+		      <strong>ETL Ingestion Engine:</strong> Prior work with a DEI tech startup
+		      to build out their data infrastructure pipeline from crawling raw
+		      unstructured pdf data to building a basic KG database.
+		    </p>
+		    <div style="text-align: center;">
+		      <a href="https://github.com/JudeSafo/All_Language_Model" target="_blank" rel="noopener noreferrer">
+		        <img src="assets/gitPortfolio_esg.png" alt="All Language Model"
+		          style="max-width:80%; height:auto; border: 1px solid #ccc; border-radius: 4px;">
+		      </a>
+		    </div>
+		  </li>
+
+		  <!-- Second Portfolio Item: Protein Biomarker Indexing (Genomics Use Case) -->
+		  <li style="list-style: disc; margin-bottom: 2rem;">
+		    <p style="margin-bottom: 0.5rem; font-size: 1.1rem; text-align: center;">
+		      <strong>Protein Biomarker Indexing:</strong> Engagmenet with a Harvard Genetics research lab,
+		      crawling PubMed articles to identify co-occurrences of diseases and biomarker
+		      conditions for potential overlapping treatment options.
+		    </p>
+		    <div style="text-align: center;">
+		      <a href="javascript:void(0)" onclick="showSection('OnePager')">
+		        <img src="assets/genomics_usecase.png" alt="Genomics Use Case"
+		          style="max-width:80%; height:auto; border: 1px solid #ccc; border-radius: 4px;">
+		      </a>
+		    </div>
+		  </li>
+
+		  <!-- Third Portfolio Item: Web Crawler -->
+		  <li style="list-style: disc; margin-bottom: 2rem;">
+		    <p style="margin-bottom: 0.5rem; font-size: 1.1rem; text-align: center;">
+		      <strong>Web Crawler:</strong> Custom, open src search engine for curating and parsing
+		      unstructured pdf data (e.g. research, financials) for downstream applications.
+		    </p>
+		    <div style="text-align: center;">
+		      <img src="assets/haiphen-gif5.gif" alt="Haiphen AI Showcase"
+		        style="max-width:80%; height:auto; border: 1px solid #ccc; border-radius: 4px;">
+		    </div>
+		  </li>
+
+		  <!-- Fourth Portfolio Item: Distilled LLM -->
+		  <li style="list-style: disc; margin-bottom: 2rem;">
+		    <p style="margin-bottom: 0.5rem; font-size: 1.1rem;">
+		      <strong>Distilled RAG LLM:</strong> Custom open src LLM for specific business use cases,
+		      e.g. answering DEI questions.
+		    </p>
+		    <div style="text-align: center;">
+		      <img src="assets/haiphen-gif3.gif" alt="LLM"
+		        style="max-width:80%; height:auto; border: 1px solid #ccc; border-radius: 4px;">
+		    </div>
+		  </li>
+
+		  <!-- Fifth Portfolio Item: ZeroDays Follina Investigation -->
+		  <li style="list-style: disc; margin-bottom: 2rem;">
+		    <p style="margin-bottom: 0.5rem; font-size: 1.1rem; text-align: center;">
+		      <strong>ZeroDays Follina Investigation:</strong> An in-depth investigation
+		      of Confluence vulnerabilities with Follina, producing actionable security insights.
+		    </p>
+		    <div style="text-align: center;">
+		      <a href="javascript:void(0)" onclick="showSection('OnePager')">
+		        <img src="assets/haiphen-follina-screenshot.png" alt="ZeroDays Investigation"
+		          style="max-width:80%; height:auto; border: 1px solid #ccc; border-radius: 4px;">
+		      </a>
+		    </div>
+		  </li>
+		</ul>        
       `,
-      "FAQ": `
-		  <div id="faq-mount"></div>
-      `,
+	  "FAQ": `
+	    <section id="faq">
+	      <div id="faq-mount"></div>
+	    </section>
+	  `,
       "Tech": `
         <h2>Tech Stack</h2>
         <div class="tech-container">
@@ -2209,10 +2330,23 @@
 	  }
 
 	  // Default scroll behavior for non-Trades sections
-	  if (resolved !== "Trades") {
-	    requestAnimationFrame(() => {
-	      scrollToWithHeaderOffset(contentWidget, 12);
-	    });
+	  if (resolved === "FAQ") {
+	    (async () => {
+	      try {
+	        // 1) Mount FAQ content (async)
+	        await window.HAIPHEN?.loadFAQ?.();
+	      } catch (e) {
+	        console.warn("[FAQ] loadFAQ failed", e);
+	      }
+
+	      // 2) After the DOM actually exists + has size, scroll to it
+	      requestAnimationFrame(() => {
+	        const faqEl = document.getElementById("faq") || document.getElementById("faq-mount") || contentWidget;
+	        scrollToWithHeaderOffset(faqEl, 12);
+	      });
+	    })();
+
+	    // Important: don't fall through to the generic scroll below
 	    return;
 	  }
 
@@ -2227,6 +2361,9 @@
 	    requestAnimationFrame(() => {
 	      const tradesTop = document.getElementById("trades-top");
 	      scrollToWithHeaderOffset(tradesTop || contentWidget, 12);
+
+	      // ✅ wire the Tech dropdown behavior now that Trades DOM exists
+	      initFintechTechDropdown(contentWidget);
 	    });
 	  })();
 	}
@@ -2238,7 +2375,7 @@
 	  Trades: 'fintech',
 	  Services: 'services',
 	  OnePager: 'collaborate',
-	  Faq: 'faq',
+	  FAQ: 'faq',
 	  Contact: 'contact-us',
 	};
 
@@ -2341,6 +2478,57 @@
       }, 200);
     }
 
+	function initFintechTechDropdown(root = document) {
+	  const details = root.querySelector('#fintech-tech');
+	  const summary = root.querySelector('#portfolio-top');
+	  if (!details || !summary) return;
+
+	  // Avoid double wiring
+	  if (details.__wired) return;
+	  details.__wired = true;
+
+	  // 1) On open, scroll Tech into focus
+	  details.addEventListener('toggle', () => {
+	    if (details.open) {
+	      requestAnimationFrame(() => {
+	        scrollToWithHeaderOffset(summary, 12);
+	        summary.focus?.({ preventScroll: true });
+	      });
+	    }
+	  });
+
+	  // 2) Collapse when user scrolls UP to any content above Tech title
+	  let lastY = window.scrollY;
+
+	  const onScroll = () => {
+	    const y = window.scrollY;
+	    const scrollingUp = y < lastY;
+	    lastY = y;
+
+	    if (!details.open || !scrollingUp) return;
+
+	    const header =
+	      document.querySelector('.site-header') ||
+	      document.querySelector('#site-header .site-header') ||
+	      document.querySelector('nav.navbar');
+
+	    const headerH =
+	      header?.getBoundingClientRect().height ||
+	      parseInt(getComputedStyle(document.documentElement).getPropertyValue('--header-h') || '70', 10) ||
+	      70;
+
+	    const top = summary.getBoundingClientRect().top;
+
+	    // If the Tech summary is below the header line while scrolling up,
+	    // we are "above" Tech => collapse for legibility.
+	    if (top > headerH + 16) {
+	      details.open = false;
+	    }
+	  };
+
+	  window.addEventListener('scroll', onScroll, { passive: true });
+	  details.__teardown = () => window.removeEventListener('scroll', onScroll);
+	}
     /* ------------------------------------------------------------
        Session widget: detect login state & update navbar
     ------------------------------------------------------------ */
@@ -2399,6 +2587,7 @@
 	  safe(H.loadFooter, 'footer');
 	  // 🔽 add this:
 	  safe(H.loadTradesOverlay, 'trades-overlay');
+      safe(H.loadSiteSearch, 'site-search');	  
 
 	  updateSessionWidget();
 	});
