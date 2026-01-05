@@ -32,6 +32,8 @@
   <script src="components/faq/faq.js"></script>
   <script src="components/site-search/site-search.js"></script>
   <script src="components/site-search/site-search-index.js"></script>
+  <script src="components/api-docs/api-docs.js"></script>
+  <script src="components/contact-form/contact-form.js"></script>
 
   <!-- 🔽 Structured Data for SEO -->
   <script type="application/ld+json">
@@ -1537,11 +1539,10 @@
                   <span class="btn-ic"><img src="assets/icons/link.svg" alt=""></span>
                   Request API access
                 </button>
-
-                <a class="btn btn-ghost" href="https://haiphen.io" target="_blank" rel="noopener noreferrer">
-                  <span class="btn-ic"><img src="assets/icons/external.svg" alt=""></span>
-                  Docs / Lineage
-                </a>
+				<a class="btn btn-ghost" href="#docs">
+				  <span class="btn-ic"><img src="assets/icons/external.svg" alt=""></span>
+				  Docs / Lineage
+				</a>
 
                 <a class="btn btn-ghost" href="https://twitter.com/" target="_blank" rel="noopener noreferrer">
                   <span class="btn-ic"><img src="assets/icons/external.svg" alt=""></span>
@@ -2208,7 +2209,12 @@
           <br><br>
           <p>"No man is a failure who has friends" - Angel Clarence</p>
         </section>
-      `
+      `,
+      "Docs": `
+        <section id="docs-top">
+          <div id="api-docs-mount"></div>
+        </section>
+      `,      
     };
     
     /* ------------------------------------------------------------
@@ -2371,6 +2377,22 @@
 
 	    return;
 	  }
+	  if (resolved === "Docs") {
+	    (async () => {
+	      try {
+	        await window.HAIPHEN?.loadApiDocs?.('#api-docs-mount');
+	      } catch (e) {
+	        console.warn("[Docs] loadApiDocs failed", e);
+	      }
+
+	      requestAnimationFrame(() => {
+	        const top = document.getElementById("docs-top") || contentWidget;
+	        scrollToWithHeaderOffset(top, 12);
+	      });
+	    })();
+
+	    return;
+	  }	  
 
 	  // Non-Trades: default scroll to widget top
 	  requestAnimationFrame(() => {
@@ -2387,6 +2409,7 @@
 	  OnePager: 'collaborate',
 	  FAQ: 'faq',
 	  Contact: 'contact-us',
+	  Docs: 'docs',
 	};
 
 	const HASH_SECTION = Object.fromEntries(

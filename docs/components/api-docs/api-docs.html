@@ -1,0 +1,381 @@
+<section class="api-docs" id="api-docs">
+  <header class="api-hero">
+    <div class="api-hero-top">
+      <div class="api-hero-title">
+        <div class="api-pill">Docs / Lineage</div>
+        <h2>Haiphen Trading Metrics API</h2>
+        <p class="api-subtitle">
+          Daily high-frequency execution telemetry, delivered as <strong>RSS</strong> and a <strong>REST API</strong>.
+          Built for transparency, auditability, and automation.
+        </p>
+      </div>
+
+      <div class="api-hero-actions">
+        <a class="api-btn api-btn-primary" href="javascript:void(0)" data-api-action="request-access">
+          Request access
+        </a>
+        <a class="api-btn api-btn-ghost" href="javascript:void(0)" data-api-action="view-changelog">
+          Changelog
+        </a>
+      </div>
+    </div>
+
+    <div class="api-hero-cards" role="region" aria-label="API quick facts">
+      <div class="api-card">
+        <div class="api-card-k">Base URL</div>
+        <div class="api-card-v">
+          <code data-copy="https://api.haiphen.io/v1">https://api.haiphen.io/v1</code>
+          <button class="api-copy" type="button" data-copy-btn="https://api.haiphen.io/v1" aria-label="Copy base URL">Copy</button>
+        </div>
+        <div class="api-card-s">All endpoints below are relative to this base.</div>
+      </div>
+
+      <div class="api-card">
+        <div class="api-card-k">Auth</div>
+        <div class="api-card-v"><code>Authorization: Bearer &lt;API_KEY&gt;</code></div>
+        <div class="api-card-s">Per-user keys. Rotate anytime. Least-privilege scopes.</div>
+      </div>
+
+      <div class="api-card">
+        <div class="api-card-k">Formats</div>
+        <div class="api-card-v"><code>JSON</code> <span class="api-dot">•</span> <code>RSS/Atom</code></div>
+        <div class="api-card-s">Same daily metrics, different delivery semantics.</div>
+      </div>
+    </div>
+  </header>
+
+  <div class="api-layout">
+    <!-- Sidebar -->
+    <aside class="api-sidebar" aria-label="Documentation navigation">
+      <div class="api-sidebar-head">
+        <div class="api-sidebar-title">Contents</div>
+        <input
+          class="api-filter"
+          type="search"
+          placeholder="Filter sections…"
+          aria-label="Filter documentation sections"
+          data-api-filter
+        />
+      </div>
+
+      <nav class="api-nav" data-api-nav>
+        <!-- injected -->
+      </nav>
+
+      <div class="api-sidebar-foot">
+        <div class="api-muted">Tip: Share a deep link via <code>#docs:section-id</code>.</div>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="api-main" data-api-main>
+      <!-- Tabs -->
+      <div class="api-tabs" role="tablist" aria-label="API documentation modes">
+        <button class="api-tab is-active" type="button" role="tab" aria-selected="true" data-api-tab="rest">REST</button>
+        <button class="api-tab" type="button" role="tab" aria-selected="false" data-api-tab="rss">RSS</button>
+        <button class="api-tab" type="button" role="tab" aria-selected="false" data-api-tab="webhooks">Webhooks</button>
+      </div>
+
+      <!-- REST -->
+      <section class="api-panel is-active" data-api-panel="rest">
+        <section class="api-section" id="docs-overview" data-api-section>
+          <h3>Overview</h3>
+          <p>
+            The Haiphen Metrics API exposes a daily snapshot of intraday execution telemetry from a
+            high-frequency options engine. The goal is boring reliability: a predictable contract that
+            downstream automation can trust.
+          </p>
+
+          <div class="api-callout">
+            <div class="api-callout-title">Non-advisory disclaimer</div>
+            <p class="api-muted">
+              This API provides telemetry, not trade instructions. Treat outputs as informational signals and
+              diagnostics — not financial advice.
+            </p>
+          </div>
+        </section>
+
+        <section class="api-section" id="docs-auth" data-api-section>
+          <h3>Authentication</h3>
+          <p>
+            Authenticate with a bearer token:
+          </p>
+
+          <pre class="api-code"><code data-lang="bash">curl -s "https://api.haiphen.io/v1/metrics/daily?date=2026-01-05" \
+  -H "Authorization: Bearer $HAIPHEN_API_KEY"</code></pre>
+
+          <div class="api-grid2">
+            <div class="api-mini">
+              <div class="api-mini-k">Scopes</div>
+              <div class="api-mini-v"><code>metrics:read</code>, <code>rss:read</code>, <code>webhooks:write</code></div>
+              <div class="api-mini-s">Start small. Expand later per plan tier.</div>
+            </div>
+            <div class="api-mini">
+              <div class="api-mini-k">Key rotation</div>
+              <div class="api-mini-v">Rotate without downtime</div>
+              <div class="api-mini-s">Issue a new key, deploy, then revoke the old key.</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="api-section" id="docs-rate-limits" data-api-section>
+          <h3>Rate limits</h3>
+          <p>
+            Limits should be explicit and plan-based. Suggested defaults (tunable):
+          </p>
+
+          <div class="api-table" role="table" aria-label="Rate limits">
+            <div class="api-row api-head" role="row">
+              <div role="columnheader">Plan</div>
+              <div role="columnheader">Requests</div>
+              <div role="columnheader">Window</div>
+              <div role="columnheader">Burst</div>
+            </div>
+            <div class="api-row" role="row">
+              <div role="cell"><strong>Free</strong></div>
+              <div role="cell">60</div>
+              <div role="cell">minute</div>
+              <div role="cell">10</div>
+            </div>
+            <div class="api-row" role="row">
+              <div role="cell"><strong>Pro</strong></div>
+              <div role="cell">600</div>
+              <div role="cell">minute</div>
+              <div role="cell">60</div>
+            </div>
+            <div class="api-row" role="row">
+              <div role="cell"><strong>Enterprise</strong></div>
+              <div role="cell">Custom</div>
+              <div role="cell">—</div>
+              <div role="cell">—</div>
+            </div>
+          </div>
+
+          <p class="api-muted">
+            Return <code>429</code> with <code>Retry-After</code> and include plan/limit headers:
+            <code>X-RateLimit-Limit</code>, <code>X-RateLimit-Remaining</code>, <code>X-RateLimit-Reset</code>.
+          </p>
+        </section>
+
+        <section class="api-section" id="docs-endpoints" data-api-section>
+          <h3>Endpoints</h3>
+          <p>
+            Below is a clean “v1 contract” you can implement immediately, then expand.
+            Endpoint rows are copyable.
+          </p>
+
+          <div class="api-endpoints">
+            <div class="api-endpoint">
+              <div class="api-endpoint-top">
+                <span class="api-method">GET</span>
+                <code class="api-path" data-copy="/metrics/daily">/metrics/daily</code>
+                <button class="api-copy" type="button" data-copy-btn="/metrics/daily">Copy</button>
+              </div>
+              <div class="api-endpoint-desc">Fetch the daily metrics snapshot for a given date (defaults to latest).</div>
+              <div class="api-endpoint-meta">
+                <div><strong>Query:</strong> <code>date=YYYY-MM-DD</code>, <code>tz=America/Chicago</code></div>
+                <div><strong>Returns:</strong> summary + KPI rows + optional series</div>
+              </div>
+
+              <pre class="api-code"><code data-lang="json">{
+  "date": "2026-01-05",
+  "updated_at": "2026-01-05T14:01:22Z",
+  "headline": "Intraday execution stable; exit latency improved",
+  "summary": "Daily snapshot of executed trades, P&amp;L, win-rate, and risk diagnostics.",
+  "rows": [
+    {"kpi": "Signals scanned", "value": "1,102,481"},
+    {"kpi": "Opportunities flagged", "value": "5,821"},
+    {"kpi": "Entries opened", "value": "980"},
+    {"kpi": "Exits closed", "value": "980"},
+    {"kpi": "Avg hold time", "value": "6.7s"},
+    {"kpi": "Daily PnL", "value": "+1.24%"}
+  ],
+  "overlay": {
+    "seriesByKpi": {
+      "Daily PnL": [{"t": "09:31", "v": 0.12}, {"t": "09:32", "v": 0.18}]
+    },
+    "extremes": {"hi": [], "lo": []},
+    "portfolioAssets": []
+  }
+}</code></pre>
+            </div>
+
+            <div class="api-endpoint">
+              <div class="api-endpoint-top">
+                <span class="api-method">GET</span>
+                <code class="api-path" data-copy="/metrics/dates">/metrics/dates</code>
+                <button class="api-copy" type="button" data-copy-btn="/metrics/dates">Copy</button>
+              </div>
+              <div class="api-endpoint-desc">List available metric dates (supports pagination).</div>
+              <div class="api-endpoint-meta">
+                <div><strong>Query:</strong> <code>limit</code>, <code>cursor</code></div>
+                <div><strong>Returns:</strong> stable list for archive browsing</div>
+              </div>
+
+              <pre class="api-code"><code data-lang="json">{
+  "items": [
+    {"date": "2026-01-05"},
+    {"date": "2026-01-02"},
+    {"date": "2026-01-01"}
+  ],
+  "next_cursor": null
+}</code></pre>
+            </div>
+
+            <div class="api-endpoint">
+              <div class="api-endpoint-top">
+                <span class="api-method">GET</span>
+                <code class="api-path" data-copy="/health">/health</code>
+                <button class="api-copy" type="button" data-copy-btn="/health">Copy</button>
+              </div>
+              <div class="api-endpoint-desc">Service health (useful for monitors).</div>
+
+              <pre class="api-code"><code data-lang="json">{
+  "ok": true,
+  "time": "2026-01-05T14:03:00Z",
+  "version": "v1.0.0"
+}</code></pre>
+            </div>
+
+            <div class="api-endpoint">
+              <div class="api-endpoint-top">
+                <span class="api-method">POST</span>
+                <code class="api-path" data-copy="/webhooks">/webhooks</code>
+                <button class="api-copy" type="button" data-copy-btn="/webhooks">Copy</button>
+              </div>
+              <div class="api-endpoint-desc">Register a webhook for new daily metrics (Pro/Enterprise).</div>
+              <div class="api-endpoint-meta">
+                <div><strong>Body:</strong> <code>{"url":"…","events":["metrics.published"]}</code></div>
+                <div><strong>Security:</strong> signed payloads via <code>X-Haiphen-Signature</code></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="api-section" id="docs-errors" data-api-section>
+          <h3>Errors</h3>
+          <p>Errors are consistent JSON envelopes.</p>
+
+          <pre class="api-code"><code data-lang="json">{
+  "error": {
+    "code": "unauthorized",
+    "message": "Missing or invalid API key",
+    "request_id": "req_01HZY…"
+  }
+}</code></pre>
+
+          <div class="api-grid2">
+            <div class="api-mini">
+              <div class="api-mini-k">Common codes</div>
+              <div class="api-mini-v">
+                <code>unauthorized</code>, <code>forbidden</code>, <code>not_found</code>, <code>rate_limited</code>, <code>invalid_request</code>
+              </div>
+            </div>
+            <div class="api-mini">
+              <div class="api-mini-k">Support</div>
+              <div class="api-mini-v">Include <code>request_id</code></div>
+              <div class="api-mini-s">Makes tracing across your event-driven pipeline much easier.</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="api-section" id="docs-lineage" data-api-section>
+          <h3>Lineage</h3>
+          <p>
+            This is where you document the “chain of custody” from raw market data → metrics.
+            Keep it simple now, but structured so you can expand.
+          </p>
+
+          <div class="api-callout">
+            <div class="api-callout-title">Suggested lineage (based on your current site)</div>
+            <ol class="api-ol">
+              <li><strong>Ingest</strong>: market data + signals (high volume)</li>
+              <li><strong>Score</strong>: opportunity detection + risk filters</li>
+              <li><strong>Execute</strong>: orders + guardrails (intraday only)</li>
+              <li><strong>Monitor</strong>: telemetry + exits</li>
+              <li><strong>Report</strong>: daily KPIs + archive + RSS</li>
+            </ol>
+          </div>
+
+          <p class="api-muted">
+            Add concrete identifiers over time (e.g., <code>trace_id</code>, <code>pair_id</code>, <code>order_id</code>)
+            so users can correlate events across API payloads.
+          </p>
+        </section>
+
+        <section class="api-section" id="docs-changelog" data-api-section>
+          <h3>Changelog</h3>
+          <div class="api-changelog">
+            <div class="api-changelog-item">
+              <div class="api-changelog-ver"><code>v1</code></div>
+              <div class="api-changelog-body">
+                <div class="api-changelog-title">Initial contract</div>
+                <div class="api-muted">Daily metrics snapshot + dates index + webhook registration.</div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <!-- RSS -->
+      <section class="api-panel" data-api-panel="rss">
+        <section class="api-section" id="docs-rss-overview" data-api-section>
+          <h3>RSS / Atom</h3>
+          <p>
+            RSS is the “set it and forget it” delivery path. Ideal for dashboards, Slack bots,
+            custom readers, or simple automations.
+          </p>
+
+          <div class="api-callout">
+            <div class="api-callout-title">Feed URLs</div>
+            <p class="api-muted">
+              RSS is public or authenticated depending on plan. Recommended:
+              authenticated feeds with tokenized URLs.
+            </p>
+            <pre class="api-code"><code data-lang="text">https://api.haiphen.io/v1/rss/metrics?token=RSS_TOKEN</code></pre>
+          </div>
+
+          <h4>Entry shape</h4>
+          <pre class="api-code"><code data-lang="xml">&lt;item&gt;
+  &lt;title&gt;2026-01-05 — Intraday execution stable&lt;/title&gt;
+  &lt;link&gt;https://haiphen.io/#fintech&lt;/link&gt;
+  &lt;guid&gt;haiphen:metrics:2026-01-05&lt;/guid&gt;
+  &lt;pubDate&gt;Mon, 05 Jan 2026 14:01:22 GMT&lt;/pubDate&gt;
+  &lt;description&gt;Daily PnL +1.24% • Win rate 61% • Entries 980&lt;/description&gt;
+&lt;/item&gt;</code></pre>
+        </section>
+      </section>
+
+      <!-- Webhooks -->
+      <section class="api-panel" data-api-panel="webhooks">
+        <section class="api-section" id="docs-webhooks" data-api-section>
+          <h3>Webhooks</h3>
+          <p>
+            Webhooks are the real-time-ish path for downstream automation when new daily metrics publish.
+          </p>
+
+          <h4>Event types</h4>
+          <ul class="api-ul">
+            <li><code>metrics.published</code> — daily snapshot available</li>
+            <li><code>key.rotated</code> — key lifecycle events (optional)</li>
+          </ul>
+
+          <h4>Signature verification</h4>
+          <p class="api-muted">
+            Sign payloads with HMAC-SHA256. Include a timestamp header to prevent replay.
+          </p>
+
+          <pre class="api-code"><code data-lang="text">X-Haiphen-Timestamp: 1704463440
+X-Haiphen-Signature: v1=ab12cd34…</code></pre>
+
+          <div class="api-callout">
+            <div class="api-callout-title">Recommended retry strategy</div>
+            <p class="api-muted">
+              Exponential backoff, max 24h, and idempotency via <code>event_id</code>.
+            </p>
+          </div>
+        </section>
+      </section>
+    </main>
+  </div>
+</section>

@@ -1,0 +1,57 @@
+<section id="contact-us" class="contact">
+  <h2>Contact</h2>
+  <p class="contact-sub">
+    Send a message and you’ll receive a ticket number + confirmation email.
+  </p>
+
+  <form id="contactForm" class="contact-card" novalidate>
+    <div class="grid">
+      <label>
+        <span>Name</span>
+        <input name="name" type="text" autocomplete="name" required maxlength="120" />
+      </label>
+
+      <label>
+        <span>Email</span>
+        <input name="email" type="email" autocomplete="email" required maxlength="200" />
+      </label>
+
+      <label>
+        <span>Phone (optional)</span>
+        <input name="phone" type="tel" autocomplete="tel" maxlength="40" />
+      </label>
+
+      <label class="full">
+        <span>Message</span>
+        <textarea name="message" required minlength="10" maxlength="6000"></textarea>
+      </label>
+
+      <!-- Honeypot: bots will fill this, humans won't -->
+      <input name="company" type="text" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
+
+      <!-- Turnstile widget mount -->
+      <div class="full">
+        <div id="cf-turnstile" class="turnstile"></div>
+      </div>
+
+      <div class="full actions">
+        <button id="contactSubmit" type="submit" class="btn btn-primary">
+          Submit
+        </button>
+        <span id="contactStatus" class="status" role="status" aria-live="polite"></span>
+      </div>
+    </div>
+  </form>
+
+  <div id="contactReceipt" class="contact-card receipt" hidden>
+    <h3>Request received</h3>
+    <p>
+      Ticket: <strong id="ticketId">—</strong>
+    </p>
+    <p>
+      Confirmation sent to: <strong id="ticketEmail">—</strong>
+    </p>
+    <p class="muted" id="ticketMeta">—</p>
+    <button id="contactAnother" class="btn btn-ghost">Submit another</button>
+  </div>
+</section>
