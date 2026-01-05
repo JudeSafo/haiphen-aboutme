@@ -34,7 +34,32 @@
   <script src="components/site-search/site-search-index.js"></script>
   <script src="components/api-docs/api-docs.js"></script>
   <script src="components/contact-form/contact-form.js"></script>
+  
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+  <script>
+    window.HAIPHEN = window.HAIPHEN || {};
+    window.HAIPHEN.TURNSTILE_SITE_KEY = "0x4AAAAAACKr8sUWJUM68QdF"; // site key (public)
+  </script>
 
+  <div
+    class="cf-turnstile"
+    id="turnstile"
+    data-callback="onTurnstileOk"
+  ></div>
+
+  <button id="submitBtn" type="submit" disabled>Submit</button>
+
+  <script>
+    // set sitekey once, from your global config
+    document.getElementById("turnstile").setAttribute(
+      "data-sitekey",
+      window.HAIPHEN.TURNSTILE_SITE_KEY
+    );
+
+    function onTurnstileOk() {
+      document.getElementById("submitBtn").disabled = false;
+    }
+  </script>
   <!-- 🔽 Structured Data for SEO -->
   <script type="application/ld+json">
   {
@@ -2191,25 +2216,11 @@
           }
         </style>
       `,
-      "Contact": `
-        <section id="contact-us">
-          <h2>Contact Us</h2>
-          <p>Founder: <a href="https://linkedin.com/in/judesafo"
-            target="_blank" rel="noopener noreferrer">Jude Safo</a></p>
-          <p>Email: <a href="mailto:pi@haiphenai.com">pi@haiphenai.com</a></p>
-          <p>Phone: (512) 910-4544</p>
-          <p>Address: Manhattan, New York, USA</p>
-          <br><br>
-          <div style="text-align: center;">
-            <a href="https://docs.google.com/forms/d/e/1FAIpQLSc8HhR9nIEE-DBgtKq2CQ-Y4PJ8Mr0pbE07fzGE15FhcfqG6g/viewform?usp=header"
-              target="_blank" rel="noopener noreferrer">
-              <img src="assets/nature.png" alt="Nature" style="max-width:80%; border-radius: 4px;">
-            </a>
-          </div>
-          <br><br>
-          <p>"No man is a failure who has friends" - Angel Clarence</p>
-        </section>
-      `,
+	  "Contact": `
+	    <section id="contact-us">
+	      <div id="contact-form-mount"></div>
+	    </section>
+	  `,
       "Docs": `
         <section id="docs-top">
           <div id="api-docs-mount"></div>
@@ -2393,7 +2404,24 @@
 
 	    return;
 	  }	  
+	  if (resolved === "Contact") {
+	    (async () => {
+	      try {
+	        const mount = document.querySelector("#contact-form-mount");
+	        const resp = await fetch("components/contact-form/contact-form.html", { cache: "no-store" });
+	        mount.innerHTML = await resp.text();
+	      } catch (e) {
+	        console.warn("[Contact] failed to load contact form", e);
+	      }
 
+	      requestAnimationFrame(() => {
+	        const top = document.getElementById("contact-us") || contentWidget;
+	        scrollToWithHeaderOffset(top, 12);
+	      });
+	    })();
+
+	    return;
+	  }
 	  // Non-Trades: default scroll to widget top
 	  requestAnimationFrame(() => {
 	    scrollToWithHeaderOffset(contentWidget, 12);
