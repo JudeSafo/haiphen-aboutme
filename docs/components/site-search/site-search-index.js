@@ -14,19 +14,34 @@
     if (!api) return;
 
     api.setIndex([
-      // Trades
-      { label: "Trades (top)", section: "Trades", elementId: "trades-top", keywords: ["fintech", "trading", "options", "intraday"] },
-      { label: "Trades • Metrics strip", section: "Trades", elementId: "fintech-metrics", keywords: ["kpi", "metrics", "pnl", "win rate"] },
-      { label: "Trades • Tech (portfolio)", section: "Trades", elementId: "portfolio-top", keywords: ["tech", "portfolio", "etl", "crawler"] },
+      // --- Trades
+      { label: "Trades", section: "Trades", elementId: "trades-top", keywords: ["fintech", "trading", "options", "intraday"] },
+      { label: "Trades • Metrics", section: "Trades", elementId: "fintech-metrics", keywords: ["kpi", "metrics", "pnl", "win rate"] },
+      { label: "Trades • Archive", section: "Trades", elementId: "trades-archive", keywords: ["archive", "history", "daily"] },
+      { label: "Trades • Tech", section: "Trades", elementId: "portfolio-top", keywords: ["tech", "portfolio", "system"] },
 
-      // Services
-      { label: "Services (snap stack)", section: "Services", elementId: "services-plans-mount", keywords: ["services", "plans", "pricing"] },
-      { label: "Services • Signals", section: "OnePager", elementId: "services-signals", keywords: ["signals", "decision engines", "risk"] },
-      { label: "Services • Gallery", section: "OnePager", elementId: "services-gallery", keywords: ["gallery", "inventory", "images"] },
-      { label: "Services • Ethos", section: "OnePager", elementId: "ethos", keywords: ["ethos", "open source", "security"] },
+      // Portfolio sub-anchors
+      { label: "Portfolio • ETL Ingestion Engine", section: "Trades", elementId: "portfolio-etl", keywords: ["etl", "pipeline", "ingestion", "pdf"] },
+      { label: "Portfolio • Protein Biomarker Indexing", section: "Trades", elementId: "portfolio-genomics", keywords: ["genomics", "pubmed", "biomarker"] },
+      { label: "Portfolio • Web Crawler", section: "Trades", elementId: "portfolio-crawler", keywords: ["crawler", "search", "parsing"] },
+      { label: "Portfolio • Distilled RAG LLM", section: "Trades", elementId: "portfolio-llm", keywords: ["rag", "llm", "qa"] },
+      { label: "Portfolio • ZeroDays Follina", section: "Trades", elementId: "portfolio-follina", keywords: ["follina", "confluence", "security"] },
 
-      // FAQ / Contact
-      { label: "FAQ", section: "FAQ", elementId: "faq-mount", keywords: ["faq", "questions"] },
+      // --- Services section (snap stack)
+      { label: "Services", section: "Services", elementId: "services-plans-mount", keywords: ["services", "plans", "pricing"] },
+      { label: "Services • Plans", section: "Services", elementId: "services-plans-mount", keywords: ["plans", "pricing", "tiers"] },
+      { label: "Services • Hardtech", section: "Services", elementId: "services-hardtech-mount", keywords: ["hardware", "embedded", "robotics"] },
+
+      // --- OnePager / Mission (your “Collaborate” section)
+      { label: "Mission", section: "OnePager", elementId: "mission-top", keywords: ["mission", "about", "haiphen"] },
+      { label: "OnePager", section: "OnePager", elementId: "onepager-top", keywords: ["onepager", "genomics", "zerodays"] },
+      { label: "How it works", section: "OnePager", elementId: "how-it-works", keywords: ["pipeline", "ingest", "score", "execute", "monitor"] },
+      { label: "Signals", section: "OnePager", elementId: "services-signals", keywords: ["signals", "decision engines", "risk"] },
+      { label: "Ethos", section: "OnePager", elementId: "ethos", keywords: ["ethos", "open source", "security"] },
+      { label: "Gallery", section: "OnePager", elementId: "services-gallery", keywords: ["gallery", "inventory", "images"] },
+
+      // --- FAQ / Contact
+      { label: "FAQ", section: "FAQ", elementId: "faq-mount", keywords: ["faq", "questions", "help"] },
       { label: "Contact", section: "Contact", elementId: "contact-us", keywords: ["contact", "email", "calendar"] },
     ]);
   });

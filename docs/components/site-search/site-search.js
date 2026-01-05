@@ -37,6 +37,11 @@
     const link = document.createElement("link");
     link.rel = "stylesheet";
     link.href = href;
+
+    link.addEventListener("error", () => {
+      console.warn("[site-search] failed to load css:", href);
+    });
+
     document.head.appendChild(link);
   }
 
@@ -213,6 +218,7 @@
     if (!overlay || !input) return;
 
     overlay.classList.add("is-open");
+    overlay.style.display = "flex"; // ✅ failsafe: always visible
     state.open = true;
     state.activePos = 0;
 
@@ -224,7 +230,10 @@
 
   function closeOverlay() {
     const overlay = byId("site-search-overlay");
-    if (overlay) overlay.classList.remove("is-open");
+    if (overlay) {
+      overlay.classList.remove("is-open");
+      overlay.style.display = "none"; // ✅ failsafe
+    }
     state.open = false;
     state.activePos = 0;
   }
@@ -232,28 +241,31 @@
   function navigateTo(entry) {
     closeOverlay();
 
-    // Preferred: section routing + scroll
+    // Preferred: use your hash router (shareable + consistent)
+    if (entry.section && typeof window.setHashForSection === "function") {
+      const sub = entry.elementId || entry.hash || "";
+      window.setHashForSection(entry.section, sub);
+      return;
+    }
+
+    // Fallback: direct section + scroll (still works if router missing)
     if (entry.section && typeof window.showSection === "function") {
       window.showSection(entry.section);
 
-      // wait for injected sectionContent DOM
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
           if (entry.elementId && scrollToIdWithHeaderOffset(entry.elementId)) return;
           if (entry.hash) window.location.hash = `#${entry.hash}`;
         });
       });
-
       return;
     }
 
-    // Hash fallback
+    // Last resort: hash/scroll only
     if (entry.hash) {
       window.location.hash = `#${entry.hash}`;
       return;
     }
-
-    // Last resort: just scroll to id if currently present
     if (entry.elementId) scrollToIdWithHeaderOffset(entry.elementId);
   }
 
@@ -330,26 +342,27 @@
     });
   }
 
-  async function loadSiteSearch() {
-    // CSS is injected on open, but injecting here makes the icon look right immediately
-    injectCssOnce(CSS_HREF);
+  function bindWhenHeaderReady() {
+    // Try immediately (in case header is already there)
+    wireHeaderButton();
 
-    // header is injected async; poll lightly until button exists
-    const start = Date.now();
-    const maxMs = 4000;
-
-    const tick = () => {
+    // Then listen for header ready event
+    window.addEventListener("haiphen:header:ready", () => {
       wireHeaderButton();
-      wireGlobalShortcuts();
-      ensureOverlay();
-      wireOverlayInputs();
+    }, { once: false });
+  }
 
-      if (byId("site-search-btn")) return;
-      if (Date.now() - start > maxMs) return;
-      setTimeout(tick, 60);
-    };
+  function bindHeaderButton() {
+    wireHeaderButton();
+    window.addEventListener("haiphen:header:ready", wireHeaderButton);
+  }
 
-    tick();
+  async function loadSiteSearch() {
+    injectCssOnce(CSS_HREF);
+    ensureOverlay();
+    wireGlobalShortcuts();
+    wireOverlayInputs();
+    bindHeaderButton();
   }
 
   window.HAIPHEN = window.HAIPHEN || {};

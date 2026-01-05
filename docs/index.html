@@ -1526,7 +1526,7 @@
                 </div>
                 <h2>Trades</h2>
                 <p class="trades-subtitle">
-                  High frequency, Risk exposure, No overnight holiding, Transparent daily pnl & metrics, Production-grade <strong>options execution + risk assessment</strong> system. 
+                  High frequency, Risk profile, No overnight holiding, Transparent daily pnl & metrics, Production-grade <strong>options execution + risk assessment</strong> system. 
                   
                 </p>
               </div>
@@ -1610,7 +1610,7 @@
 			</div>
 
             <!-- Archive (KEEP IDS) -->
-			<div class="trades-archive">
+			<div id="trades-archive" class="trades-archive">
 			  <h3>Archive</h3>
 
 			  <div class="trades-archive-viewport">
@@ -1638,10 +1638,11 @@
 			</div>
 			<details class="fintech-tech" id="fintech-tech">
 			  <summary id="portfolio-top">Tech</summary>
+			  <div id="portfolio-content-top" aria-hidden="true" style="height:1px;"></div>
 
 			  <ul style="margin-top: 0.5rem;">
 			    <!-- First Portfolio Item: ETL Ingestion Engine -->
-			    <li style="list-style: disc; margin-bottom: 2rem;">
+			    <li id="portfolio-etl" style="list-style: disc; margin-bottom: 2rem;">
 			      <p style="margin-bottom: 0.5rem; font-size: 1.1rem; text-align: center;">
 			        <strong>ETL Ingestion Engine:</strong> Prior work with a DEI tech startup
 			        to build out their data infrastructure pipeline from crawling raw
@@ -1656,7 +1657,7 @@
 			    </li>
 
 			    <!-- Second Portfolio Item: Protein Biomarker Indexing (Genomics Use Case) -->
-			    <li style="list-style: disc; margin-bottom: 2rem;">
+			    <li id="portfolio-genomics" style="list-style: disc; margin-bottom: 2rem;">
 			      <p style="margin-bottom: 0.5rem; font-size: 1.1rem; text-align: center;">
 			        <strong>Protein Biomarker Indexing:</strong> Engagmenet with a Harvard Genetics research lab,
 			        crawling PubMed articles to identify co-occurrences of diseases and biomarker
@@ -1671,7 +1672,7 @@
 			    </li>
 
 			    <!-- Third Portfolio Item: Web Crawler -->
-			    <li style="list-style: disc; margin-bottom: 2rem;">
+			    <li id="portfolio-crawler" style="list-style: disc; margin-bottom: 2rem;">
 			      <p style="margin-bottom: 0.5rem; font-size: 1.1rem; text-align: center;">
 			        <strong>Web Crawler:</strong> Custom, open src search engine for curating and parsing
 			        unstructured pdf data (e.g. research, financials) for downstream applications.
@@ -1695,7 +1696,7 @@
 			    </li>
 
 			    <!-- Fifth Portfolio Item: ZeroDays Follina Investigation -->
-			    <li style="list-style: disc; margin-bottom: 2rem;">
+			    <li id="portfolio-follina" style="list-style: disc; margin-bottom: 2rem;">
 			      <p style="margin-bottom: 0.5rem; font-size: 1.1rem; text-align: center;">
 			        <strong>ZeroDays Follina Investigation:</strong> An in-depth investigation
 			        of Confluence vulnerabilities with Follina, producing actionable security insights.
@@ -2351,21 +2352,30 @@
 	  }
 
 	  // Trades: wait for async content + DOM inflation, then scroll
-	  (async () => {
-	    try {
-	      await loadTradesData();
-	    } catch (e) {
-	      console.warn("[Trades] loadTradesData failed", e);
-	    }
+	  if (resolved === "Trades") {
+	    (async () => {
+	      try {
+	        await loadTradesData();
+	      } catch (e) {
+	        console.warn("[Trades] loadTradesData failed", e);
+	      }
 
-	    requestAnimationFrame(() => {
-	      const tradesTop = document.getElementById("trades-top");
-	      scrollToWithHeaderOffset(tradesTop || contentWidget, 12);
+	      requestAnimationFrame(() => {
+	        const tradesTop = document.getElementById("trades-top");
+	        scrollToWithHeaderOffset(tradesTop || contentWidget, 12);
 
-	      // ✅ wire the Tech dropdown behavior now that Trades DOM exists
-	      initFintechTechDropdown(contentWidget);
-	    });
-	  })();
+	        // wire the Tech dropdown behavior now that Trades DOM exists
+	        initFintechTechDropdown(contentWidget);
+	      });
+	    })();
+
+	    return;
+	  }
+
+	  // Non-Trades: default scroll to widget top
+	  requestAnimationFrame(() => {
+	    scrollToWithHeaderOffset(contentWidget, 12);
+	  });
 	}
 
 	// ------------------------------------------------------------
@@ -2383,24 +2393,6 @@
 	  Object.entries(SECTION_HASH).map(([k, v]) => [v, k])
 	);
 
-	function normalizeHash(raw) {
-	  return String(raw || '')
-	    .replace(/^#/, '')
-	    .trim()
-	    .toLowerCase();
-	}
-
-	function setHashForSection(sectionName, { replace = false } = {}) {
-	  const slug = SECTION_HASH[sectionName];
-	  if (!slug) return;
-
-	  const next = `#${slug}`;
-	  if (window.location.hash === next) return;
-
-	  if (replace) history.replaceState(null, '', next);
-	  else history.pushState(null, '', next);
-	}
-
 	function clearHash({ replace = false } = {}) {
 	  const url = window.location.pathname + window.location.search;
 	  if (replace) history.replaceState(null, '', url);
@@ -2413,13 +2405,41 @@
 	  if (api?.setActive) api.setActive(sectionName);
 	}
 
-	function routeFromHash() {
-	  const slug = normalizeHash(window.location.hash);
+	function parseHash() {
+	  // supports: #faq or #faq:faq-some-id
+	  const raw = String(window.location.hash || "").replace(/^#/, "").trim();
+	  if (!raw) return { slug: "", subId: "" };
 
-	  // Home / landing
+	  const [slugPart, subPart] = raw.split(":");
+	  return {
+	    slug: (slugPart || "").toLowerCase(),
+	    subId: (subPart || "").trim(),
+	  };
+	}
+
+	function setHashForSection(sectionName, subId = "", { replace = false } = {}) {
+	  const slug = SECTION_HASH[sectionName];
+	  if (!slug) return;
+
+	  const next = subId ? `#${slug}:${subId}` : `#${slug}`;
+	  if (window.location.hash === next) return;
+
+	  if (replace) {
+	    // Replace without adding a history entry, but still update the hash.
+	    history.replaceState(null, "", next);
+
+	    // replaceState does NOT trigger hashchange; call router manually.
+	    routeFromHash();
+	  } else {
+	    // This WILL trigger `hashchange` and therefore `routeFromHash()`.
+	    window.location.hash = next;
+	  }
+	}
+
+	function routeFromHash() {
+	  const { slug, subId } = parseHash();
+
 	  if (!slug) {
-	    // Optional: collapse content widget if you want hash-less = home state
-	    // document.getElementById("content-widget")?.classList.remove("active");
 	    activateSectionMenuFor(null);
 	    return;
 	  }
@@ -2427,25 +2447,24 @@
 	  const section = HASH_SECTION[slug];
 	  if (!section) return;
 
-	  // Open the injected content
-	  if (typeof window.showSection === 'function') {
+	  if (typeof window.showSection === "function") {
 	    window.showSection(section);
 	    activateSectionMenuFor(section);
 	  }
 
-	  // Special-case: Contact wants to land on the actual <section id="contact-us">
-	  if (slug === 'contact-us') {
+	  if (!subId) return;
+
+	  // Wait for injected DOM, then scroll to subId if present
+	  requestAnimationFrame(() => {
 	    requestAnimationFrame(() => {
-	      const el = document.getElementById('contact-us');
+	      const el = document.getElementById(subId);
 	      if (el) scrollToWithHeaderOffset(el, 12);
 	    });
-	  }
+	  });
 	}
 
-	// Run once on load + whenever hash changes
-	window.addEventListener('hashchange', routeFromHash);
-	document.addEventListener('DOMContentLoaded', routeFromHash);
-
+	window.addEventListener("hashchange", routeFromHash);
+	document.addEventListener("DOMContentLoaded", routeFromHash);
 	// Also: make resetLanding clear the hash so home is shareable as the base URL
 	const _resetLanding = window.resetLanding;
 	window.resetLanding = function resetLandingWithHashClear() {
@@ -2576,18 +2595,23 @@
 
 	document.addEventListener('DOMContentLoaded', () => {
 	  const H = window.HAIPHEN || {};
+
 	  const safe = (fn, name) => {
 	    if (typeof fn !== 'function') return;
-	    fn().catch((err) => console.warn(`[${name}] load failed`, err));
+	    try {
+	      // Works whether fn returns a Promise or not
+	      Promise.resolve(fn()).catch((err) => console.warn(`[${name}] load failed`, err));
+	    } catch (err) {
+	      console.warn(`[${name}] load threw`, err);
+	    }
 	  };
 
 	  safe(H.loadHeader, 'header');
 	  safe(H.loadSidebar, 'sidebar');
 	  safe(H.loadSectionMenu, 'section-menu');
 	  safe(H.loadFooter, 'footer');
-	  // 🔽 add this:
 	  safe(H.loadTradesOverlay, 'trades-overlay');
-      safe(H.loadSiteSearch, 'site-search');	  
+	  safe(H.loadSiteSearch, 'site-search');
 
 	  updateSessionWidget();
 	});

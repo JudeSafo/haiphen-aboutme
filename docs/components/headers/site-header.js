@@ -93,7 +93,7 @@
       if (typeof window.resetLanding === 'function') window.resetLanding();
       else window.scrollTo({ top: 0, behavior: 'smooth' });
     });
-    
+
   }
 
   async function loadHeader() {
@@ -112,6 +112,10 @@
     mount.innerHTML = `<div id="${HEADER_ID}">${html}</div>`;
 
     wireInteractions(mount);
+    // After header is injected + wired
+    window.dispatchEvent(new CustomEvent("haiphen:header:ready", {
+      detail: { headerId: HEADER_ID }
+    }));    
   }
 
   window.HAIPHEN = window.HAIPHEN || {};

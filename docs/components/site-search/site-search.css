@@ -125,3 +125,7 @@
   color: rgba(255,255,255,0.60);
   font-size: 13px;
 }
+.site-search__overlay { pointer-events: auto; }
+.site-search__modal { pointer-events: auto; }
+.site-search__results { pointer-events: auto; }
+.site-search__item { pointer-events: auto; cursor: pointer; }
