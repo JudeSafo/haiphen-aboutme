@@ -34,32 +34,13 @@
   <script src="components/site-search/site-search-index.js"></script>
   <script src="components/api-docs/api-docs.js"></script>
   <script src="components/contact-form/contact-form.js"></script>
-  
+
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
   <script>
     window.HAIPHEN = window.HAIPHEN || {};
     window.HAIPHEN.TURNSTILE_SITE_KEY = "0x4AAAAAACKr8sUWJUM68QdF"; // site key (public)
   </script>
 
-  <div
-    class="cf-turnstile"
-    id="turnstile"
-    data-callback="onTurnstileOk"
-  ></div>
-
-  <button id="submitBtn" type="submit" disabled>Submit</button>
-
-  <script>
-    // set sitekey once, from your global config
-    document.getElementById("turnstile").setAttribute(
-      "data-sitekey",
-      window.HAIPHEN.TURNSTILE_SITE_KEY
-    );
-
-    function onTurnstileOk() {
-      document.getElementById("submitBtn").disabled = false;
-    }
-  </script>
   <!-- 🔽 Structured Data for SEO -->
   <script type="application/ld+json">
   {
