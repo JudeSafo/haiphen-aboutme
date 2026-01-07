@@ -192,3 +192,117 @@
   .site-header__menu{ display:none; } /* keep it simple for now */
   .site-header__inner{ justify-content: space-between; }
 }
+
+/* --- Session dropdown --- */
+.session-menu{
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.session-pill{
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(15,23,42,.12);
+  background: rgba(255,255,255,.70);
+  color: var(--hdr-text);
+  font: 800 13px/1 ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+  cursor: pointer;
+  user-select: none;
+  outline: none;
+}
+
+.session-pill:hover{
+  background: rgba(15,23,42,.04);
+}
+
+.session-pill:focus-visible{
+  box-shadow: 0 0 0 3px rgba(37,99,235,.22);
+}
+
+.session-avatar{
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  object-fit: cover;
+  border: 1px solid rgba(15,23,42,.12);
+}
+
+.session-dropdown{
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  min-width: 360px;
+  padding: 10px;
+  border-radius: 14px;
+  background: var(--surface-2);
+  border: 1px solid rgba(15,23,42,.10);
+  box-shadow: var(--menu-shadow);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(-6px);
+  transition: opacity .14s ease, transform .14s ease, visibility .14s ease;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  z-index: 2000;
+}
+
+/* open on hover OR keyboard focus within */
+.session-menu:hover .session-dropdown,
+.session-menu:focus-within .session-dropdown{
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.session-dropdown::before{
+  content:"";
+  position:absolute;
+  top:-10px;
+  left:0;
+  right:0;
+  height:12px;
+}
+
+.session-tabs{
+  display:flex;
+  gap:8px;
+  padding: 4px;
+  background: rgba(15,23,42,.04);
+  border: 1px solid rgba(15,23,42,.08);
+  border-radius: 12px;
+}
+
+.session-tab{
+  flex: 1;
+  appearance: none;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--hdr-text);
+  font: 800 12px/1 ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+  padding: 10px 10px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.session-tab[aria-selected="true"]{
+  background: rgba(255,255,255,.90);
+  border-color: rgba(15,23,42,.10);
+  box-shadow: 0 8px 24px rgba(2,6,23,.08);
+}
+
+.session-panel{
+  margin-top: 10px;
+}
+
+/* tighten api-cred for dropdown */
+.session-dropdown .api-cred{
+  margin-top: 0;
+  padding: 12px;
+  border-radius: 14px;
+}

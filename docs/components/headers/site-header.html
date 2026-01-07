@@ -129,11 +129,13 @@
     </nav>
 
     <!-- Keep your existing session widget behavior -->
+    <!-- site-header.html -->
     <div class="site-header__session">
-      <span id="session-slot">
+      <div id="session-slot">
+        <!-- JS will render logged-out or logged-in menu here -->
         <a href="https://auth.haiphen.io/login" class="login-btn">Login</a>
-      </span>
-      <!-- NEW: Site search button -->
+      </div>
+
       <button
         id="site-search-btn"
         class="site-header__iconbtn"
@@ -141,16 +143,8 @@
         aria-label="Search"
         title="Search (Ctrl+K / /)"
       >
-        <img
-          class="site-header__icon"
-          src="assets/icons/search.svg"
-          alt=""
-          aria-hidden="true"
-          width="18"
-          height="18"
-          decoding="async"
-        />
-      </button>    
+        <img class="site-header__icon" src="assets/icons/search.svg" alt="" aria-hidden="true" width="18" height="18" decoding="async" />
+      </button>
     </div>
   </div>
 </header>

@@ -3,8 +3,11 @@
 
   const DEFAULT_SECTIONS = [
     { id: 'docs-overview', label: 'Overview' },
+    { id: 'docs-quickstart', label: 'Quickstart' },
+    { id: 'docs-try', label: 'Try it' },
     { id: 'docs-auth', label: 'Authentication' },
     { id: 'docs-rate-limits', label: 'Rate limits' },
+    { id: 'docs-data-model', label: 'Data model' },
     { id: 'docs-endpoints', label: 'Endpoints' },
     { id: 'docs-errors', label: 'Errors' },
     { id: 'docs-lineage', label: 'Lineage' },
@@ -12,6 +15,11 @@
     { id: 'docs-rss-overview', label: 'RSS / Atom' },
     { id: 'docs-webhooks', label: 'Webhooks' },
   ];
+
+  const TRY_STORAGE = {
+    base: 'haiphen.docs.api_base',
+    key: 'haiphen.docs.api_key',
+  };
 
   function qs(root, sel) {
     return (root || document).querySelector(sel);
@@ -43,7 +51,6 @@
       await navigator.clipboard.writeText(text);
       return true;
     } catch {
-      // fallback
       try {
         const ta = document.createElement('textarea');
         ta.value = text;
@@ -61,7 +68,6 @@
   }
 
   function setToast(root, msg) {
-    // lightweight inline feedback (no global dependency)
     let toast = qs(root, '[data-api-toast]');
     if (!toast) {
       toast = document.createElement('div');
@@ -105,7 +111,6 @@
     const main = qs(root, '[data-api-main]');
     if (!nav || !main) return;
 
-    // Prefer actual sections present in DOM, fall back to defaults.
     const presentIds = new Set(
       qsa(root, '[data-api-section]')
         .map((s) => s.id)
@@ -131,8 +136,6 @@
       setActiveNav(nav, id);
       scrollToId(id);
 
-      // also update hash routing style used by your site
-      // expected format: #docs:docs-overview
       try {
         if (typeof window.setHashForSection === 'function') {
           window.setHashForSection('Docs', id, { replace: false });
@@ -142,7 +145,6 @@
       } catch {}
     });
 
-    // Intersection observer: highlight current section in view
     const obs = new IntersectionObserver(
       (entries) => {
         const best = entries
@@ -151,10 +153,7 @@
         if (!best) return;
         setActiveNav(nav, best.target.id);
       },
-      {
-        root: null,
-        threshold: [0.25, 0.4, 0.55, 0.7],
-      }
+      { root: null, threshold: [0.25, 0.4, 0.55, 0.7] }
     );
 
     qsa(root, '[data-api-section]').forEach((sec) => obs.observe(sec));
@@ -175,9 +174,7 @@
       panels.forEach((p) => p.classList.toggle('is-active', p.getAttribute('data-api-panel') === name));
     }
 
-    tabs.forEach((t) => {
-      t.addEventListener('click', () => activate(t.getAttribute('data-api-tab')));
-    });
+    tabs.forEach((t) => t.addEventListener('click', () => activate(t.getAttribute('data-api-tab'))));
   }
 
   function wireCopy(root) {
@@ -190,7 +187,6 @@
       setToast(root, ok ? 'Copied' : 'Copy failed');
     });
 
-    // optional: click on <code data-copy="..."> itself
     root.addEventListener('click', async (e) => {
       const code = e.target.closest('code[data-copy]');
       if (!code) return;
@@ -222,8 +218,14 @@
       const action = el.getAttribute('data-api-action');
 
       if (action === 'request-access') {
-        // reuse your existing Contact section
-        if (typeof window.showSection === 'function') window.showSection('Contact');
+        // Auth + Stripe + return to docs
+        const fn = window?.HAIPHEN?.ApiAccess?.requestAccess;
+        if (typeof fn === 'function') {
+          fn({ returnHash: '#docs' });
+        } else {
+          // fallback
+          if (typeof window.showSection === 'function') window.showSection('Contact');
+        }
         return;
       }
 
@@ -234,18 +236,125 @@
     });
   }
 
-  function maybeScrollFromHash(root) {
-    // supports: #docs or #docs:docs-auth (your existing router supports slug:subId)
+  function maybeScrollFromHash() {
     try {
       const raw = String(window.location.hash || '').replace(/^#/, '').trim();
       if (!raw) return;
       const [slug, subId] = raw.split(':');
       if (String(slug || '').toLowerCase() !== 'docs') return;
       if (!subId) return;
-
-      // wait for layout, then scroll
       requestAnimationFrame(() => requestAnimationFrame(() => scrollToId(subId)));
     } catch {}
+  }
+
+  function normalizeBaseUrl(s) {
+    const raw = String(s || '').trim();
+    if (!raw) return '';
+    const noTrail = raw.replace(/\/+$/, '');
+    // accept either https://api.haiphen.io OR https://api.haiphen.io/v1 in UI
+    return noTrail;
+  }
+
+  function ensureV1(base) {
+    const b = normalizeBaseUrl(base);
+    if (!b) return '';
+    return /\/v1$/i.test(b) ? b : `${b}/v1`;
+  }
+
+  async function tryFetchJson(url, headers) {
+    const resp = await fetch(url, { method: 'GET', headers, cache: 'no-store' });
+    const text = await resp.text();
+    let json = null;
+    try { json = JSON.parse(text); } catch {}
+    return {
+      ok: resp.ok,
+      status: resp.status,
+      headers: {
+        requestId: resp.headers.get('x-request-id') || resp.headers.get('X-Request-Id') || null,
+        contentType: resp.headers.get('content-type') || null,
+      },
+      bodyText: text,
+      bodyJson: json,
+    };
+  }
+
+  function wireTryIt(root) {
+    const baseInput = qs(root, '[data-api-try-base]');
+    const keyInput = qs(root, '[data-api-try-key]');
+    const saveBtn = qs(root, '[data-api-try-save]');
+    const clearBtn = qs(root, '[data-api-try-clear]');
+    const out = qs(root, '[data-api-try-out]');
+    if (!baseInput || !keyInput || !saveBtn || !clearBtn || !out) return;
+
+    const savedBase = sessionStorage.getItem(TRY_STORAGE.base) || 'https://api.haiphen.io';
+    const savedKey = sessionStorage.getItem(TRY_STORAGE.key) || '';
+    baseInput.value = savedBase;
+    keyInput.value = savedKey;
+
+    function render(obj) {
+      const pretty = JSON.stringify(obj, null, 2);
+      out.textContent = pretty;
+    }
+
+    saveBtn.addEventListener('click', () => {
+      const base = normalizeBaseUrl(baseInput.value);
+      const key = String(keyInput.value || '').trim();
+      if (!base) { setToast(root, 'Base URL required'); return; }
+      sessionStorage.setItem(TRY_STORAGE.base, base);
+      sessionStorage.setItem(TRY_STORAGE.key, key);
+      setToast(root, 'Saved');
+    });
+
+    clearBtn.addEventListener('click', () => {
+      sessionStorage.removeItem(TRY_STORAGE.base);
+      sessionStorage.removeItem(TRY_STORAGE.key);
+      baseInput.value = 'https://api.haiphen.io';
+      keyInput.value = '';
+      setToast(root, 'Cleared');
+      render({ hint: 'Click a request above. Output will render here.' });
+    });
+
+    root.addEventListener('click', async (e) => {
+      const btn = e.target.closest('[data-api-try]');
+      if (!btn) return;
+
+      const mode = btn.getAttribute('data-api-try');
+      const base = sessionStorage.getItem(TRY_STORAGE.base) || baseInput.value;
+      const key = sessionStorage.getItem(TRY_STORAGE.key) || keyInput.value;
+
+      const v1 = ensureV1(base);
+      if (!v1) { setToast(root, 'Base URL required'); return; }
+      if (!key) { setToast(root, 'API key required'); return; }
+
+      let path = '/metrics/kpis';
+      if (mode === 'assets') path = '/metrics/portfolio-assets?limit=5';
+      if (mode === 'series') path = '/metrics/series?kpi=Daily%20PnL&limit=5';
+
+      render({ loading: true, url: `${v1}${path}` });
+
+      try {
+        const res = await tryFetchJson(`${v1}${path}`, {
+          Authorization: `Bearer ${key}`,
+        });
+
+        const payload = res.bodyJson || { raw: res.bodyText };
+        render({
+          request: { url: `${v1}${path}` },
+          response: {
+            ok: res.ok,
+            status: res.status,
+            request_id: res.headers.requestId,
+            content_type: res.headers.contentType,
+          },
+          body: payload,
+        });
+
+        setToast(root, res.ok ? 'OK' : `HTTP ${res.status}`);
+      } catch (err) {
+        render({ error: String(err && err.message ? err.message : err) });
+        setToast(root, 'Request failed');
+      }
+    });
   }
 
   function init(root) {
@@ -257,16 +366,15 @@
     wireCopy(root);
     wireFilter(root);
     wireActions(root);
-    maybeScrollFromHash(root);
+    wireTryIt(root);
+    maybeScrollFromHash();
   }
 
-  // Public loader used by docs/index.html
   window.HAIPHEN = window.HAIPHEN || {};
   window.HAIPHEN.loadApiDocs = async function loadApiDocs(mountSelector = '#api-docs-mount') {
     const mount = document.querySelector(mountSelector);
     if (!mount) return;
 
-    // Avoid reloading if already mounted
     if (mount.__apiDocsMounted) return;
     mount.__apiDocsMounted = true;
 
@@ -283,7 +391,6 @@
 
       const [html, css] = await Promise.all([htmlResp.text(), cssResp.text()]);
 
-      // Inject CSS once
       if (!document.getElementById('api-docs-css')) {
         const style = document.createElement('style');
         style.id = 'api-docs-css';

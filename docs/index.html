@@ -22,10 +22,11 @@
   <link rel="stylesheet" href="assets/base.css" />
 
   <script src="components/headers/site-header.js"></script>
+  <script src="components/headers/session-profile-template.js"></script>
   <script src="components/sidebar/site-sidebar.js"></script>
+  <script src="components/sidebar/sidebar-nav.js"></script>
   <script src="components/section-menu/section-menu.js"></script>
   <script src="components/footers/site-footer.js"></script>
-  <script src="components/sidebar/sidebar-nav.js"></script>
   <script src="components/trades-overlay/trades-overlay.js"></script>
   <script src="components/services-plans/services-plans.js"></script>
   <script src="components/services/services-section.js"></script>
@@ -33,9 +34,13 @@
   <script src="components/site-search/site-search.js"></script>
   <script src="components/site-search/site-search-index.js"></script>
   <script src="components/api-docs/api-docs.js"></script>
+  <script src="components/api-docs/api-access.js"></script>
   <script src="components/contact-form/contact-form.js"></script>
-
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+
+  <script src="components/api-docs/api-docs.js"></script>
+  <script src="components/api-docs/api-access.js"></script>  
+
   <script>
     window.HAIPHEN = window.HAIPHEN || {};
     window.HAIPHEN.TURNSTILE_SITE_KEY = "0x4AAAAAACKr8sUWJUM68QdF"; // site key (public)
@@ -2585,41 +2590,116 @@
     ------------------------------------------------------------ */
     const AUTH_ORIGIN = 'https://auth.haiphen.io';  // change if needed
 
-    async function updateSessionWidget() {
-      const slot = document.getElementById('session-slot');
-      if (!slot) return;
+	async function updateSessionWidget() {
+	  const slot = document.getElementById('session-slot');
+	  if (!slot) return;
 
-      // Helper: show Login pill
-      function showLogin() {
-        slot.innerHTML = `<a href="${AUTH_ORIGIN}/login" class="login-btn">Login</a>`;
-      }
+	  function showLogin() {
+	    slot.innerHTML = `<a href="${AUTH_ORIGIN}/login" class="login-btn">Login</a>`;
+	  }
 
-      try {
-        const resp = await fetch(`${AUTH_ORIGIN}/me`, {
-          credentials: 'include', // send auth cookie across subdomain
-        });
+	  try {
+	    const resp = await fetch(`${AUTH_ORIGIN}/me`, { credentials: 'include' });
+	    if (!resp.ok) {
+	      showLogin();
+	      return;
+	    }
 
-        if (!resp.ok) {
-          showLogin();
-          return;
-        }
+	    const user = await resp.json();
+	    const displayName = user.name || user.sub || 'User';
+	    const email = user.email || '—';
+	    const avatar = user.avatar || 'assets/profile.png';
 
-        const user = await resp.json(); // {sub, name, avatar, email, ...}
-        const displayName = user.name || user.sub || 'User';
-        const avatar = user.avatar || 'assets/profile.png';
+	    const apiCredHtml = window.HAIPHEN?.SessionProfileTemplate?.apiCredBlockHtml?.() || '';
 
-        slot.innerHTML = `
-          <span class="session-user">
-            <img src="${avatar}" alt="">
-            ${displayName}
-            <a class="logout-link" href="${AUTH_ORIGIN}/logout" title="Logout">×</a>
-          </span>
-        `;
-      } catch (err) {
-        console.warn('[session] failed to fetch /me', err);
-        showLogin();
-      }
-    }
+	    slot.innerHTML = `
+	      <div class="session-menu">
+	        <button class="session-pill" type="button" aria-haspopup="true" aria-expanded="false">
+	          <img class="session-avatar" src="${avatar}" alt="">
+	          <span class="session-name">${escapeHtml(displayName)}</span>
+	        </button>
+
+	        <div class="session-dropdown" role="menu" aria-label="Session menu">
+	          <div class="session-tabs" role="tablist" aria-label="Session tabs">
+	            <button class="session-tab" type="button" role="tab" aria-selected="true" data-tab="profile">Profile</button>
+	            <button class="session-tab" type="button" role="tab" aria-selected="false" data-tab="account">Account</button>
+	          </div>
+
+	          <div class="session-panel" role="tabpanel" data-panel="profile">
+	            ${apiCredHtml}
+	          </div>
+
+	          <div class="session-panel" role="tabpanel" data-panel="account" hidden>
+	            <div style="padding:12px">
+	              <div style="font-weight:900; margin-bottom:6px;">Signed in</div>
+	              <div class="api-muted" style="line-height:1.6;">
+	                <div><strong>Name:</strong> ${escapeHtml(displayName)}</div>
+	                <div><strong>Email:</strong> ${escapeHtml(email)}</div>
+	              </div>
+	              <div style="margin-top:10px; display:flex; gap:10px; justify-content:flex-end;">
+	                <a class="api-btn api-btn-ghost" href="${AUTH_ORIGIN}/logout">Logout</a>
+	              </div>
+	            </div>
+	          </div>
+	        </div>
+	      </div>
+	    `;
+
+	    wireSessionDropdown(slot);
+
+	    // Hydrate the API cred block (only when logged in; entitlement gating handled server-side)
+	    await hydrateApiCredInContainer(slot);
+
+	  } catch (err) {
+	    console.warn('[session] failed to fetch /me', err);
+	    showLogin();
+	  }
+	}
+
+	function wireSessionDropdown(root) {
+	  const menu = root.querySelector('.session-menu');
+	  const trigger = root.querySelector('.session-pill');
+	  const dropdown = root.querySelector('.session-dropdown');
+	  if (!menu || !trigger || !dropdown) return;
+
+	  // aria-expanded: reflect hover/focus state
+	  const setExpanded = (v) => trigger.setAttribute('aria-expanded', v ? 'true' : 'false');
+	  menu.addEventListener('mouseenter', () => setExpanded(true));
+	  menu.addEventListener('mouseleave', () => setExpanded(false));
+	  trigger.addEventListener('focus', () => setExpanded(true));
+	  menu.addEventListener('focusout', () => setExpanded(false));
+
+	  // Tabs
+	  const tabs = Array.from(root.querySelectorAll('.session-tab'));
+	  const panels = Array.from(root.querySelectorAll('.session-panel'));
+
+	  function activate(tabName) {
+	    tabs.forEach((t) => t.setAttribute('aria-selected', t.dataset.tab === tabName ? 'true' : 'false'));
+	    panels.forEach((p) => {
+	      const is = p.dataset.panel === tabName;
+	      p.hidden = !is;
+	    });
+	  }
+
+	  tabs.forEach((t) => {
+	    t.addEventListener('click', () => activate(t.dataset.tab));
+	  });
+
+	  // ESC closes (same vibe as your header esc)
+	  window.addEventListener('keydown', (e) => {
+	    if (e.key === 'Escape') setExpanded(false);
+	  });
+	}
+
+	// tiny helper: re-use your existing escapeHtml if you have it; otherwise add:
+	function escapeHtml(s) {
+	  return String(s ?? '')
+	    .replaceAll('&', '&amp;')
+	    .replaceAll('<', '&lt;')
+	    .replaceAll('>', '&gt;')
+	    .replaceAll('"', '&quot;')
+	    .replaceAll("'", '&#039;');
+	}
 
     // run on load & periodically refresh
     document.addEventListener('DOMContentLoaded', updateSessionWidget);
