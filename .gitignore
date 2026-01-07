@@ -23,3 +23,10 @@
 *.sqlite
 *.sqlite-wal
 *.sqlite-shm
+
+# deps (never commit)
+node_modules/
+**/node_modules/
+
+# misc noise
+.DS_Store
