@@ -146,43 +146,47 @@
     window.location.assign(checkoutUrl);
   }
 
-  // ---- API contract normalization helpers ----
-  // Expected /v1/me (recommended):
-  // { authenticated: true, user: { name,email,... }, entitlements: { active, plan } }
+  // Expected /v1/me (your current shape):
+  // {
+  //   "user_login": "haiphenAI",
+  //   "plan": "free",
+  //   "api_key": { key_id, key_prefix, scopes, status, created_at, last_used_at }
+  // }
   async function loadSession() {
     const res = await fetchJson('/v1/me');
-    if (res.status === 401) return { authenticated: false, user: null, entitlements: null };
-    if (!res.ok) throw new Error(res.json?.error?.message || `Session check failed (HTTP ${res.status})`);
+    if (res.status === 401) {
+      return { authenticated: false, user: null, entitlements: null, api_key: null };
+    }
+    if (!res.ok) {
+      throw new Error(res.json?.error?.message || `Session check failed (HTTP ${res.status})`);
+    }
 
-    // normalize legacy shapes too, if needed
     const j = res.json || {};
-    if (typeof j.authenticated === 'boolean') return j;
 
-    // fallback: treat as authenticated if it has an email/sub
+    // If you ever migrate to a richer contract later, keep this flexible.
+    const authenticated =
+      typeof j.authenticated === 'boolean'
+        ? j.authenticated
+        : Boolean(j.user_login || j.user?.email || j.email || j.sub);
+
+    if (!authenticated) return { authenticated: false, user: null, entitlements: null, api_key: null };
+
     const user = {
-      name: j.name || j.user?.name || j.sub || 'User',
-      email: j.email || j.user?.email || '—',
+      name: j.user?.name || j.name || j.user_login || j.sub || 'User',
+      email: j.user?.email || j.email || '—',
     };
-    const entitlements = j.entitlements || { active: Boolean(j.active), plan: j.plan || j.tier || '—' };
-    return { authenticated: true, user, entitlements };
-  }
 
-  // Expected /v1/keys/current:
-  // { api_key, created_at, last_used_at }
-  async function loadKey() {
-    const res = await fetchJson('/v1/keys/current');
-    if (res.status === 401) return { ok: false, reason: 'unauthenticated' };
-    if (res.status === 403) return { ok: false, reason: 'not_entitled' };
-    if (!res.ok) throw new Error(res.json?.error?.message || `Key fetch failed (HTTP ${res.status})`);
+    // Your current /v1/me returns plan at top-level.
+    const entitlements = j.entitlements || {
+      active: Boolean(j.entitlements?.active ?? true), // free plan can still be "active" for docs
+      plan: j.plan || j.tier || '—',
+    };
 
-    const k = res.json || {};
     return {
-      ok: true,
-      key: {
-        api_key: k.api_key || k.key || '',
-        created_at: k.created_at || null,
-        last_used_at: k.last_used_at || null,
-      },
+      authenticated: true,
+      user,
+      entitlements,
+      api_key: j.api_key || null,
     };
   }
 
@@ -203,7 +207,12 @@
     const createdEl = qs(cred, '[data-api-key-created]');
     const lastUsedEl = qs(cred, '[data-api-key-last-used]');
     const copyBtn = qs(cred, '[data-api-copy-key]');
-
+    const rotateBtn = qs(cred, '[data-api-rotate-key]');
+    if (rotateBtn) {
+      // Disable rotate if we don't have a full key lifecycle implemented yet.
+      rotateBtn.disabled = true;
+      rotateBtn.title = 'Key rotation not available yet';
+    }
     if (nameEl) nameEl.textContent = user?.name || '—';
     if (emailEl) emailEl.textContent = user?.email || '—';
     if (planEl) planEl.textContent = plan || '—';
@@ -229,19 +238,34 @@
   async function refreshCredsUI(root) {
     hideCreds(root);
 
-    const session = await loadSession();
+    let session;
+    try {
+      session = await loadSession();
+    } catch (err) {
+      console.warn('[api-access] loadSession failed', err);
+      return; // do not throw; do not crash header/docs
+    }
+
     if (!session?.authenticated) return;
 
     const plan = session?.entitlements?.plan || '—';
-    const k = await loadKey();
-    if (!k.ok) return;
+
+    // Pull key info from /v1/me only.
+    const k = session.api_key || null;
+
+    // You currently only have key_prefix (good). Do NOT pretend you have full key.
+    const displayKey = k?.key_prefix || '';
 
     renderCreds(root, {
       user: session.user,
       plan,
-      apiKey: k.key?.api_key || '',
-      keyMeta: { created_at: k.key?.created_at, last_used_at: k.key?.last_used_at },
+      apiKey: displayKey, // masked in UI anyway
+      keyMeta: { created_at: k?.created_at || null, last_used_at: k?.last_used_at || null },
     });
+
+    // IMPORTANT: if we only have a prefix, disable Copy (you can't copy what you don't have).
+    const copyBtn = qs(root, '[data-api-copy-key]');
+    if (copyBtn) copyBtn.disabled = true;
   }
 
   function wireActions(root) {
@@ -254,10 +278,11 @@
       if (copyBtn) {
         const key = KEY_CACHE.get(root) || '';
         if (!key) return;
+
         try {
           await navigator.clipboard.writeText(key);
           const prev = copyBtn.textContent;
-          copyBtn.textContent = 'Copied';
+          copyBtn.textContent = 'Copied prefix';
           setTimeout(() => (copyBtn.textContent = prev), 900);
         } catch (err) {
           console.warn('[api-access] clipboard failed', err);

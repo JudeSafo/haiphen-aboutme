@@ -38,9 +38,6 @@
   <script src="components/contact-form/contact-form.js"></script>
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 
-  <script src="components/api-docs/api-docs.js"></script>
-  <script src="components/api-docs/api-access.js"></script>  
-
   <script>
     window.HAIPHEN = window.HAIPHEN || {};
     window.HAIPHEN.TURNSTILE_SITE_KEY = "0x4AAAAAACKr8sUWJUM68QdF"; // site key (public)
@@ -1104,6 +1101,9 @@
 	}    
 	async function fetchJson(url) {
 	  const resp = await fetch(url, { cache: 'no-store' });
+	  if (String(path).includes('/v1/keys/current')) {
+	    throw new Error('Deprecated endpoint: /v1/keys/current (client should not call this)');
+	  }	  
 	  if (!resp.ok) throw new Error(`HTTP ${resp.status} for ${url}`);
 	  return await resp.json();
 	}
