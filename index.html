@@ -2,23 +2,47 @@
 <html lang="en">
 <head>
    <!-- Basic SEO -->
-  <meta name="description" content="Haiphen is a signals intelligence tech company building open-source, scalable infrastructure for NLP, machine learning, embedded systems, and operational security." />
-  <meta name="author" content="Jude Safo" />
-  <meta name="keywords" content="Haiphen, signals intelligence, NLP, machine learning consulting, open source infrastructure, cybersecurity, Jude Safo" />
+  <meta name="description" content="Haiphen is a signals intelligence    open-source, scalable infrastructure for NLP, machine learning, embedded systems, and operational security." />
+  <meta name="author" content="J. S." />
+  <meta name="keywords" content="Haiphen, Signals intelligence, NLP, machine learning consulting, open source infrastructure, cybersecurity, Jude Safo" />
 
   <!-- Open Graph for LinkedIn/Facebook -->
-  <meta property="og:title" content="Haiphen - Signals Intelligence; Distributed Infra." />
-  <meta property="og:description" content="Custom signal processing + ML/NLP infrastructure. We build real systems for real problems. API everything." />
-  <meta property="og:image" content="https://judesafo.github.io/haiphen-aboutme/assets/robot_haiphen.svg" />
+  <meta property="og:title" content="Haiphen | Signals Intelligence & Automated Trading Infrastructure" />
+  <meta property="og:description" content="Signals intelligence + production-grade ML/NLP infrastructure, including automated trading telemetry, risk analytics, and event-driven pipelines. Build with us." />
+  <meta property="og:image" content="https://judesafo.github.io/assets/robot_haiphen.svg" />
   <meta property="og:url" content="https://haiphen.io" />
   <meta property="og:type" content="website" />
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Haiphen - Signals Intelligence; Distributed Infra." />
+  <meta name="twitter:title" content="Haiphen - Open Source Signals Intelligence Engineering" />
   <meta name="twitter:description" content="Custom signal processing + ML/NLP infrastructure. We build real systems for real problems. API everything." />
-  <meta name="twitter:image" content="https://judesafo.github.io/haiphen-aboutme/assets/robot_haiphen.svg" />
+  <meta name="twitter:image" content="https://haiphen.io/haiphen-aboutme/assets/robot_haiphen.svg" />
  
+  <link rel="stylesheet" href="assets/base.css" />
+
+  <script src="components/headers/site-header.js"></script>
+  <script src="components/headers/session-profile-template.js"></script>
+  <script src="components/sidebar/site-sidebar.js"></script>
+  <script src="components/sidebar/sidebar-nav.js"></script>
+  <script src="components/section-menu/section-menu.js"></script>
+  <script src="components/footers/site-footer.js"></script>
+  <script src="components/trades-overlay/trades-overlay.js"></script>
+  <script src="components/services-plans/services-plans.js"></script>
+  <script src="components/services/services-section.js"></script>
+  <script src="components/faq/faq.js"></script>
+  <script src="components/site-search/site-search.js"></script>
+  <script src="components/site-search/site-search-index.js"></script>
+  <script src="components/api-docs/api-docs.js"></script>
+  <script src="components/api-docs/api-access.js"></script>
+  <script src="components/contact-form/contact-form.js"></script>
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+
+  <script>
+    window.HAIPHEN = window.HAIPHEN || {};
+    window.HAIPHEN.TURNSTILE_SITE_KEY = "0x4AAAAAACKr8sUWJUM68QdF"; // site key (public)
+  </script>
+
   <!-- 🔽 Structured Data for SEO -->
   <script type="application/ld+json">
   {
@@ -26,7 +50,7 @@
     "@type": "Organization",
     "name": "Haiphen",
     "url": "https://haiphen.io",
-    "logo": "https://judesafo.github.io/haiphen-aboutme/assets/logo.png",
+    "logo": "https://haiphen.io/assets/robot_haiphen.png",
     "contactPoint": {
       "@type": "ContactPoint",
       "telephone": "+1-512-910-4544",
@@ -54,11 +78,11 @@
       padding: 0;
     }
     body {
-      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      font-family: var(--font-sans);
+      color: var(--text);
       background: url('./assets/background.svg') no-repeat center center fixed;
       background-size: cover;
-      color: #333;
-      padding-top: 70px; /* Space for fixed navbar */
+      padding-top: 70px;
       min-height: 100vh;
     }
     
@@ -92,15 +116,6 @@
     }
     
     /* ============================================================
-       Main Container
-    ============================================================ */
-    .main-container {
-      min-height: 100vh;
-      display: flex; flex-direction: column; align-items: center;
-      padding: 4rem 2rem; text-align: center;
-    }
-    
-    /* ============================================================
        Hero Section (with solid background for readability)
     ============================================================ */
     .hero {
@@ -113,12 +128,26 @@
     }
     .hero-logo img {
       max-width: 400px; width: 100%; height: auto;
-      display: block; margin: 0 auto 10px; transform: translateX(-40px) translateY(-45px); /* shift left by 20px */
+      display: block; margin: 0 auto 10px; transform: translateX(-115px) translateY(-55px); /* shift left by 20px */
     }
     .hero p {
-      font-size: 1.05rem; color: #555; margin-bottom: 3rem; margin-top: 0rem;  transform: translateX(-40px) translateY(-45px); /* shift left by 20px */
+      font-size: 1.05rem; color: #555; margin-bottom: 3rem; margin-top: 0rem;  transform: translateX(-110px) translateY(-45px); /* shift left by 20px */
     }
     
+    /* Navbar “Login” button */
+    nav.navbar .login-btn {
+      background: #5A9BD4;           /* your brand blue */
+      color: #fff;                   /* white text */
+      padding: 0.4rem 0.9rem;        /* a little breathing room */
+      border-radius: 9999px;         /* pill-shape */
+      text-decoration: none;         /* remove underline */
+      font-weight: bold;
+      margin-left: 1rem;             /* space from the other links */
+      transition: background 0.2s ease;
+    }
+    nav.navbar .login-btn:hover {
+      background: #34495e;           /* darker on hover */
+    }    
     /* ============================================================
        Section Menu
     ============================================================ */
@@ -178,7 +207,62 @@
     .contact-widget:hover .contact-popup {
       display: block;
     }
-    
+
+
+
+    /* ============================================================
+       Session Avatar
+    ============================================================ */
+    /* === Session display (replaces Login after auth) === */
+    .session-user {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      border: 2px solid #5A9BD4;
+      background: rgba(90,155,212,0.1);
+      color: #2c3e50;
+      font-size: 0.9rem;
+      font-weight: bold;
+      line-height: 1;
+    }
+    .session-user img {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+    }
+    .session-user .logout-link {
+      margin-left: 0.25rem;
+      font-weight: bold;
+      text-decoration: none;
+      color: #5A9BD4;
+    }
+    .session-user .logout-link:hover {
+      text-decoration: underline;
+      color: #34495e;
+    }
+
+	:root{
+	  --sidebar-w: 220px;
+	  --header-h: 70px;
+	}
+
+	.main-container{
+	  min-height: 100vh;
+	  display: flex;
+	  flex-direction: column;
+	  align-items: center;
+	  padding: 4rem 2rem;
+	  text-align: center;
+	}
+
+	/* If sidebar is present on desktop, reserve space consistently */
+	@media (min-width: 920px){
+	  .main-container{
+	    padding-left: calc(2rem + var(--sidebar-w));
+	  }
+	}  
     /* ============================================================
        Service Keys Popup Styling
     ============================================================ */
@@ -382,79 +466,571 @@
     /* ============================================================
        Tech animated
     ============================================================ */
-      .tech-container {
-        display: flex;
-        gap: 1rem;
-        align-items: stretch;
-        justify-content: center;
-        flex-wrap: wrap;
-        text-align: left;
-        margin-top: 1rem;
-      }
-      .tech-left {
-        flex: 0.1;      /* smaller width for text column */
-        min-width: 280px;
-      }
-      .tech-right {
-        flex: 1.2;      /* larger width for SVG */
-        min-width: 280px;
-      }
-      .tech-svg {
-        width: 100%;
-        max-width: 600px; /* increased size for better legibility */
-        height: auto;
-        display: block;
-        margin: auto;
-      }
+	  .tech-container {
+	    display: flex;
+	    gap: 1rem;
+	    align-items: stretch;
+	    justify-content: center;
+	    flex-wrap: wrap;
+	    text-align: left;
+	    margin-top: 1rem;
+	  }
+	  .tech-left {
+	    flex: 0.1;      /* smaller width for text column */
+	    min-width: 280px;
+	  }
+	  .tech-right {
+	    flex: 1.2;      /* larger width for SVG */
+	    min-width: 280px;
+	  }
+	  .tech-svg {
+	    width: 100%;
+	    max-width: 600px; /* increased size for better legibility */
+	    height: auto;
+	    display: block;
+	    margin: auto;
+	  }
 
+	/* give space so content doesn't sit under sidebar on wide screens */
+	@media (min-width: 920px) {
+	  .main-container { padding-left: 220px; }
+	}
 
-    /* === Left-hand sidebar tweaks === */
-    .left-widget {
-      position: fixed;
-      top: 170px;                     /* push down from top of page */
-      left: 0;
-      width: 7.666%;                 /* 1/6th */
-      background: #f2f2f2;            /* light gray */
-      padding: 1rem;
-      box-shadow: 2px 0 5px rgba(0,0,0,0.1);
-      z-index: 900;
+	/* ============================================================
+	   Snap Sections (one full section visible at a time)
+	============================================================ */
 
-      /* ✅ let the height be dictated by content */
-      height: auto;                   
-      overflow: visible;              /* no more full-height scroll */
+	/* A scrollable stack that snap-locks to each child panel */
+	.snap-stack{
+	  /* viewport minus fixed header and a little breathing room */
+	  height: calc(100vh - var(--header-h) - 24px);
+	  overflow-y: auto;
+	  overscroll-behavior: contain;
+	  scroll-snap-type: y mandatory;
+	  scroll-behavior: smooth;
 
-      /* ✅ add a neat bottom border just under the last link */
-      border-bottom: 1px solid #ccc;  
+	  /* spacer so one panel sits “alone” in the viewport */
+	  padding: 12vh 0;
+
+	  /* nicer on iOS */
+	  -webkit-overflow-scrolling: touch;
+	}
+
+	/* Each snap panel is a full “screen” */
+	.snap-panel{
+	  scroll-snap-align: center;
+	  scroll-snap-stop: always;
+
+	  min-height: calc(100vh - var(--header-h) - 24px);
+	  display: flex;
+	  align-items: center;
+	  justify-content: center;
+
+	  padding: 2rem 0;
+
+	  /* “hide” non-active panels until you scroll */
+	  opacity: 0.18;
+	  filter: blur(1px);
+	  transform: scale(0.985);
+	  pointer-events: none;
+
+	  transition: opacity 220ms ease, filter 220ms ease, transform 220ms ease;
+	}
+
+	.snap-panel.is-active{
+	  opacity: 1;
+	  filter: none;
+	  transform: scale(1);
+	  pointer-events: auto;
+	}
+
+	/* Respect reduced motion */
+	@media (prefers-reduced-motion: reduce){
+	  .snap-stack{ scroll-behavior: auto; }
+	  .snap-panel{ transition: none; }
+	}	
+	.stat-btn{
+	  appearance: none;
+	  -webkit-appearance: none;
+	  border: 1px solid #e6ecf3;
+	  background: linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%);
+	  border-radius: 14px;
+	  padding: .85rem .9rem;
+	  box-shadow: 0 2px 10px rgba(0,0,0,.05);
+	  text-align: left;
+	  width: 100%;
+	  cursor: pointer;
+	}
+
+	.stat-btn:hover{
+	  transform: translateY(-1px);
+	  box-shadow: 0 10px 24px rgba(0,0,0,0.08);
+	  border-color: rgba(90,155,212,0.45);
+	}
+
+	.stat-btn:focus-visible{
+	  outline: none;
+	  box-shadow: 0 0 0 3px rgba(90,155,212,0.25);
+	}	
+	/* ============================================================
+	   Fintech/Trades: Collapsible "Tech" subsection
+	============================================================ */
+	.fintech-tech {
+	  margin-top: 1.75rem;
+	  border-top: 1px solid #eef2f7;
+	  padding-top: 1.25rem;
+	  text-align: left;
+	}
+
+	.fintech-tech > summary {
+	  list-style: none; /* remove default marker */
+	  cursor: pointer;
+	  display: flex;
+	  align-items: center;
+	  justify-content: center; /* keeps your centered vibe */
+	  gap: 0.6rem;
+	  user-select: none;
+	  font-weight: 800;
+	  color: #2c3e50;
+	  font-size: 1.6rem; /* close to h2 */
+	  margin: 0.25rem 0 0.75rem;
+	}
+
+	/* hide the default triangle in Chrome/Safari */
+	.fintech-tech > summary::-webkit-details-marker {
+	  display: none;
+	}
+
+	.fintech-tech > summary::after {
+	  content: "▾";
+	  font-size: 1.1rem;
+	  transform: translateY(1px);
+	  transition: transform 160ms ease;
+	  opacity: 0.85;
+	}
+
+	.fintech-tech[open] > summary::after {
+	  transform: rotate(180deg) translateY(-1px);
+	}
+
+	/* a subtle hover state */
+	.fintech-tech > summary:hover {
+	  color: #34495e;
+	}	
+    /* ============================================================
+      Trades KPI Grid
+    ============================================================ */
+
+	/* Let the user scroll/drag on the strip; only the actual button is clickable */
+	.trades-archive-viewport { position: relative; }
+	.archive-nav {
+	  pointer-events: auto; /* button itself is clickable */
+	}
+
+	.trades-archive-viewport{
+	  position: relative;
+	  display: flex;                 /* <-- add */
+	  align-items: center;           /* <-- add */
+	  gap: .35rem;                   /* space so buttons don't cover content */
+	  overflow-x: auto;
+	  overflow-y: hidden;
+	  scroll-behavior: smooth;
+	  -webkit-overflow-scrolling: touch;
+	  scrollbar-width: none;
+	}
+	.trades-archive-viewport::-webkit-scrollbar {
+	  display: none;                    /* Chrome/Safari */
+	}
+
+	.trades-archive-track {
+	  display: flex;
+	  gap: .65rem;
+	  padding: .1rem;                   /* tiny padding so focus rings aren't clipped */
+	}
+
+	.trades-thumb {
+	  flex: 0 0 calc((100% - 2 * .65rem) / 3);  /* 3 visible */
+	}
+
+	/* nav buttons stay pinned to the viewport edges while content scrolls */
+	.archive-nav{
+	  position: sticky;              /* <-- key change */
+	  top: 50%;
+	  transform: translateY(-50%);
+	  background: rgba(0,0,0,0.35);
+	  color: #fff;
+	  border: none;
+	  width: 36px;
+	  height: 36px;
+	  border-radius: 9999px;
+	  font-size: 1.6rem;
+	  cursor: pointer;
+	  opacity: 0;
+	  transition: opacity .2s ease, background .2s ease;
+	  z-index: 5;                    /* above thumbnails */
+	  flex: 0 0 auto;                /* don’t shrink */
+	  pointer-events: auto;
+	}
+
+	.archive-prev{ left: 6px; }
+	.archive-next{ right: 6px; }
+
+	.trades-archive-viewport:hover .archive-nav{ opacity: 1; }
+	.archive-nav:hover{ background: rgba(0,0,0,0.55); }
+
+	.trades-archive-viewport:hover .archive-nav {
+	  opacity: 1;
+	}
+
+	.archive-prev { left: 6px; }
+	.archive-next { right: 6px; }
+
+	.trades-archive-dropdown {
+	  margin-top: .75rem;
+	}
+    .trades-kpi-strip {
+      margin-top: 1.2rem;
+      padding-bottom: 0.25rem;
+      overflow-x: auto;
+      overflow-y: hidden;
     }
 
-    .left-widget a {
-      display: block;
+    .trades-kpi-grid {
+      display: grid;
+      grid-auto-flow: column;
+      grid-auto-columns: minmax(130px, 1fr);
+      grid-template-rows: repeat(2, auto); /* 2 rows visible = 8x2 feel */
+      gap: 0.75rem;
+      padding-bottom: 0.5rem;
+    }
+
+    .trades-kpi-card {
+      background: linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%);
+      border: 1px solid #e6ecf3;
+      border-radius: 14px;
+      padding: 0.75rem 0.8rem;
+      cursor: pointer;
+      user-select: none;
+      transition:
+        transform 0.12s ease,
+        box-shadow 0.12s ease,
+        border-color 0.12s ease;
+      min-height: 96px;
+    }
+
+    .trades-kpi-card:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 24px rgba(0,0,0,0.08);
+      border-color: rgba(90,155,212,0.45);
+    }
+
+    .trades-kpi-card:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(90,155,212,0.25);
+    }
+
+    .trades-kpi-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 10px;
+      background: rgba(90,155,212,0.12);
+      border: 1px solid rgba(90,155,212,0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 0.45rem;
+    }
+
+    .trades-kpi-icon img {
+      width: 16px;
+      height: 16px;
+    }
+
+    .trades-kpi-name {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #667;
+      line-height: 1.2;
+    }
+
+    .trades-kpi-value {
+      font-size: 1.05rem;
+      font-weight: 800;
       color: #2c3e50;
+      margin-top: 0.15rem;
+    }
+
+    /* Mobile: fewer visible columns */
+    @media (max-width: 640px) {
+      .trades-kpi-grid {
+        grid-auto-columns: minmax(150px, 1fr);
+        grid-template-rows: repeat(1, auto);
+      }
+    }	
+    /* ============================================================
+      Trades Pro UI
+    ============================================================ */
+    #trades-lightbox{
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,.85);
+      z-index: 3000;
+      padding: 2rem;
+    }
+    #trades-lightbox img{
+      max-width: 92%;
+      max-height: 92%;
+      border-radius: 14px;
+    }
+
+    /* make header actually center in the widget */
+    .trades-wrap{
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    .trades-header{
+      align-items: center;            /* instead of flex-start */
+    }
+
+    .trades-title{
+      text-align: left;               /* keep text readable */
+    }
+
+    .trades-cta{
+      margin-left: auto;
+    }
+
+    /* --- archive strip --- */
+    .trades-archive{
+      margin-top: 1.1rem;
+    }
+
+    .trades-archive-grid{
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr)); /* 3 across */
+      gap: .65rem;
+      margin-top: .65rem;
+    }
+
+    @media (max-width: 720px){
+      .trades-archive-grid{ grid-template-columns: 1fr; } /* stack on mobile */
+    }
+
+    .trades-thumb{
+      border: 1px solid #e6ecf3;
+      background: #fff;
+      border-radius: 12px;
+      padding: .5rem;
+      cursor: pointer;
+      user-select: none;
+      transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+      outline: none;
+    }
+
+    .trades-thumb:hover{
+      transform: translateY(-1px);
+      box-shadow: 0 10px 24px rgba(0,0,0,0.08);
+      border-color: rgba(90,155,212,0.45);
+    }
+
+    .trades-thumb:focus-visible{
+      box-shadow: 0 0 0 3px rgba(90,155,212,0.25);
+    }
+
+    .trades-thumb.active{
+      border-color: #5A9BD4;
+      box-shadow: 0 0 0 3px rgba(90,155,212,0.15);
+    }
+
+    .trades-thumb-date{
+      font-size: .78rem;
+      font-weight: 800;
+      color: #2c3e50;
+      margin-bottom: .35rem;
+    }
+
+    .trades-thumb img{
+      width: 100%;
+      height: 92px;              /* small thumbnail height */
+      object-fit: cover;
+      border-radius: 10px;
+      display: block;
+      pointer-events: none;      /* ensures parent gets click */
+    }
+    .trades-pro h2 { margin-top: 0.25rem; }
+
+    .trades-header{
+      display:flex;
+      justify-content: space-between;
+      align-items: center;  /* was flex-start */
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .trades-title{
+      flex: 1;
+      min-width: 280px;
+    }
+
+    .trades-cta{
+      margin-left: auto;          /* ensures it hugs right cleanly */
+      justify-content: flex-end;
+    }
+    .trades-subtitle{ color:#555; margin-top:.25rem; line-height:1.55; }
+
+    .trades-badge{
+      display:inline-flex;
+      align-items:center;
+      gap:.5rem;
+      font-size:.85rem;
+      color:#34495e;
+      background: rgba(90,155,212,0.10);
+      border: 1px solid rgba(90,155,212,0.25);
+      padding: .25rem .6rem;
+      border-radius: 9999px;
+    }
+    .trades-badge .dot{
+      width:8px; height:8px; border-radius:50%;
+      background:#2ecc71;
+      box-shadow: 0 0 0 3px rgba(46,204,113,0.15);
+    }
+
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      gap:.5rem;
+      padding:.55rem .85rem;
+      border-radius: 10px;
+      font-weight: 700;
       text-decoration: none;
-      padding: 0.5rem 0;
+      border: 1px solid #e6ecf3;
+      background:#fff;
+      cursor:pointer;
+      transition: transform .12s ease, box-shadow .12s ease, background .12s ease;
+    }
+    .btn:hover{
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    }
+    .btn-ic img{ width: 16px; height: 16px; display:block; }
 
-      /* ✅ smaller, non-bold font */
-      font-size: 0.775rem;
-      font-weight: normal;
+    .btn-primary{
+      background:#5A9BD4;
+      color:#fff;
+      border-color:#5A9BD4;
+    }
+    .btn-primary:hover{ background:#3c7fb8; }
 
-      border-bottom: 1px solid #ddd;
-    }
-    .left-widget a:last-child {
-      border-bottom: none;
-    }
-    .left-widget a:hover {
-      background: #e0e0e0;
-    }
-
-    /* push the main content over so it clears the sidebar */
-    .main-container {
-      margin-left: 16.666%;
-    }
-    /* push your main content over so it doesn’t sit under the sidebar */
-    .main-container {
-      margin-left: 0.666%;
+    .btn-ghost{
+      color:#2c3e50;
+      background: #fff;
     }
 
+    .trades-stats{
+      display:grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: .85rem;
+      margin: 1rem 0 1.15rem;
+    }
+    .stat{
+      border: 1px solid #e6ecf3;
+      background: linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%);
+      border-radius: 14px;
+      padding: .85rem .9rem;
+      box-shadow: 0 2px 10px rgba(0,0,0,.05);
+    }
+    .stat-ic{
+      width: 34px; height: 34px;
+      border-radius: 10px;
+      display:flex; align-items:center; justify-content:center;
+      background: rgba(90,155,212,0.12);
+      border: 1px solid rgba(90,155,212,0.25);
+      margin-bottom: .55rem;
+      color:#2c3e50;
+    }
+    .stat-ic img{ width:18px; height:18px; }
+    .stat-k{ font-size:.82rem; color:#667; }
+    .stat-v{ font-size:1.05rem; margin-top:.15rem; }
+    .stat-s{ font-size:.82rem; color:#667; margin-top:.25rem; line-height:1.35; }
+
+    .trades-panel{
+      border: 1px solid #e6ecf3;
+      background: #fff;
+      border-radius: 14px;
+      padding: 1rem;
+      margin-bottom: 1.1rem;
+    }
+
+    .panel-head h3{ margin-bottom: .2rem; }
+    .pipeline{
+      display:flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: .55rem;
+      margin-top: .75rem;
+      margin-bottom: .85rem;
+    }
+    .pipe-step{
+      display:flex;
+      align-items:center;
+      gap:.6rem;
+      border: 1px solid #eef2f7;
+      background: #fbfcfe;
+      border-radius: 12px;
+      padding: .55rem .7rem;
+    }
+    .pipe-node{
+      width: 28px; height: 28px;
+      border-radius: 10px;
+      display:flex; align-items:center; justify-content:center;
+      font-weight:800;
+      color:#2c3e50;
+      background: rgba(90,155,212,0.14);
+      border: 1px solid rgba(90,155,212,0.28);
+    }
+    .pipe-title{ font-weight:800; color:#2c3e50; line-height:1.1; }
+    .pipe-sub{ font-size:.82rem; color:#667; margin-top:.1rem; }
+    .pipe-arrow{ color:#99a; font-weight:900; }
+
+    .trades-accordions{
+      display:grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: .75rem;
+    }
+    .acc{
+      border: 1px solid #eef2f7;
+      border-radius: 12px;
+      padding: .65rem .75rem;
+      background: #fbfcfe;
+    }
+    .acc summary{
+      cursor:pointer;
+      font-weight: 800;
+      color:#2c3e50;
+    }
+    .acc ul{ margin-top: .55rem; padding-left: 1.15rem; line-height: 1.6; color:#555; }
+
+    /* reuse your existing .trades-summary-box; make it look more premium */
+    .trades-summary-box{
+      background: #fbfcfe;
+      border: 1px solid #e6ecf3;
+      border-left: 4px solid #5A9BD4;
+      border-radius: 12px;
+    }
+
+    /* Responsive */
+    @media (max-width: 920px){
+      .trades-stats{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 620px){
+      .trades-stats{ grid-template-columns: 1fr; }
+      .trades-accordions{ grid-template-columns: 1fr; }
+      .trades-cta{ justify-content:flex-start; }
+    }
     /* ============================================================
        Responsive Adjustments
     ============================================================ */
@@ -466,25 +1042,9 @@
 </head>
 <body>
   <!-- Fixed Navbar -->
-  <nav class="navbar">
-    <div class="logo" onclick="resetLanding()">
-      <img src="assets/logo.png" alt="Haiphen Logo">
-    </div>
-    <div class="nav-links">
-      <a href="javascript:void(0)" onclick="showSection('Services')">About</a>
-      <a href="javascript:void(0)" onclick="showSection('Contact')">Contact</a>
-    </div>
-  </nav>
+  <div id="header-mount"></div>
   
-  <!-- Left-hand sidebar of clickable entities -->
-  <div class="left-widget">
-    <a href="#" onclick="showSection('Services'); scrollToEthos();">OpSec</a>
-    <a href="#" onclick="showSection('Signals')">Signals</a>
-    <a href="#" onclick="showSection('Engines')">Engines</a>
-    <a href="#" onclick="showSection('Embedded')">Embedded</a>
-    <a href="#" onclick="showSection('Robotics')">Robotics</a>
-    <a href="#" onclick="showSection('Metallury')">Metallurgy</a>
-  </div>
+  <div id="sidebar-mount"></div>
 
   <!-- Main Content -->
   <div class="main-container">
@@ -493,18 +1053,13 @@
       <div class="hero-logo">
         <img src="assets/robot_haiphen.svg" alt="Haiphen Robot Logo">
       </div>
-      <p>API Everything [<span style="color: red;">♥</span>]</p>
+      <!-- Primary Tagline -->
+      <p style="margin-bottom: 0.5rem;">API Everything [<span style="color: red;">♥</span>]</p>
+
     </section>
     
-    <!-- Section Menu -->
-    <div class="section-menu">
-      <button onclick="showSection('Services')">Services</button>
-      <button onclick="showSection('OnePager')">Papers</button>
-      <button onclick="showSection('Inventory')">Inventory</button>
-      <button onclick="showSection('Tech')">Tech</button>
-      <button onclick="showSection('Contact')">Contact</button>
-    </div>
-    
+    <div id="section-menu-mount"></div>
+
     <!-- Content Widget (Appears on Click) -->
     <div id="content-widget" class="content-widget"></div>
   </div>
@@ -519,9 +1074,371 @@
       <p>Phone: (512) 910-4544</p>
     </div>
   </div>
-  
+	<div id="trades-lightbox" onclick="closeTradesLightbox()" style="display:none;">
+	  <img src="" alt="trades preview">
+	</div>  
+	<!-- Footer sentinel: becomes visible only when user scrolls to the very bottom -->
+	<div id="footer-sentinel" aria-hidden="true" style="height: 1px;"></div>
+
+	<!-- Footer mount: injected footer lives here -->
+	<div id="footer-mount"></div>  
+	<div id="trades-overlay-mount"></div>	
   <!-- JavaScript for Interactivity -->
   <script>
+    /* ------------------------------------------------------------
+       0) Trades Section Helpers
+    ------------------------------------------------------------ */
+	function openTradesLightbox(src){
+	  const lb = document.getElementById('trades-lightbox');
+	  const img = lb?.querySelector('img');
+	  if (!lb || !img) return;
+	  img.src = src;
+	  lb.style.display = 'flex';
+	}
+	function closeTradesLightbox(){
+	  const lb = document.getElementById('trades-lightbox');
+	  if (lb) lb.style.display = 'none';
+	}    
+	async function fetchJson(url) {
+	  const resp = await fetch(url, { cache: 'no-store' });
+	  if (String(path).includes('/v1/keys/current')) {
+	    throw new Error('Deprecated endpoint: /v1/keys/current (client should not call this)');
+	  }	  
+	  if (!resp.ok) throw new Error(`HTTP ${resp.status} for ${url}`);
+	  return await resp.json();
+	}
+
+	function setActiveThumb(dateKey) {
+	  document.querySelectorAll('.trades-thumb').forEach((el) => {
+	    el.classList.toggle('active', el.getAttribute('data-date') === dateKey);
+	  });
+	}
+	async function openFintechMetricByIdx(kpiIdx) {
+	  try {
+	    // 1) Scroll to metrics anchor (above KPI strip, above Archive)
+	    const anchor = document.getElementById('fintech-metrics') || document.getElementById('trades-kpi-grid');
+	    if (anchor) scrollToWithHeaderOffset(anchor, 12);
+
+	    // 2) Ensure KPI grid exists; if not, try loading trades data (safe no-op if already loaded)
+	    const grid = document.getElementById('trades-kpi-grid');
+	    if (!grid) {
+	      console.warn('[fintech] KPI grid missing; are we in Trades section?');
+	      return;
+	    }
+
+	    // Helper to attempt opening a KPI card by idx
+	    const tryOpen = () => {
+	      const card = grid.querySelector(`.trades-kpi-card[data-idx="${String(kpiIdx)}"]`);
+	      if (!card) return false;
+	      card.click(); // uses the existing renderTradesKpiGrid() open() logic
+	      return true;
+	    };
+
+	    // If cards not present yet (async render), wait a tick and retry.
+	    if (tryOpen()) return;
+
+	    // If nothing rendered yet, attempt to (re)load trades data once, then retry.
+	    try {
+	      await loadTradesData();
+	    } catch (e) {
+	      console.warn('[fintech] loadTradesData failed while opening KPI overlay', e);
+	    }
+
+	    requestAnimationFrame(() => {
+	      if (!tryOpen()) {
+	        console.warn('[fintech] KPI idx not found in grid', { kpiIdx });
+	      }
+	    });
+	  } catch (err) {
+	    console.warn('[fintech] openFintechMetricByIdx failed', err);
+	  }
+	}
+	async function loadTradesByJsonUrl(jsonUrl, screenshotUrl, dateKey) {
+	  const dateEl = document.getElementById('trades-date');
+	  const updatedEl = document.getElementById('trades-updated');
+	  const headlineEl = document.getElementById('trades-headline');
+	  const summaryEl = document.getElementById('trades-summary');
+	  const img = document.getElementById('trades-img');
+
+	  try {
+	    const data = await fetchJson(jsonUrl);
+
+	    window.HAIPHEN = window.HAIPHEN || {};
+	    window.HAIPHEN.CurrentTradesDay = data; // ✅ after fetch
+
+	    renderTradesKpiGrid(data.rows);
+
+	    if (dateEl) dateEl.textContent = dateKey || data.date || '—';
+	    if (updatedEl) updatedEl.textContent = data.updated_at || '—';
+	    if (headlineEl) headlineEl.textContent = data.headline || '—';
+	    if (summaryEl) summaryEl.textContent = data.summary || '—';
+
+	    if (img && screenshotUrl) {
+	      img.style.display = '';
+	      document.getElementById('trades-img-missing').style.display = 'none';
+	      img.src = screenshotUrl;
+	    }
+
+	    if (dateKey) setActiveThumb(dateKey);
+	  } catch (err) {
+	    console.warn('[trades] failed to load', { jsonUrl, err });
+	    renderTradesKpiGrid([]);
+	  }
+	}
+
+	const PAGE_SIZE = 3;
+	const CAROUSEL_MAX_THUMBS = 15; // still fine, dropdown shows full history
+
+	function renderArchive(allItems) {
+	  const track = document.getElementById('trades-archive-track');
+	  const viewport = track?.parentElement; // .trades-archive-viewport
+	  const nextBtn = document.querySelector('.archive-next');
+	  const prevBtn = document.querySelector('.archive-prev');
+	  const dropdownWrap = document.getElementById('trades-archive-dropdown');
+	  const select = document.getElementById('trades-archive-select');
+	  
+	  let userHasPannedRight = false;
+
+	  if (!track || !viewport || !nextBtn || !prevBtn || !dropdownWrap || !select) {
+	    console.warn('[trades] archive elements missing; check ids/classes in Trades template');
+	    return;
+	  }
+
+	  const items = Array.isArray(allItems) ? allItems : [];
+	  const carouselItems = items.slice(0, CAROUSEL_MAX_THUMBS);
+
+	  track.innerHTML = carouselItems.map(it => `
+	    <div class="trades-thumb" data-date="${escapeHtml(it.date)}" tabindex="0">
+	      <div class="trades-thumb-date">${escapeHtml(it.date)}</div>
+	      <img src="${escapeHtml(it.screenshot)}" alt="">
+	    </div>
+	  `).join('');
+
+	  const byDate = new Map(items.map(it => [String(it.date), it]));
+
+	  // thumb clicks (carousel subset)
+	  track.querySelectorAll('.trades-thumb').forEach(el => {
+	    const date = el.dataset.date;
+	    const it = byDate.get(String(date));
+	    if (!it) return;
+
+	    const open = () => loadTradesByJsonUrl(it.json, deriveTradesScreenshotUrl(it), it.date);
+
+	    el.addEventListener('click', open);
+	    el.addEventListener('keydown', e => {
+	      if (e.key === 'Enter' || e.key === ' ') {
+	        e.preventDefault();
+	        open();
+	      }
+	    });
+	  });
+
+	  // dropdown (FULL history)
+	  select.innerHTML = items.map(it =>
+	    `<option value="${escapeHtml(it.date)}">${escapeHtml(it.date)}</option>`
+	  ).join('');
+
+	  select.onchange = () => {
+	    const it = byDate.get(String(select.value));
+	    if (it) loadTradesByJsonUrl(it.json, deriveTradesScreenshotUrl(it), it.date);
+	  };
+
+      function setNavVisibility() {
+        const maxScrollLeft = viewport.scrollWidth - viewport.clientWidth;
+        const atStart = viewport.scrollLeft <= 2;
+        const atEnd = viewport.scrollLeft >= (maxScrollLeft - 2);
+
+        // Requested behavior:
+        // - once user pans right even a little, hide both arrows
+        // - only show arrows again when they return fully left
+        if (!atStart) userHasPannedRight = true;
+        if (atStart) userHasPannedRight = false;
+
+        // If you haven't panned right yet, behave normally (show only what’s usable)
+        const show = !userHasPannedRight && maxScrollLeft > 2;
+
+        prevBtn.hidden = !(show && !atStart);
+        nextBtn.hidden = !(show && !atEnd);
+      }
+
+      function updateNav() {
+        dropdownWrap.hidden = items.length <= carouselItems.length;
+
+        // If there isn't more than one page worth, no nav needed.
+        const needsNav = carouselItems.length > PAGE_SIZE;
+        if (!needsNav) {
+          prevBtn.hidden = true;
+          nextBtn.hidden = true;
+          return;
+        }
+
+        setNavVisibility();
+      }
+
+	  prevBtn.onclick = () => {
+	    viewport.scrollBy({ left: -viewport.clientWidth, behavior: 'smooth' });
+	  };
+	  nextBtn.onclick = () => {
+	    viewport.scrollBy({ left: viewport.clientWidth, behavior: 'smooth' });
+	  };
+
+	  viewport.addEventListener('scroll', updateNav, { passive: true });
+	  window.addEventListener('resize', updateNav, { passive: true });
+
+	  // reset to start (newest)
+      viewport.scrollLeft = 0;
+      userHasPannedRight = false;
+      updateNav();
+	}
+
+	async function loadTradesData() {
+	  // Always load “latest” first
+	  await loadTradesByJsonUrl(
+	    'assets/trades/trades.json',
+	    'assets/trades/alpaca_screenshot.png',
+	    null
+	  );
+
+	  // If Trades section isn't mounted yet, bail quietly
+	  const track = document.getElementById('trades-archive-track');
+	  if (!track) return;
+
+	  try {
+	    const idx = await fetchJson('assets/trades/trades_index.json');
+	    const items = Array.isArray(idx.items) ? idx.items : [];
+
+	    if (items.length === 0) {
+	      track.innerHTML = `<div class="trades-muted">No archive yet.</div>`;
+	      return;
+	    }
+
+	    // Optional: sort newest first if dates are YYYY-MM-DD
+	    items.sort((a, b) => String(b.date).localeCompare(String(a.date)));
+
+	    // ✅ THIS WAS MISSING
+	    renderArchive(items);
+
+	    // Optional: auto-load newest archive item immediately (instead of leaving “latest”)
+	    // const first = items[0];
+	    // if (first) loadTradesByJsonUrl(first.json, deriveTradesScreenshotUrl(first), first.date);
+
+	  } catch (err) {
+	    console.warn('[trades] failed to load trades_index.json', err);
+	    track.innerHTML = `<div class="trades-muted">Archive unavailable.</div>`;
+	  }
+	}
+
+	function escapeHtml(s) {
+	  return (s || '')
+	    .replaceAll('&', '&amp;')
+	    .replaceAll('<', '&lt;')
+	    .replaceAll('>', '&gt;')
+	    .replaceAll('"', '&quot;')
+	    .replaceAll("'", '&#039;');
+	}  	
+
+    const KPI_ICON_MAP = {
+      'Signals scanned': 'radar.svg',
+      'Opportunities flagged': 'flag.svg',
+      'Notifications sent': 'bell.svg',
+      'Entries opened': 'enter.svg',
+      'Exits closed': 'exit.svg',
+      'Avg hold time': 'clock.svg',
+      'Daily PnL': 'dollar.svg',
+      'Win rate': 'percent.svg',
+      'Max drawdown': 'downtrend.svg',
+      'Sharpe ratio': 'chart.svg',
+      'Delta': 'delta.svg',
+      'Gamma': 'gamma.svg',
+      'Theta': 'theta.svg',
+      'Vega': 'vega.svg',
+      'Rho': 'rho.svg',
+      'Liquidity Ratios': 'liquidity.svg',
+    };
+
+	function renderTradesKpiGrid(rows) {
+	  const grid = document.getElementById('trades-kpi-grid');
+	  if (!grid) return;
+
+	  const safeRows = Array.isArray(rows) ? rows : [];
+
+	  grid.innerHTML = safeRows.map((r, idx) => {
+	    const kpi = escapeHtml(r.kpi || '');
+	    const value = escapeHtml(r.value || '—');
+	    const icon = KPI_ICON_MAP[r.kpi] || 'chart.svg';
+
+	    return `
+	      <div
+	        class="trades-kpi-card"
+	        role="button"
+	        tabindex="0"
+	        data-kpi="${kpi}"
+	        data-value="${value}"
+	        data-idx="${idx}"
+	        aria-label="${kpi}: ${value}"
+	      >
+	        <div class="trades-kpi-icon">
+	          <img src="assets/icons/kpi/${icon}" alt="" aria-hidden="true" />
+	        </div>
+	        <div class="trades-kpi-name">${kpi}</div>
+	        <div class="trades-kpi-value">${value}</div>
+	      </div>
+	    `;
+	  }).join('');
+
+	  // Wire interactions after injection
+	  const cards = grid.querySelectorAll('.trades-kpi-card');
+	  cards.forEach((card) => {
+		const open = () => {
+		  try {
+		    const title = card.getAttribute('data-kpi') || 'Metric';
+		    const value = card.getAttribute('data-value') || '—';
+
+		    // prefer currently-loaded screenshot in the Trades section
+		    const img = document.getElementById('trades-img');
+		    const screenshotUrl =
+		      img?.getAttribute('src') ||
+		      img?.src ||
+		      'assets/trades/alpaca_screenshot.png';
+
+		    const day = window.HAIPHEN?.CurrentTradesDay;
+		    const overlay = day?.overlay || {};
+
+		    const series = overlay?.seriesByKpi?.[title] || null;
+		    const hasSeries = Array.isArray(series) && series.length > 0;
+
+		    const subtitle = `Current: ${value} • ${hasSeries ? 'Options day trading metrics' : 'day trading'}`;
+
+		    const extremes = overlay?.extremes || { hi: [], lo: [] };
+		    const portfolioAssets = overlay?.portfolioAssets || [];
+
+		    const opener = window.HAIPHEN?.TradesOverlay?.open;
+		    if (typeof opener === 'function') {
+		      opener({
+		        title,
+		        subtitle,
+		        screenshotUrl,
+		        series,
+		        extremes,
+		        portfolioAssets,
+		      });
+		    } else {
+		      console.warn('[kpi] overlay not loaded yet');
+		    }
+		  } catch (err) {
+		    console.warn('[kpi] failed to open overlay', err);
+		  }
+		};
+
+	    card.addEventListener('click', open);
+	    card.addEventListener('keydown', (e) => {
+	      if (e.key === 'Enter' || e.key === ' ') {
+	        e.preventDefault();
+	        open();
+	      }
+	    });
+	  });
+	}	
     /* ------------------------------------------------------------
        1) Global Variables: OnePager Carousel
     ------------------------------------------------------------ */
@@ -610,245 +1527,236 @@
        3) Section Content (Accordion-Like) with new OnePager
     ------------------------------------------------------------ */
     const sectionContent = {
-        "Services": `
-          <h2>Mission</h2>
-          <br>
-          <p>
-            <a href="https://haiphen.io" target="_blank" rel="noopener noreferrer"><strong>Haiphen</strong></a>[Hi-fen]: A <strong>signals intelligence</strong> tech startup focused on delivering custom, open src solutions to various cloud, edge, and infra obstacles across a variety of technical, business, and scientific domains.
-          </p>
-          <br>
-          <!-- New Steps Row -->
-          <div class="steps-container">
-            <div class="step">
-              <a href="https://example.com/step1" target="_blank" rel="noopener noreferrer">
-                <img src="assets/step1.svg" alt="Step 1">
-              </a>
-              <p>Diagnose &amp; Draft</p>
-            </div>
-            <div class="step">
-              <a href="https://example.com/step2" target="_blank" rel="noopener noreferrer">
-                <img src="assets/step2.svg" alt="Step 2">
-              </a>
-              <p>Execute &amp; Enrich</p>
-            </div>
-            <div class="step">
-              <a href="https://example.com/step3" target="_blank" rel="noopener noreferrer">
-                <img src="assets/step3.svg" alt="Step 3">
-              </a>
-              <p>Review &amp; Revise</p>
-            </div>
-          </div>
-          <br>
-          <div class="about-columns">
-            <div class="about-col"> 
-              <p>
-                We process 2M+ signals across the internet each day for downstream applications and usecases. With a deep foundation in <strong>Computational Linguistics</strong>, <strong>NLP</strong>, and <strong>ML</strong>, we geek out over building the plumbing and infra (e.g. data pipelines, ETL, entity extraction, pruning, clustering) that simplifies unwanted haziness into reliable API calls. Consider us your personal DBA (database admin) but with a domain expertise that actively persists in your data through its entire lifecycle.
-              </p>
-            </div>
-            <div class="about-col">
-              <p>
-                We're excited about the future: the more <strong>custom solutions</strong> we're able deliver, the closer we move towards our vision of productizing <strong>knowledge graphs</strong> into every company (without the headache). <i>Note</i>: we're intentional barebones as you may have noticed. We believe good software was and should be transparent, inspectable and about what's under the hood.
-              </p>
-            </div>
-          </div>
+        "Trades": `
+          <section id="trades-top" class="trades-wrap trades-pro">
 
-          <!-- about/paragraph placeholders -->
-          <div class="services-about">
-            <h3>Services</h3>
-            <p>The current landscape of 'Tech' problems go beyond traditional verticals that can be arbitrarily segregated by legacy labels and/or specialties. We've taken a 'hacker-centric', solve first ask later, domain agnostic approach of simply meeting problems where they reside. That can be anywhere from the knowledge graph db powering a Harvard research lab to the firmware needed to customize your lawn mower. We freelance with commercial and residential clients putting out current fires wherever they reside. This removes the frothy silicon valley VC environment of contrived 'luxury' solutions to problems that don't exist.</p>
-            <ul class="inline-bullets">
-              <li><a href="https://example.com/robotics" target="_blank" rel="noopener noreferrer">Robotics</a></li>
-              <li><a href="https://example.com/opsec" target="_blank" rel="noopener noreferrer">Operational Security</a></li>
-              <li><a href="https://example.com/event-detection" target="_blank" rel="noopener noreferrer">Event Detection</a></li>
-              <li><a href="https://example.com/welding" target="_blank" rel="noopener noreferrer">Decision Engine</a></li>
-              <li><a href="https://example.com/carpentry" target="_blank" rel="noopener noreferrer">Dissasemblers</a></li>
-            </ul>            
-          </div>
+            <!-- Header -->
+            <header class="trades-header">
+              <div class="trades-title">
+                <div class="trades-badge">
+                  <span class="dot"></span>
+                  <span>High-freq. • automated • intraday</span>
+                </div>
+                <h2>Trades</h2>
+                <p class="trades-subtitle">
+                  High frequency, Risk profiling, Transparent daily pnl & metrics, Production-grade <strong>options execution + risk assessment</strong> trading engine. 
+                  
+                </p>
+              </div>
 
-          <div class="tech-container">
-            <div class="tech-right svg-stack style="display: flex; justify-content: center; align-items: center; padding: 1rem 0;">
-              <object type="image/svg+xml" data="assets/signal_chain.svg" class="tech-svg">
-                Your browser does not support SVG.
-              </object>
-              <br>
-              <object type="image/svg+xml" data="assets/data_sorter1.svg" class="tech-svg">
-                Your browser does not support SVG.
-              </object>              
+              <!-- CTA Buttons -->
+              <div class="trades-cta">
+                <button class="btn btn-primary" onclick="showSection('Contact')">
+                  <span class="btn-ic"><img src="assets/icons/link.svg" alt=""></span>
+                  Request API access
+                </button>
+				<a class="btn btn-ghost" href="#docs">
+				  <span class="btn-ic"><img src="assets/icons/external.svg" alt=""></span>
+				  Docs / Lineage
+				</a>
+
+                <a class="btn btn-ghost" href="https://twitter.com/" target="_blank" rel="noopener noreferrer">
+                  <span class="btn-ic"><img src="assets/icons/external.svg" alt=""></span>
+                  Follow daily bot
+                </a>
+              </div>
+            </header>
+            <!-- Stat Cards -->
+			<div class="trades-stats">
+			  <button class="stat stat-btn" type="button" data-kpi-idx="0" onclick="openFintechMetricByIdx(0)">
+			    <div class="stat-ic"><img src="assets/icons/cpu.svg" alt=""></div>
+			    <div class="stat-k">Signals/day</div>
+			    <div class="stat-v"><strong>800K – 1.5M</strong></div>
+			    <div class="stat-s">Scanned for pricing dislocations</div>
+			  </button>
+
+			  <button class="stat stat-btn" type="button" data-kpi-idx="1" onclick="openFintechMetricByIdx(1)">
+			    <div class="stat-ic"><img src="assets/icons/chart.svg" alt=""></div>
+			    <div class="stat-k">Contracts/day</div>
+			    <div class="stat-v"><strong>2K – 15K</strong></div>
+			    <div class="stat-s">Automated entry + exit</div>
+			  </button>
+
+			  <button class="stat stat-btn" type="button" data-kpi-idx="2" onclick="openFintechMetricByIdx(2)">
+			    <div class="stat-ic"><img src="assets/icons/bolt.svg" alt=""></div>
+			    <div class="stat-k">Avg hold time</div>
+			    <div class="stat-v"><strong>~6.7s</strong></div>
+			    <div class="stat-s">Low Latency, speed & repeatability</div>
+			  </button>
+
+			  <button class="stat stat-btn" type="button" data-kpi-idx="3" onclick="openFintechMetricByIdx(3)">
+			    <div class="stat-ic"><img src="assets/icons/shield.svg" alt=""></div>
+			    <div class="stat-k">Overnight exposure</div>
+			    <div class="stat-v"><strong>None</strong></div>
+			    <div class="stat-s">Streaming portfolio risk quantization</div>
+			  </button>
+			</div>
+
+            <!-- Screenshot + meta (KEEP IDS) -->
+            <div class="trades-hero">
+              <img
+                id="trades-img"
+                class="trades-img"
+                src="assets/trades/alpaca_screenshot.png"
+                alt="Alpaca dashboard screenshot"
+                onerror="this.style.display='none'; document.getElementById('trades-img-missing').style.display='block';"
+              />
+              <div id="trades-img-missing" class="trades-muted" style="display:none;">
+                Screenshot not found yet. Run:
+                <code>node twitter-bot/src/screenshot.js</code> →
+                <code>node twitter-bot/src/crop-screenshot.js</code> →
+                <code>node twitter-bot/src/publish-aboutme-trades.js</code>
+              </div>
+
             </div>
-            <div class="tech-left">
-              <h3>Signals</h3>
-              <p style="text-indent: 2em;">
-                The difference between the Google(s), Amazon(s), Twitter(s) big tech giants and the consumers using those products comes down to signals. Users are always handicapped by an asymmetry in information and ability to act on them. This is not un-intentional. 
-              </p>
-              <p style="text-indent: 2em;">
-              The infrastructure needed to <strong>scale</strong>, process and automate your <strong>decision making</strong> are the cornerstone of any business no matter the industry or the product. We're building infrastructure to make this accessible to every participant on the internet, as it should be.
-              </p>
-              <br>
-              <div class="tech-bullets">
-                <ul>
-                  <li>Decision engines</li>
-                  <li>Algorithmic day trading</li>
-                  <li>Risk analysis</li>
-                  <li>Portfolio optimization</li>
-                  <li>News alert feed</li>
-                  <li>Underwriting</li>
-                  <li>Data pruning</li>
-                  <li>Data enrichment</li>
-                  <li>Concept mapping</li>
-                  <li>Domain segregation</li>
-                  <li>QA</li>
-                </ul>
-              </div> 
-              <br>             
-              <p>
-                <strong>Note</strong>: On a given day, in a given month of a given year our [redacted] engine processed 268,640 signals, flagged 5821 opportunities, executed on 980 events and saw a +7.80% appreciation in the value of those assets. You can envision applying this any speculative industry where returns are driven event driven input.
-              </p>              
-            </div>            
-          </div>
 
-          <style>
-            .tech-container {
-              display: flex; gap: 2rem; align-items: center;
-              justify-content: center; flex-wrap: wrap; text-align: left;
-              margin-top: 2rem;
-            }
-            .tech-left {
-              flex: 1; min-width: 280px;
-            }
-            .tech-right {
-              flex: 1; min-width: 280px;
-            }
-            .tech-list {
-              list-style-type: disc; padding-left: 20px;
-              font-size: 1rem; line-height: 1.8;
-            }
-            .tech-list li i {
-              font-style: italic; font-weight: normal;
-            }
-          </style>          
-
-          <div class="tech-container">
-            <div class="tech-left">
-              <h3 id="ethos">Ethos</h3>
-              <p style="text-indent: 2em;">
-                <strong>Open Source</strong> everything: We spent years building our own stand alone OS environment
-                to train, test and deploy all of our models. Hence we're able to provide unmatched
-                value proposition: chain of custody insight and transparency into every asset
-                build so you minimize <strong>vulnerabilities</strong>. That includes the website your viewing now. 
-                All the code available via github. You're free to contribute as you see fit. 
-              </p>
-              <br>
-              <h3>Stack</h3>
-              <ul class="tech-list">
-                <li><i>Backend:</i> Apache Framework, Redis, Postgres</li>
-                <li><i>Data:</i> Scala, HDFS, Postgres</li>
-                <li><i>Network:</i> Istio, SD-WAN solutions</li>
-                <li><i>Platform:</i> Ansible, Terraform, Kubernetes</li>
-                <li><i>Access Control:</i> Keycloak, OpenFGA</li>
-                <li><i>Telemetry:</i> Prometheus, Grafana, ELK Stack</li>
-              </ul>
-              <br>
-              <h3>Secure</h3>
-              <p style="text-indent: 2em;">
-                Industry best practices, zero-trust <strong>security protocols</strong> (e.g. SALSA, GUAC) alongside 
-                with proactive threat detection and mitigation to protect
-                your critical systems.
-              </p>
+            <!-- Summary (KEEP ID) -->
+            <div class="trades-summary-box">
+              <p id="trades-summary">—</p>
             </div>
-            <div class="tech-right">
-              <object type="image/svg+xml" data="assets/tech_animated.svg" class="tech-svg">
-                Your browser does not support SVG.
-              </object>
-            </div>
-          </div>
-          <style>
-            .tech-container {
-              display: flex; gap: 2rem; align-items: center;
-              justify-content: center; flex-wrap: wrap; text-align: left;
-              margin-top: 2rem;
-            }
-            .tech-left {
-              flex: 1; min-width: 280px;
-            }
-            .tech-right {
-              flex: 1; min-width: 280px;
-            }
-            .tech-list {
-              list-style-type: disc; padding-left: 20px;
-              font-size: 1rem; line-height: 1.8;
-            }
-            .tech-list li i {
-              font-style: italic; font-weight: normal;
-            }
-          </style>
-          <div id="lightbox" onclick="closeLightbox()">
-            <img src="" alt="preview">
-          </div>
-          <br>
-          <div class="services-about">
-            <h3>Collaborate</h3>
-            <p>Contact us here, schedule a service appointment here, look through our past client work here  </p>
-            <p><!-- paragraph 2 --></p>          
-          </div>
-          <br>          
-          <!-- scrollable gallery -->
-          <h3>Gallery</h3>
-          <div class="services-gallery-wrapper">
-            <div class="services-gallery">
-              ${servicesImages
-                .map(({file,cap}) =>
-                  `<figure class="gallery-item">
-                     <img src="assets/robotics/${file}" alt="${cap}"
-                          onclick="openLightbox(this.src)">
-                     <figcaption>${cap}</figcaption>
-                   </figure>`
-                ).join('')}
-            </div>
-          </div>
+			<!-- Metrics anchor (stat cards scroll here) -->
+			<div id="fintech-metrics"></div>
 
+			<div class="trades-kpi-strip" aria-label="KPI strip">
+			  <div id="trades-kpi-grid" class="trades-kpi-grid"></div>
+			</div>
 
-          <p class="service-keys">
-            <strong>Services:</strong>
-            <a class="service-key" href="https://docs.google.com/forms/d/e/1FAIpQLSc8HhR9nIEE-DBgtKq2CQ-Y4PJ8Mr0pbE07fzGE15FhcfqG6g/viewform?usp=header" target="_blank" rel="noopener noreferrer">
-              Consulting
-              <span class="service-tooltip">Hardvard, Fidelity, Techstars: Be our next collaborater. Fill in your information (below) or contact us directly to get started</span>
-            </a>,
-            <a class="service-key" href="https://en.wikipedia.org/wiki/Consultant" target="_blank" rel="noopener noreferrer">
-              Knowledge Graph DB
-              <span class="service-tooltip"><strong>Intelligent persistent data-store</strong>: We build machine learning intelligence into the foundation of your data pipeline so you get predictable, reliable intelligence downstream.</span>
-            </a>,
-            <a class="service-key" href="https://en.wikipedia.org/wiki/Quality_assurance" target="_blank" rel="noopener noreferrer">
-              QA
-              <span class="service-tooltip"><strong>AI/ML QA</strong> can be surprisingly different from normal. Leverage in-built elements of our event driven architecture for real-time detection, telemetry, pruning and improvement from the time of inception of your data.</span>
-            </a>, 
-            <a class="service-key" href="https://en.wikipedia.org/wiki/Access_control" target="_blank" rel="noopener noreferrer">
-              Access Control
-              <span class="service-tooltip">Beyond authentication, full <strong>ZeroTrust</strong>, real-time, tracking of assets and data <strong>telemetry</strong> built directly into your data pipeline</span>
-            </a>,
-            <a class="service-key" href="https://en.wikipedia.org/wiki/Open_source" target="_blank" rel="noopener noreferrer">
-              Open Src
-              <span class="service-tooltip">Most importantly, we build everything on open src so you have full transparency and ownership</span>
-            </a>,
-            <a class="service-key" href="javascript:void(0);" onclick="showSection('Tech')">
-              Infra.
-              <span class="service-tooltip">Robust infrastructure design and management.</span>
-            </a>
-          </p>
-          <style>
-            .about-columns {
-              display: flex;
-              gap: 2rem;
-              margin: 2rem 0;
-              flex-wrap: wrap;
-            }
-            .about-col {
-              flex: 1;
-              min-width: 280px;
-              text-align: left;
-            }
-          </style>
+            <!-- Archive (KEEP IDS) -->
+			<div id="trades-archive" class="trades-archive">
+			  <h3>Archive</h3>
+
+			  <div class="trades-archive-viewport">
+			    <button class="archive-nav archive-prev" aria-label="Previous" hidden>‹</button>
+
+			    <div id="trades-archive-track" class="trades-archive-track">
+			      <!-- thumbs injected here -->
+			    </div>
+
+			    <button class="archive-nav archive-next" aria-label="Next">›</button>
+			  </div>
+
+			  <div id="trades-archive-dropdown" class="trades-archive-dropdown" hidden>
+			    <label>
+			      Jump to date
+			      <select id="trades-archive-select"></select>
+			    </label>
+			  </div>
+
+			  <div class="trades-meta">
+			    <div><strong>Date:</strong> <span id="trades-date">—</span></div>
+			    <div><strong>Updated:</strong> <span id="trades-updated">—</span></div>
+			    <div><strong>Headline:</strong> <span id="trades-headline">—</span></div>
+			  </div>
+			</div>
+			<details class="fintech-tech" id="fintech-tech">
+			  <summary id="portfolio-top">Tech</summary>
+			  <div id="portfolio-content-top" aria-hidden="true" style="height:1px;"></div>
+
+			  <ul style="margin-top: 0.5rem;">
+			    <!-- First Portfolio Item: ETL Ingestion Engine -->
+			    <li id="portfolio-etl" style="list-style: disc; margin-bottom: 2rem;">
+			      <p style="margin-bottom: 0.5rem; font-size: 1.1rem; text-align: center;">
+			        <strong>ETL Ingestion Engine:</strong> Prior work with a DEI tech startup
+			        to build out their data infrastructure pipeline from crawling raw
+			        unstructured pdf data to building a basic KG database.
+			      </p>
+			      <div style="text-align: center;">
+			        <a href="https://github.com/JudeSafo/All_Language_Model" target="_blank" rel="noopener noreferrer">
+			          <img src="assets/gitPortfolio_esg.png" alt="All Language Model"
+			            style="max-width:80%; height:auto; border: 1px solid #ccc; border-radius: 4px;">
+			        </a>
+			      </div>
+			    </li>
+
+			    <!-- Second Portfolio Item: Protein Biomarker Indexing (Genomics Use Case) -->
+			    <li id="portfolio-genomics" style="list-style: disc; margin-bottom: 2rem;">
+			      <p style="margin-bottom: 0.5rem; font-size: 1.1rem; text-align: center;">
+			        <strong>Protein Biomarker Indexing:</strong> Engagmenet with a Harvard Genetics research lab,
+			        crawling PubMed articles to identify co-occurrences of diseases and biomarker
+			        conditions for potential overlapping treatment options.
+			      </p>
+			      <div style="text-align: center;">
+			        <a href="javascript:void(0)" onclick="showSection('OnePager')">
+			          <img src="assets/genomics_usecase.png" alt="Genomics Use Case"
+			            style="max-width:80%; height:auto; border: 1px solid #ccc; border-radius: 4px;">
+			        </a>
+			      </div>
+			    </li>
+
+			    <!-- Third Portfolio Item: Web Crawler -->
+			    <li id="portfolio-crawler" style="list-style: disc; margin-bottom: 2rem;">
+			      <p style="margin-bottom: 0.5rem; font-size: 1.1rem; text-align: center;">
+			        <strong>Web Crawler:</strong> Custom, open src search engine for curating and parsing
+			        unstructured pdf data (e.g. research, financials) for downstream applications.
+			      </p>
+			      <div style="text-align: center;">
+			        <img src="assets/haiphen-gif5.gif" alt="Haiphen AI Showcase"
+			          style="max-width:80%; height:auto; border: 1px solid #ccc; border-radius: 4px;">
+			      </div>
+			    </li>
+
+			    <!-- Fourth Portfolio Item: Distilled LLM -->
+			    <li style="list-style: disc; margin-bottom: 2rem;">
+			      <p style="margin-bottom: 0.5rem; font-size: 1.1rem;">
+			        <strong>Distilled RAG LLM:</strong> Custom open src LLM for specific business use cases,
+			        e.g. answering DEI questions.
+			      </p>
+			      <div style="text-align: center;">
+			        <img src="assets/haiphen-gif3.gif" alt="LLM"
+			          style="max-width:80%; height:auto; border: 1px solid #ccc; border-radius: 4px;">
+			      </div>
+			    </li>
+
+			    <!-- Fifth Portfolio Item: ZeroDays Follina Investigation -->
+			    <li id="portfolio-follina" style="list-style: disc; margin-bottom: 2rem;">
+			      <p style="margin-bottom: 0.5rem; font-size: 1.1rem; text-align: center;">
+			        <strong>ZeroDays Follina Investigation:</strong> An in-depth investigation
+			        of Confluence vulnerabilities with Follina, producing actionable security insights.
+			      </p>
+			      <div style="text-align: center;">
+			        <a href="javascript:void(0)" onclick="showSection('OnePager')">
+			          <img src="assets/haiphen-follina-screenshot.png" alt="ZeroDays Investigation"
+			            style="max-width:80%; height:auto; border: 1px solid #ccc; border-radius: 4px;">
+			        </a>
+			      </div>
+			    </li>
+			  </ul>
+			</details>
+
+          </section>
         `,
+		"Services": `
+		  <div class="snap-stack" data-snap-stack="services">
+		    <section class="snap-panel">
+		      <div id="services-plans-mount"></div>
+		    </section>
+
+		    <section class="snap-panel">
+		      <div id="services-hardtech-mount"></div>
+		    </section>
+		  </div>
+		`,
       "OnePager": `
+        <h2>Mission</h2>
+        <br>
+        <p>
+          <a href="https://haiphen.io" target="_blank" rel="noopener noreferrer"><strong>Haiphen</strong></a>[Hi-fen]: Haiphen is a <strong>signals intelligence</strong> software startup focused on delivering custom, open src solutions to various cloud, edge, and infra obstacles across a variety of technical, business, and scientific domains.
+        </p>
+
+        <div class="about-columns">
+          <div class="about-col">
+            <p>
+              We process 2M+ signals across the internet each day for downstream applications and usecases. With a deep foundation in <strong>Computational Linguistics</strong>, <strong>NLP</strong>, and <strong>ML</strong>, we geek out over building the plumbing and infra (e.g. data pipelines, ETL, entity extraction, pruning, clustering) that simplifies unwanted haziness into reliable API calls. Consider us your personal DBA (database admin) but with a domain expertise that actively persists in your data through its entire lifecycle.
+            </p>
+          </div>
+
+          <div class="about-col">
+            <p>
+              We're excited about the future: the more <strong>custom solutions</strong> we're able deliver, the closer we move towards our vision of productizing <strong>knowledge graphs</strong> into every company (without the headache). <i>Note</i>: we're intentional barebones as you may have noticed. We believe good software was and should be transparent, inspectable and about what's under the hood.
+            </p>
+          </div>
+        </div>
+        </div>
         <h2>Haiphen One Pager</h2>
         <div id="onepager-buttons" style="margin-bottom: 1rem;">
           <button onclick="toggleOnePager('default')">Genomics</button>
@@ -868,80 +1776,376 @@
           <button id="onepager-prev" class="onepager-arrow onepager-prev" onclick="changePage(-1)">&#10094;</button>
           <button id="onepager-next" class="onepager-arrow onepager-next" onclick="changePage(1)">&#10095;</button>
         </div>
-      `,
-      "Inventory": `
-        <h2>Portfolio</h2>
+          <!-- How it works (compact visual) -->
+          <div class="trades-panel">
+            <div class="panel-head">
+              <h3>How it works</h3>
+              <p class="trades-muted">Derivatives ingestion, processing pipeline (details expandable below).</p>
+            </div>
+
+            <div id="trades-pipeline" class="pipeline">
+              <div class="pipe-step">
+                <div class="pipe-node">1</div>
+                <div class="pipe-text">
+                  <div class="pipe-title">Ingest</div>
+                  <div class="pipe-sub">Market data + signals</div>
+                </div>
+              </div>
+              <div class="pipe-arrow">→</div>
+
+              <div class="pipe-step">
+                <div class="pipe-node">2</div>
+                <div class="pipe-text">
+                  <div class="pipe-title">Score</div>
+                  <div class="pipe-sub">Arb & risk filters</div>
+                </div>
+              </div>
+              <div class="pipe-arrow">→</div>
+
+              <div class="pipe-step">
+                <div class="pipe-node">3</div>
+                <div class="pipe-text">
+                  <div class="pipe-title">Execute</div>
+                  <div class="pipe-sub">Orders + guardrails</div>
+                </div>
+              </div>
+              <div class="pipe-arrow">→</div>
+
+              <div class="pipe-step">
+                <div class="pipe-node">4</div>
+                <div class="pipe-text">
+                  <div class="pipe-title">Monitor</div>
+                  <div class="pipe-sub">Telemetry + exits</div>
+                </div>
+              </div>
+              <div class="pipe-arrow">→</div>
+
+              <div class="pipe-step">
+                <div class="pipe-node">5</div>
+                <div class="pipe-text">
+                  <div class="pipe-title">Report</div>
+                  <div class="pipe-sub">KPIs + archive</div>
+                </div>
+              </div>
+            </div>
+
+
+            <br>
+            <!-- New Steps Row -->
+            <div class="steps-container">
+              <div class="step">
+                <a href="https://example.com/step1" target="_blank" rel="noopener noreferrer">
+                  <img src="assets/step1.svg" alt="Step 1">
+                </a>
+                <p>Diagnose &amp; Draft</p>
+              </div>
+              <div class="step">
+                <a href="https://example.com/step2" target="_blank" rel="noopener noreferrer">
+                  <img src="assets/step2.svg" alt="Step 2">
+                </a>
+                <p>Execute &amp; Enrich</p>
+              </div>
+              <div class="step">
+                <a href="https://example.com/step3" target="_blank" rel="noopener noreferrer">
+                  <img src="assets/step3.svg" alt="Step 3">
+                </a>
+                <p>Review &amp; Revise</p>
+              </div>
+            </div>
+            <br>
+
+            <div class="trades-accordions">
+              <details class="acc" open>
+                <summary>Risk posture & controls</summary>
+                <ul>
+                  <li><strong>Intraday only:</strong> no overnight holdings; exposure is exited daily.</li>
+                  <li><strong>Speed-first strategy:</strong> short-lived positions, frequent reuse of edges.</li>
+                  <li><strong>Monitoring & exits:</strong> automated close logic + portfolio teardown.</li>
+                  <li><em>(You can expand this list with your real controls: locks, limits, slippage checks, etc.)</em></li>
+                </ul>
+              </details>
+
+              <details class="acc">
+                <summary>What these metrics represent</summary>
+                <p class="trades-muted" style="margin-top:.5rem;">
+                  The table below is populated from daily runs. It summarizes execution volume, P&L deltas,
+                  and stability indicators. Archive cards allow day-to-day comparison.
+                </p>
+              </details>
+            </div>
+          </div>          
+        <div class="about-columns">
+        <!-- about/paragraph placeholders -->
+        <div class="services-about">
+          <h3>Services</h3>
+          <p>The current landscape of 'Tech' problems go beyond traditional verticals that can be arbitrarily segregated by legacy labels and/or specialties. We've taken a 'hacker-centric', solve first ask later, domain agnostic approach of simply meeting problems where they reside. That can be anywhere from the knowledge graph db powering a Harvard research lab to the firmware needed to customize your lawn mower. We freelance with commercial and residential clients putting out current fires wherever they reside. This removes the frothy silicon valley VC environment of contrived 'luxury' solutions to problems that don't exist.</p>
+          <ul class="inline-bullets">
+            <li><a href="https://example.com/robotics" target="_blank" rel="noopener noreferrer">Robotics</a></li>
+            <li><a href="https://example.com/opsec" target="_blank" rel="noopener noreferrer">Operational Security</a></li>
+            <li><a href="https://example.com/event-detection" target="_blank" rel="noopener noreferrer">Event Detection</a></li>
+            <li><a href="https://example.com/welding" target="_blank" rel="noopener noreferrer">Decision Engine</a></li>
+            <li><a href="https://example.com/carpentry" target="_blank" rel="noopener noreferrer">Dissasemblers</a></li>
+          </ul>            
+        </div>
+
+        <div class="tech-container">
+        <div class="tech-right svg-stack" style="display:flex; justify-content:center; align-items:center; padding:1rem 0;">
+            <object type="image/svg+xml" data="assets/signal_chain.svg" class="tech-svg">
+              Your browser does not support SVG.
+            </object>
+            <br>
+            <object type="image/svg+xml" data="assets/data_sorter1.svg" class="tech-svg">
+              Your browser does not support SVG.
+            </object>              
+          </div>
+          <div class="tech-left">
+            <h3 id="services-signals">Signals</h3>
+            <p style="text-indent: 2em;">
+              The difference between the Google(s), Amazon(s), Twitter(s) big tech giants and the consumers using those products comes down to signals. Users are always handicapped by an asymmetry in information and ability to act on them. This is not un-intentional. 
+            </p>
+            <p style="text-indent: 2em;">
+            The infrastructure needed to <strong>scale</strong>, process and automate your <strong>decision making</strong> are the cornerstone of any business no matter the industry or the product. We're building infrastructure to make this accessible to every participant on the internet, as it should be.
+            </p>
+            <br>
+            <div class="tech-bullets">
+              <ul>
+                <li>Decision engines</li>
+                <li>Algorithmic day trading</li>
+                <li>Risk analysis</li>
+                <li>Portfolio optimization</li>
+                <li>News alert feed</li>
+                <li>Underwriting</li>
+                <li>Data pruning</li>
+                <li>Data enrichment</li>
+                <li>Concept mapping</li>
+                <li>Domain segregation</li>
+                <li>QA</li>
+              </ul>
+            </div> 
+            <br>             
+            <p>
+              <strong>Note</strong>: On a given day, in a given month of a given year our [redacted] engine processed 268,640 signals, flagged 5821 opportunities, executed on 980 events and saw a +7.80% appreciation in the value of those assets. You can envision applying this any speculative industry where returns are driven event driven input.
+            </p>              
+          </div>            
+        </div>
+
+        <style>
+          .tech-container {
+            display: flex; gap: 2rem; align-items: center;
+            justify-content: center; flex-wrap: wrap; text-align: left;
+            margin-top: 2rem;
+          }
+          .tech-left {
+            flex: 1; min-width: 280px;
+          }
+          .tech-right {
+            flex: 1; min-width: 280px;
+          }
+          .tech-list {
+            list-style-type: disc; padding-left: 20px;
+            font-size: 1rem; line-height: 1.8;
+          }
+          .tech-list li i {
+            font-style: italic; font-weight: normal;
+          }
+        </style>          
+
+        <div class="tech-container">
+          <div class="tech-left">
+            <h3 id="ethos">Ethos</h3>
+            <p style="text-indent: 2em;">
+              <strong>Open Source</strong> everything: We spent years building our own stand alone OS environment
+              to train, test and deploy all of our models. Hence we're able to provide unmatched
+              value proposition: chain of custody insight and transparency into every asset
+              build so you minimize <strong>vulnerabilities</strong>. That includes the website your viewing now. 
+              All the code available via github. You're free to contribute as you see fit. 
+            </p>
+            <br>
+            <h3>Stack</h3>
+            <ul class="tech-list">
+              <li><i>Backend:</i> Apache Framework, Redis, Postgres</li>
+              <li><i>Data:</i> Scala, HDFS, Postgres</li>
+              <li><i>Network:</i> Istio, SD-WAN solutions</li>
+              <li><i>Platform:</i> Ansible, Terraform, Kubernetes</li>
+              <li><i>Access Control:</i> Keycloak, OpenFGA</li>
+              <li><i>Telemetry:</i> Prometheus, Grafana, ELK Stack</li>
+            </ul>
+            <br>
+            <h3>Secure</h3>
+            <p style="text-indent: 2em;">
+              Industry best practices, zero-trust <strong>security protocols</strong> (e.g. SALSA, GUAC) alongside 
+              with proactive threat detection and mitigation to protect
+              your critical systems.
+            </p>
+          </div>
+          <div class="tech-right">
+            <object type="image/svg+xml" data="assets/tech_animated.svg" class="tech-svg">
+              Your browser does not support SVG.
+            </object>
+          </div>
+        </div>
+        <style>
+          .tech-container {
+            display: flex; gap: 2rem; align-items: center;
+            justify-content: center; flex-wrap: wrap; text-align: left;
+            margin-top: 2rem;
+          }
+          .tech-left {
+            flex: 1; min-width: 280px;
+          }
+          .tech-right {
+            flex: 1; min-width: 280px;
+          }
+          .tech-list {
+            list-style-type: disc; padding-left: 20px;
+            font-size: 1rem; line-height: 1.8;
+          }
+          .tech-list li i {
+            font-style: italic; font-weight: normal;
+          }
+        </style>
+        <div id="lightbox" onclick="closeLightbox()">
+          <img src="" alt="preview">
+        </div>
         <br>
-        <ul>
-          <!-- First Portfolio Item: ETL Ingestion Engine -->
-          <li style="list-style: disc; margin-bottom: 2rem;">
-            <p style="margin-bottom: 0.5rem; font-size: 1.1rem; text-align: center;">
-              <strong>ETL Ingestion Engine:</strong> Prior work with a DEI tech startup
-              to build out their data infrastructure pipeline from crawling raw
-              unstructured pdf data to building a basic KG database.
-            </p>
-            <div style="text-align: center;">
-              <a href="https://github.com/JudeSafo/All_Language_Model" target="_blank" rel="noopener noreferrer">
-                <img src="assets/gitPortfolio_esg.png" alt="All Language Model"
-                  style="max-width:80%; height:auto; border: 1px solid #ccc; border-radius: 4px;">
-              </a>
-            </div>
-          </li>
-          
-          <!-- Second Portfolio Item: Protein Biomarker Indexing (Genomics Use Case) -->
-          <li style="list-style: disc; margin-bottom: 2rem;">
-            <p style="margin-bottom: 0.5rem; font-size: 1.1rem; text-align: center;">
-              <strong>Protein Biomarker Indexing:</strong> Engagmenet with a Harvard Genetics research lab,
-              crawling PubMed articles to identify co-occurrences of diseases and biomarker
-              conditions for potential overlapping treatment options.
-            </p>
-            <div style="text-align: center;">
-              <a href="javascript:void(0)" onclick="showSection('OnePager')">
-                <img src="assets/genomics_usecase.png" alt="Genomics Use Case"
-                  style="max-width:80%; height:auto; border: 1px solid #ccc; border-radius: 4px;">
-              </a>
-            </div>
-          </li>
-          
-          <!-- Third Portfolio Item: Web Crawler -->
-          <li style="list-style: disc; margin-bottom: 2rem;">
-            <p style="margin-bottom: 0.5rem; font-size: 1.1rem; text-align: center;">
-              <strong>Web Crawler:</strong> Custom, open src search engine for curating and parsing
-              unstructured pdf data (e.g. research, financials) for downstream applications.
-            </p>
-            <div style="text-align: center;">
-              <img src="assets/haiphen-gif5.gif" alt="Haiphen AI Showcase"
-                style="max-width:80%; height:auto; border: 1px solid #ccc; border-radius: 4px;">
-            </div>
-          </li>
-  
-          <!-- Fourth Portfolio Item: Distilled LLM -->
-          <li style="list-style: disc; margin-bottom: 2rem;">
-            <p style="margin-bottom: 0.5rem; font-size: 1.1rem;">
-              <strong>Distilled RAG LLM:</strong> Custom open src LLM for specific business use cases,
-              e.g. answering DEI questions.
-            </p>
-            <div style="text-align: center;">
-              <img src="assets/haiphen-gif3.gif" alt="LLM"
-                style="max-width:80%; height:auto; border: 1px solid #ccc; border-radius: 4px;">
-            </div>
-          </li>
-          
-          <!-- Fifth Portfolio Item: ZeroDays Follina Investigation -->
-          <li style="list-style: disc; margin-bottom: 2rem;">
-            <p style="margin-bottom: 0.5rem; font-size: 1.1rem; text-align: center;">
-              <strong>ZeroDays Follina Investigation:</strong> An in-depth investigation
-              of Confluence vulnerabilities with Follina, producing actionable security insights.
-            </p>
-            <div style="text-align: center;">
-              <a href="javascript:void(0)" onclick="showSection('OnePager')">
-                <img src="assets/haiphen-follina-screenshot.png" alt="ZeroDays Investigation"
-                  style="max-width:80%; height:auto; border: 1px solid #ccc; border-radius: 4px;">
-              </a>
-            </div>
-          </li>
-        </ul>
+        <div class="services-about">
+          <h3>Collaborate</h3>
+          <p>Contact us here, schedule a service appointment here, look through our past client work here  </p>
+          <p><!-- paragraph 2 --></p>          
+        </div>
+        <br>          
+        <!-- scrollable gallery -->
+        <h3 id="services-gallery">Gallery</h3>
+        <div class="services-gallery-wrapper">
+          <div class="services-gallery">
+            ${servicesImages
+              .map(({file,cap}) =>
+                `<figure class="gallery-item">
+                  <img src="assets/robotics/${file}" alt="${cap}"
+                        onclick="openLightbox(this.src)">
+                  <figcaption>${cap}</figcaption>
+                </figure>`
+              ).join('')}
+          </div>
+        </div>
+
+
+        <p class="service-keys">
+          <strong>Services:</strong>
+          <a class="service-key" href="https://docs.google.com/forms/d/e/1FAIpQLSc8HhR9nIEE-DBgtKq2CQ-Y4PJ8Mr0pbE07fzGE15FhcfqG6g/viewform?usp=header" target="_blank" rel="noopener noreferrer">
+            Consulting
+            <span class="service-tooltip">Hardvard, Fidelity, Techstars: Be our next collaborater. Fill in your information (below) or contact us directly to get started</span>
+          </a>,
+          <a class="service-key" href="https://en.wikipedia.org/wiki/Consultant" target="_blank" rel="noopener noreferrer">
+            Knowledge Graph DB
+            <span class="service-tooltip"><strong>Intelligent persistent data-store</strong>: We build machine learning intelligence into the foundation of your data pipeline so you get predictable, reliable intelligence downstream.</span>
+          </a>,
+          <a class="service-key" href="https://en.wikipedia.org/wiki/Quality_assurance" target="_blank" rel="noopener noreferrer">
+            QA
+            <span class="service-tooltip"><strong>AI/ML QA</strong> can be surprisingly different from normal. Leverage in-built elements of our event driven architecture for real-time detection, telemetry, pruning and improvement from the time of inception of your data.</span>
+          </a>, 
+          <a class="service-key" href="https://en.wikipedia.org/wiki/Access_control" target="_blank" rel="noopener noreferrer">
+            Access Control
+            <span class="service-tooltip">Beyond authentication, full <strong>ZeroTrust</strong>, real-time, tracking of assets and data <strong>telemetry</strong> built directly into your data pipeline</span>
+          </a>,
+          <a class="service-key" href="https://en.wikipedia.org/wiki/Open_source" target="_blank" rel="noopener noreferrer">
+            Open Src
+            <span class="service-tooltip">Most importantly, we build everything on open src so you have full transparency and ownership</span>
+          </a>,
+          <a class="service-key" href="javascript:void(0);" onclick="showSection('Tech')">
+            Infra.
+            <span class="service-tooltip">Robust infrastructure design and management.</span>
+          </a>
+        </p>
+        <style>
+          .about-columns {
+            display: flex;
+            gap: 2rem;
+            margin: 2rem 0;
+            flex-wrap: wrap;
+          }
+          .about-col {
+            flex: 1;
+            min-width: 280px;
+            text-align: left;
+          }
+        </style>        
+
+		<ul style="margin-top: 0.5rem;">
+		  <!-- First Portfolio Item: ETL Ingestion Engine -->
+		  <li style="list-style: disc; margin-bottom: 2rem;">
+		    <p style="margin-bottom: 0.5rem; font-size: 1.1rem; text-align: center;">
+		      <strong>ETL Ingestion Engine:</strong> Prior work with a DEI tech startup
+		      to build out their data infrastructure pipeline from crawling raw
+		      unstructured pdf data to building a basic KG database.
+		    </p>
+		    <div style="text-align: center;">
+		      <a href="https://github.com/JudeSafo/All_Language_Model" target="_blank" rel="noopener noreferrer">
+		        <img src="assets/gitPortfolio_esg.png" alt="All Language Model"
+		          style="max-width:80%; height:auto; border: 1px solid #ccc; border-radius: 4px;">
+		      </a>
+		    </div>
+		  </li>
+
+		  <!-- Second Portfolio Item: Protein Biomarker Indexing (Genomics Use Case) -->
+		  <li style="list-style: disc; margin-bottom: 2rem;">
+		    <p style="margin-bottom: 0.5rem; font-size: 1.1rem; text-align: center;">
+		      <strong>Protein Biomarker Indexing:</strong> Engagmenet with a Harvard Genetics research lab,
+		      crawling PubMed articles to identify co-occurrences of diseases and biomarker
+		      conditions for potential overlapping treatment options.
+		    </p>
+		    <div style="text-align: center;">
+		      <a href="javascript:void(0)" onclick="showSection('OnePager')">
+		        <img src="assets/genomics_usecase.png" alt="Genomics Use Case"
+		          style="max-width:80%; height:auto; border: 1px solid #ccc; border-radius: 4px;">
+		      </a>
+		    </div>
+		  </li>
+
+		  <!-- Third Portfolio Item: Web Crawler -->
+		  <li style="list-style: disc; margin-bottom: 2rem;">
+		    <p style="margin-bottom: 0.5rem; font-size: 1.1rem; text-align: center;">
+		      <strong>Web Crawler:</strong> Custom, open src search engine for curating and parsing
+		      unstructured pdf data (e.g. research, financials) for downstream applications.
+		    </p>
+		    <div style="text-align: center;">
+		      <img src="assets/haiphen-gif5.gif" alt="Haiphen AI Showcase"
+		        style="max-width:80%; height:auto; border: 1px solid #ccc; border-radius: 4px;">
+		    </div>
+		  </li>
+
+		  <!-- Fourth Portfolio Item: Distilled LLM -->
+		  <li style="list-style: disc; margin-bottom: 2rem;">
+		    <p style="margin-bottom: 0.5rem; font-size: 1.1rem;">
+		      <strong>Distilled RAG LLM:</strong> Custom open src LLM for specific business use cases,
+		      e.g. answering DEI questions.
+		    </p>
+		    <div style="text-align: center;">
+		      <img src="assets/haiphen-gif3.gif" alt="LLM"
+		        style="max-width:80%; height:auto; border: 1px solid #ccc; border-radius: 4px;">
+		    </div>
+		  </li>
+
+		  <!-- Fifth Portfolio Item: ZeroDays Follina Investigation -->
+		  <li style="list-style: disc; margin-bottom: 2rem;">
+		    <p style="margin-bottom: 0.5rem; font-size: 1.1rem; text-align: center;">
+		      <strong>ZeroDays Follina Investigation:</strong> An in-depth investigation
+		      of Confluence vulnerabilities with Follina, producing actionable security insights.
+		    </p>
+		    <div style="text-align: center;">
+		      <a href="javascript:void(0)" onclick="showSection('OnePager')">
+		        <img src="assets/haiphen-follina-screenshot.png" alt="ZeroDays Investigation"
+		          style="max-width:80%; height:auto; border: 1px solid #ccc; border-radius: 4px;">
+		      </a>
+		    </div>
+		  </li>
+		</ul>        
       `,
+	  "FAQ": `
+	    <section id="faq">
+	      <div id="faq-mount"></div>
+	    </section>
+	  `,
       "Tech": `
         <h2>Tech Stack</h2>
         <div class="tech-container">
@@ -998,39 +2202,312 @@
           }
         </style>
       `,
-      "Contact": `
-        <h2>Contact Us</h2>
-        <p>Founder: <a href="https://linkedin.com/in/judesafo"
-          target="_blank" rel="noopener noreferrer">Jude Safo</a></p>
-        <p>Email: <a href="mailto:pi@haiphenai.com">pi@haiphenai.com</a></p>
-        <p>Phone: (512) 910-4544</p>
-        <p>Address: Manhattan, New York, USA</p>
-        <br><br>
-        <div style="text-align: center;">
-          <a href="https://docs.google.com/forms/d/e/1FAIpQLSc8HhR9nIEE-DBgtKq2CQ-Y4PJ8Mr0pbE07fzGE15FhcfqG6g/viewform?usp=header"
-            target="_blank" rel="noopener noreferrer">
-            <img src="assets/nature.png" alt="Nature" style="max-width:80%; border-radius: 4px;">
-          </a>
-        </div>
-        <br><br>
-        <p>"No man is a failure who has friends" - Angel Clarence</p>
-      `
+	  "Contact": `
+	    <section id="contact-us">
+	      <div id="contact-form-mount"></div>
+	    </section>
+	  `,
+      "Docs": `
+        <section id="docs-top">
+          <div id="api-docs-mount"></div>
+        </section>
+      `,      
     };
     
     /* ------------------------------------------------------------
        4) Show Section (Accordion-Like Display)
     ------------------------------------------------------------ */
-    function showSection(sectionName) {
-      const contentWidget = document.getElementById("content-widget");
-      contentWidget.innerHTML = sectionContent[sectionName] || "<p>No content available.</p>";
-      contentWidget.classList.add("active");
-      // If OnePager is loaded, reset to page 0 & show the first page
-      if (sectionName === "OnePager") {
-        currentPageIndex = 0;
-        renderOnePagerPage();
-      }
-      contentWidget.scrollIntoView({ behavior: "smooth" });
+	function deriveTradesScreenshotUrl({ json, screenshot, date }) {
+	  // If index provides a screenshot, use it.
+	  if (screenshot) return screenshot;
+
+	  // If archive json is like: assets/trades/archive/2025-12-16.json
+	  // then focus screenshot should be: assets/trades/archive/2025-12-16.png
+	  if (json && json.endsWith('.json')) return json.replace(/\.json$/i, '.png');
+
+	  // Fallback (latest)
+	  return 'assets/trades/alpaca_screenshot.png';
+	}    
+    function scrollToWithHeaderOffset(targetEl, extra = 12) {
+      if (!targetEl) return;
+
+      const header =
+        document.querySelector('.site-header') ||
+        document.querySelector('#site-header .site-header') ||
+        document.querySelector('nav.navbar');
+
+      const headerH =
+        header?.getBoundingClientRect().height ||
+        parseInt(getComputedStyle(document.documentElement).getPropertyValue('--header-h') || '70', 10) ||
+        70;
+
+      const y = window.scrollY + targetEl.getBoundingClientRect().top - headerH - extra;
+      window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
     }
+
+	/* ------------------------------------------------------------
+	   Snap stacks: highlight the section currently in view
+	------------------------------------------------------------ */
+	function initSnapStacks(rootEl = document) {
+	  const stacks = rootEl.querySelectorAll('[data-snap-stack]');
+	  stacks.forEach((stack) => {
+	    // Avoid double wiring
+	    if (stack.__snapWired) return;
+	    stack.__snapWired = true;
+
+	    const panels = Array.from(stack.querySelectorAll('.snap-panel'));
+	    if (panels.length === 0) return;
+
+	    // Default active = first
+	    panels.forEach((p, i) => p.classList.toggle('is-active', i === 0));
+
+	    const obs = new IntersectionObserver(
+	      (entries) => {
+	        // pick the most visible panel as active
+	        let best = null;
+	        for (const e of entries) {
+	          if (!best || e.intersectionRatio > best.intersectionRatio) best = e;
+	        }
+	        if (!best) return;
+
+	        panels.forEach((p) => p.classList.remove('is-active'));
+	        best.target.classList.add('is-active');
+	      },
+	      {
+	        root: stack,
+	        threshold: [0.35, 0.5, 0.65, 0.8],
+	      }
+	    );
+
+	    panels.forEach((p) => obs.observe(p));
+
+	    // keep a handle for cleanup if you ever need it
+	    stack.__snapObserver = obs;
+	  });
+	}
+
+	function showSection(sectionName) {
+	  const contentWidget = document.getElementById("content-widget");
+	  if (!contentWidget) return;
+
+	  // Normalize + alias (prevents case/whitespace mismatches from menu components)
+	  const raw = String(sectionName || "");
+	  const key = raw.trim();
+
+	  const ALIASES = {
+	    faq: "FAQ",
+	    Faq: "FAQ",
+	    "Faq ": "faq",
+	    collaborate: "OnePager",
+	    Collaborate: "OnePager",
+	    fintech: "Trades",
+	    Fintech: "Trades",
+	  };
+
+	  const resolved = ALIASES[key] || ALIASES[key.toLowerCase()] || key;
+
+	  const html = sectionContent[resolved];
+	  contentWidget.innerHTML = html || `<p>No content available.</p>`;
+	  contentWidget.classList.add("active");
+
+	  initSnapStacks(contentWidget);
+
+	  // Section-specific bootstrapping
+	  if (resolved === "Services") {
+	    (async () => {
+	      try { await window.HAIPHEN?.loadServicesPlans?.(); }
+	      catch (e) { console.warn("[Services] loadServicesPlans failed", e); }
+	      initSnapStacks(contentWidget);
+	    })();
+	  }
+
+	  if (resolved === "FAQ") {
+	    (async () => {
+	      try { await window.HAIPHEN?.loadFAQ?.(); }
+	      catch (e) { console.warn("[FAQ] loadFAQ failed", e); }
+	    })();
+	  }
+
+	  if (resolved === "OnePager") {
+	    currentPageIndex = 0;
+	    renderOnePagerPage();
+	  }
+
+	  // Default scroll behavior for non-Trades sections
+	  if (resolved === "FAQ") {
+	    (async () => {
+	      try {
+	        // 1) Mount FAQ content (async)
+	        await window.HAIPHEN?.loadFAQ?.();
+	      } catch (e) {
+	        console.warn("[FAQ] loadFAQ failed", e);
+	      }
+
+	      // 2) After the DOM actually exists + has size, scroll to it
+	      requestAnimationFrame(() => {
+	        const faqEl = document.getElementById("faq") || document.getElementById("faq-mount") || contentWidget;
+	        scrollToWithHeaderOffset(faqEl, 12);
+	      });
+	    })();
+
+	    // Important: don't fall through to the generic scroll below
+	    return;
+	  }
+
+	  // Trades: wait for async content + DOM inflation, then scroll
+	  if (resolved === "Trades") {
+	    (async () => {
+	      try {
+	        await loadTradesData();
+	      } catch (e) {
+	        console.warn("[Trades] loadTradesData failed", e);
+	      }
+
+	      requestAnimationFrame(() => {
+	        const tradesTop = document.getElementById("trades-top");
+	        scrollToWithHeaderOffset(tradesTop || contentWidget, 12);
+
+	        // wire the Tech dropdown behavior now that Trades DOM exists
+	        initFintechTechDropdown(contentWidget);
+	      });
+	    })();
+
+	    return;
+	  }
+	  if (resolved === "Docs") {
+	    (async () => {
+	      try {
+	        await window.HAIPHEN?.loadApiDocs?.('#api-docs-mount');
+	      } catch (e) {
+	        console.warn("[Docs] loadApiDocs failed", e);
+	      }
+
+	      requestAnimationFrame(() => {
+	        const top = document.getElementById("docs-top") || contentWidget;
+	        scrollToWithHeaderOffset(top, 12);
+	      });
+	    })();
+
+	    return;
+	  }	  
+	  if (resolved === "Contact") {
+	    (async () => {
+	      try {
+	        const mount = document.querySelector("#contact-form-mount");
+	        const resp = await fetch("components/contact-form/contact-form.html", { cache: "no-store" });
+	        mount.innerHTML = await resp.text();
+	      } catch (e) {
+	        console.warn("[Contact] failed to load contact form", e);
+	      }
+
+	      requestAnimationFrame(() => {
+	        const top = document.getElementById("contact-us") || contentWidget;
+	        scrollToWithHeaderOffset(top, 12);
+	      });
+	    })();
+
+	    return;
+	  }
+	  // Non-Trades: default scroll to widget top
+	  requestAnimationFrame(() => {
+	    scrollToWithHeaderOffset(contentWidget, 12);
+	  });
+	}
+
+	// ------------------------------------------------------------
+	// Hash routing (shareable URLs for injected sections)
+	// ------------------------------------------------------------
+	const SECTION_HASH = {
+	  Trades: 'fintech',
+	  Services: 'services',
+	  OnePager: 'collaborate',
+	  FAQ: 'faq',
+	  Contact: 'contact-us',
+	  Docs: 'docs',
+	};
+
+	const HASH_SECTION = Object.fromEntries(
+	  Object.entries(SECTION_HASH).map(([k, v]) => [v, k])
+	);
+
+	function clearHash({ replace = false } = {}) {
+	  const url = window.location.pathname + window.location.search;
+	  if (replace) history.replaceState(null, '', url);
+	  else history.pushState(null, '', url);
+	}
+
+	function activateSectionMenuFor(sectionName) {
+	  // Let section-menu own the styling if it’s loaded
+	  const api = window.HAIPHEN?.SectionMenu;
+	  if (api?.setActive) api.setActive(sectionName);
+	}
+
+	function parseHash() {
+	  // supports: #faq or #faq:faq-some-id
+	  const raw = String(window.location.hash || "").replace(/^#/, "").trim();
+	  if (!raw) return { slug: "", subId: "" };
+
+	  const [slugPart, subPart] = raw.split(":");
+	  return {
+	    slug: (slugPart || "").toLowerCase(),
+	    subId: (subPart || "").trim(),
+	  };
+	}
+
+	function setHashForSection(sectionName, subId = "", { replace = false } = {}) {
+	  const slug = SECTION_HASH[sectionName];
+	  if (!slug) return;
+
+	  const next = subId ? `#${slug}:${subId}` : `#${slug}`;
+	  if (window.location.hash === next) return;
+
+	  if (replace) {
+	    // Replace without adding a history entry, but still update the hash.
+	    history.replaceState(null, "", next);
+
+	    // replaceState does NOT trigger hashchange; call router manually.
+	    routeFromHash();
+	  } else {
+	    // This WILL trigger `hashchange` and therefore `routeFromHash()`.
+	    window.location.hash = next;
+	  }
+	}
+
+	function routeFromHash() {
+	  const { slug, subId } = parseHash();
+
+	  if (!slug) {
+	    activateSectionMenuFor(null);
+	    return;
+	  }
+
+	  const section = HASH_SECTION[slug];
+	  if (!section) return;
+
+	  if (typeof window.showSection === "function") {
+	    window.showSection(section);
+	    activateSectionMenuFor(section);
+	  }
+
+	  if (!subId) return;
+
+	  // Wait for injected DOM, then scroll to subId if present
+	  requestAnimationFrame(() => {
+	    requestAnimationFrame(() => {
+	      const el = document.getElementById(subId);
+	      if (el) scrollToWithHeaderOffset(el, 12);
+	    });
+	  });
+	}
+
+	window.addEventListener("hashchange", routeFromHash);
+	document.addEventListener("DOMContentLoaded", routeFromHash);
+	// Also: make resetLanding clear the hash so home is shareable as the base URL
+	const _resetLanding = window.resetLanding;
+	window.resetLanding = function resetLandingWithHashClear() {
+	  clearHash({ replace: true });
+	  if (typeof _resetLanding === 'function') _resetLanding();
+	};
 
     /* ------------------------------------------------------------
        5) Reset Landing
@@ -1057,6 +2534,199 @@
       }, 200);
     }
 
+	function initFintechTechDropdown(root = document) {
+	  const details = root.querySelector('#fintech-tech');
+	  const summary = root.querySelector('#portfolio-top');
+	  if (!details || !summary) return;
+
+	  // Avoid double wiring
+	  if (details.__wired) return;
+	  details.__wired = true;
+
+	  // 1) On open, scroll Tech into focus
+	  details.addEventListener('toggle', () => {
+	    if (details.open) {
+	      requestAnimationFrame(() => {
+	        scrollToWithHeaderOffset(summary, 12);
+	        summary.focus?.({ preventScroll: true });
+	      });
+	    }
+	  });
+
+	  // 2) Collapse when user scrolls UP to any content above Tech title
+	  let lastY = window.scrollY;
+
+	  const onScroll = () => {
+	    const y = window.scrollY;
+	    const scrollingUp = y < lastY;
+	    lastY = y;
+
+	    if (!details.open || !scrollingUp) return;
+
+	    const header =
+	      document.querySelector('.site-header') ||
+	      document.querySelector('#site-header .site-header') ||
+	      document.querySelector('nav.navbar');
+
+	    const headerH =
+	      header?.getBoundingClientRect().height ||
+	      parseInt(getComputedStyle(document.documentElement).getPropertyValue('--header-h') || '70', 10) ||
+	      70;
+
+	    const top = summary.getBoundingClientRect().top;
+
+	    // If the Tech summary is below the header line while scrolling up,
+	    // we are "above" Tech => collapse for legibility.
+	    if (top > headerH + 16) {
+	      details.open = false;
+	    }
+	  };
+
+	  window.addEventListener('scroll', onScroll, { passive: true });
+	  details.__teardown = () => window.removeEventListener('scroll', onScroll);
+	}
+    /* ------------------------------------------------------------
+       Session widget: detect login state & update navbar
+    ------------------------------------------------------------ */
+    const AUTH_ORIGIN = 'https://auth.haiphen.io';  // change if needed
+
+	async function updateSessionWidget() {
+	  const slot = document.getElementById('session-slot');
+	  if (!slot) return;
+
+	  function showLogin() {
+	    slot.innerHTML = `<a href="${AUTH_ORIGIN}/login" class="login-btn">Login</a>`;
+	  }
+
+	  try {
+	    const resp = await fetch(`${AUTH_ORIGIN}/me`, { credentials: 'include' });
+	    if (!resp.ok) {
+	      showLogin();
+	      return;
+	    }
+
+	    const user = await resp.json();
+	    const displayName = user.name || user.sub || 'User';
+	    const email = user.email || '—';
+	    const avatar = user.avatar || 'assets/profile.png';
+
+	    const apiCredHtml = window.HAIPHEN?.SessionProfileTemplate?.apiCredBlockHtml?.() || '';
+
+	    slot.innerHTML = `
+	      <div class="session-menu">
+	        <button class="session-pill" type="button" aria-haspopup="true" aria-expanded="false">
+	          <img class="session-avatar" src="${avatar}" alt="">
+	          <span class="session-name">${escapeHtml(displayName)}</span>
+	        </button>
+
+	        <div class="session-dropdown" role="menu" aria-label="Session menu">
+	          <div class="session-tabs" role="tablist" aria-label="Session tabs">
+	            <button class="session-tab" type="button" role="tab" aria-selected="true" data-tab="profile">Profile</button>
+	            <button class="session-tab" type="button" role="tab" aria-selected="false" data-tab="account">Account</button>
+	          </div>
+
+	          <div class="session-panel" role="tabpanel" data-panel="profile">
+	            ${apiCredHtml}
+	          </div>
+
+	          <div class="session-panel" role="tabpanel" data-panel="account" hidden>
+	            <div style="padding:12px">
+	              <div style="font-weight:900; margin-bottom:6px;">Signed in</div>
+	              <div class="api-muted" style="line-height:1.6;">
+	                <div><strong>Name:</strong> ${escapeHtml(displayName)}</div>
+	                <div><strong>Email:</strong> ${escapeHtml(email)}</div>
+	              </div>
+	              <div style="margin-top:10px; display:flex; gap:10px; justify-content:flex-end;">
+	                <a class="api-btn api-btn-ghost" href="${AUTH_ORIGIN}/logout">Logout</a>
+	              </div>
+	            </div>
+	          </div>
+	        </div>
+	      </div>
+	    `;
+
+	    wireSessionDropdown(slot);
+
+	    // Hydrate the API cred block (only when logged in; entitlement gating handled server-side)
+	    await hydrateApiCredInContainer(slot);
+
+	  } catch (err) {
+	    console.warn('[session] failed to fetch /me', err);
+	    showLogin();
+	  }
+	}
+
+	function wireSessionDropdown(root) {
+	  const menu = root.querySelector('.session-menu');
+	  const trigger = root.querySelector('.session-pill');
+	  const dropdown = root.querySelector('.session-dropdown');
+	  if (!menu || !trigger || !dropdown) return;
+
+	  // aria-expanded: reflect hover/focus state
+	  const setExpanded = (v) => trigger.setAttribute('aria-expanded', v ? 'true' : 'false');
+	  menu.addEventListener('mouseenter', () => setExpanded(true));
+	  menu.addEventListener('mouseleave', () => setExpanded(false));
+	  trigger.addEventListener('focus', () => setExpanded(true));
+	  menu.addEventListener('focusout', () => setExpanded(false));
+
+	  // Tabs
+	  const tabs = Array.from(root.querySelectorAll('.session-tab'));
+	  const panels = Array.from(root.querySelectorAll('.session-panel'));
+
+	  function activate(tabName) {
+	    tabs.forEach((t) => t.setAttribute('aria-selected', t.dataset.tab === tabName ? 'true' : 'false'));
+	    panels.forEach((p) => {
+	      const is = p.dataset.panel === tabName;
+	      p.hidden = !is;
+	    });
+	  }
+
+	  tabs.forEach((t) => {
+	    t.addEventListener('click', () => activate(t.dataset.tab));
+	  });
+
+	  // ESC closes (same vibe as your header esc)
+	  window.addEventListener('keydown', (e) => {
+	    if (e.key === 'Escape') setExpanded(false);
+	  });
+	}
+
+	// tiny helper: re-use your existing escapeHtml if you have it; otherwise add:
+	function escapeHtml(s) {
+	  return String(s ?? '')
+	    .replaceAll('&', '&amp;')
+	    .replaceAll('<', '&lt;')
+	    .replaceAll('>', '&gt;')
+	    .replaceAll('"', '&quot;')
+	    .replaceAll("'", '&#039;');
+	}
+
+    // run on load & periodically refresh
+    document.addEventListener('DOMContentLoaded', updateSessionWidget);
+    setInterval(updateSessionWidget, 5 * 60 * 1000); // refresh every 5m (optional)
+
+	document.addEventListener('DOMContentLoaded', () => {
+	  const H = window.HAIPHEN || {};
+
+	  const safe = (fn, name) => {
+	    if (typeof fn !== 'function') return;
+	    try {
+	      // Works whether fn returns a Promise or not
+	      Promise.resolve(fn()).catch((err) => console.warn(`[${name}] load failed`, err));
+	    } catch (err) {
+	      console.warn(`[${name}] load threw`, err);
+	    }
+	  };
+
+	  safe(H.loadHeader, 'header');
+	  safe(H.loadSidebar, 'sidebar');
+	  safe(H.loadSectionMenu, 'section-menu');
+	  safe(H.loadFooter, 'footer');
+	  safe(H.loadTradesOverlay, 'trades-overlay');
+	  safe(H.loadSiteSearch, 'site-search');
+
+	  updateSessionWidget();
+	});
   </script>
 </body>
 </html>
