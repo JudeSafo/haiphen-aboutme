@@ -22,6 +22,60 @@
   // In-memory key cache per mounted root (WeakMap avoids leaks)
   const KEY_CACHE = new WeakMap();
 
+  // Add near the top (after KEY_CACHE)
+  const HYDRATE_STATE = new WeakMap();
+  // How often we allow re-checking /me even if DOM keeps mutating
+  const HYDRATE_TTL_MS = 5 * 60 * 1000 ; // 60s
+
+  function getHydrateState(root) {
+    let s = HYDRATE_STATE.get(root);
+    if (!s) {
+      s = { inFlight: null, lastOkAt: 0, lastAttemptAt: 0 };
+      HYDRATE_STATE.set(root, s);
+    }
+    return s;
+  }
+
+  // Replace your hydrate() with this
+  async function hydrate(rootOrSelector) {
+    const root =
+      typeof rootOrSelector === 'string'
+        ? document.querySelector(rootOrSelector)
+        : rootOrSelector;
+
+    if (!root) return;
+
+    // Wire once (your existing guard is good)
+    wireActions(root);
+
+    const s = getHydrateState(root);
+    const now = Date.now();
+
+    // If we hydrated recently, do nothing (prevents mutation storms)
+    if (s.lastOkAt && now - s.lastOkAt < HYDRATE_TTL_MS) return;
+
+    // If a hydrate is already running, don't start another
+    if (s.inFlight) return;
+
+    // Also prevent ultra-tight loops even if lastOkAt never gets set
+    if (s.lastAttemptAt && now - s.lastAttemptAt < 1000) return; // 1s floor
+    s.lastAttemptAt = now;
+
+    s.inFlight = (async () => {
+      await refreshCredsUI(root);
+      s.lastOkAt = Date.now();
+    })()
+      .catch((err) => {
+        // Don't spam console in a loop; keep it single line
+        console.warn('[api-access] hydrate failed', err?.message || err);
+      })
+      .finally(() => {
+        s.inFlight = null;
+      });
+
+    return s.inFlight;
+  }
+
   function qs(root, sel) {
     return (root || document).querySelector(sel);
   }
@@ -231,9 +285,10 @@
 
   function hideCreds(root) {
     const cred = qs(root, '[data-api-cred]');
-    if (cred) cred.hidden = true;
+    if (cred && cred.hidden !== true) cred.hidden = true;
     KEY_CACHE.delete(root);
   }
+
   async function isLoggedInViaAuthCookie() {
     try {
       const r = await fetch(`${AUTH_ORIGIN}/me`, { credentials: 'include', cache: 'no-store' });
@@ -399,23 +454,36 @@
       requestAccess: requestAccessFlow,
       refreshCredsUI: (root) => refreshCredsUI(root),
       hydrate,
-      _debug: { nowIso, consumePostAuthTarget }, // optional
+      _debug: { nowIso, consumePostAuthTarget },
     };
 
-    // Auto-hydrate on mount for docs (and later profile)
-    const obs = new MutationObserver(() => {
-      // Docs
-      const docsRoot = document.querySelector('#api-docs');
-      if (docsRoot) void hydrate(docsRoot);
+    // Debounced scheduler (one hydrate per animation frame, max)
+    let scheduled = false;
+    const scheduleHydrate = () => {
+      if (scheduled) return;
+      scheduled = true;
+      requestAnimationFrame(() => {
+        scheduled = false;
+        const docsRoot = document.querySelector('#api-docs');
+        if (docsRoot) void hydrate(docsRoot);
 
-      // Future: profile dropdown mount
-      const profileRoot = document.querySelector('[data-profile-root]');
-      if (profileRoot) void hydrate(profileRoot);
+        const profileRoot = document.querySelector('[data-profile-root]');
+        if (profileRoot) void hydrate(profileRoot);
+      });
+    };
+
+    const obs = new MutationObserver(() => {
+      scheduleHydrate();
     });
+
     obs.observe(document.documentElement, { childList: true, subtree: true });
+
+    // Initial attempt
+    scheduleHydrate();
 
     maybeHandlePostAuthLanding();
   }
+
   function getSessionRoot() {
     // New canonical mount
     const slot = document.getElementById('session-slot');
