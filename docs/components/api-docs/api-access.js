@@ -234,18 +234,28 @@
     if (cred) cred.hidden = true;
     KEY_CACHE.delete(root);
   }
-
+  async function isLoggedInViaAuthCookie() {
+    try {
+      const r = await fetch(`${AUTH_ORIGIN}/me`, { credentials: 'include', cache: 'no-store' });
+      return r.ok;
+    } catch {
+      return false;
+    }
+  }
   async function refreshCredsUI(root) {
     hideCreds(root);
 
+    // ✅ Gate: if not logged in, don't even call api /v1/me
+    const loggedIn = await isLoggedInViaAuthCookie();
+    if (!loggedIn) return;
+
     let session;
     try {
-      session = await loadSession();
+      session = await loadSession(); // calls API /v1/me
     } catch (err) {
       console.warn('[api-access] loadSession failed', err);
-      return; // do not throw; do not crash header/docs
+      return;
     }
-
     if (!session?.authenticated) return;
 
     const plan = session?.entitlements?.plan || '—';
