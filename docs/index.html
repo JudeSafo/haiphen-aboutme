@@ -1100,10 +1100,16 @@
 	  if (lb) lb.style.display = 'none';
 	}    
 	async function fetchJson(url) {
-	  const resp = await fetch(url, { cache: 'no-store' });
-	  if (String(path).includes('/v1/keys/current')) {
+	  if (typeof url !== 'string' || url.length === 0) {
+	    throw new TypeError(`fetchJson(url): expected non-empty string, got ${typeof url}`);
+	  }
+
+	  // Guard *before* network call
+	  if (url.includes('/v1/keys/current')) {
 	    throw new Error('Deprecated endpoint: /v1/keys/current (client should not call this)');
-	  }	  
+	  }
+
+	  const resp = await fetch(url, { cache: 'no-store' });
 	  if (!resp.ok) throw new Error(`HTTP ${resp.status} for ${url}`);
 	  return await resp.json();
 	}
