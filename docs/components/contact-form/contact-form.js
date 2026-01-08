@@ -1,6 +1,6 @@
 (function () {
-  const API_ORIGIN = "https://api.haiphen.io"; // your Worker custom domain
-  const ENDPOINT = `${API_ORIGIN}/contact`;
+  const API_ORIGIN = "https://haiphen-contact.pi-307.workers.dev";
+  const ENDPOINT = `${API_ORIGIN}/api/contact`;
 
   function qs(id) { return document.getElementById(id); }
 
@@ -36,9 +36,6 @@
   }
 
   function mountTurnstile() {
-    // Requires you to include Turnstile JS in your main HTML:
-    // <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
-    // We render explicitly so it works even in injected HTML.
     const mount = qs("cf-turnstile");
     if (!mount) return;
 
@@ -47,13 +44,10 @@
       console.warn("[contact] missing TURNSTILE_SITE_KEY (set window.HAIPHEN.TURNSTILE_SITE_KEY)");
       return;
     }
-
     if (!window.turnstile) {
       console.warn("[contact] turnstile not loaded yet");
       return;
     }
-
-    // Avoid double-render
     if (mount.__rendered) return;
     mount.__rendered = true;
 
@@ -87,6 +81,7 @@
     receipt.hidden = false;
 
     qs("ticketId").textContent = data.ticketId || "—";
+    // Your Worker currently returns { ok, ticketId } only; so this will show "—" unless you add fields server-side.
     qs("ticketEmail").textContent = data.email || "—";
     qs("ticketMeta").textContent =
       `Queue position: ${data.queuePosition ?? "—"} • Received: ${data.receivedAt || "—"}`;
@@ -120,12 +115,11 @@
         phone: String(fd.get("phone") || "").trim(),
         message: String(fd.get("message") || "").trim(),
         company: String(fd.get("company") || "").trim(), // honeypot
-        turnstileToken: getTurnstileToken(),
+        token: getTurnstileToken(),                      // ✅ matches Worker: payload.token
         pageUrl: window.location.href,
         userAgent: navigator.userAgent,
       };
 
-      // light client-side validation (server still validates)
       if (!payload.name || !payload.email || payload.message.length < 10) {
         setStatus("Please fill name, email, and a longer message.");
         return;
@@ -150,7 +144,6 @@
     const another = qs("contactAnother");
     if (another) another.addEventListener("click", showForm);
 
-    // If Turnstile loads late, try mounting again.
     const tries = 8;
     let i = 0;
     const t = setInterval(() => {
@@ -160,7 +153,5 @@
     }, 350);
   }
 
-  // If this component is injected dynamically, DOMContentLoaded already fired.
-  // So we run ASAP on next tick.
   setTimeout(wire, 0);
 })();

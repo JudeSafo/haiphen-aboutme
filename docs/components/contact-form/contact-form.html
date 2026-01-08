@@ -1,57 +1,88 @@
 <section id="contact-us" class="contact">
-  <h2>Contact</h2>
-  <p class="contact-sub">
-    Send a message and you’ll receive a ticket number + confirmation email.
-  </p>
+  <div class="contact-wrap">
+    <div class="contact-head">
+      <h2>Contact</h2>
+      <p class="contact-sub">
+        Send a message — you’ll receive a confirmation email and a ticket.
+      </p>
+    </div>
 
-  <form id="contactForm" class="contact-card" novalidate>
-    <div class="grid">
-      <label>
-        <span>Name</span>
-        <input name="name" type="text" autocomplete="name" required maxlength="120" />
-      </label>
+    <div class="contact-grid">
+      <!-- Left: company info -->
+      <aside class="contact-info" aria-label="Company contact info">
+        <div class="info-card">
+          <div class="info-title">Haiphen</div>
+          <div class="info-row">
+            <span class="info-k">Founder</span>
+            <span class="info-v">
+              <a href="https://linkedin.com/in/judesafo" target="_blank" rel="noopener noreferrer">Jude Safo</a>
+            </span>
+          </div>
+          <div class="info-row">
+            <span class="info-k">Email</span>
+            <span class="info-v"><a href="mailto:pi@haiphenai.com">pi@haiphenai.com</a></span>
+          </div>
+          <div class="info-row">
+            <span class="info-k">Phone</span>
+            <span class="info-v"><a href="tel:+15129104544">+1 (512) 910-4544</a></span>
+          </div>
 
-      <label>
-        <span>Email</span>
-        <input name="email" type="email" autocomplete="email" required maxlength="200" />
-      </label>
+          <div class="info-divider"></div>
 
-      <label>
-        <span>Phone (optional)</span>
-        <input name="phone" type="tel" autocomplete="tel" maxlength="40" />
-      </label>
+          <div class="info-muted">
+            Prefer encrypted comms? Mention it in your message and we’ll switch channels.
+          </div>
+        </div>
+      </aside>
 
-      <label class="full">
-        <span>Message</span>
-        <textarea name="message" required minlength="10" maxlength="6000"></textarea>
-      </label>
+      <!-- Right: form -->
+      <div class="contact-form">
+        <form id="contactForm" class="form-card" novalidate>
+          <div class="fields">
+            <label class="field">
+              <span>Name</span>
+              <input name="name" type="text" autocomplete="name" required maxlength="120" />
+            </label>
 
-      <!-- Honeypot: bots will fill this, humans won't -->
-      <input name="company" type="text" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
+            <label class="field">
+              <span>Email</span>
+              <input name="email" type="email" autocomplete="email" required maxlength="200" />
+            </label>
 
-      <!-- Turnstile widget mount -->
-      <div class="full">
-        <div id="cf-turnstile" class="turnstile"></div>
-      </div>
+            <label class="field">
+              <span>Phone (optional)</span>
+              <input name="phone" type="tel" autocomplete="tel" maxlength="40" />
+            </label>
 
-      <div class="full actions">
-        <button id="contactSubmit" type="submit" class="btn btn-primary">
-          Submit
-        </button>
-        <span id="contactStatus" class="status" role="status" aria-live="polite"></span>
+            <label class="field field-full">
+              <span>Message</span>
+              <textarea name="message" required minlength="10" maxlength="6000"></textarea>
+            </label>
+
+            <!-- Honeypot -->
+            <input name="company" type="text" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
+
+            <!-- Turnstile mount -->
+            <div class="field-full">
+              <div id="cf-turnstile" class="turnstile"></div>
+              <div class="turnstile-hint">Human check (Turnstile)</div>
+            </div>
+
+            <div class="field-full actions">
+              <button id="contactSubmit" type="submit" class="btn btn-primary">Submit</button>
+              <span id="contactStatus" class="status" role="status" aria-live="polite"></span>
+            </div>
+          </div>
+        </form>
+
+        <div id="contactReceipt" class="form-card receipt" hidden>
+          <h3>Request received</h3>
+          <p>Ticket: <strong id="ticketId">—</strong></p>
+          <p>Confirmation sent to: <strong id="ticketEmail">—</strong></p>
+          <p class="muted" id="ticketMeta">—</p>
+          <button id="contactAnother" class="btn btn-ghost">Submit another</button>
+        </div>
       </div>
     </div>
-  </form>
-
-  <div id="contactReceipt" class="contact-card receipt" hidden>
-    <h3>Request received</h3>
-    <p>
-      Ticket: <strong id="ticketId">—</strong>
-    </p>
-    <p>
-      Confirmation sent to: <strong id="ticketEmail">—</strong>
-    </p>
-    <p class="muted" id="ticketMeta">—</p>
-    <button id="contactAnother" class="btn btn-ghost">Submit another</button>
   </div>
 </section>

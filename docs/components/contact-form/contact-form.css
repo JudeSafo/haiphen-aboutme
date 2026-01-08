@@ -1,24 +1,52 @@
-.contact { text-align: center; }
-.contact-sub { color:#555; margin:.25rem 0 1.25rem; }
+.contact { padding: 1.25rem 0; }
+.contact-wrap { max-width: 980px; margin: 0 auto; padding: 0 1rem; text-align: left; }
 
-.contact-card{
-  max-width: 760px;
-  margin: 0 auto;
+.contact-head { margin-bottom: 1rem; }
+.contact-sub { color: #667; margin-top: .35rem; line-height: 1.55; }
+
+.contact-grid{
+  display: grid;
+  grid-template-columns: 0.9fr 1.1fr;
+  gap: 1rem;
+  align-items: start;
+}
+
+.info-card, .form-card{
   background: #fff;
   border: 1px solid #e6ecf3;
   border-radius: 14px;
-  padding: 1.1rem 1.1rem;
+  padding: 1rem;
   box-shadow: 0 2px 10px rgba(0,0,0,.05);
-  text-align: left;
 }
 
-.grid{
+.info-title { font-weight: 900; font-size: 1.1rem; margin-bottom: .75rem; }
+.info-row{
+  display:flex;
+  justify-content: space-between;
+  gap: .75rem;
+  padding: .35rem 0;
+}
+.info-k { color:#667; font-weight: 800; }
+.info-v a { font-weight: 900; text-decoration: none; color:#2c3e50; }
+.info-v a:hover { text-decoration: underline; }
+
+.info-divider { height: 1px; background: #eef2f7; margin: .85rem 0; }
+.info-muted { color:#667; line-height: 1.55; }
+
+.fields{
   display:grid;
   grid-template-columns: 1fr 1fr;
   gap: .85rem 1rem;
 }
 
-label span{ display:block; font-weight:800; color:#2c3e50; margin-bottom:.35rem; }
+.field span{
+  display:block;
+  font-weight: 900;
+  color:#2c3e50;
+  margin-bottom: .35rem;
+}
+
+.field-full{ grid-column: 1 / -1; }
 
 input, textarea{
   width:100%;
@@ -36,18 +64,13 @@ input:focus, textarea:focus{
   border-color: rgba(90,155,212,0.55);
 }
 
-.full{ grid-column: 1 / -1; }
-
 .actions{
   display:flex;
-  gap:.75rem;
   align-items:center;
-  justify-content:flex-start;
+  gap:.75rem;
 }
 
-.status{ color:#667; font-weight:700; }
-
-.receipt h3{ margin-bottom:.5rem; }
+.status{ color:#667; font-weight: 800; }
 .receipt .muted{ color:#667; margin-top:.5rem; }
 
 .hp{
@@ -58,11 +81,19 @@ input:focus, textarea:focus{
 }
 
 .turnstile{
-  min-height: 65px;
+  min-height: 70px;
   display:flex;
   align-items:center;
 }
+.turnstile-hint{
+  margin-top: .35rem;
+  color:#889;
+  font-size: .85rem;
+}
 
+@media (max-width: 900px){
+  .contact-grid{ grid-template-columns: 1fr; }
+}
 @media (max-width: 720px){
-  .grid{ grid-template-columns: 1fr; }
+  .fields{ grid-template-columns: 1fr; }
 }
