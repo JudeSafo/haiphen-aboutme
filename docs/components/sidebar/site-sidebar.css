@@ -52,3 +52,22 @@
 @media (max-width: 920px) {
   .site-sidebar { display: none; }
 }
+
+.site-sidebar__session{
+  padding: 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.site-sidebar__session .api-cred{
+  margin: 0;
+  padding: 12px;
+  border-radius: 14px;
+}
+
+.site-sidebar__session .api-cred-title{
+  font-size: 0.82rem;
+}
+
+.site-sidebar__session .api-cred-sub{
+  font-size: 0.74rem;
+}

@@ -389,7 +389,13 @@
 
     const entitled = Boolean(session?.entitlements?.active);
     if (!entitled) {
-      await startCheckout(returnTo);
+      // Gated state: do NOT auto-forward to Stripe.
+      // Show docs, show gating CTA somewhere in UI (toast for now).
+      try { setToast('Upgrade required for API access'); } catch {}
+      try {
+        if (typeof window.showSection === 'function') window.showSection('Docs');
+      } catch {}
+      try { window.location.hash = returnHash; } catch {}
       return;
     }
 
