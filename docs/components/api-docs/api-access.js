@@ -25,7 +25,7 @@
   // Add near the top (after KEY_CACHE)
   const HYDRATE_STATE = new WeakMap();
   // How often we allow re-checking /me even if DOM keeps mutating
-  const HYDRATE_TTL_MS = 5 * 60 * 1000 ; // 60s
+  const HYDRATE_TTL_MS = 5 * 60 * 1000 ; // 5m
 
   function getHydrateState(root) {
     let s = HYDRATE_STATE.get(root);
@@ -436,18 +436,6 @@
     })();
   }
 
-  // Public API: can hydrate any root that contains [data-api-cred]
-  async function hydrate(rootOrSelector) {
-    const root =
-      typeof rootOrSelector === 'string'
-        ? document.querySelector(rootOrSelector)
-        : rootOrSelector;
-
-    if (!root) return;
-    wireActions(root);
-    await refreshCredsUI(root);
-  }
-
   function install() {
     window.HAIPHEN = window.HAIPHEN || {};
     window.HAIPHEN.ApiAccess = {
@@ -456,30 +444,14 @@
       hydrate,
       _debug: { nowIso, consumePostAuthTarget },
     };
+    // Initial attempt (once)
+    requestAnimationFrame(() => {
+      const docsRoot = document.querySelector('#api-docs');
+      if (docsRoot) void hydrate(docsRoot);
 
-    // Debounced scheduler (one hydrate per animation frame, max)
-    let scheduled = false;
-    const scheduleHydrate = () => {
-      if (scheduled) return;
-      scheduled = true;
-      requestAnimationFrame(() => {
-        scheduled = false;
-        const docsRoot = document.querySelector('#api-docs');
-        if (docsRoot) void hydrate(docsRoot);
-
-        const profileRoot = document.querySelector('[data-profile-root]');
-        if (profileRoot) void hydrate(profileRoot);
-      });
-    };
-
-    const obs = new MutationObserver(() => {
-      scheduleHydrate();
-    });
-
-    obs.observe(document.documentElement, { childList: true, subtree: true });
-
-    // Initial attempt
-    scheduleHydrate();
+      const profileRoot = document.querySelector('[data-profile-root], #session-slot');
+      if (profileRoot) void hydrate(profileRoot);
+    });    
 
     maybeHandlePostAuthLanding();
   }

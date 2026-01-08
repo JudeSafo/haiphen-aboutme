@@ -2674,7 +2674,16 @@
 	  menu.addEventListener('mouseleave', () => setExpanded(false));
 	  trigger.addEventListener('focus', () => setExpanded(true));
 	  menu.addEventListener('focusout', () => setExpanded(false));
-
+	  menu.addEventListener('mouseenter', async () => {
+	    setExpanded(true);
+	    try {
+	      const apiRoot = root.querySelector('[data-api-cred]')?.closest('[data-profile-root], #session-slot') || root;
+	      await window.HAIPHEN?.ApiAccess?.hydrate?.(apiRoot);
+	    } catch (e) {
+	      console.warn('[session] hydrate on open failed', e);
+	    }
+	  });
+	  
 	  // Tabs
 	  const tabs = Array.from(root.querySelectorAll('.session-tab'));
 	  const panels = Array.from(root.querySelectorAll('.session-panel'));
