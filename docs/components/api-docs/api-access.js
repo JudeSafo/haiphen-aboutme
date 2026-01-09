@@ -37,8 +37,10 @@
   const SERVICES_HASH = '#services';
 
   function redirectToLogin(returnTo) {
-    const rt = encodeURIComponent(returnTo || window.location.href);
-    window.location.assign(`${AUTH_ORIGIN}/login?to=${rt}`);
+    const url = new URL(`${AUTH_ORIGIN}/login`);
+    // pick ONE canonical param; "return_to" is what your later code assumes
+    url.searchParams.set('return_to', returnTo || window.location.href);
+    window.location.assign(url.toString());
   }
 
   async function fetchMe() {
@@ -612,19 +614,22 @@
 
   function install() {
     window.HAIPHEN.ApiAccess = {
+      // ✅ The function your Trades button expects
+      requestApiAccess,
+
+      // ✅ Keep the Docs flow too
       requestAccess: requestAccessFlow,
+
       refreshCredsUI: (root) => refreshCredsUI(root),
       hydrate,
       rotateKeyAndRefresh,
       _debug: { nowIso, consumePostAuthTarget },
     };
-    // Initial attempt (once)
+
     requestAnimationFrame(() => {
-      // ✅ header profile slot (if present)
       const profileRoot = document.querySelector('[data-profile-root], #session-slot');
       if (profileRoot) void hydrate(profileRoot);
 
-      // ✅ global sidebar session card (if present)
       const sidebarRoot = document.querySelector('#sidebar-session-card');
       if (sidebarRoot) void hydrate(sidebarRoot);
     });
