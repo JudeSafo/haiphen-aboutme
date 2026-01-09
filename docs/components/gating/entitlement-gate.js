@@ -79,11 +79,15 @@
 
   function getEntitled(sessionJson, feature) {
     // Prefer explicit entitlements from backend:
-    // sessionJson.entitlements = { active: boolean, plan: string, features?: {...} }
     const ent = sessionJson?.entitlements || null;
-    if (!ent) return { entitled: false, plan: sessionJson?.plan || sessionJson?.tier || '—' };
 
-    // If your backend supports per-feature flags, use them; else fallback to ent.active.
+    // ✅ Back-compat fallback: treat non-free as entitled
+    if (!ent) {
+      const plan = sessionJson?.plan || sessionJson?.tier || '—';
+      const paid = plan === 'pro' || plan === 'enterprise';
+      return { entitled: paid, plan };
+    }
+
     const features = ent.features || ent.scopes || null;
     if (features && typeof features === 'object' && feature) {
       const v = features[feature];

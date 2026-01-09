@@ -240,10 +240,17 @@
     };
 
     // Your current /v1/me returns plan at top-level.
+    const planGuess = j.plan || j.tier || '—';
+    const paidGuess = planGuess === 'pro' || planGuess === 'enterprise';
+
     const entitlements = j.entitlements || {
-      // If backend didn't send entitlements, treat as NOT entitled.
-      active: false,
-      plan: j.plan || j.tier || '—',
+      active: paidGuess,
+      plan: planGuess,
+      features: {
+        api: paidGuess,
+        rss: paidGuess,
+        docs: true,
+      }
     };
 
     return {
