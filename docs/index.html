@@ -37,6 +37,7 @@
   <script src="components/api-docs/api-access.js"></script>
   <script src="components/contact-form/contact-form.js"></script>
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+  <script src="components/gating/entitlement-gate.js"></script>
 
   <script>
     window.HAIPHEN = window.HAIPHEN || {};
@@ -1552,10 +1553,14 @@
 
               <!-- CTA Buttons -->
               <div class="trades-cta">
-                <button class="btn btn-primary" onclick="showSection('Contact')">
-                  <span class="btn-ic"><img src="assets/icons/link.svg" alt=""></span>
-                  Request API access
-                </button>
+				<button
+				  class="btn btn-primary"
+				  type="button"
+				  data-gate-feature="api"
+				  onclick="showSection('Services'); window.location.hash = '#services';"
+				>
+				  Request API access
+				</button>
 				<a class="btn btn-ghost" href="#docs">
 				  <span class="btn-ic"><img src="assets/icons/external.svg" alt=""></span>
 				  Docs / Lineage
@@ -2683,7 +2688,7 @@
 	      console.warn('[session] hydrate on open failed', e);
 	    }
 	  });
-	  
+
 	  // Tabs
 	  const tabs = Array.from(root.querySelectorAll('.session-tab'));
 	  const panels = Array.from(root.querySelectorAll('.session-panel'));

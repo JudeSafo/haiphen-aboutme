@@ -317,6 +317,13 @@
     root.addEventListener('click', async (e) => {
       const btn = e.target.closest('[data-api-try]');
       if (!btn) return;
+      
+      // 🔒 entitlement gate: blocks “Try it” unless user has API entitlement
+      const gate = window.HAIPHEN?.EntitlementGate?.requireEntitlement;
+      if (typeof gate === 'function') {
+        const result = await gate('api');     // feature key: 'api'
+        if (!result?.ok) return;              // gate already redirected / showed UI
+      }
 
       const mode = btn.getAttribute('data-api-try');
       const base = sessionStorage.getItem(TRY_STORAGE.base) || baseInput.value;

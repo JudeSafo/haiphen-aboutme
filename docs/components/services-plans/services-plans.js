@@ -20,7 +20,23 @@
   };
 
   function qs(id) { return document.getElementById(id); }
+  
+  async function handleSubscribe(planKey) {
+    // 🔒 Gate services subscription action
+    const gate = window?.HAIPHEN?.EntitlementGate?.requireEntitlement;
+    if (typeof gate === 'function') {
+      const res = await gate('services', { returnTo: window.location.href });
+      if (!res?.ok) return;
+    }
 
+    const ok = await isLoggedIn();
+    if (!ok) {
+      redirectToLogin(window.location.href);
+      return;
+    }
+    goToSquare(planKey);
+  }
+  
   async function fetchText(url) {
     const resp = await fetch(url, { cache: 'no-store' });
     if (!resp.ok) throw new Error(`HTTP ${resp.status} for ${url}`);

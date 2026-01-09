@@ -26,7 +26,16 @@
   const HYDRATE_STATE = new WeakMap();
   // How often we allow re-checking /me even if DOM keeps mutating
   const HYDRATE_TTL_MS = 5 * 60 * 1000 ; // 5m
+  
+  const STRIPE_CHECKOUT_URL = 'https://buy.stripe.com/28E28saW7f1Cead9PpaAw03';
 
+  function goToStripeCheckout({ returnTo, source = 'docs_request_access' } = {}) {
+    try {
+      sessionStorage.setItem('haiphen.checkout.return_to', returnTo || window.location.href);
+      sessionStorage.setItem('haiphen.checkout.source', source);
+    } catch {}
+    window.location.assign(STRIPE_CHECKOUT_URL);
+  }
   function getHydrateState(root) {
     let s = HYDRATE_STATE.get(root);
     if (!s) {
@@ -232,7 +241,8 @@
 
     // Your current /v1/me returns plan at top-level.
     const entitlements = j.entitlements || {
-      active: Boolean(j.entitlements?.active ?? true), // free plan can still be "active" for docs
+      // If backend didn't send entitlements, treat as NOT entitled.
+      active: false,
       plan: j.plan || j.tier || '—',
     };
 
@@ -263,9 +273,8 @@
     const copyBtn = qs(cred, '[data-api-copy-key]');
     const rotateBtn = qs(cred, '[data-api-rotate-key]');
     if (rotateBtn) {
-      // Disable rotate if we don't have a full key lifecycle implemented yet.
-      rotateBtn.disabled = true;
-      rotateBtn.title = 'Key rotation not available yet';
+      rotateBtn.disabled = false;
+      rotateBtn.title = 'Rotate API key';
     }
     if (nameEl) nameEl.textContent = user?.name || '—';
     if (emailEl) emailEl.textContent = user?.email || '—';
@@ -297,40 +306,42 @@
       return false;
     }
   }
-  async function refreshCredsUI(root) {
-    hideCreds(root);
 
-    // ✅ Gate: if not logged in, don't even call api /v1/me
+  async function refreshCredsUI(root) {
+    // Default state: logged out (explicit)
+    showLoggedOut(root);
+
     const loggedIn = await isLoggedInViaAuthCookie();
     if (!loggedIn) return;
 
+    showLoggedIn(root);
+
     let session;
     try {
-      session = await loadSession(); // calls API /v1/me
+      session = await loadSession(); // API /v1/me
     } catch (err) {
       console.warn('[api-access] loadSession failed', err);
+      showLoggedOut(root);
       return;
     }
-    if (!session?.authenticated) return;
+
+    if (!session?.authenticated) {
+      showLoggedOut(root);
+      return;
+    }
 
     const plan = session?.entitlements?.plan || '—';
-
-    // Pull key info from /v1/me only.
     const k = session.api_key || null;
-
-    // You currently only have key_prefix (good). Do NOT pretend you have full key.
-    const displayKey = k?.key_prefix || '';
 
     renderCreds(root, {
       user: session.user,
       plan,
-      apiKey: displayKey, // masked in UI anyway
+      apiKey: k?.key_prefix || '',
       keyMeta: { created_at: k?.created_at || null, last_used_at: k?.last_used_at || null },
     });
 
-    // IMPORTANT: if we only have a prefix, disable Copy (you can't copy what you don't have).
     const copyBtn = qs(root, '[data-api-copy-key]');
-    if (copyBtn) copyBtn.disabled = true;
+    if (copyBtn) copyBtn.disabled = true; // because you only have prefix
   }
 
   function wireActions(root) {
@@ -377,6 +388,37 @@
     });
   }
 
+  async function rotateKeyAndRefresh(rootOrEl) {
+    const root =
+      typeof rootOrEl === 'string'
+        ? document.querySelector(rootOrEl)
+        : rootOrEl;
+
+    // rotate server-side
+    await rotateKey();
+
+    // refresh all known mounts
+    try {
+      const docsRoot = document.querySelector('#api-docs');
+      if (docsRoot) await refreshCredsUI(docsRoot);
+    } catch {}
+
+    try {
+      const sessionSlot = document.querySelector('#session-slot');
+      if (sessionSlot) await refreshCredsUI(sessionSlot);
+    } catch {}
+
+    try {
+      const sidebarCard = document.querySelector('#sidebar-session-card');
+      if (sidebarCard) await refreshCredsUI(sidebarCard);
+    } catch {}
+
+    // refresh the caller too
+    if (root) {
+      try { await refreshCredsUI(root); } catch {}
+    }
+  }
+
   async function requestAccessFlow({ returnHash = '#docs' } = {}) {
     const returnTo = `${window.location.origin}/${returnHash}`;
     savePostAuthTarget({ section: 'Docs', hash: returnHash });
@@ -389,22 +431,22 @@
 
     const entitled = Boolean(session?.entitlements?.active);
     if (!entitled) {
-      // Gated state: do NOT auto-forward to Stripe.
-      // Show docs, show gating CTA somewhere in UI (toast for now).
-      try { setToast('Upgrade required for API access'); } catch {}
-      try {
-        if (typeof window.showSection === 'function') window.showSection('Docs');
-      } catch {}
-      try { window.location.hash = returnHash; } catch {}
+      // ✅ Subscribe-like behavior: route to checkout
+      goToStripeCheckout({ returnTo, source: 'api_docs_request_access' });
       return;
     }
 
-    // Already entitled: show docs and hydrate when mounted
+    // Already entitled: show docs
+    try { if (typeof window.showSection === 'function') window.showSection('Docs'); } catch {}
+    try { window.location.hash = returnHash; } catch {}
+
+    // ✅ Refresh sidebar creds card (canonical place)
     try {
-      if (typeof window.showSection === 'function') window.showSection('Docs');
-    } catch {}
-    try {
-      window.location.hash = returnHash;
+      const sidebar = document.querySelector('#sidebar-session-card');
+      if (sidebar) {
+        wireActions(sidebar);
+        await refreshCredsUI(sidebar);
+      }
     } catch {}
 
     const tryAttach = async () => {
@@ -443,21 +485,23 @@
   }
 
   function install() {
-    window.HAIPHEN = window.HAIPHEN || {};
     window.HAIPHEN.ApiAccess = {
       requestAccess: requestAccessFlow,
       refreshCredsUI: (root) => refreshCredsUI(root),
       hydrate,
+      rotateKeyAndRefresh,
       _debug: { nowIso, consumePostAuthTarget },
     };
     // Initial attempt (once)
     requestAnimationFrame(() => {
-      const docsRoot = document.querySelector('#api-docs');
-      if (docsRoot) void hydrate(docsRoot);
-
+      // ✅ header profile slot (if present)
       const profileRoot = document.querySelector('[data-profile-root], #session-slot');
       if (profileRoot) void hydrate(profileRoot);
-    });    
+
+      // ✅ global sidebar session card (if present)
+      const sidebarRoot = document.querySelector('#sidebar-session-card');
+      if (sidebarRoot) void hydrate(sidebarRoot);
+    });
 
     maybeHandlePostAuthLanding();
   }
@@ -469,6 +513,19 @@
 
     // Back-compat: older header markup
     return document.querySelector('[data-profile-root]');
+  }
+
+  function showLoggedOut(root) {
+    const out = qs(root, '[data-api-logged-out]');
+    const cred = qs(root, '[data-api-cred]');
+    if (cred) cred.hidden = true;
+    if (out) out.hidden = false;
+    KEY_CACHE.delete(root);
+  }
+
+  function showLoggedIn(root) {
+    const out = qs(root, '[data-api-logged-out]');
+    if (out) out.hidden = true;
   }
 
   function onHeaderReady(cb) {
