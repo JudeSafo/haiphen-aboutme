@@ -306,3 +306,152 @@
   padding: 12px;
   border-radius: 14px;
 }
+
+/* --- API key hover menu (quick account menu) --- */
+.api-key-menu {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.api-key-menu .api-cred-v {
+  cursor: pointer;
+  outline: none;
+}
+
+.api-key-menu:focus-within .api-key-dropdown,
+.api-key-menu:hover .api-key-dropdown {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.api-key-dropdown {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 10px);
+  min-width: 180px;
+
+  background: var(--panel, rgba(18, 22, 30, 0.92));
+  border: 1px solid var(--border, rgba(255,255,255,0.10));
+  border-radius: 14px;
+  box-shadow: var(--shadow, 0 18px 50px rgba(0,0,0,0.35));
+  backdrop-filter: blur(12px);
+  padding: 8px;
+
+  opacity: 0;
+  transform: translateY(-4px);
+  pointer-events: none;
+  transition: opacity 140ms ease, transform 140ms ease;
+  z-index: 1200;
+}
+
+.api-key-item {
+  width: 100%;
+  text-align: left;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text, rgba(255,255,255,0.92));
+  font-weight: 700;
+  font-size: 12px;
+  padding: 9px 10px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.api-key-item:hover,
+.api-key-item:focus {
+  background: rgba(90,155,212,0.14);
+  border-color: rgba(90,155,212,0.22);
+  outline: none;
+}
+
+.api-key-sep {
+  height: 1px;
+  margin: 6px 4px;
+  background: rgba(255,255,255,0.10);
+}
+
+.api-key-danger {
+  color: rgba(255, 180, 180, 0.95);
+}
+
+.api-key-danger:hover,
+.api-key-danger:focus {
+  background: rgba(255, 80, 80, 0.12);
+  border-color: rgba(255, 80, 80, 0.22);
+}
+
+/* --- User modal --- */
+#haiphen-user-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+}
+
+.haiphen-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(6px);
+}
+
+.haiphen-modal__panel {
+  position: absolute;
+  top: 90px;
+  right: 18px;
+  width: min(520px, calc(100vw - 36px));
+
+  background: var(--panel, rgba(18, 22, 30, 0.94));
+  border: 1px solid var(--border, rgba(255,255,255,0.10));
+  border-radius: 18px;
+  box-shadow: 0 22px 70px rgba(0,0,0,0.45);
+  padding: 14px;
+}
+
+.haiphen-modal__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.haiphen-modal__title {
+  font-weight: 900;
+  font-size: 13px;
+  letter-spacing: 0.2px;
+}
+
+.haiphen-modal__x {
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.90);
+  border-radius: 10px;
+  padding: 4px 10px;
+  cursor: pointer;
+}
+
+.haiphen-modal__body {
+  padding-top: 10px;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: rgba(255,255,255,0.88);
+}
+
+.haiphen-kv {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 8px 12px;
+}
+
+.haiphen-k {
+  opacity: 0.7;
+  font-weight: 800;
+}
+
+.haiphen-v code {
+  font-size: 12px;
+  opacity: 0.95;
+}

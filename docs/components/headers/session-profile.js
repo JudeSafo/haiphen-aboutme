@@ -14,6 +14,46 @@
     return (root || document).querySelector(sel);
   }
 
+  function closeAnyModal() {
+    const m = document.getElementById('haiphen-user-modal');
+    if (m) m.remove();
+  }
+
+  function openUserModal({ title, bodyHtml }) {
+    closeAnyModal();
+
+    const modal = document.createElement('div');
+    modal.id = 'haiphen-user-modal';
+    modal.innerHTML = `
+      <div class="haiphen-modal__backdrop" data-modal-close></div>
+      <div class="haiphen-modal__panel" role="dialog" aria-modal="true" aria-label="${title}">
+        <div class="haiphen-modal__head">
+          <div class="haiphen-modal__title">${title}</div>
+          <button class="haiphen-modal__x" type="button" aria-label="Close" data-modal-close>×</button>
+        </div>
+        <div class="haiphen-modal__body">
+          ${bodyHtml}
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    const onKey = (e) => {
+      if (e.key === 'Escape') {
+        closeAnyModal();
+        window.removeEventListener('keydown', onKey);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+
+    modal.addEventListener('click', (e) => {
+      if (e.target?.matches?.('[data-modal-close]')) {
+        closeAnyModal();
+        window.removeEventListener('keydown', onKey);
+      }
+    });
+  }
   async function authMe() {
     try {
       const r = await fetch(`${AUTH_ORIGIN}/me`, {
@@ -107,14 +147,60 @@
       if (action === 'logout') {
         btn.disabled = true;
         btn.textContent = 'Logging out…';
-        try {
-          await fetch(LOGOUT_URL, { method: 'GET', credentials: 'include', cache: 'no-store' });
-        } catch {}
-        // Always hard refresh to ensure cookie-cleared + UI resets
-        window.location.reload();
+        // ✅ Let the worker clear cookies and return a clean response.
+        // Avoid “fetch + reload” edge cases with cached cookies.
+        window.location.assign(LOGOUT_URL);
+        return;
+      }
+      
+      if (action === 'open-profile') {
+        // use the already-fetched user object
+        openUserModal({
+          title: 'Profile',
+          bodyHtml: `
+            <div class="haiphen-kv">
+              <div class="haiphen-k">Name</div><div class="haiphen-v">${user?.name || '—'}</div>
+              <div class="haiphen-k">GitHub</div><div class="haiphen-v"><code>${user?.sub || '—'}</code></div>
+              <div class="haiphen-k">Email</div><div class="haiphen-v">${user?.email || '—'}</div>
+              <div class="haiphen-k">Plan</div><div class="haiphen-v"><span data-api-user-plan>—</span></div>
+            </div>
+            <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap;">
+              <a class="api-btn api-btn-ghost" href="https://app.haiphen.io/" target="_blank" rel="noreferrer">Open App</a>
+              <button class="api-btn api-btn-ghost" type="button" data-session-action="logout">Logout</button>
+            </div>
+          `,
+        });
         return;
       }
 
+      if (action === 'open-settings') {
+        openUserModal({
+          title: 'Settings',
+          bodyHtml: `
+            <div style="opacity:.8; font-weight:700; margin-bottom:10px;">
+              Session + API key controls (client-side). More settings can be added here over time.
+            </div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              <button class="api-btn api-btn-ghost" type="button" data-session-action="rotate-key">
+                Rotate API Key
+              </button>
+              <button class="api-btn api-btn-ghost" type="button" data-session-action="logout">
+                Logout
+              </button>
+            </div>
+            <div style="margin-top:12px; opacity:.75;">
+              Tip: press <code>Esc</code> to close this panel.
+            </div>
+          `,
+        });
+        // ensure the modal also has hydrated plan/key values
+        requestAnimationFrame(() => {
+          try {
+            if (window.HAIPHEN?.ApiAccess?.hydrate) window.HAIPHEN.ApiAccess.hydrate(document.getElementById('haiphen-user-modal'));
+          } catch {}
+        });
+        return;
+      }
       if (action === 'rotate-key') {
         btn.disabled = true;
         const prev = btn.textContent;

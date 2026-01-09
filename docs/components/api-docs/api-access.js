@@ -263,16 +263,38 @@
 
   async function fetchJson(path, opts = {}) {
     const url = `${API_ORIGIN}${path}`;
-    const resp = await fetch(url, {
-      method: opts.method || 'GET',
-      headers: {
-        'content-type': 'application/json',
-        ...(opts.headers || {}),
-      },
-      credentials: 'include',
-      body: opts.body ? JSON.stringify(opts.body) : undefined,
-      cache: 'no-store',
-    });
+    const method = (opts.method || 'GET').toUpperCase();
+
+    // Only send Content-Type when we actually send a JSON body.
+    // Sending Content-Type on GET commonly triggers CORS preflight.
+    const headers = {
+      Accept: 'application/json',
+      ...(opts.headers || {}),
+    };
+
+    const hasBody = opts.body !== undefined && opts.body !== null;
+    if (hasBody && method !== 'GET') {
+      headers['Content-Type'] = 'application/json';
+    }
+
+    let resp;
+    try {
+      resp = await fetch(url, {
+        method,
+        headers,
+        credentials: 'include',
+        body: hasBody && method !== 'GET' ? JSON.stringify(opts.body) : undefined,
+        cache: 'no-store',
+      });
+    } catch (err) {
+      // This is where CORS/network failures land.
+      console.warn('[api-access] fetch failed', {
+        url,
+        method,
+        message: err?.message || String(err),
+      });
+      throw err;
+    }
 
     const text = await resp.text();
     let json = null;

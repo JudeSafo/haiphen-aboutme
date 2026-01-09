@@ -37,10 +37,31 @@
         <div class="api-cred-right">
           <div class="api-cred-row">
             <span class="api-cred-k">API Key</span>
-            <code class="api-cred-v" data-api-key>••••••••••••••••</code>
+
+            <!-- ✅ Hover/focus dropdown trigger -->
+            <span class="api-key-menu" data-api-key-menu>
+              <code class="api-cred-v" data-api-key tabindex="0" aria-haspopup="true" aria-label="Account menu">
+                ••••••••••••••••
+              </code>
+
+              <div class="api-key-dropdown" role="menu" aria-label="Account quick menu">
+                <button class="api-key-item" type="button" role="menuitem" data-session-action="open-profile">
+                  Profile
+                </button>
+                <button class="api-key-item" type="button" role="menuitem" data-session-action="open-settings">
+                  Settings
+                </button>
+                <div class="api-key-sep" aria-hidden="true"></div>
+                <button class="api-key-item api-key-danger" type="button" role="menuitem" data-session-action="logout">
+                  Logout
+                </button>
+              </div>
+            </span>
+
             <button class="api-copy" type="button" data-copy-btn data-api-copy-key aria-label="Copy API key">Copy</button>
             <button class="api-btn api-btn-ghost" type="button" data-api-rotate-key>Rotate</button>
           </div>
+
           <div class="api-cred-meta api-muted">
             <span>Created:</span> <span data-api-key-created>—</span>
             <span class="api-dot">•</span>
