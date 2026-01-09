@@ -1,0 +1,27 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "haiphen-checkout",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-07-16",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "observability": { "enabled": true },
+
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "haiphen_api",
+      "database_id": "9a26fb67-b6e5-4d5f-8e62-3ecfde5ee8c2"
+    }
+  ],
+
+  "kv_namespaces": [
+    { "binding": "REVOKE_KV", "id": "7ef6277bfea34ec18fb4b52ceb79aba3" }
+  ],
+
+  "durable_objects": {
+    "bindings": [{ "name": "STATUS_DO", "class_name": "StatusDO" }]
+  },
+  "migrations": [{ "tag": "v1", "new_classes": ["StatusDO"] }],
+
+  "routes": ["checkout.haiphen.io/*"]
+}

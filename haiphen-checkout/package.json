@@ -1,0 +1,21 @@
+{
+  "name": "haiphen-checkout",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "jose": "^6.1.3",
+    "stripe": "^20.1.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260103.0",
+    "typescript": "^5.9.3",
+    "wrangler": "^4.54.0"
+  }
+}

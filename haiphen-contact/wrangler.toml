@@ -1,0 +1,20 @@
+name = "haiphen-contact"
+main = "src/worker.ts"
+compatibility_date = "2025-12-01"
+workers_dev = true
+
+[vars]
+ALLOWED_ORIGINS = "https://haiphen.io,https://www.haiphen.io,http://localhost:5713"
+FROM_EMAIL = "jude@haiphen.io"
+OWNER_EMAIL = "pi@haiphenai.com"
+TICKET_PREFIX = "H"
+SENDGRID_TEMPLATE_ID_CONFIRM = "d-8bedbceb69da4a7cbe0e0aebb0315e43"
+TURNSTILE_VERIFY_URL = "https://challenges.cloudflare.com/turnstile/v0/siteverify"
+
+[[durable_objects.bindings]]
+name = "TICKETS"
+class_name = "TicketQueue"
+
+[[migrations]]
+tag = "v1"
+new_classes = ["TicketQueue"]
