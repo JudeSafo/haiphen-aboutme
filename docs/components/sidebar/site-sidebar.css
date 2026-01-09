@@ -71,3 +71,30 @@
 .site-sidebar__session .api-cred-sub{
   font-size: 0.74rem;
 }
+
+.site-sidebar__session .sidebar-session {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.site-sidebar__session .sidebar-session__title {
+  font-weight: 900;
+  font-size: 12px;
+}
+
+.site-sidebar__session .sidebar-session__sub {
+  opacity: 0.8;
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.site-sidebar__session .sidebar-session__login {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 12px;
+  font-size: 12px;
+  border-radius: 10px;
+  text-decoration: none;
+}

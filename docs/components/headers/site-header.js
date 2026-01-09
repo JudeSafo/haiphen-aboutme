@@ -96,26 +96,6 @@
 
   }
 
-  function loginHref() {
-    const AUTH_ORIGIN = 'https://auth.haiphen.io';
-    const here = window.location.href;
-    const u = new URL(`${AUTH_ORIGIN}/login`);
-    u.searchParams.set('to', here);
-    return u.toString();
-  }
-
-  function wireLoginIcon() {
-    const icon = document.querySelector('[data-login-icon]');
-    if (!icon) return;
-
-    icon.addEventListener('click', (e) => {
-      e.preventDefault();
-      window.location.assign(loginHref());
-    });
-  }
-
-  wireLoginIcon();
-
   async function loadHeader() {
     const mount = qs(MOUNT_ID);
     if (!mount) {

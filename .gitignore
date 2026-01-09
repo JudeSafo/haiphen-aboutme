@@ -23,22 +23,3 @@
 *.sqlite
 *.sqlite-wal
 *.sqlite-shm
-
-# ---- Cloudflare Wrangler ----
-**/.wrangler/
-d1/.wrangler/
-
-# ---- Node ----
-**/node_modules/
-
-# ---- OS ----
-.DS_Store
-
-# ---- Common build output ----
-dist/
-build/
-out/
-coverage/
-
-# ---- Embedded repos / vendor dirs we never want tracked ----
-reactBoilerPlate/boilerPlate/wireguard-android/
