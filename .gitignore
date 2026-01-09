@@ -39,3 +39,6 @@ dist/
 build/
 out/
 coverage/
+
+# ---- Embedded repos / vendor dirs we never want tracked ----
+reactBoilerPlate/boilerPlate/wireguard-android/
