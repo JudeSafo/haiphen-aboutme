@@ -1,42 +1,38 @@
-/* docs/components/services-plans/services-plans.js */
+/* docs/components/services-plans/services-plans.js
+ * Services pricing/subscription UI.
+ *
+ * Behavior:
+ * - If NOT logged in: redirect to auth login.
+ * - If logged in AND entitled for services: do NOT send to checkout; route to services content.
+ * - If logged in AND NOT entitled: route to Stripe checkout.
+ *
+ * Notes:
+ * - Square has been removed entirely.
+ * - Entitlement is checked via https://api.haiphen.io/v1/me (cookie-auth).
+ */
 (function () {
   'use strict';
 
   const LOG = '[services-plans]';
 
+  const API_ORIGIN = 'https://api.haiphen.io';
   const AUTH_ORIGIN = 'https://auth.haiphen.io';
 
-  // TODO: replace with real Square hosted checkout links (per plan)
-  const SQUARE_CHECKOUT = {
-    // Streaming / existing
-    signals_starter: 'https://square.link/u/f3nO4ktd',
-    fintech_pro: 'https://square.link/u/f3nO4ktd',
-    enterprise_custom: 'https://square.link/u/f3nO4ktd',
+  // ✅ Stripe hosted link (for now)
+  // Later, consider: POST /v1/billing/checkout { planKey, return_to } => session.url
+  const STRIPE_CHECKOUT_URL = 'https://buy.stripe.com/28E28saW7f1Cead9PpaAw03';
 
-    // Hard Tech (new)
-    hardtech_starter: 'https://square.link/u/f3nO4ktd',
-    hardtech_pro: 'https://square.link/u/f3nO4ktd',
-    hardtech_enterprise: 'https://square.link/u/f3nO4ktd',
+  // Where to send entitled users when they click “Subscribe”.
+  // Pick something real in your site (a section id or route).
+  const SERVICES_DESTINATION_HASH = '#services';
+
+  const STORAGE = {
+    selectedPlan: 'haiphen.checkout.selected_plan',
+    returnTo: 'haiphen.checkout.return_to',
   };
 
   function qs(id) { return document.getElementById(id); }
-  
-  async function handleSubscribe(planKey) {
-    // 🔒 Gate services subscription action
-    const gate = window?.HAIPHEN?.EntitlementGate?.requireEntitlement;
-    if (typeof gate === 'function') {
-      const res = await gate('services', { returnTo: window.location.href });
-      if (!res?.ok) return;
-    }
 
-    const ok = await isLoggedIn();
-    if (!ok) {
-      redirectToLogin(window.location.href);
-      return;
-    }
-    goToSquare(planKey);
-  }
-  
   async function fetchText(url) {
     const resp = await fetch(url, { cache: 'no-store' });
     if (!resp.ok) throw new Error(`HTTP ${resp.status} for ${url}`);
@@ -52,37 +48,93 @@
     document.head.appendChild(link);
   }
 
-  async function isLoggedIn() {
+  function redirectToLogin(returnTo) {
+    const rt = encodeURIComponent(returnTo || window.location.href);
+    // Align with your site’s preferred param. If auth supports `next=` or `to=`, pick one.
+    window.location.assign(`${AUTH_ORIGIN}/login?to=${rt}`);
+  }
+
+  function goToStripeCheckout(planKey) {
     try {
-      const resp = await fetch(`${AUTH_ORIGIN}/me`, { credentials: 'include' });
-      return resp.ok;
-    } catch {
-      return false;
-    }
+      if (planKey) sessionStorage.setItem(STORAGE.selectedPlan, String(planKey));
+      sessionStorage.setItem(STORAGE.returnTo, window.location.href);
+    } catch {}
+    window.location.assign(STRIPE_CHECKOUT_URL);
   }
 
-  function redirectToLogin(nextUrl) {
-    const next = encodeURIComponent(nextUrl || window.location.href);
-    window.location.href = `${AUTH_ORIGIN}/login?next=${next}`;
+  function routeEntitledUser() {
+    // If you have a better deep-link (e.g. #services:dashboard), use it.
+    if (typeof window.showSection === 'function') window.showSection('Services');
+    else window.location.hash = SERVICES_DESTINATION_HASH;
   }
 
-  function goToSquare(planKey) {
-    const url = SQUARE_CHECKOUT[planKey];
-    if (!url || url.includes('REPLACE_')) {
-      console.warn(`${LOG} missing Square link for plan`, planKey);
-      alert('Checkout link not configured yet for this plan.');
-      return;
+  async function getEntitlements() {
+    // Cookie-auth to API
+    const url = `${API_ORIGIN}/v1/me`;
+    const resp = await fetch(url, {
+      method: 'GET',
+      credentials: 'include',
+      cache: 'no-store',
+      headers: { 'Accept': 'application/json' },
+    });
+
+    if (!resp.ok) {
+      return { ok: false, status: resp.status, entitlements: null };
     }
-    window.location.href = url;
+
+    const data = await resp.json().catch(() => null);
+    return { ok: true, status: 200, entitlements: data?.entitlements ?? null };
+  }
+
+  function hasServicesEntitlement(entitlements) {
+    // Expected shape:
+    // entitlements: { active: boolean, features: { services: boolean, ... } }
+    return Boolean(entitlements?.active && entitlements?.features?.services);
   }
 
   async function handleSubscribe(planKey) {
-    const ok = await isLoggedIn();
-    if (!ok) {
+    // If you already have a global gate object, let it run first (optional).
+    // This makes the site consistent if EntitlementGate also handles login redirects.
+    const gate = window?.HAIPHEN?.EntitlementGate?.requireEntitlement;
+    if (typeof gate === 'function') {
+      // Gate checks entitlement for “services” and handles login redirects.
+      // If user is entitled, it should return ok:true, entitled:true (depending on your impl).
+      // We still fall back to /v1/me below to avoid stale local state.
+      try {
+        const gateRes = await gate('services', { returnTo: window.location.href });
+        // If gate explicitly says “not logged in / not ok”, stop.
+        if (gateRes && gateRes.ok === false) return;
+      } catch (e) {
+        console.warn(`${LOG} EntitlementGate failed; falling back to /v1/me`, e);
+      }
+    }
+
+    // Canonical check via API
+    const me = await getEntitlements();
+
+    // Not logged in (401/403): send to auth
+    if (!me.ok && (me.status === 401 || me.status === 403)) {
       redirectToLogin(window.location.href);
       return;
     }
-    goToSquare(planKey);
+
+    // Logged in but some other failure: be conservative, don’t redirect blindly
+    if (!me.ok) {
+      console.warn(`${LOG} /v1/me failed`, me.status);
+      alert('Unable to verify your subscription right now. Please refresh and try again.');
+      return;
+    }
+
+    const entitled = hasServicesEntitlement(me.entitlements);
+
+    if (entitled) {
+      // ✅ Already paid/entitled → don’t send them to checkout
+      routeEntitledUser();
+      return;
+    }
+
+    // Not entitled → route to Stripe checkout
+    goToStripeCheckout(planKey);
   }
 
   function handleContact() {
@@ -114,7 +166,6 @@
     const mount = qs(mountId);
     if (!mount) return;
 
-    // Avoid double insert
     if (mount.querySelector('.services-plans')) return;
 
     const html = await fetchText(htmlUrl);
@@ -123,16 +174,13 @@
   }
 
   async function loadServicesPlans() {
-    // Shared styles for both blocks
     await injectCssOnce('components/services-plans/services-plans.css');
 
-    // Existing “Streaming” block (already in services-plans.html)
     await mountBlock({
       mountId: 'services-plans-mount',
       htmlUrl: 'components/services-plans/services-plans.html',
     });
 
-    // New “Hard Tech” block
     await mountBlock({
       mountId: 'services-hardtech-mount',
       htmlUrl: 'components/services-plans/services-hardtech.html',

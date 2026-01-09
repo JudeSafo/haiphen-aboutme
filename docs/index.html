@@ -1557,7 +1557,7 @@
 				  class="btn btn-primary"
 				  type="button"
 				  data-gate-feature="api"
-				  onclick="showSection('Services'); window.location.hash = '#services';"
+				  onclick="window.HAIPHEN?.ApiAccess?.requestApiAccess?.({ source: 'trades_request_api_access', returnTo: window.location.href })"
 				>
 				  Request API access
 				</button>

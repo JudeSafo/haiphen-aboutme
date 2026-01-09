@@ -29,6 +29,125 @@
   
   const STRIPE_CHECKOUT_URL = 'https://buy.stripe.com/28E28saW7f1Cead9PpaAw03';
 
+  // Where to send users who already have entitlement.
+  // You can override without redeploy by setting window.HAIPHEN.APP_ENV_URL at runtime.
+  const DEFAULT_APP_ENV_URL = `${AUTH_ORIGIN}/app`;
+
+  // For in-site routing when NOT entitled.
+  const SERVICES_HASH = '#services';
+
+  function redirectToLogin(returnTo) {
+    const rt = encodeURIComponent(returnTo || window.location.href);
+    window.location.assign(`${AUTH_ORIGIN}/login?to=${rt}`);
+  }
+
+  async function fetchMe() {
+    const url = `${API_ORIGIN}/v1/me`;
+    const resp = await fetch(url, {
+      method: 'GET',
+      credentials: 'include',
+      cache: 'no-store',
+      headers: { Accept: 'application/json' },
+    });
+
+    const status = resp.status;
+    if (!resp.ok) {
+      return { ok: false, status, data: null };
+    }
+
+    const data = await resp.json().catch(() => null);
+    return { ok: true, status: 200, data };
+  }
+
+  /**
+   * API entitlement check (flexible):
+   * - prefers entitlements.features.api
+   * - tolerates older names if you change the backend schema later
+   */
+  function hasApiEntitlement(entitlements) {
+    if (!entitlements) return false;
+    if (entitlements.active === false) return false;
+
+    const f = entitlements.features || {};
+    return Boolean(
+      (entitlements.active && f.api) ||
+      (entitlements.active && f.app) ||
+      (entitlements.active && f.app_environment) ||
+      (entitlements.active && f.api_access)
+    );
+  }
+
+  function routeToServices() {
+    try {
+      // Keep hash shareable
+      window.location.hash = SERVICES_HASH;
+
+      // If your SPA-ish router is present, use it for the injected content
+      if (typeof window.showSection === 'function') {
+        window.showSection('Services');
+      }
+    } catch (e) {
+      console.warn('[api-access] routeToServices failed', e);
+      window.location.hash = SERVICES_HASH;
+    }
+  }
+
+  function routeToAppEnv() {
+    const url =
+      window.HAIPHEN?.APP_ENV_URL ||
+      DEFAULT_APP_ENV_URL;
+
+    window.location.assign(url);
+  }
+
+  /**
+   * Primary handler for "Request API access" buttons anywhere on the site.
+   * Behavior:
+   * - not logged in -> auth login
+   * - entitled -> app env
+   * - not entitled -> services section (subscribe)
+   */
+  async function requestApiAccess({ returnTo, source = 'request_api_access' } = {}) {
+    const rt = returnTo || window.location.href;
+
+    // Optional: let your EntitlementGate run first (if it exists)
+    // but we still verify canonically via /v1/me.
+    const gate = window?.HAIPHEN?.EntitlementGate?.requireEntitlement;
+    if (typeof gate === 'function') {
+      try {
+        const gateRes = await gate('api', { returnTo: rt, source });
+        if (gateRes && gateRes.ok === false) return;
+      } catch (e) {
+        console.warn('[api-access] EntitlementGate failed; falling back to /v1/me', e);
+      }
+    }
+
+    const me = await fetchMe();
+
+    // Not logged in: go authenticate
+    if (!me.ok && (me.status === 401 || me.status === 403)) {
+      redirectToLogin(rt);
+      return;
+    }
+
+    // Some other failure: don't misroute; be conservative
+    if (!me.ok) {
+      console.warn('[api-access] /v1/me failed', me.status);
+      alert('Unable to verify your access right now. Please refresh and try again.');
+      return;
+    }
+
+    const ent = me.data?.entitlements ?? null;
+    const entitled = hasApiEntitlement(ent);
+
+    if (entitled) {
+      routeToAppEnv();
+      return;
+    }
+
+    // Not entitled: route to Services where Stripe checkout lives
+    routeToServices();
+  }
   function goToStripeCheckout({ returnTo, source = 'docs_request_access' } = {}) {
     try {
       sessionStorage.setItem('haiphen.checkout.return_to', returnTo || window.location.href);
