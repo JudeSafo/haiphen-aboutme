@@ -74,6 +74,7 @@
 
     const AUTH_ORIGIN = 'https://auth.haiphen.io';
     const LOGIN_URL = `${AUTH_ORIGIN}/login`;
+    const LOGOUT_URL = `${AUTH_ORIGIN}/logout`;
 
     function loginHref() {
       const here = window.location.href;
@@ -107,54 +108,191 @@
       slot.hidden = false;
     }
 
-    function renderLoggedIn() {
-      // Reuse the API cred block so ApiAccess can hydrate it.
+    function sidebarMenuHtml(user) {
+      const name = user?.name || user?.sub || 'User';
+      const email = user?.email || '—';
+      const sub = user?.sub || '—';
+      const avatar = user?.avatar || user?.avatar_url || '';
+
+      // Keep ONE authoritative api-cred block (hydrated by ApiAccess) inside dropdown.
       const apiCred = window.HAIPHEN?.SessionProfileTemplate?.apiCredBlockHtml
         ? window.HAIPHEN.SessionProfileTemplate.apiCredBlockHtml()
-        : `
-          <div class="api-cred" data-api-cred hidden>
-            <div class="api-cred-left">
-              <div class="api-cred-title">API Credentials</div>
-              <div class="api-cred-sub">
-                <span data-api-user-name>—</span>
-                <span class="api-dot">•</span>
-                <span data-api-user-email>—</span>
-                <span class="api-dot">•</span>
-                <span data-api-user-plan>—</span>
+        : `<div class="api-cred" data-api-cred hidden></div>`;
+
+      return `
+        <div class="sidebar-session-menu" data-sidebar-session-menu>
+          <div class="sidebar-session-trigger" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">
+            <div class="sidebar-session-left">
+              <div class="sidebar-session-title">${escapeHtml(name)}</div>
+              <div class="sidebar-session-sub">${escapeHtml(email)} • ${escapeHtml(sub)}</div>
+              <div class="sidebar-session-key">
+                <span>Key</span>
+                <code data-sidebar-api-key-preview>••••••••••••••••</code>
               </div>
             </div>
-            <div class="api-cred-right">
-              <div class="api-cred-row">
-                <span class="api-cred-k">API Key</span>
-                <code class="api-cred-v" data-api-key>••••••••••••••••</code>
-                <button class="api-copy" type="button" data-api-copy-key aria-label="Copy API key">Copy</button>
-                <button class="api-btn api-btn-ghost" type="button" data-api-rotate-key>Rotate</button>
-              </div>
-              <div class="api-cred-meta api-muted">
-                <span>Created:</span> <span data-api-key-created>—</span>
-                <span class="api-dot">•</span>
-                <span>Last used:</span> <span data-api-key-last-used>—</span>
-              </div>
-            </div>
+            ${avatar ? `<img class="sidebar-session-avatar" src="${escapeAttr(avatar)}" alt="" aria-hidden="true" />` : ''}
           </div>
-        `;
 
-      slot.innerHTML = apiCred;
-      slot.hidden = false;
+          <div class="sidebar-session-dropdown" role="menu" aria-label="Session menu">
+            <div class="sidebar-session-links">
+              <a class="sidebar-session-link" href="javascript:void(0)" role="menuitem" data-session-nav="profile">
+                Profile <span style="opacity:.65;">›</span>
+              </a>
+              <a class="sidebar-session-link" href="javascript:void(0)" role="menuitem" data-session-nav="settings">
+                Settings <span style="opacity:.65;">›</span>
+              </a>
+              <button class="sidebar-session-btn" type="button" role="menuitem" data-session-action="rotate-key">
+                Rotate API key <span style="opacity:.65;">⟲</span>
+              </button>
+              <button class="sidebar-session-btn" type="button" role="menuitem" data-session-action="logout">
+                Logout <span style="opacity:.65;">×</span>
+              </button>
+            </div>
 
-      // Hydrate the API cred block (fills key/user/plan + hooks copy/rotate)
+            <div class="sidebar-session-divider"></div>
+
+            ${apiCred}
+          </div>
+        </div>
+      `;
+    }
+
+    function wireSidebarMenu() {
+      const menu = slot.querySelector('[data-sidebar-session-menu]');
+      if (!menu) return;
+
+      const trigger = menu.querySelector('.sidebar-session-trigger');
+      const preview = menu.querySelector('[data-sidebar-api-key-preview]');
+
+      // Toggle aria-expanded for semantics (CSS does the actual open/close)
+      if (trigger) {
+        trigger.addEventListener('click', () => {
+          const expanded = trigger.getAttribute('aria-expanded') === 'true';
+          trigger.setAttribute('aria-expanded', expanded ? 'false' : 'true');
+        });
+
+        trigger.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape') trigger.setAttribute('aria-expanded', 'false');
+        });
+      }
+
+      // Actions + nav
+      menu.addEventListener('click', async (e) => {
+        const nav = e.target.closest('[data-session-nav]');
+        if (nav) {
+          const page = nav.getAttribute('data-session-nav');
+
+          // extensible hook: let your app/router own this later
+          window.dispatchEvent(new CustomEvent('haiphen:session:navigate', { detail: { page } }));
+
+          // sensible defaults today (no new pages required)
+          if (page === 'profile') {
+            // If you later build a Profile section: showSection('Profile')
+            console.info('[sidebar-session] profile clicked (hook: haiphen:session:navigate)');
+          } else if (page === 'settings') {
+            console.info('[sidebar-session] settings clicked (hook: haiphen:session:navigate)');
+          }
+          return;
+        }
+
+        const btn = e.target.closest('[data-session-action]');
+        if (!btn) return;
+
+        const action = btn.getAttribute('data-session-action');
+
+        if (action === 'logout') {
+          btn.disabled = true;
+          const prev = btn.textContent;
+          btn.textContent = 'Logging out…';
+          try {
+            await fetch(LOGOUT_URL, { method: 'GET', credentials: 'include', cache: 'no-store' });
+          } catch {}
+          // hard refresh to reset UI + cookie state
+          window.location.reload();
+          btn.textContent = prev;
+          return;
+        }
+
+        if (action === 'rotate-key') {
+          btn.disabled = true;
+          const prev = btn.textContent;
+          btn.textContent = 'Rotating…';
+          try {
+            if (window.HAIPHEN?.ApiAccess?.rotateKeyAndRefresh) {
+              await window.HAIPHEN.ApiAccess.rotateKeyAndRefresh(menu);
+            } else {
+              console.warn('[sidebar-session] ApiAccess.rotateKeyAndRefresh missing');
+            }
+          } catch (err) {
+            console.warn('[sidebar-session] rotate failed', err?.message || err);
+          } finally {
+            btn.textContent = prev;
+            btn.disabled = false;
+          }
+        }
+      });
+
+      // Hydrate API cred block and mirror key into the trigger preview
       requestAnimationFrame(() => {
         try {
-          if (window.HAIPHEN?.ApiAccess?.hydrate) window.HAIPHEN.ApiAccess.hydrate(slot);
+          if (window.HAIPHEN?.ApiAccess?.hydrate) window.HAIPHEN.ApiAccess.hydrate(menu);
         } catch {}
+
+        // Mirror hydrated key text to the trigger preview (without duplicating data-api-* selectors)
+        const keyEl = menu.querySelector('[data-api-key]');
+        if (keyEl && preview) {
+          const sync = () => {
+            const t = (keyEl.textContent || '').trim();
+            if (t) preview.textContent = t;
+          };
+          sync();
+
+          const obs = new MutationObserver(sync);
+          obs.observe(keyEl, { childList: true, characterData: true, subtree: true });
+
+          // Cleanup if menu is removed
+          window.setTimeout(() => {
+            if (!document.body.contains(menu)) obs.disconnect();
+          }, 10_000);
+        }
       });
     }
 
-    // Decide what to render based on /me (same logic as header)
+    function renderLoggedIn(user) {
+      slot.innerHTML = sidebarMenuHtml(user);
+      slot.hidden = false;
+      wireSidebarMenu();
+    }
+
+    // Minimal escaping (since name/email are user-derived)
+    function escapeHtml(s) {
+      const str = String(s ?? '');
+      return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+    function escapeAttr(s) {
+      // same as escapeHtml for our purposes
+      return escapeHtml(s);
+    }
+
+    // Prefer the already-emitted session event (from header), but also self-bootstrap.
+    function onSessionReady(e) {
+      const user = e?.detail?.user || null;
+      if (!user) return renderLoggedOut();
+      return renderLoggedIn(user);
+    }
+
+    window.addEventListener('haiphen:session:ready', onSessionReady);
+
+    // Bootstrap immediately (in case header isn’t loaded yet)
     (async () => {
       const me = await authMe();
       if (!me.ok || !me.user) return renderLoggedOut();
-      return renderLoggedIn();
+      return renderLoggedIn(me.user);
     })();
   }
 
