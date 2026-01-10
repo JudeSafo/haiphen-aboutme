@@ -39,7 +39,7 @@
 	  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 	  <script src="components/gating/entitlement-gate.js"></script>
 	  <link rel="stylesheet" href="components/contact-form/contact-form.css" />
-	  
+
 	  <script>
 	    window.HAIPHEN = window.HAIPHEN || {};
 	    window.HAIPHEN.TURNSTILE_SITE_KEY = "0x4AAAAAACKr8sUWJUM68QdF"; // site key (public)
@@ -2408,6 +2408,9 @@
 		        const mount = document.querySelector("#contact-form-mount");
 		        const resp = await fetch("components/contact-form/contact-form.html", { cache: "no-store" });
 		        mount.innerHTML = await resp.text();
+
+		        // ✅ wire after DOM injection
+		        window.HAIPHEN?.ContactForm?.init?.(mount);
 		      } catch (e) {
 		        console.warn("[Contact] failed to load contact form", e);
 		      }

@@ -5,27 +5,29 @@
   const LOG_PREFIX = "[contact]";
   const WIRE_TIMEOUT_MS = 15000;
 
-  function qs(id) { return document.getElementById(id); }
+  function qsIn(root, id) {
+    return (root || document).querySelector(`#${CSS.escape(id)}`);
+  }
 
-  function setStatus(msg) {
-    const el = qs("contactStatus");
+  function setStatus(root, msg) {
+    const el = qsIn(root, "contactStatus");
     if (el) el.textContent = msg || "";
   }
 
-  function disableForm(disabled) {
-    const btn = qs("contactSubmit");
+  function disableForm(root, disabled) {
+    const btn = qsIn(root, "contactSubmit");
     if (btn) btn.disabled = !!disabled;
-    const form = qs("contactForm");
+
+    const form = qsIn(root, "contactForm");
     if (!form) return;
+
     [...form.elements].forEach((e) => {
       if (e && e.tagName && e.tagName !== "BUTTON") e.disabled = !!disabled;
     });
   }
 
   async function postJson(url, body) {
-    // Helpful debug: you should see this in Network when wired correctly.
     console.debug(LOG_PREFIX, "POST", url, body);
-
     const resp = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -43,35 +45,36 @@
     return data;
   }
 
-  function showReceipt(data) {
-    const form = qs("contactForm");
-    const receipt = qs("contactReceipt");
+  function showReceipt(root, data) {
+    const form = qsIn(root, "contactForm");
+    const receipt = qsIn(root, "contactReceipt");
     if (!form || !receipt) return;
 
     form.hidden = true;
     receipt.hidden = false;
 
-    qs("ticketId").textContent = data.ticketId || "—";
-    qs("ticketEmail").textContent = data.email || "—";
-    qs("ticketMeta").textContent =
+    qsIn(root, "ticketId").textContent = data.ticketId || "—";
+    qsIn(root, "ticketEmail").textContent = data.email || "—";
+    qsIn(root, "ticketMeta").textContent =
       `Queue position: ${data.queuePosition ?? "—"} • Received: ${data.receivedAt || "—"}`;
   }
 
-  function showForm() {
-    const form = qs("contactForm");
-    const receipt = qs("contactReceipt");
+  function showForm(root) {
+    const form = qsIn(root, "contactForm");
+    const receipt = qsIn(root, "contactReceipt");
     if (!form || !receipt) return;
+
     form.hidden = false;
     receipt.hidden = true;
     form.reset();
-    setStatus("");
+    setStatus(root, "");
   }
 
-  function attachOnce() {
-    const form = qs("contactForm");
+  function attachOnce(root) {
+    const form = qsIn(root, "contactForm");
     if (!form) return false;
 
-    // Prevent double-wiring if components re-render.
+    // Prevent double-wiring even if you re-inject
     if (form.dataset.hpWired === "1") return true;
     form.dataset.hpWired = "1";
 
@@ -79,7 +82,7 @@
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
-      setStatus("");
+      setStatus(root, "");
 
       const fd = new FormData(form);
       const payload = {
@@ -94,44 +97,45 @@
       };
 
       if (!payload.name || !payload.email || payload.message.length < 10) {
-        setStatus("Please fill name, email, and a longer message.");
+        setStatus(root, "Please fill name, email, and a longer message.");
         return;
       }
 
-      disableForm(true);
-      setStatus("Submitting…");
+      disableForm(root, true);
+      setStatus(root, "Submitting…");
 
       try {
         const data = await postJson(ENDPOINT, payload);
-        setStatus("");
-        showReceipt(data);
+        setStatus(root, "");
+        showReceipt(root, data);
       } catch (err) {
         console.warn(LOG_PREFIX, "submit failed", err);
-        setStatus(err?.message || "Submit failed. Try again.");
+        setStatus(root, err?.message || "Submit failed. Try again.");
       } finally {
-        disableForm(false);
+        disableForm(root, false);
       }
     });
 
-    const another = qs("contactAnother");
+    const another = qsIn(root, "contactAnother");
     if (another && another.dataset.hpWired !== "1") {
       another.dataset.hpWired = "1";
-      another.addEventListener("click", showForm);
+      another.addEventListener("click", () => showForm(root));
     }
 
     return true;
   }
 
-  function waitForWire() {
-    // Fast path
-    if (attachOnce()) return;
+  // ✅ PUBLIC INIT (no auto observer unless you call it)
+  function init(rootEl) {
+    const root = rootEl || document;
 
-    console.info(LOG_PREFIX, "form not found yet; waiting for DOM injection…");
+    // Fast-path: if the form exists now, wire immediately.
+    if (attachOnce(root)) return true;
 
+    // Optional: if you *do* want a wait mode, do it only when Contact is being opened.
     const startedAt = Date.now();
-
     const obs = new MutationObserver(() => {
-      if (attachOnce()) {
+      if (attachOnce(root)) {
         obs.disconnect();
       } else if (Date.now() - startedAt > WIRE_TIMEOUT_MS) {
         obs.disconnect();
@@ -139,23 +143,14 @@
       }
     });
 
-    obs.observe(document.documentElement, { childList: true, subtree: true });
+    obs.observe(root === document ? document.documentElement : root, {
+      childList: true,
+      subtree: true,
+    });
 
-    // Also set a hard timeout (in case MutationObserver never fires for some reason)
-    setTimeout(() => {
-      if (qs("contactForm") && attachOnce()) {
-        obs.disconnect();
-      } else if (!qs("contactForm")) {
-        obs.disconnect();
-        console.error(LOG_PREFIX, "timed out waiting for #contactForm to appear");
-      }
-    }, WIRE_TIMEOUT_MS);
+    return false;
   }
 
-  // Start when DOM is ready-ish.
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", waitForWire, { once: true });
-  } else {
-    waitForWire();
-  }
+  window.HAIPHEN = window.HAIPHEN || {};
+  window.HAIPHEN.ContactForm = { init };
 })();
