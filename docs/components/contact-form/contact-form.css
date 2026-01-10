@@ -1,99 +1,176 @@
-.contact { padding: 1.25rem 0; }
-.contact-wrap { max-width: 980px; margin: 0 auto; padding: 0 1rem; text-align: left; }
+/* =========================
+   Haiphen Contact (scoped)
+   ========================= */
 
-.contact-head { margin-bottom: 1rem; }
-.contact-sub { color: #667; margin-top: .35rem; line-height: 1.55; }
+.hp-contact{
+  /* Break out of global centered typography */
+  text-align: left;
+  width: 100%;
+}
 
-.contact-grid{
+.hp-contact-grid{
   display: grid;
-  grid-template-columns: 0.9fr 1.1fr;
-  gap: 1rem;
+  grid-template-columns: 1.25fr 0.75fr; /* form larger, info smaller */
+  gap: 1.25rem;
+  align-items: start;
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem;
+}
+
+.hp-card{
+  background: rgba(255,255,255,0.96);
+  border: 1px solid rgba(17,24,39,0.10);
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(17,24,39,0.10);
+}
+
+.hp-form-card,
+.hp-info-card{
+  padding: 1.1rem;
+}
+
+/* Make sure global input/textarea rules elsewhere don't wreck this */
+.hp-contact input,
+.hp-contact textarea,
+.hp-contact button{
+  font: inherit;
+}
+
+/* Fields grid */
+.hp-fields{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: .95rem 1rem;
   align-items: start;
 }
 
-.info-card, .form-card{
-  background: #fff;
-  border: 1px solid #e6ecf3;
-  border-radius: 14px;
-  padding: 1rem;
-  box-shadow: 0 2px 10px rgba(0,0,0,.05);
-}
-
-.info-title { font-weight: 900; font-size: 1.1rem; margin-bottom: .75rem; }
-.info-row{
-  display:flex;
-  justify-content: space-between;
-  gap: .75rem;
-  padding: .35rem 0;
-}
-.info-k { color:#667; font-weight: 800; }
-.info-v a { font-weight: 900; text-decoration: none; color:#2c3e50; }
-.info-v a:hover { text-decoration: underline; }
-
-.info-divider { height: 1px; background: #eef2f7; margin: .85rem 0; }
-.info-muted { color:#667; line-height: 1.55; }
-
-.fields{
-  display:grid;
-  grid-template-columns: 1fr 1fr;
-  gap: .85rem 1rem;
-}
-
-.field span{
+.hp-field span{
   display:block;
-  font-weight: 900;
-  color:#2c3e50;
-  margin-bottom: .35rem;
+  font-weight: 800;
+  color: var(--text);
+  margin-bottom: .4rem;
+  letter-spacing: .01em;
 }
 
-.field-full{ grid-column: 1 / -1; }
+.hp-field-full{ grid-column: 1 / -1; }
 
-input, textarea{
+.hp-field-box{
+  border: 1px solid rgba(17,24,39,0.10);
+  border-radius: 14px;
+  background: rgba(248,250,252,0.92);
+  padding: .6rem .65rem;
+}
+
+.hp-field-box-message{
+  padding: .75rem .75rem;
+}
+
+.hp-contact input,
+.hp-contact textarea{
   width:100%;
-  border: 1px solid #e6ecf3;
-  border-radius: 12px;
-  padding: .65rem .75rem;
+  border: 0;
+  background: transparent;
+  padding: .15rem .1rem;
   font-size: 1rem;
   outline: none;
+  color: #0f172a;
 }
 
-textarea{ min-height: 160px; resize: vertical; }
-
-input:focus, textarea:focus{
-  box-shadow: 0 0 0 3px rgba(90,155,212,0.18);
-  border-color: rgba(90,155,212,0.55);
+.hp-contact textarea{
+  min-height: 220px;
+  resize: vertical;
+  line-height: 1.55;
 }
 
-.actions{
+.hp-field-box:focus-within{
+  box-shadow: 0 0 0 4px rgba(90,155,212,0.16);
+  border-color: rgba(90,155,212,0.65);
+  background: #ffffff;
+}
+
+.hp-actions{
   display:flex;
   align-items:center;
-  gap:.75rem;
+  gap:.85rem;
+  margin-top: .2rem;
 }
 
-.status{ color:#667; font-weight: 800; }
-.receipt .muted{ color:#667; margin-top:.5rem; }
+.hp-status{ color: var(--muted); font-weight: 700; }
 
-.hp{
+.hp-footnote{
+  margin: .35rem 0 0 0;
+  color: var(--muted);
+  font-size: .92rem;
+  line-height: 1.45;
+}
+
+.hp-muted{ color: var(--muted); }
+
+.hp-honeypot{
   position:absolute !important;
   left:-9999px !important;
   width:1px; height:1px;
   opacity:0;
 }
 
-.turnstile{
-  min-height: 70px;
+/* Info card */
+.hp-brand{
   display:flex;
+  gap:.85rem;
   align-items:center;
-}
-.turnstile-hint{
-  margin-top: .35rem;
-  color:#889;
-  font-size: .85rem;
+  margin-bottom:.75rem;
 }
 
-@media (max-width: 900px){
-  .contact-grid{ grid-template-columns: 1fr; }
+.hp-robot{
+  width: 64px;
+  height: 64px;
+  border-radius: 14px;
+  border: 1px solid rgba(17,24,39,0.10);
+  object-fit: cover;     /* ✅ fixes nature.png looking weird */
+  padding: 0;            /* ✅ don’t “postage stamp” photos */
+  background: #fff;
 }
+
+.hp-title{ font-weight: 900; font-size: 1.1rem; }
+.hp-tagline{ color: var(--muted); font-weight: 700; margin-top: .1rem; }
+
+.hp-info-row{
+  display:flex;
+  justify-content: space-between;
+  gap: .75rem;
+  padding: .45rem 0;
+  border-bottom: 1px dashed rgba(17,24,39,0.10);
+}
+.hp-info-row:last-of-type{ border-bottom: 0; }
+
+.hp-k{ color: var(--muted); font-weight: 700; }
+.hp-v a{ font-weight: 800; color: var(--text); text-decoration: none; }
+.hp-v a:hover{ text-decoration: underline; }
+
+.hp-quote{
+  margin: .95rem 0 0 0;
+  padding: .75rem .9rem;
+  border-radius: 14px;
+  border: 1px solid rgba(17,24,39,0.10);
+  background: rgba(248,250,252,0.92);
+  color: var(--text);
+  font-weight: 700;
+  line-height: 1.5;
+}
+.hp-quote-by{
+  display:block;
+  margin-top:.35rem;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+/* Responsive */
+@media (max-width: 980px){
+  .hp-contact-grid{ grid-template-columns: 1fr; }
+}
+
 @media (max-width: 720px){
-  .fields{ grid-template-columns: 1fr; }
+  .hp-fields{ grid-template-columns: 1fr; }
+  .hp-robot{ width: 56px; height: 56px; }
 }

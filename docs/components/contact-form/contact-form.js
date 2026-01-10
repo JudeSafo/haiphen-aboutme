@@ -2,6 +2,9 @@
   const API_ORIGIN = "https://haiphen-contact.pi-307.workers.dev";
   const ENDPOINT = `${API_ORIGIN}/api/contact`;
 
+  const LOG_PREFIX = "[contact]";
+  const WIRE_TIMEOUT_MS = 15000;
+
   function qs(id) { return document.getElementById(id); }
 
   function setStatus(msg) {
@@ -20,56 +23,24 @@
   }
 
   async function postJson(url, body) {
+    // Helpful debug: you should see this in Network when wired correctly.
+    console.debug(LOG_PREFIX, "POST", url, body);
+
     const resp = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
     });
+
     const text = await resp.text();
     let data = null;
     try { data = text ? JSON.parse(text) : null; } catch (_) {}
+
     if (!resp.ok) {
       const msg = data?.error || `Request failed (${resp.status})`;
       throw new Error(msg);
     }
     return data;
-  }
-
-  function mountTurnstile() {
-    const mount = qs("cf-turnstile");
-    if (!mount) return;
-
-    const siteKey = window.HAIPHEN?.TURNSTILE_SITE_KEY;
-    if (!siteKey) {
-      console.warn("[contact] missing TURNSTILE_SITE_KEY (set window.HAIPHEN.TURNSTILE_SITE_KEY)");
-      return;
-    }
-    if (!window.turnstile) {
-      console.warn("[contact] turnstile not loaded yet");
-      return;
-    }
-    if (mount.__rendered) return;
-    mount.__rendered = true;
-
-    window.turnstile.render(mount, {
-      sitekey: siteKey,
-      theme: "light",
-    });
-  }
-
-  function getTurnstileToken() {
-    try {
-      if (!window.turnstile) return "";
-      return window.turnstile.getResponse() || "";
-    } catch (_) {
-      return "";
-    }
-  }
-
-  function resetTurnstile() {
-    try {
-      if (window.turnstile) window.turnstile.reset();
-    } catch (_) {}
   }
 
   function showReceipt(data) {
@@ -81,7 +52,6 @@
     receipt.hidden = false;
 
     qs("ticketId").textContent = data.ticketId || "—";
-    // Your Worker currently returns { ok, ticketId } only; so this will show "—" unless you add fields server-side.
     qs("ticketEmail").textContent = data.email || "—";
     qs("ticketMeta").textContent =
       `Queue position: ${data.queuePosition ?? "—"} • Received: ${data.receivedAt || "—"}`;
@@ -94,15 +64,18 @@
     form.hidden = false;
     receipt.hidden = true;
     form.reset();
-    resetTurnstile();
     setStatus("");
   }
 
-  function wire() {
+  function attachOnce() {
     const form = qs("contactForm");
-    if (!form) return;
+    if (!form) return false;
 
-    mountTurnstile();
+    // Prevent double-wiring if components re-render.
+    if (form.dataset.hpWired === "1") return true;
+    form.dataset.hpWired = "1";
+
+    console.info(LOG_PREFIX, "wiring submit handler");
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -115,7 +88,7 @@
         phone: String(fd.get("phone") || "").trim(),
         message: String(fd.get("message") || "").trim(),
         company: String(fd.get("company") || "").trim(), // honeypot
-        token: getTurnstileToken(),                      // ✅ matches Worker: payload.token
+        token: "", // optional
         pageUrl: window.location.href,
         userAgent: navigator.userAgent,
       };
@@ -133,25 +106,56 @@
         setStatus("");
         showReceipt(data);
       } catch (err) {
-        console.warn("[contact] submit failed", err);
+        console.warn(LOG_PREFIX, "submit failed", err);
         setStatus(err?.message || "Submit failed. Try again.");
-        resetTurnstile();
       } finally {
         disableForm(false);
       }
     });
 
     const another = qs("contactAnother");
-    if (another) another.addEventListener("click", showForm);
+    if (another && another.dataset.hpWired !== "1") {
+      another.dataset.hpWired = "1";
+      another.addEventListener("click", showForm);
+    }
 
-    const tries = 8;
-    let i = 0;
-    const t = setInterval(() => {
-      i++;
-      mountTurnstile();
-      if (qs("cf-turnstile")?.__rendered || i >= tries) clearInterval(t);
-    }, 350);
+    return true;
   }
 
-  setTimeout(wire, 0);
+  function waitForWire() {
+    // Fast path
+    if (attachOnce()) return;
+
+    console.info(LOG_PREFIX, "form not found yet; waiting for DOM injection…");
+
+    const startedAt = Date.now();
+
+    const obs = new MutationObserver(() => {
+      if (attachOnce()) {
+        obs.disconnect();
+      } else if (Date.now() - startedAt > WIRE_TIMEOUT_MS) {
+        obs.disconnect();
+        console.error(LOG_PREFIX, "timed out waiting for #contactForm to appear");
+      }
+    });
+
+    obs.observe(document.documentElement, { childList: true, subtree: true });
+
+    // Also set a hard timeout (in case MutationObserver never fires for some reason)
+    setTimeout(() => {
+      if (qs("contactForm") && attachOnce()) {
+        obs.disconnect();
+      } else if (!qs("contactForm")) {
+        obs.disconnect();
+        console.error(LOG_PREFIX, "timed out waiting for #contactForm to appear");
+      }
+    }, WIRE_TIMEOUT_MS);
+  }
+
+  // Start when DOM is ready-ish.
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", waitForWire, { once: true });
+  } else {
+    waitForWire();
+  }
 })();

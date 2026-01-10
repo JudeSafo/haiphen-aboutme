@@ -1,88 +1,91 @@
-<section id="contact-us" class="contact">
-  <div class="contact-wrap">
-    <div class="contact-head">
-      <h2>Contact</h2>
-      <p class="contact-sub">
-        Send a message — you’ll receive a confirmation email and a ticket.
-      </p>
-    </div>
+<div class="hp-contact">
+  <div class="hp-contact-grid">
+    <!-- Form FIRST -->
+    <div class="hp-contact-form">
+      <form id="contactForm" class="hp-card hp-form-card" novalidate>
+        <div class="hp-fields">
+          <label class="hp-field">
+            <span>Name</span>
+            <div class="hp-field-box">
+              <input name="name" type="text" autocomplete="name" required maxlength="120" placeholder="Your name" />
+            </div>
+          </label>
 
-    <div class="contact-grid">
-      <!-- Left: company info -->
-      <aside class="contact-info" aria-label="Company contact info">
-        <div class="info-card">
-          <div class="info-title">Haiphen</div>
-          <div class="info-row">
-            <span class="info-k">Founder</span>
-            <span class="info-v">
-              <a href="https://linkedin.com/in/judesafo" target="_blank" rel="noopener noreferrer">Jude Safo</a>
-            </span>
-          </div>
-          <div class="info-row">
-            <span class="info-k">Email</span>
-            <span class="info-v"><a href="mailto:pi@haiphenai.com">pi@haiphenai.com</a></span>
-          </div>
-          <div class="info-row">
-            <span class="info-k">Phone</span>
-            <span class="info-v"><a href="tel:+15129104544">+1 (512) 910-4544</a></span>
-          </div>
+          <label class="hp-field">
+            <span>Email</span>
+            <div class="hp-field-box">
+              <input name="email" type="email" autocomplete="email" required maxlength="200" placeholder="you@domain.com" />
+            </div>
+          </label>
 
-          <div class="info-divider"></div>
+          <label class="hp-field">
+            <span>Phone (optional)</span>
+            <div class="hp-field-box">
+              <input name="phone" type="tel" autocomplete="tel" maxlength="40" placeholder="+1 (___) ___-____" />
+            </div>
+          </label>
 
-          <div class="info-muted">
-            Prefer encrypted comms? Mention it in your message and we’ll switch channels.
+          <label class="hp-field hp-field-full">
+            <span>Message</span>
+            <div class="hp-field-box hp-field-box-message">
+              <textarea
+                name="message"
+                required
+                minlength="10"
+                maxlength="6000"
+                placeholder="What are you trying to build? What do you need help with?"
+              ></textarea>
+            </div>
+          </label>
+
+          <!-- Honeypot -->
+          <input name="company" type="text" class="hp-honeypot" tabindex="-1" autocomplete="off" aria-hidden="true" />
+
+          <div class="hp-field-full hp-actions">
+            <button id="contactSubmit" type="submit" class="btn btn-primary">Submit</button>
+            <span id="contactStatus" class="hp-status" role="status" aria-live="polite"></span>
           </div>
         </div>
-      </aside>
+      </form>
 
-      <!-- Right: form -->
-      <div class="contact-form">
-        <form id="contactForm" class="form-card" novalidate>
-          <div class="fields">
-            <label class="field">
-              <span>Name</span>
-              <input name="name" type="text" autocomplete="name" required maxlength="120" />
-            </label>
-
-            <label class="field">
-              <span>Email</span>
-              <input name="email" type="email" autocomplete="email" required maxlength="200" />
-            </label>
-
-            <label class="field">
-              <span>Phone (optional)</span>
-              <input name="phone" type="tel" autocomplete="tel" maxlength="40" />
-            </label>
-
-            <label class="field field-full">
-              <span>Message</span>
-              <textarea name="message" required minlength="10" maxlength="6000"></textarea>
-            </label>
-
-            <!-- Honeypot -->
-            <input name="company" type="text" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
-
-            <!-- Turnstile mount -->
-            <div class="field-full">
-              <div id="cf-turnstile" class="turnstile"></div>
-              <div class="turnstile-hint">Human check (Turnstile)</div>
-            </div>
-
-            <div class="field-full actions">
-              <button id="contactSubmit" type="submit" class="btn btn-primary">Submit</button>
-              <span id="contactStatus" class="status" role="status" aria-live="polite"></span>
-            </div>
-          </div>
-        </form>
-
-        <div id="contactReceipt" class="form-card receipt" hidden>
-          <h3>Request received</h3>
-          <p>Ticket: <strong id="ticketId">—</strong></p>
-          <p>Confirmation sent to: <strong id="ticketEmail">—</strong></p>
-          <p class="muted" id="ticketMeta">—</p>
-          <button id="contactAnother" class="btn btn-ghost">Submit another</button>
-        </div>
+      <div id="contactReceipt" class="hp-card hp-form-card hp-receipt" hidden>
+        <h3>Request received</h3>
+        <p>Ticket: <strong id="ticketId">—</strong></p>
+        <p>Confirmation sent to: <strong id="ticketEmail">—</strong></p>
+        <p class="hp-muted" id="ticketMeta">—</p>
+        <button id="contactAnother" class="btn btn-ghost">Submit another</button>
       </div>
     </div>
+
+    <!-- Info SECOND -->
+    <aside class="hp-contact-info" aria-label="Company contact info">
+      <div class="hp-card hp-info-card">
+        <div class="hp-brand">
+          <img class="hp-robot" src="assets/nature.png" alt="Haiphen" loading="lazy" />
+          <div class="hp-brand-text">
+            <div class="hp-title">Haiphen</div>
+            <div class="hp-tagline">API Everything <span aria-hidden="true">[♥]</span></div>
+          </div>
+        </div>
+
+        <div class="hp-info-row">
+          <span class="hp-k">Founder</span>
+          <span class="hp-v"><a href="https://linkedin.com/in/judesafo" target="_blank" rel="noopener noreferrer">Jude Safo</a></span>
+        </div>
+        <div class="hp-info-row">
+          <span class="hp-k">Email</span>
+          <span class="hp-v"><a href="mailto:pi@haiphenai.com">pi@haiphenai.com</a></span>
+        </div>
+        <div class="hp-info-row">
+          <span class="hp-k">Phone</span>
+          <span class="hp-v"><a href="tel:+15129104544">+1 (512) 910-4544</a></span>
+        </div>
+
+        <blockquote class="hp-quote">
+          "No man is a failure who has friends"
+          <span class="hp-quote-by">— Angel Clarence</span>
+        </blockquote>
+      </div>
+    </aside>
   </div>
-</section>
+</div>
