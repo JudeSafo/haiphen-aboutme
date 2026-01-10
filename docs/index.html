@@ -2662,8 +2662,12 @@
 
 		    wireSessionDropdown(slot);
 
-		    // Hydrate the API cred block (only when logged in; entitlement gating handled server-side)
-		    await hydrateApiCredInContainer(slot);
+			// Hydrate the API cred block (only when logged in)
+			try {
+			  await window.HAIPHEN?.ApiAccess?.hydrate?.(slot);
+			} catch (e) {
+			  console.warn('[session] ApiAccess.hydrate failed', e);
+			}
 
 		  } catch (err) {
 		    console.warn('[session] failed to fetch /me', err);
