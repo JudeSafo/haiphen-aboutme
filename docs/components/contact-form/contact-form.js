@@ -87,7 +87,7 @@
         email: String(fd.get("email") || "").trim(),
         phone: String(fd.get("phone") || "").trim(),
         message: String(fd.get("message") || "").trim(),
-        company: String(fd.get("company") || "").trim(), // honeypot
+        website: String(fd.get("website") || "").trim(), // honeypot
         token: "", // optional
         pageUrl: window.location.href,
         userAgent: navigator.userAgent,
