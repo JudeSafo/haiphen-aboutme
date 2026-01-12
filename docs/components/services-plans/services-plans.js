@@ -152,14 +152,55 @@
     const checkoutOrigin = String(opts.checkoutOrigin || "https://checkout.haiphen.io").trim();
 
     // If you already have a global gate object, let it run first (optional).
-    const gate = window?.HAIPHEN?.EntitlementGate?.requireEntitlement;
-    if (typeof gate === "function") {
+    async function isLoggedInViaAuthCookie() {
       try {
-        const gateRes = await gate("services", { returnTo: window.location.href });
-        if (gateRes && gateRes.ok === false) return;
-      } catch (e) {
-        console.warn(`${LOG} EntitlementGate failed; falling back to /v1/me`, e);
+        const r = await fetch(`${AUTH_ORIGIN}/me`, { credentials: "include", cache: "no-store" });
+        return r.ok;
+      } catch {
+        return false;
       }
+    }
+
+    async function handleSubscribe(optsOrPlanKey) {
+      const opts =
+        typeof optsOrPlanKey === "string"
+          ? { planKey: optsOrPlanKey }
+          : (optsOrPlanKey || {});
+
+      const planKey = String(opts.planKey || "").trim();
+      const priceId = String(opts.priceId || "").trim();
+      const tosVersion = String(opts.tosVersion || "sla_v0.1_2026-01-10").trim();
+      const checkoutOrigin = String(opts.checkoutOrigin || "https://checkout.haiphen.io").trim();
+
+      // ✅ Subscribe flow should require LOGIN, not entitlement.
+      // (EntitlementGate.requireEntitlement("services") will "paywall" you back to #services and kill checkout.)
+      const loggedIn = await isLoggedInViaAuthCookie();
+      if (!loggedIn) {
+        redirectToLogin(window.location.href);
+        return;
+      }
+
+      // Canonical check via API (are they already subscribed?)
+      const me = await getEntitlements();
+
+      if (!me.ok && (me.status === 401 || me.status === 403)) {
+        redirectToLogin(window.location.href);
+        return;
+      }
+      if (!me.ok) {
+        console.warn(`${LOG} /v1/me failed`, me.status);
+        alert("Unable to verify your subscription right now. Please refresh and try again.");
+        return;
+      }
+
+      const entitled = hasServicesEntitlement(me.entitlements);
+      if (entitled) {
+        routeEntitledUser();
+        return;
+      }
+
+      // ✅ Not entitled -> start checkout (terms gate will also enforce login server-side)
+      await goToCanonicalCheckout({ planKey, priceId, tosVersion, checkoutOrigin });
     }
 
     // Canonical check via API
