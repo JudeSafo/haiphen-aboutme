@@ -19,7 +19,14 @@
 
   // Change this to whatever your real “Payment Required” page is.
   // If you already have app.haiphen.io handling subscriptions, route there.
-  const PAYWALL_URL = 'https://app.haiphen.io/subscribe';
+  // Paywall lives on the static site: route to Services section.
+  // This avoids a separate "app" dependency and keeps plans + checkout on haiphen.io.
+  const PAYWALL_URL = 'https://haiphen.io/#services';
+  const STORAGE = {
+    paywallReturnTo: 'haiphen.paywall.return_to',
+    paywallFeature: 'haiphen.paywall.feature',
+    paywallTs: 'haiphen.paywall.ts',
+  };
 
   function currentUrl() {
     return window.location.href;
@@ -68,13 +75,13 @@
   }
 
   function redirectToPaywall({ feature = 'unknown', returnTo = currentUrl() } = {}) {
-    const url = toUrl(PAYWALL_URL, {
-      feature,
-      return_to: returnTo,
-      // helpful for debugging / analytics
-      ts: Date.now(),
-    });
-    window.location.assign(url);
+    try {
+      localStorage.setItem(STORAGE.paywallReturnTo, String(returnTo || ''));
+      localStorage.setItem(STORAGE.paywallFeature, String(feature || 'unknown'));
+      localStorage.setItem(STORAGE.paywallTs, String(Date.now()));
+    } catch {}
+
+    window.location.assign(PAYWALL_URL);
   }
 
   function getEntitled(sessionJson, feature) {

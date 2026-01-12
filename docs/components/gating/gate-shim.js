@@ -56,7 +56,6 @@
     const t = textOf(el.closest('a,button') || el);
     if (!t) return null;
 
-    if (t === 'subscribe') return FEATURE.services;
     if (t === 'request access' || t === 'request api access') return FEATURE.api;
     if (t.includes('upgrade')) return FEATURE.services;
 
@@ -71,7 +70,7 @@
     // If this is a checkout CTA, let the Terms Gate / Checkout Router handle it.
     // checkout-router.js listens for [data-checkout-price-id] and will open terms gate.
     if (clickable.closest('[data-checkout-price-id]')) return;
-    
+
     // Respect explicit opt-out
     if (clickable.closest('[data-gate="off"]')) return;
 
