@@ -39,6 +39,9 @@
 	  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 	  <script src="components/gating/entitlement-gate.js"></script>
 	  <link rel="stylesheet" href="components/contact-form/contact-form.css" />
+	  <link rel="stylesheet" href="components/terms-gate/terms-gate.css" />
+	  <script src="components/terms-gate/terms-gate.js"></script>
+	  <script src="components/terms-gate/checkout-router.js"></script>
 
 	  <script>
 	    window.HAIPHEN = window.HAIPHEN || {};
@@ -1336,15 +1339,6 @@
 		  }
 		}
 
-		function escapeHtml(s) {
-		  return (s || '')
-		    .replaceAll('&', '&amp;')
-		    .replaceAll('<', '&lt;')
-		    .replaceAll('>', '&gt;')
-		    .replaceAll('"', '&quot;')
-		    .replaceAll("'", '&#039;');
-		}  	
-
 	    const KPI_ICON_MAP = {
 	      'Signals scanned': 'radar.svg',
 	      'Opportunities flagged': 'flag.svg',
@@ -1658,8 +1652,16 @@
 				    <div><strong>Date:</strong> <span id="trades-date">—</span></div>
 				    <div><strong>Updated:</strong> <span id="trades-updated">—</span></div>
 				    <div><strong>Headline:</strong> <span id="trades-headline">—</span></div>
-				  </div>
+				  </div>				 
 				</div>
+				<button
+				  class="btn btn-primary"
+				  type="button"
+				  data-gate-feature="api"
+				  onclick="window.HAIPHEN?.ApiAccess?.requestApiAccess?.({ source: 'trades_request_api_access', returnTo: window.location.href })"
+				>
+				  Request API access
+				</button>				
 				<details class="fintech-tech" id="fintech-tech">
 				  <summary id="portfolio-top">Tech</summary>
 				  <div id="portfolio-content-top" aria-hidden="true" style="height:1px;"></div>

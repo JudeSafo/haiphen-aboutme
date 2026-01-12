@@ -54,12 +54,48 @@
     window.location.assign(`${AUTH_ORIGIN}/login?to=${rt}`);
   }
 
-  function goToStripeCheckout(planKey) {
-    try {
-      if (planKey) sessionStorage.setItem(STORAGE.selectedPlan, String(planKey));
-      sessionStorage.setItem(STORAGE.returnTo, window.location.href);
-    } catch {}
-    window.location.assign(STRIPE_CHECKOUT_URL);
+  async function goToCanonicalCheckout({ planKey }) {
+    // Map planKey -> priceId (keep this mapping local, or fetch from checkout worker later)
+    const PRICE_BY_PLAN = {
+      signals_starter: "price_XXXXX",
+      fintech_pro: "price_YYYYY",
+      enterprise_custom: "price_ZZZZZ",
+      hardtech_starter: "price_AAAAA",
+      hardtech_pro: "price_BBBBB",
+      hardtech_enterprise: "price_CCCCC",
+    };
+
+    const priceId = PRICE_BY_PLAN[planKey];
+    if (!priceId) {
+      alert("Missing Stripe price mapping for this plan.");
+      return;
+    }
+
+    // Prefer the official API exposed by checkout-router.js
+    const start = window?.HAIPHEN?.startCheckout;
+    if (typeof start === "function") {
+      await start({
+        priceId,
+        plan: planKey,
+        tosVersion: "sla_v0.1_2026-01-10",
+        checkoutOrigin: "https://checkout.haiphen.io",
+      });
+      return;
+    }
+
+    // Fallback: if terms gate exists but router API not loaded
+    if (window.HaiphenTermsGate?.open) {
+      await window.HaiphenTermsGate.open({
+        priceId,
+        plan: planKey,
+        tosVersion: "sla_v0.1_2026-01-10",
+        checkoutOrigin: "https://checkout.haiphen.io",
+        contentUrl: "components/terms-gate/terms-content.html",
+      });
+      return;
+    }
+
+    alert("Checkout components not loaded (terms gate / checkout router).");
   }
 
   function routeEntitledUser() {
@@ -134,7 +170,7 @@
     }
 
     // Not entitled → route to Stripe checkout
-    goToStripeCheckout(planKey);
+    await goToCanonicalCheckout({ planKey });
   }
 
   function handleContact() {

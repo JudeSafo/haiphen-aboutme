@@ -68,6 +68,10 @@
     const clickable = target?.closest?.('a,button');
     if (!clickable) return;
 
+    // If this is a checkout CTA, let the Terms Gate / Checkout Router handle it.
+    // checkout-router.js listens for [data-checkout-price-id] and will open terms gate.
+    if (clickable.closest('[data-checkout-price-id]')) return;
+    
     // Respect explicit opt-out
     if (clickable.closest('[data-gate="off"]')) return;
 

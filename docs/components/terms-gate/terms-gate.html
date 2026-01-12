@@ -1,0 +1,43 @@
+<div id="termsGateRoot" class="terms-gate" aria-hidden="true">
+  <div class="terms-gate__backdrop" data-close="1"></div>
+
+  <div class="terms-gate__modal" role="dialog" aria-modal="true" aria-labelledby="termsGateTitle">
+    <div class="terms-gate__header">
+      <div class="terms-gate__titlewrap">
+        <div id="termsGateTitle" class="terms-gate__title">Service Agreement</div>
+        <div class="terms-gate__subtitle" id="termsGateSubtitle"></div>
+      </div>
+      <button class="terms-gate__x" type="button" aria-label="Close" data-close="1">✕</button>
+    </div>
+
+    <div class="terms-gate__body">
+      <div class="terms-gate__notice">
+        Please scroll to the bottom to enable acceptance.
+      </div>
+
+      <div class="terms-gate__scroll" id="termsGateScroll">
+        <div class="terms-gate__content" id="termsGateContent">
+          <!-- loaded dynamically -->
+        </div>
+      </div>
+
+      <div class="terms-gate__controls">
+        <label class="terms-gate__checkbox">
+          <input id="termsGateAgree" type="checkbox" disabled />
+          <span>I have read and agree to the Service Agreement.</span>
+        </label>
+
+        <div class="terms-gate__actions">
+          <button id="termsGateCancel" class="terms-gate__btn terms-gate__btn--ghost" type="button" data-close="1">
+            Cancel
+          </button>
+          <button id="termsGateContinue" class="terms-gate__btn" type="button" disabled>
+            Continue to Checkout
+          </button>
+        </div>
+
+        <div class="terms-gate__error" id="termsGateError" hidden></div>
+      </div>
+    </div>
+  </div>
+</div>
