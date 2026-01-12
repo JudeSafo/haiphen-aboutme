@@ -9,6 +9,18 @@
     checkoutOrigin: "https://checkout.haiphen.io",
   };
 
+  // ✅ ADD THIS (browser-side version)
+  function safeReturnTo(raw) {
+    const fallback = window.location.href;
+    if (!raw) return fallback;
+    try {
+      const cand = String(raw);
+      // Must be https + on haiphen.io (or subdomain)
+      if (/^https:\/\/([a-z0-9-]+\.)*haiphen\.io(\/|$)/i.test(cand)) return cand;
+    } catch (_) {}
+    return fallback;
+  }
+  
   function qs(sel, root = document) {
     const el = root.querySelector(sel);
     if (!el) throw new Error(`terms-gate: missing element ${sel}`);
