@@ -57,12 +57,12 @@
   async function goToCanonicalCheckout({ planKey, priceId, tosVersion, checkoutOrigin }) {
     // Fallback mapping only when priceId isn't provided by the HTML.
     const PRICE_BY_PLAN = {
-      signals_starter: "price_XXXXX",
-      fintech_pro: "price_YYYYY",
-      enterprise_custom: "price_ZZZZZ",
-      hardtech_starter: "price_AAAAA",
-      hardtech_pro: "price_BBBBB",
-      hardtech_enterprise: "price_CCCCC",
+      signals_starter: "price_1SmGzEJRL3AYFpZZIjsqhB1T",
+      fintech_pro: "price_1SmGzEJRL3AYFpZZIjsqhB1T",
+      enterprise_custom: "price_1SmGzEJRL3AYFpZZIjsqhB1T",
+      hardtech_starter: "price_1SmGzEJRL3AYFpZZIjsqhB1T",
+      hardtech_pro: "price_1SmGzEJRL3AYFpZZIjsqhB1T",
+      hardtech_enterprise: "price_1SmGzEJRL3AYFpZZIjsqhB1T",
     };
 
     const resolvedPlanKey = String(planKey || "").trim();
