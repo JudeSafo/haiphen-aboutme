@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-01-12T18:01:02.372Z",
+  "updated_at": "2026-01-12T21:00:24.009Z",
   "max_days": 3,
   "items": [
     {
@@ -7,8 +7,8 @@
       "screenshot": "assets/trades/archive/2026-01-12.png",
       "balance_screenshot": "assets/trades/archive/balance_2026-01-12.png",
       "json": "assets/trades/archive/2026-01-12.json",
-      "updated_at": "2026-01-12T18:01:02.288Z",
-      "headline": "Haiphen day trading snapshot ($10,773.00 on 2026-01-12)",
+      "updated_at": "2026-01-12T21:00:23.943Z",
+      "headline": "Haiphen Day Trading snapshot (fallback metrics)",
       "has_screenshot": true,
       "has_balance_screenshot": true,
       "has_json": true
