@@ -309,13 +309,25 @@
       return { section: null, hash: null };
     }
   }
-
   function redirectToLogin(returnTo) {
+    const fn = window?.HAIPHEN?.AuthSession?.redirectToLogin;
+    if (typeof fn === 'function') return fn(returnTo || window.location.href);
+
     const url = new URL(`${AUTH_ORIGIN}/login`);
-    url.searchParams.set('return_to', returnTo);
+    url.searchParams.set('return_to', returnTo || window.location.href);
     window.location.assign(url.toString());
   }
 
+  async function isLoggedInViaAuthCookie() {
+    const fn = window?.HAIPHEN?.AuthSession?.isLoggedInViaAuthCookie;
+    if (typeof fn === 'function') return fn();
+    try {
+      const r = await fetch(`${AUTH_ORIGIN}/me`, { credentials: 'include', cache: 'no-store' });
+      return r.ok;
+    } catch {
+      return false;
+    }
+  }
   async function startCheckout(returnTo) {
     const res = await fetchJson('/v1/billing/checkout', {
       method: 'POST',
@@ -424,15 +436,6 @@
     const cred = qs(root, '[data-api-cred]');
     if (cred && cred.hidden !== true) cred.hidden = true;
     KEY_CACHE.delete(root);
-  }
-
-  async function isLoggedInViaAuthCookie() {
-    try {
-      const r = await fetch(`${AUTH_ORIGIN}/me`, { credentials: 'include', cache: 'no-store' });
-      return r.ok;
-    } catch {
-      return false;
-    }
   }
 
   async function refreshCredsUI(root) {
