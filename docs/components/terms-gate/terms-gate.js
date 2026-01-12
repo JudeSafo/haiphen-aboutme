@@ -4,7 +4,7 @@
     tosVersion: "sla_v0.1_2026-01-10",
     title: "Service Agreement",
     // where the HTML content lives (static)
-     contentUrl: "components/terms-gate/terms-content.html",
+     contentUrl: "/components/terms-gate/terms-content.html",
     // checkout worker endpoint
     checkoutOrigin: "https://checkout.haiphen.io",
   };
@@ -20,7 +20,7 @@
     } catch (_) {}
     return fallback;
   }
-  
+
   function qs(sel, root = document) {
     const el = root.querySelector(sel);
     if (!el) throw new Error(`terms-gate: missing element ${sel}`);
@@ -72,7 +72,7 @@
 
     // You already have a component loader style; simplest is inline fetch
     // If you prefer your existing loader system, swap this to your import mechanism.
-    fetchText("components/terms-gate/terms-gate.html")
+    fetchText("/components/terms-gate/terms-gate.html")
       .then((html) => {
         host.innerHTML = html;
       })
@@ -122,7 +122,7 @@
     // Ensure HTML exists
     if (!document.getElementById("termsGateRoot")) {
       // if base html not injected yet, inject synchronously by fetching
-      const html = await fetchText("components/terms-gate/terms-gate.html");
+      const html = await fetchText("/components/terms-gate/terms-gate.html");
       const host = document.createElement("div");
       host.innerHTML = html;
       document.body.appendChild(host);
@@ -132,7 +132,7 @@
     if (!document.querySelector('link[data-terms-gate-css="1"]')) {
       const link = document.createElement("link");
       link.rel = "stylesheet";
-      link.href = "components/terms-gate/terms-gate.css";
+      link.href = "/components/terms-gate/terms-gate.css";
       link.setAttribute("data-terms-gate-css", "1");
       document.head.appendChild(link);
     }

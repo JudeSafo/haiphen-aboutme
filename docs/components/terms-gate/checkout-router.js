@@ -5,7 +5,7 @@
   const DEFAULTS = {
     checkoutOrigin: "https://checkout.haiphen.io",
     tosVersion: "sla_v0.1_2026-01-10",
-    contentUrl: "components/terms-gate/terms-content.html",
+    contentUrl: "/components/terms-gate/terms-content.html",
   };
 
   let inFlight = false;
