@@ -39,7 +39,8 @@
     if (!res.ok) {
       const msg = data?.error || `HTTP ${res.status}`;
       const err = new Error(msg);
-      err.data = data;
+      err.status = res.status;   // ✅ add
+      err.data = data;           // ✅ add
       throw err;
     }
     return data;
@@ -66,8 +67,44 @@
       .catch((e) => console.error("terms-gate: failed to load base html", e));
   }
 
+  async function getJson(url) {
+    const res = await fetch(url, {
+      method: "GET",
+      credentials: "include",
+      headers: { "accept": "application/json" },
+    });
+    const text = await res.text();
+    let data;
+    try { data = JSON.parse(text); } catch { data = { raw: text }; }
+    if (!res.ok) {
+      const msg = data?.error || `HTTP ${res.status}`;
+      const err = new Error(msg);
+      err.status = res.status;
+      err.data = data;
+      throw err;
+    }
+    return data;
+  }
+
+  function redirectToLogin(loginUrl) {
+    // Fallback if server didn't provide one
+    const fallback = `https://auth.haiphen.io/login?to=${encodeURIComponent(window.location.href)}`;
+    window.location.assign(String(loginUrl || fallback));
+  }
+
   async function openTermsGate(opts) {
     const cfg = { ...DEFAULTS, ...(opts || {}) };
+    // 0) Require login BEFORE showing terms gate
+    try {
+      await getJson(`${cfg.checkoutOrigin}/v1/auth/require`);
+    } catch (e) {
+      // If not logged in, bounce to auth
+      if (e && (e.status === 401 || e.status === 403)) {
+        redirectToLogin(e?.data?.login_url);
+        return { close() {} };
+      }
+      throw e;
+    }
 
     // Ensure HTML exists
     if (!document.getElementById("termsGateRoot")) {
@@ -167,6 +204,10 @@
         if (!session?.url) throw new Error("Missing checkout URL from server");
         window.location.assign(session.url);
       } catch (e) {
+        if (e && (e.status === 401 || e.status === 403 || /unauthorized/i.test(e.message))) {
+          redirectToLogin(e?.data?.login_url);
+          return;
+        }        
         console.error("terms-gate: continue failed", e);
         error.textContent = e?.message || "Failed to continue";
         setHidden(error, false);
