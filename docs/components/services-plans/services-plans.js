@@ -54,8 +54,8 @@
     window.location.assign(`${AUTH_ORIGIN}/login?to=${rt}`);
   }
 
-  async function goToCanonicalCheckout({ planKey }) {
-    // Map planKey -> priceId (keep this mapping local, or fetch from checkout worker later)
+  async function goToCanonicalCheckout({ planKey, priceId, tosVersion, checkoutOrigin }) {
+    // Fallback mapping only when priceId isn't provided by the HTML.
     const PRICE_BY_PLAN = {
       signals_starter: "price_XXXXX",
       fintech_pro: "price_YYYYY",
@@ -65,20 +65,29 @@
       hardtech_enterprise: "price_CCCCC",
     };
 
-    const priceId = PRICE_BY_PLAN[planKey];
-    if (!priceId) {
-      alert("Missing Stripe price mapping for this plan.");
+    const resolvedPlanKey = String(planKey || "").trim();
+    const resolvedPriceId = String(priceId || "").trim() || PRICE_BY_PLAN[resolvedPlanKey];
+
+    if (!resolvedPlanKey) {
+      alert("Missing plan key for checkout.");
       return;
     }
+    if (!resolvedPriceId) {
+      alert("Missing Stripe priceId (no data-checkout-price-id and no local mapping).");
+      return;
+    }
+
+    const resolvedTosVersion = String(tosVersion || "sla_v0.1_2026-01-10").trim();
+    const resolvedCheckoutOrigin = String(checkoutOrigin || "https://checkout.haiphen.io").trim();
 
     // Prefer the official API exposed by checkout-router.js
     const start = window?.HAIPHEN?.startCheckout;
     if (typeof start === "function") {
       await start({
-        priceId,
-        plan: planKey,
-        tosVersion: "sla_v0.1_2026-01-10",
-        checkoutOrigin: "https://checkout.haiphen.io",
+        priceId: resolvedPriceId,
+        plan: resolvedPlanKey,
+        tosVersion: resolvedTosVersion,
+        checkoutOrigin: resolvedCheckoutOrigin,
       });
       return;
     }
@@ -86,10 +95,10 @@
     // Fallback: if terms gate exists but router API not loaded
     if (window.HaiphenTermsGate?.open) {
       await window.HaiphenTermsGate.open({
-        priceId,
-        plan: planKey,
-        tosVersion: "sla_v0.1_2026-01-10",
-        checkoutOrigin: "https://checkout.haiphen.io",
+        priceId: resolvedPriceId,
+        plan: resolvedPlanKey,
+        tosVersion: resolvedTosVersion,
+        checkoutOrigin: resolvedCheckoutOrigin,
         contentUrl: "components/terms-gate/terms-content.html",
       });
       return;
@@ -128,17 +137,25 @@
     return Boolean(entitlements?.active && entitlements?.features?.services);
   }
 
-  async function handleSubscribe(planKey) {
+  async function handleSubscribe(optsOrPlanKey) {
+    // Support both:
+    //   handleSubscribe("fintech_pro")                      (legacy)
+    //   handleSubscribe({ planKey, priceId, tosVersion, checkoutOrigin }) (new)
+    const opts =
+      typeof optsOrPlanKey === "string"
+        ? { planKey: optsOrPlanKey }
+        : (optsOrPlanKey || {});
+
+    const planKey = String(opts.planKey || "").trim();
+    const priceId = String(opts.priceId || "").trim();
+    const tosVersion = String(opts.tosVersion || "sla_v0.1_2026-01-10").trim();
+    const checkoutOrigin = String(opts.checkoutOrigin || "https://checkout.haiphen.io").trim();
+
     // If you already have a global gate object, let it run first (optional).
-    // This makes the site consistent if EntitlementGate also handles login redirects.
     const gate = window?.HAIPHEN?.EntitlementGate?.requireEntitlement;
-    if (typeof gate === 'function') {
-      // Gate checks entitlement for “services” and handles login redirects.
-      // If user is entitled, it should return ok:true, entitled:true (depending on your impl).
-      // We still fall back to /v1/me below to avoid stale local state.
+    if (typeof gate === "function") {
       try {
-        const gateRes = await gate('services', { returnTo: window.location.href });
-        // If gate explicitly says “not logged in / not ok”, stop.
+        const gateRes = await gate("services", { returnTo: window.location.href });
         if (gateRes && gateRes.ok === false) return;
       } catch (e) {
         console.warn(`${LOG} EntitlementGate failed; falling back to /v1/me`, e);
@@ -157,20 +174,25 @@
     // Logged in but some other failure: be conservative, don’t redirect blindly
     if (!me.ok) {
       console.warn(`${LOG} /v1/me failed`, me.status);
-      alert('Unable to verify your subscription right now. Please refresh and try again.');
+      alert("Unable to verify your subscription right now. Please refresh and try again.");
       return;
     }
 
     const entitled = hasServicesEntitlement(me.entitlements);
 
     if (entitled) {
-      // ✅ Already paid/entitled → don’t send them to checkout
       routeEntitledUser();
       return;
     }
 
-    // Not entitled → route to Stripe checkout
-    await goToCanonicalCheckout({ planKey });
+    // Not entitled → route to checkout.
+    // ✅ Prefer passed priceId (from HTML), fallback to mapping in goToCanonicalCheckout().
+    await goToCanonicalCheckout({
+      planKey,
+      priceId,
+      tosVersion,
+      checkoutOrigin,
+    });
   }
 
   function handleContact() {
@@ -180,6 +202,29 @@
 
   function wire(root) {
     root.addEventListener('click', async (e) => {
+      // Prefer explicit checkout buttons (new style)
+      const checkoutBtn = e.target.closest('[data-checkout-price-id]');
+      if (checkoutBtn) {
+        const priceId = (checkoutBtn.getAttribute('data-checkout-price-id') || '').trim();
+        if (!priceId) return;
+
+        const plan =
+          (checkoutBtn.getAttribute('data-plan') || '').trim() ||
+          (checkoutBtn.closest('.plan')?.getAttribute('data-plan') || '').trim();
+
+        const tosVersion = (checkoutBtn.getAttribute('data-tos-version') || 'sla_v0.1_2026-01-10').trim();
+        const checkoutOrigin = (checkoutBtn.getAttribute('data-checkout-origin') || 'https://checkout.haiphen.io').trim();
+
+        await handleSubscribe({
+          planKey: plan || '',
+          priceId,
+          tosVersion,
+          checkoutOrigin,
+        });
+        return;
+      }
+
+      // Legacy handler (old style)
       const btn = e.target.closest('[data-action]');
       if (!btn) return;
 
@@ -188,11 +233,12 @@
       const planKey = card?.getAttribute('data-plan') || '';
 
       if (action === 'subscribe') {
-        await handleSubscribe(planKey);
-        return;
-      }
-      if (action === 'contact') {
-        handleContact();
+        await handleSubscribe({
+          planKey,
+          // legacy buttons don't carry these, so we default:
+          tosVersion: "sla_v0.1_2026-01-10",
+          checkoutOrigin: "https://checkout.haiphen.io",
+        });
         return;
       }
     });
