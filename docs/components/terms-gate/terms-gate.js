@@ -96,7 +96,8 @@
     const cfg = { ...DEFAULTS, ...(opts || {}) };
     // 0) Require login BEFORE showing terms gate
     try {
-      await getJson(`${cfg.checkoutOrigin}/v1/auth/require`);
+      const rt = encodeURIComponent(window.location.href);
+      await getJson(`${cfg.checkoutOrigin}/v1/auth/require?return_to=${rt}`);
     } catch (e) {
       // If not logged in, bounce to auth
       if (e && (e.status === 401 || e.status === 403)) {

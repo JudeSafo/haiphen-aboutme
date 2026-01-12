@@ -59,20 +59,7 @@
     });
   };
 
-  // One global delegated handler (works for dynamically injected components)
-  document.addEventListener("click", (e) => {
-    const target = e.target;
-    if (!target) return;
-
-    const btn = target.closest?.("[data-checkout-price-id]");
-    if (!btn) return;
-
-    e.preventDefault();
-    e.stopPropagation();
-
-    handleCheckoutClick(btn).catch((err) => {
-      warn("Checkout flow failed:", err?.message ?? err);
-      // You can optionally show a toast/modal here.
-    });
-  });
+  // Intentionally no global click handler:
+  // all checkout initiation should be routed through window.HAIPHEN.startCheckout(...)
+  // so we don't double-trigger flows (services-plans also wires buttons).
 })();
