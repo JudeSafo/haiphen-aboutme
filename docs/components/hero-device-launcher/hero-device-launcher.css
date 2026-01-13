@@ -159,7 +159,7 @@
 .hdl-hint{
   text-align: center;
   padding: 0 16px 12px;
-  font-size: 12px;
+  font-size: 12px; 
   font-weight: 700;
   color: rgba(17,24,39,0.55);
   user-select: none;
@@ -183,6 +183,115 @@
     margin-right: auto;
     transform: none;
   }
+  .hdl-inner{ gap: 14px; }
+  .hdl-btn{ width: 48px; height: 48px; }
+  .hdl-ic{ width: 20px; height: 20px; }
+}
+/* --- Dark charcoal theme override (hero-device-launcher) --- */
+.hdl{
+  /* optional: keep existing translateX; do not change unless needed */
+}
+
+/* Panel shell */
+.hdl-panel{
+  /* darker charcoal */
+  background: rgba(17, 24, 39, 0.92); /* ~#111827 */
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  box-shadow: 0 18px 46px rgba(0,0,0,0.42);
+
+  /* keep your animation */
+  backdrop-filter: blur(10px);
+}
+
+/* Expanded state (keep your larger height) */
+.hdl.is-open .hdl-panel,
+.hdl:focus-within .hdl-panel{
+  max-height: 132px;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.hdl-inner{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  padding: 12px 18px 8px;
+}
+
+/* Buttons */
+.hdl-btn{
+  width: 56px;
+  height: 56px;
+
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+
+  border-radius: 14px;
+
+  /* dark button on dark panel, but slightly lifted */
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+
+  color: rgba(226, 232, 240, 0.95); /* slate-200-ish */
+  text-decoration: none;
+
+  transition: transform 120ms ease, background 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.hdl-btn:hover{
+  transform: translateY(-1px);
+  background: rgba(255,255,255,0.10);
+  border-color: rgba(90,155,212,0.55);
+  box-shadow: 0 14px 26px rgba(0,0,0,0.35);
+}
+
+.hdl-btn:focus-visible{
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(90,155,212,0.35);
+}
+
+/* Icon + label contrast */
+.hdl-ic{
+  width: 22px;
+  height: 22px;
+  display: block;
+
+  /* helps monochrome svgs pop on dark */
+  filter: brightness(1.2) contrast(1.05);
+}
+
+.hdl-label{
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  line-height: 1;
+  user-select: none;
+
+  color: rgba(226, 232, 240, 0.78);
+}
+
+.hdl-hint{
+  text-align: center;
+  padding: 0 16px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  user-select: none;
+
+  color: rgba(226, 232, 240, 0.62);
+}
+
+/* Responsive tweaks stay consistent */
+@media (max-width: 720px){
+  .hdl-inner{ gap: 16px; }
+  .hdl-btn{ width: 50px; height: 50px; }
+  .hdl-label{ font-size: 10px; }
+}
+
+@media (max-width: 520px){
   .hdl-inner{ gap: 14px; }
   .hdl-btn{ width: 48px; height: 48px; }
   .hdl-ic{ width: 20px; height: 20px; }
