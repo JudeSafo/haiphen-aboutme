@@ -110,3 +110,46 @@
   font-size: 12px;
   color: #ffb4b4;
 }
+/* --- Typography isolation: prevent base.css from forcing dark text --- */
+.terms-gate,
+.terms-gate * {
+  color-scheme: dark; /* helps form controls render appropriately */
+}
+
+.terms-gate__modal {
+  color: #e6edf3; /* keep */
+}
+
+/* Override global h/p/li colors from base.css */
+.terms-gate__content,
+.terms-gate__content h1,
+.terms-gate__content h2,
+.terms-gate__content h3,
+.terms-gate__content p,
+.terms-gate__content li,
+.terms-gate__content strong,
+.terms-gate__content em,
+.terms-gate__content code,
+.terms-gate__content a {
+  color: inherit;
+}
+
+/* Make links readable + consistent */
+.terms-gate__content a {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* Optional: better list spacing */
+.terms-gate__content ul,
+.terms-gate__content ol {
+  padding-left: 1.25rem;
+  margin: 0.5rem 0 0.75rem;
+}
+
+/* Optional: hr styling in dark UI */
+.terms-gate__content hr {
+  border: 0;
+  border-top: 1px solid rgba(255,255,255,0.10);
+  margin: 14px 0;
+}
