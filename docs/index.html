@@ -45,7 +45,9 @@
 	  <link rel="stylesheet" href="components/terms-gate/terms-gate.css" data-terms-gate-css="1" />
 	  <script src="components/terms-gate/terms-gate.js"></script>
 	  <script src="components/terms-gate/checkout-router.js"></script>
-
+      <script src="components/hero-device-launcher/hero-device-launcher.js"></script>
+      <link rel="stylesheet" href="components/hero-device-launcher/hero-device-launcher.css" />
+      
 	  <script>
 	    window.HAIPHEN = window.HAIPHEN || {};
 	    window.HAIPHEN.TURNSTILE_SITE_KEY = "0x4AAAAAACKr8sUWJUM68QdF"; // site key (public)
@@ -1057,14 +1059,23 @@
 	  <!-- Main Content -->
 	  <div class="main-container">
 	    <!-- Hero Section -->
-	    <section class="hero">
-	      <div class="hero-logo">
-	        <img src="assets/robot_haiphen.svg" alt="Haiphen Robot Logo">
-	      </div>
-	      <!-- Primary Tagline -->
-	      <p style="margin-bottom: 0.5rem;">API Everything [<span style="color: red;">♥</span>]</p>
+		<section class="hero">
+		  <!-- NEW: unified trigger region -->
+		  <div class="hero-launcher-trigger" data-hdl-trigger role="button" tabindex="0" aria-label="Open device launcher">
+		    <div class="hero-logo">
+		      <img src="assets/robot_haiphen.svg" alt="Haiphen Robot Logo">
+		    </div>
 
-	    </section>
+		    <p class="hero-tagline" style="margin-bottom: 0.5rem;">
+		      API Everything [<span style="color: red;">♥</span>]
+		    </p>
+		  </div>
+
+		  <!-- unchanged -->
+		  <div id="hero-device-launcher-mount"></div>
+		</section>
+
+		<div id="section-menu-mount"></div>
 	    
 	    <div id="section-menu-mount"></div>
 
@@ -2740,15 +2751,10 @@
 
 		document.addEventListener('DOMContentLoaded', () => {
 		  const H = window.HAIPHEN || {};
-
 		  const safe = (fn, name) => {
 		    if (typeof fn !== 'function') return;
-		    try {
-		      // Works whether fn returns a Promise or not
-		      Promise.resolve(fn()).catch((err) => console.warn(`[${name}] load failed`, err));
-		    } catch (err) {
-		      console.warn(`[${name}] load threw`, err);
-		    }
+		    try { Promise.resolve(fn()).catch((err) => console.warn(`[${name}] load failed`, err)); }
+		    catch (err) { console.warn(`[${name}] load threw`, err); }
 		  };
 
 		  safe(H.loadHeader, 'header');
@@ -2757,6 +2763,9 @@
 		  safe(H.loadFooter, 'footer');
 		  safe(H.loadTradesOverlay, 'trades-overlay');
 		  safe(H.loadSiteSearch, 'site-search');
+
+		  // NEW
+		  safe(H.loadHeroDeviceLauncher, 'hero-device-launcher');
 
 		  updateSessionWidget();
 		});
