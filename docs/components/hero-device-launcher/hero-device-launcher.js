@@ -12,9 +12,9 @@
    */
   const state = {
     handlers: {
-      android: () => routeToDocsViaAccessGate('hero_device_android'),
-      mac: () => routeToDocsViaAccessGate('hero_device_mac'),
-      iphone: () => routeToDocsViaAccessGate('hero_device_iphone'),
+      android: () => console.log('[hero-device] android clicked'),
+      mac: () => console.log('[hero-device] mac clicked'),
+      iphone: () => console.log('[hero-device] iphone clicked'),
     },
   };
 
