@@ -18,10 +18,6 @@
   const API_ORIGIN = 'https://api.haiphen.io';
   const AUTH_ORIGIN = 'https://auth.haiphen.io';
 
-  // ✅ Stripe hosted link (for now)
-  // Later, consider: POST /v1/billing/checkout { planKey, return_to } => session.url
-  const STRIPE_CHECKOUT_URL = 'https://buy.stripe.com/28E28saW7f1Cead9PpaAw03';
-
   // Where to send entitled users when they click “Subscribe”.
   // Pick something real in your site (a section id or route).
   const SERVICES_DESTINATION_HASH = '#services';
@@ -150,16 +146,6 @@
     const priceId = String(opts.priceId || "").trim();
     const tosVersion = String(opts.tosVersion || "sla_v0.1_2026-01-10").trim();
     const checkoutOrigin = String(opts.checkoutOrigin || "https://checkout.haiphen.io").trim();
-
-    // If you already have a global gate object, let it run first (optional).
-    async function isLoggedInViaAuthCookie() {
-      try {
-        const r = await fetch(`${AUTH_ORIGIN}/me`, { credentials: "include", cache: "no-store" });
-        return r.ok;
-      } catch {
-        return false;
-      }
-    }
 
     // Canonical check via API
     const me = await getEntitlements();

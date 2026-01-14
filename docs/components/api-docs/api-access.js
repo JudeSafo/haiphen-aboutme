@@ -26,8 +26,6 @@
   const HYDRATE_STATE = new WeakMap();
   // How often we allow re-checking /me even if DOM keeps mutating
   const HYDRATE_TTL_MS = 5 * 60 * 1000 ; // 5m
-  
-  const STRIPE_CHECKOUT_URL = 'https://buy.stripe.com/28E28saW7f1Cead9PpaAw03';
 
   // Where to send users who already have entitlement.
   // You can override without redeploy by setting window.HAIPHEN.APP_ENV_URL at runtime.
@@ -35,13 +33,6 @@
 
   // For in-site routing when NOT entitled.
   const SERVICES_HASH = '#services';
-
-  function redirectToLogin(returnTo) {
-    const url = new URL(`${AUTH_ORIGIN}/login`);
-    // pick ONE canonical param; "return_to" is what your later code assumes
-    url.searchParams.set('return_to', returnTo || window.location.href);
-    window.location.assign(url.toString());
-  }
 
   async function fetchMe() {
     const url = `${API_ORIGIN}/v1/me`;
@@ -150,13 +141,56 @@
     // Not entitled: route to Services where Stripe checkout lives
     routeToServices();
   }
-  function goToStripeCheckout({ returnTo, source = 'docs_request_access' } = {}) {
+
+  // Canonical checkout entrypoint (NO payment links).
+  async function startCanonicalCheckout({
+    priceId,
+    plan,
+    tosVersion = 'sla_v0.1_2026-01-10',
+    checkoutOrigin = 'https://checkout.haiphen.io',
+    source = 'api_access',
+  } = {}) {
+    const resolvedPriceId = String(priceId || '').trim();
+    const resolvedPlan = String(plan || '').trim();
+    if (!resolvedPriceId || !resolvedPlan) {
+      console.warn('[api-access] missing priceId/plan for checkout; routing to services');
+      routeToServices();
+      return;
+    }
+
     try {
-      sessionStorage.setItem('haiphen.checkout.return_to', returnTo || window.location.href);
       sessionStorage.setItem('haiphen.checkout.source', source);
+      sessionStorage.setItem('haiphen.checkout.return_to', window.location.href);
+      sessionStorage.setItem('haiphen.checkout.selected_plan', resolvedPlan);
     } catch {}
-    window.location.assign(STRIPE_CHECKOUT_URL);
+
+    const start = window?.HAIPHEN?.startCheckout;
+    if (typeof start === 'function') {
+      await start({
+        priceId: resolvedPriceId,
+        plan: resolvedPlan,
+        tosVersion: String(tosVersion || '').trim(),
+        checkoutOrigin: String(checkoutOrigin || '').trim(),
+      });
+      return;
+    }
+
+    const open = window?.HaiphenTermsGate?.open;
+    if (typeof open === 'function') {
+      await open({
+        priceId: resolvedPriceId,
+        plan: resolvedPlan,
+        tosVersion: String(tosVersion || '').trim(),
+        checkoutOrigin: String(checkoutOrigin || '').trim(),
+        contentUrl: 'components/terms-gate/terms-content.html',
+      });
+      return;
+    }
+
+    // Safe fallback: let the user click a plan button (with data-checkout-* attrs)
+    routeToServices();
   }
+
   function getHydrateState(root) {
     let s = HYDRATE_STATE.get(root);
     if (!s) {
@@ -327,19 +361,6 @@
     } catch {
       return false;
     }
-  }
-  async function startCheckout(returnTo) {
-    const res = await fetchJson('/v1/billing/checkout', {
-      method: 'POST',
-      body: { return_to: returnTo },
-    });
-    if (!res.ok) {
-      console.warn('[api-access] checkout failed', res);
-      throw new Error(res.json?.error?.message || `Checkout failed (HTTP ${res.status})`);
-    }
-    const checkoutUrl = res.json?.url;
-    if (!checkoutUrl) throw new Error('Checkout URL missing');
-    window.location.assign(checkoutUrl);
   }
 
   // Expected /v1/me (your current shape):
@@ -562,8 +583,16 @@
 
     const entitled = Boolean(session?.entitlements?.active);
     if (!entitled) {
-      // ✅ Subscribe-like behavior: route to checkout
-      goToStripeCheckout({ returnTo, source: 'api_docs_request_access' });
+      // ✅ Canonical checkout (no payment links)
+      await startCanonicalCheckout({
+        // Default plan for “Request access” CTA.
+        // If you want to force plan selection instead, remove this and routeToServices().
+        priceId: 'price_1SmGzEJRL3AYFpZZIjsqhB1T',
+        plan: 'fintech_pro',
+        tosVersion: 'sla_v0.1_2026-01-10',
+        checkoutOrigin: 'https://checkout.haiphen.io',
+        source: 'api_docs_request_access',
+      });
       return;
     }
 
