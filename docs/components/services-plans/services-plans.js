@@ -44,10 +44,19 @@
     document.head.appendChild(link);
   }
 
-  function redirectToLogin(returnTo) {
-    const rt = encodeURIComponent(returnTo || window.location.href);
-    // Align with your site’s preferred param. If auth supports `next=` or `to=`, pick one.
-    window.location.assign(`${AUTH_ORIGIN}/login?to=${rt}`);
+  function buildCheckoutStartUrl({ checkoutOrigin, priceId, planKey, tosVersion }) {
+    const origin = String(checkoutOrigin || "https://checkout.haiphen.io").trim();
+    const u = new URL("/v1/checkout/start", origin);
+    u.searchParams.set("price_id", String(priceId || "").trim());
+    if (planKey) u.searchParams.set("plan", String(planKey || "").trim());
+    if (tosVersion) u.searchParams.set("tos_version", String(tosVersion || "").trim());
+    return u.toString();
+  }
+
+  function navigateToCheckoutStart(opts) {
+    const url = buildCheckoutStartUrl(opts);
+    // Full-page navigation so auth cookies + redirects behave reliably.
+    window.location.assign(url);
   }
 
   async function goToCanonicalCheckout({ planKey, priceId, tosVersion, checkoutOrigin }) {
@@ -150,9 +159,15 @@
     // Canonical check via API
     const me = await getEntitlements();
 
-    // Not logged in (401/403): send to auth
+    // Not logged in (401/403): jump to checkout start.
+    // That endpoint will redirect to auth and then continue to Stripe automatically.
     if (!me.ok && (me.status === 401 || me.status === 403)) {
-      redirectToLogin(window.location.href);
+      navigateToCheckoutStart({
+        priceId,
+        planKey,
+        tosVersion,
+        checkoutOrigin,
+      });
       return;
     }
 
@@ -170,11 +185,10 @@
       return;
     }
 
-    // Not entitled → route to checkout.
-    // ✅ Prefer passed priceId (from HTML), fallback to mapping in goToCanonicalCheckout().
-    await goToCanonicalCheckout({
-      planKey,
+    // Not entitled → route to checkout start (handles auth bounce + creates session server-side)
+    navigateToCheckoutStart({
       priceId,
+      planKey,
       tosVersion,
       checkoutOrigin,
     });
