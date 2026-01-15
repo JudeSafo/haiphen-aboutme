@@ -206,8 +206,7 @@
           btn.textContent = 'Logging out…';
           const here = window.location.href;
           const u = new URL(LOGOUT_URL);
-          u.searchParams.set('to', here);
-          u.searchParams.set('reauth', '1'); // force the login flow to run again
+          u.searchParams.set('to', here);          
           window.location.assign(u.toString());
           return;
         }

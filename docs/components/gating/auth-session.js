@@ -19,7 +19,7 @@
   // If your auth worker accepts `to` as well, it can alias it server-side.
   function loginUrl(returnTo) {
     const u = new URL(`${AUTH_ORIGIN}/login`);
-    u.searchParams.set('return_to', String(returnTo || currentUrl()));
+    u.searchParams.set('to', String(returnTo || currentUrl()));
     return u.toString();
   }
 
