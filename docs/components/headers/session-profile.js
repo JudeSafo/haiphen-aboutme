@@ -107,11 +107,11 @@
       if (action === 'logout') {
         btn.disabled = true;
         btn.textContent = 'Logging out…';
-        try {
-          await fetch(LOGOUT_URL, { method: 'GET', credentials: 'include', cache: 'no-store' });
-        } catch {}
-        // Always hard refresh to ensure cookie-cleared + UI resets
-        window.location.reload();
+        const here = window.location.href;
+        const u = new URL(LOGOUT_URL);
+        u.searchParams.set('to', here);
+        u.searchParams.set('reauth', '1'); // force the login flow to run again
+        window.location.assign(u.toString());
         return;
       }
 
