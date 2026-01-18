@@ -162,6 +162,21 @@
     // Not logged in (401/403): jump to checkout start.
     // That endpoint will redirect to auth and then continue to Stripe automatically.
     if (!me.ok && (me.status === 401 || me.status === 403)) {
+      // Prefer Terms Gate so the flow is consistent:
+      // - it will bounce to login
+      // - then come back and show ToS before checkout
+      const start = window?.HAIPHEN?.startCheckout;
+      if (typeof start === "function") {
+        await start({
+          priceId,
+          plan: planKey,
+          tosVersion,
+          checkoutOrigin,
+        });
+        return;
+      }
+
+      // fallback if scripts not loaded
       navigateToCheckoutStart({
         priceId,
         planKey,
@@ -185,13 +200,27 @@
       return;
     }
 
-    // Not entitled → route to checkout start (handles auth bounce + creates session server-side)
-    navigateToCheckoutStart({
-      priceId,
-      planKey,
-      tosVersion,
-      checkoutOrigin,
-    });
+    if (!entitled) {
+      const start = window?.HAIPHEN?.startCheckout;
+      if (typeof start === "function") {
+        await start({
+          priceId: resolvedPriceId,
+          plan: resolvedPlanKey,
+          tosVersion: resolvedTosVersion,
+          checkoutOrigin: resolvedCheckoutOrigin,
+        });
+        return;
+      }
+
+      // fallback
+      navigateToCheckoutStart({
+        priceId: resolvedPriceId,
+        planKey: resolvedPlanKey,
+        tosVersion: resolvedTosVersion,
+        checkoutOrigin: resolvedCheckoutOrigin,
+      });
+      return;
+    }
   }
 
   function handleContact() {

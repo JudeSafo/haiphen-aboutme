@@ -206,6 +206,12 @@
           page_url: window.location.href,
         });
 
+        // 2) If resumeUrl is provided, bounce back to server-side checkout/start
+        if (resumeUrl) {
+          window.location.assign(resumeUrl);
+          return;
+        }
+
         // 2) create checkout session (your existing API)
         const session = await postJson(`${cfg.checkoutOrigin}/v1/checkout/session`, {
           price_id: cfg.priceId,
@@ -216,16 +222,6 @@
         // 3) redirect to Stripe
         if (!session?.url) throw new Error("Missing checkout URL from server");
         window.location.assign(session.url);
-      } catch (e) {
-        if (e && (e.status === 401 || e.status === 403 || /unauthorized/i.test(e.message))) {
-          redirectToLogin(e?.data?.login_url);
-          return;
-        }        
-        console.error("terms-gate: continue failed", e);
-        error.textContent = e?.message || "Failed to continue";
-        setHidden(error, false);
-        cont.disabled = false;
-      }
     }
 
     // wire events
