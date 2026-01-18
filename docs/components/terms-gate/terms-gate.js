@@ -106,6 +106,20 @@
 
   async function openTermsGate(opts) {
     const cfg = { ...DEFAULTS, ...(opts || {}) };
+
+    // Support resume flow (tos-resume.js passes this)
+    const resumeUrl = (() => {
+      const raw = cfg.resumeUrl;
+      if (!raw) return null;
+      try {
+        const u = new URL(String(raw));
+        if (u.protocol !== "https:") return null;
+        const h = u.hostname.toLowerCase();
+        if (h === "checkout.haiphen.io" || h.endsWith(".haiphen.io")) return u.toString();
+      } catch (_) {}
+      return null;
+    })();
+
     // 0) Require login BEFORE showing terms gate
     try {
       const rt = encodeURIComponent(window.location.href);
@@ -121,10 +135,9 @@
 
     // Ensure HTML exists
     if (!document.getElementById("termsGateRoot")) {
-      // if base html not injected yet, inject synchronously by fetching
-      const html = await fetchText("/components/terms-gate/terms-gate.html");
+      const baseHtml = await fetchText("/components/terms-gate/terms-gate.html");
       const host = document.createElement("div");
-      host.innerHTML = html;
+      host.innerHTML = baseHtml;
       document.body.appendChild(host);
     }
 
@@ -155,16 +168,19 @@
 
     subtitle.textContent = `Version: ${cfg.tosVersion}`;
 
-    // Load content (versioned)
-    const html = await fetchText(cfg.contentUrl);
-    content.innerHTML = html;
+    // Load ToS content
+    const tosHtml = await fetchText(cfg.contentUrl);
+    content.innerHTML = tosHtml;
 
     // Show modal + lock body scroll
     root.setAttribute("aria-hidden", "false");
     document.body.style.overflow = "hidden";
 
-    // Close handler
+    let closed = false;
     function close() {
+      if (closed) return;
+      closed = true;
+
       root.setAttribute("aria-hidden", "true");
       document.body.style.overflow = "";
       root.removeEventListener("click", onRootClick);
@@ -172,6 +188,11 @@
       agree.removeEventListener("change", onAgree);
       cont.removeEventListener("click", onContinue);
       window.removeEventListener("keydown", onKeyDown);
+    }
+
+    function showError(msg) {
+      error.textContent = String(msg || "Something went wrong.");
+      setHidden(error, false);
     }
 
     function onRootClick(e) {
@@ -184,9 +205,7 @@
     }
 
     function onScroll() {
-      if (nearBottom(scroll)) {
-        agree.disabled = false;
-      }
+      if (nearBottom(scroll)) agree.disabled = false;
       cont.disabled = !(nearBottom(scroll) && agree.checked);
     }
 
@@ -195,33 +214,49 @@
     }
 
     async function onContinue() {
+      cont.disabled = true;
+      setHidden(error, true);
+
       try {
-        cont.disabled = true;
-        setHidden(error, true);
+        // 1) Record acceptance (server-side)
+        // If user already accepted (unique constraint), treat as success.
+        try {
+          await postJson(`${cfg.checkoutOrigin}/v1/tos/accept`, {
+            tos_version: cfg.tosVersion,
+            content_url: cfg.contentUrl,
+            page_url: window.location.href,
+          });
+        } catch (e) {
+          // Make "already accepted" non-fatal. Your worker currently doesn't upsert.
+          const msg = String(e?.message || "");
+          const isConflictish =
+            e?.status === 409 ||
+            msg.toLowerCase().includes("unique") ||
+            msg.toLowerCase().includes("constraint") ||
+            msg.toLowerCase().includes("already");
+          if (!isConflictish) throw e;
+        }
 
-        // 1) record acceptance (server-side)
-        await postJson(`${cfg.checkoutOrigin}/v1/tos/accept`, {
-          tos_version: cfg.tosVersion,
-          content_url: cfg.contentUrl,
-          page_url: window.location.href,
-        });
-
-        // 2) If resumeUrl is provided, bounce back to server-side checkout/start
+        // 2) Resume mode: go back to /v1/checkout/start (server creates Stripe session)
         if (resumeUrl) {
           window.location.assign(resumeUrl);
           return;
         }
 
-        // 2) create checkout session (your existing API)
+        // 3) Normal mode: create checkout session then redirect to Stripe
         const session = await postJson(`${cfg.checkoutOrigin}/v1/checkout/session`, {
-          price_id: cfg.priceId,
-          plan: cfg.plan,
+          price_id: String(cfg.priceId || "").trim(),
+          plan: String(cfg.plan || "").trim(),
           tos_version: cfg.tosVersion,
         });
 
-        // 3) redirect to Stripe
         if (!session?.url) throw new Error("Missing checkout URL from server");
         window.location.assign(session.url);
+      } catch (e) {
+        console.error("terms-gate: continue failed", e);
+        showError(e?.message || "Unable to continue to checkout.");
+        cont.disabled = !(nearBottom(scroll) && agree.checked);
+      }
     }
 
     // wire events
@@ -234,7 +269,6 @@
     // initial check
     onScroll();
 
-    // return close hook if callers want it
     return { close };
   }
 
