@@ -23,3 +23,8 @@
 *.sqlite
 *.sqlite-wal
 *.sqlite-shm
+
+# --- binaries (never commit) ---
+*.exe
+*.bin
+*.out
