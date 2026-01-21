@@ -44,7 +44,7 @@ func New(cfg *config.Config, st store.Store) (*Server, error) {
 		rl:   rl,
 		httpSrv: &http.Server{
 			Addr:              fmt.Sprintf("127.0.0.1:%d", cfg.Port),
-			Handler:           nil, // set below
+			Handler:           nil,
 			ReadHeaderTimeout: 5 * time.Second,
 		},
 	}
@@ -53,15 +53,16 @@ func New(cfg *config.Config, st store.Store) (*Server, error) {
 	mux.HandleFunc("/health", s.handleHealth)
 	mux.HandleFunc("/status", s.handleStatus)
 
-	// Auth endpoints (local)
-	mux.HandleFunc("/auth/callback", func(w http.ResponseWriter, r *http.Request) {
-		// handled by `haiphen login` flow server, but keep for completeness
-		writeErr(w, http.StatusBadRequest, "use `haiphen login` to authenticate")
-	})
+	// Native auth callback (serve-mode login capture)
+	mux.HandleFunc("/auth/callback", s.handleAuthCallback)
 	mux.HandleFunc("/auth/logout", s.handleLogout)
 
-	// Protected API surface
-	protected := s.withGates(http.HandlerFunc(s.handleV1))
+	// Remote API proxy (protected)
+	proxy, err := newAPIProxy(cfg.APIOrigin, st)
+	if err != nil {
+		return nil, err
+	}
+	protected := s.withGates(proxy)
 	mux.Handle("/v1/", protected)
 
 	s.httpSrv.Handler = mux
@@ -101,10 +102,10 @@ func (s *Server) handleStatus(w http.ResponseWriter, r *http.Request) {
 
 	ent, last := s.mon.Entitled()
 	out := map[string]any{
-		"logged_in":             st.LoggedIn,
-		"user":                  st.User,
-		"entitled":              st.Entitled,
-		"monitor_entitled":      ent,
+		"logged_in":              st.LoggedIn,
+		"user":                   st.User,
+		"entitled":               st.Entitled,
+		"monitor_entitled":       ent,
 		"last_entitlement_check": last.Format(time.RFC3339),
 	}
 	writeJSON(w, out, http.StatusOK)
@@ -119,34 +120,103 @@ func (s *Server) handleLogout(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, map[string]any{"ok": true}, http.StatusOK)
 }
 
-func (s *Server) handleV1(w http.ResponseWriter, r *http.Request) {
-	// This is your “local haiphen-api” surface.
-	// In the next step, you can either:
-	//  1) implement local compute, or
-	//  2) proxy to remote API with Authorization: Bearer <token>
-	//
-	// For now, return a structured placeholder.
-	writeJSON(w, map[string]any{
-		"ok":      true,
-		"path":    r.URL.Path,
-		"message": "haiphen local gateway (placeholder).",
-	}, http.StatusOK)
+// serve-mode native callback endpoint.
+// GET: renders JS to post token from fragment.
+// POST: saves token to store and redirects user to /status (nice UX).
+func (s *Server) handleAuthCallback(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case "GET":
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		_, _ = w.Write([]byte(`<!doctype html>
+<html>
+  <body style="font-family:sans-serif">
+    <h2>Completing Haiphen login…</h2>
+    <script>
+    (async () => {
+      // Prefer fragment (#token=...) but also support query (?token=...) for robustness.
+      const hash = new URLSearchParams((location.hash || '').replace(/^#/, ''));
+      let token = hash.get('token');
+
+      if (!token) {
+        const qs = new URLSearchParams(location.search || '');
+        token = qs.get('token');
+        // If token came in via query, scrub it from the URL immediately.
+        if (token) {
+          try {
+            const clean = new URL(location.href);
+            clean.searchParams.delete('token');
+            clean.hash = 'token=' + encodeURIComponent(token);
+            history.replaceState(null, '', clean.toString());
+          } catch (_) {}
+        }
+      }
+      if (!token) {
+        document.body.innerHTML = "<h2>Missing token</h2><p>No token found in URL fragment.</p>";
+        return;
+      }
+
+      const res = await fetch(location.pathname, {
+        method: "POST",
+        headers: {"content-type":"application/json"},
+        body: JSON.stringify({ token }),
+      });
+
+      if (res.ok) {
+        // move user to a helpful status page in the gateway
+        location.replace("/status");
+        return;
+      }
+
+      document.body.innerHTML = "<h2>Login failed.</h2>";
+    })();
+    </script>
+  </body>
+</html>`))
+		return
+
+	case "POST":
+		var body struct {
+			Token string `json:"token"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&body); err != nil || strings.TrimSpace(body.Token) == "" {
+			http.Error(w, "missing token", http.StatusBadRequest)
+			return
+		}
+
+		tok := &store.Token{
+			AccessToken: body.Token,
+			Expiry:      time.Time{},
+		}
+		if exp, err := util.JWTExpiry(body.Token); err == nil {
+			tok.Expiry = exp
+		} else {
+			tok.Expiry = time.Now().Add(6 * time.Hour)
+		}
+
+		if err := s.st.SaveToken(tok); err != nil {
+			http.Error(w, "failed to save session", http.StatusInternalServerError)
+			return
+		}
+
+		w.WriteHeader(http.StatusNoContent)
+		return
+
+	default:
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
 }
 
 // ---- Gating middleware ----
 
 func (s *Server) withGates(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Local rate limit (UX + basic abuse prevention)
-		// Later you can key this by user sub if you want:
-		// e.g. key := "user:" + sub
 		key := "local"
 		if !s.rl.Allow(key) {
 			writeErr(w, http.StatusTooManyRequests, "rate limit exceeded")
 			return
 		}
 
-		// Must be logged in (token exists)
 		tok, err := s.st.LoadToken()
 		if err != nil {
 			log.Printf("[gate] load token error: %v", err)
@@ -154,49 +224,42 @@ func (s *Server) withGates(next http.Handler) http.Handler {
 			return
 		}
 		if tok == nil || strings.TrimSpace(tok.AccessToken) == "" {
-			s.openLogin(r)
+			s.openLogin()
 			writeErr(w, http.StatusUnauthorized, "not logged in")
 			return
 		}
 
-		// Optional: if token is known-expired, treat as logged out (fail closed).
 		if !tok.Expiry.IsZero() && time.Now().After(tok.Expiry) {
 			_ = s.st.ClearToken()
-			s.openLogin(r)
+			s.openLogin()
 			writeErr(w, http.StatusUnauthorized, "session expired")
 			return
 		}
 
-		// Entitlement enforcement: prefer monitor state (fast) but fail closed if not entitled.
 		entitled, lastCheck := s.mon.Entitled()
 		if !entitled {
-			// If monitor hasn't run yet (startup), do a synchronous check to avoid false lockouts.
-			// Note: auth.Status() already checks entitlement via /entitlement (as designed).
+			// If monitor hasn't run recently, do a synchronous check (avoid false lockouts).
 			if time.Since(lastCheck) > 2*time.Minute {
 				st, err := s.auth.Status(r.Context())
 				if err != nil {
 					log.Printf("[gate] entitlement status error: %v", err)
-					// strict: fail closed
 					s.openCheckout()
 					writeErr(w, http.StatusPaymentRequired, "entitlement check failed")
 					return
 				}
 				if !st.LoggedIn {
 					_ = s.st.ClearToken()
-					s.openLogin(r)
+					s.openLogin()
 					writeErr(w, http.StatusUnauthorized, "not logged in")
 					return
 				}
 				if !st.Entitled {
-					// hard-lock locally too
 					_ = s.st.ClearToken()
 					s.openCheckout()
 					writeErr(w, http.StatusPaymentRequired, "not entitled")
 					return
 				}
-				// if we got here, user is entitled; continue
 			} else {
-				// recently checked and not entitled
 				_ = s.st.ClearToken()
 				s.openCheckout()
 				writeErr(w, http.StatusPaymentRequired, "not entitled")
@@ -204,20 +267,15 @@ func (s *Server) withGates(next http.Handler) http.Handler {
 			}
 		}
 
-		// Passed gates
 		next.ServeHTTP(w, r)
 	})
 }
 
 // ---- Native UX helpers (open browser) ----
 
-func (s *Server) openLogin(r *http.Request) {
-	// Send user through hosted login but return to *this local gateway* after login.
-	// For "serve" UX, bounce back to /status so they see immediate confirmation.
-	to := fmt.Sprintf("http://127.0.0.1:%d/status", s.cfg.Port)
-
-	// If you prefer preserving the attempted endpoint:
-	// to = fmt.Sprintf("http://127.0.0.1:%d/status?from=%s", s.cfg.Port, url.QueryEscape(r.URL.Path))
+func (s *Server) openLogin() {
+	// IMPORTANT: return to /auth/callback so the gateway can capture the token fragment.
+	to := fmt.Sprintf("http://127.0.0.1:%d/auth/callback", s.cfg.Port)
 
 	u, err := url.Parse(s.cfg.AuthOrigin + "/login")
 	if err != nil {
@@ -235,13 +293,6 @@ func (s *Server) openLogin(r *http.Request) {
 }
 
 func (s *Server) openCheckout() {
-	// Canonical approach: implement auth worker route /checkout that:
-	//  - checks logged-in user
-	//  - redirects to Stripe checkout for that user
-	//  - on success sets entitlement and redirects somewhere
-	//
-	// For now, just open a consistent hosted URL. You can change this
-	// without touching the CLI once your worker supports it.
 	u := s.cfg.AuthOrigin + "/checkout"
 	if err := util.OpenBrowser(u); err != nil {
 		log.Printf("[ux] open browser checkout failed: %v", err)
