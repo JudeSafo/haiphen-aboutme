@@ -67,7 +67,6 @@ func cmdServe(cfg *config.Config, st store.Store) *cobra.Command {
 				}
 			}()
 
-			// shutdown on signals
 			ch := make(chan os.Signal, 2)
 			signal.Notify(ch, os.Interrupt, syscall.SIGTERM)
 			select {
@@ -85,12 +84,14 @@ func cmdServe(cfg *config.Config, st store.Store) *cobra.Command {
 }
 
 func cmdLogin(cfg *config.Config, st store.Store) *cobra.Command {
-	return &cobra.Command{
+	var force bool
+
+	cmd := &cobra.Command{
 		Use:   "login",
 		Short: "Login via browser and store session locally",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			a := auth.New(cfg, st)
-			token, err := a.Login(cmd.Context())
+			token, err := a.Login(cmd.Context(), auth.LoginOptions{Force: force})
 			if err != nil {
 				return err
 			}
@@ -98,6 +99,9 @@ func cmdLogin(cfg *config.Config, st store.Store) *cobra.Command {
 			return nil
 		},
 	}
+
+	cmd.Flags().BoolVar(&force, "force", false, "Force GitHub OAuth flow (account switching)")
+	return cmd
 }
 
 func cmdLogout(cfg *config.Config, st store.Store) *cobra.Command {
@@ -125,9 +129,14 @@ func cmdStatus(cfg *config.Config, st store.Store) *cobra.Command {
 			if err != nil {
 				return err
 			}
+
 			fmt.Printf("LoggedIn: %v\n", s.LoggedIn)
 			if s.User != nil {
-				fmt.Printf("User: %s (%s)\n", s.User.Sub, s.User.Email)
+				email := ""
+				if s.User.Email != nil {
+					email = *s.User.Email
+				}
+				fmt.Printf("User: %s (%s)\n", s.User.Sub, email)
 			}
 			fmt.Printf("Entitled: %v\n", s.Entitled)
 			if s.EntitledUntil != nil {
