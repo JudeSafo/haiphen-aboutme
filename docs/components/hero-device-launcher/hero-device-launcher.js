@@ -1,46 +1,29 @@
 // docs/components/hero-device-launcher/hero-device-launcher.js
 (() => {
   const NS = (window.HAIPHEN = window.HAIPHEN || {});
+  const LOG = '[hero-device]';
+  const INSTALL_HASH = '#docs:docs-install-brew';
 
-  /**
-   * Optional runtime handler map the page can override:
-   *   window.HAIPHEN.HeroDeviceLauncher.setHandlers({
-   *     android: () => ...,
-   *     mac: () => ...,
-   *     iphone: () => ...,
-   *   })
-   */
-  const state = {
-    handlers: {
-      android: () => console.log('[hero-device] android clicked'),
-      mac: () => console.log('[hero-device] mac clicked'),
-      iphone: () => console.log('[hero-device] iphone clicked'),
-    },
-  };
-
-  function routeToDocsViaAccessGate(source = 'hero_device') {
+  function routeToDocsInstall(source = 'hero_install_cta') {
     try {
+      // Prefer the docs access flow (auth → entitlement → return to docs)
       const fn = window?.HAIPHEN?.ApiAccess?.requestAccess;
       if (typeof fn === 'function') {
-        fn({ returnHash: '#docs', source });
+        fn({ returnHash: INSTALL_HASH, source });
         return;
       }
     } catch (err) {
-      console.warn('[hero-device] requestAccess failed', err);
+      console.warn(`${LOG} requestAccess failed`, err);
     }
 
-    // conservative fallback
+    // Conservative fallback
     try {
       if (typeof window.showSection === 'function') window.showSection('Docs');
     } catch {}
-    window.location.hash = '#docs';
+    try {
+      window.location.hash = INSTALL_HASH;
+    } catch {}
   }
-
-  function setHandlers(next) {
-    if (!next || typeof next !== 'object') return;
-    state.handlers = { ...state.handlers, ...next };
-  }
-
 
   function isOpen(root) {
     return root?.classList?.contains('is-open');
@@ -73,7 +56,6 @@
 
     // Keep open when hovering the trigger region OR the panel itself
     const hoverTargets = [trigger, root].filter(Boolean);
-
     hoverTargets.forEach((el) => {
       el.addEventListener('mouseenter', () => open(root));
       el.addEventListener('mouseleave', () => close(root));
@@ -84,7 +66,6 @@
       trigger.style.cursor = 'pointer';
 
       trigger.addEventListener('click', (e) => {
-        // prevent text selection / accidental drag
         e.preventDefault?.();
         e.stopPropagation?.();
         toggle(root);
@@ -99,6 +80,7 @@
         }
       });
     }
+
     // ESC closes
     window.addEventListener(
       'keydown',
@@ -108,19 +90,15 @@
       { passive: true }
     );
 
-    // Click handlers for icons
-    root.querySelectorAll('.hdl-btn[data-device]').forEach((btn) => {
-      btn.addEventListener('click', (e) => {
-        e.preventDefault();
-        const key = String(btn.getAttribute('data-device') || '').trim();
-        const fn = state.handlers[key];
-        try {
-          if (typeof fn === 'function') fn();
-        } catch (err) {
-          console.warn('[hero-device] handler failed', { key, err });
-        }
+    // Click handler for the install CTA
+    const cta = root.querySelector('[data-hdl-action="jump-install-brew"]');
+    if (cta) {
+      cta.addEventListener('click', (e) => {
+        e.preventDefault?.();
+        e.stopPropagation?.();
+        routeToDocsInstall('hero_install_cta');
       });
-    });
+    }
 
     // If user clicks anywhere outside the hero, close it (nice UX)
     document.addEventListener('click', (e) => {
@@ -141,10 +119,10 @@
       mount.innerHTML = await resp.text();
       init(mount);
     } catch (err) {
-      console.warn('[hero-device] failed to load', err);
+      console.warn(`${LOG} failed to load`, err);
     }
   }
 
-  NS.HeroDeviceLauncher = { init, load: loadHeroDeviceLauncher, setHandlers };
+  NS.HeroDeviceLauncher = { init, load: loadHeroDeviceLauncher };
   NS.loadHeroDeviceLauncher = loadHeroDeviceLauncher;
 })();

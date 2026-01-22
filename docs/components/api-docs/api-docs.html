@@ -104,6 +104,49 @@
           </div>
         </section>
 
+        <!-- Install -->
+        <section class="api-section" id="docs-install" data-api-section>
+          <h3>Install (CLI)</h3>
+          <p class="api-muted">
+            The Haiphen CLI is the local gateway for interacting with the Metrics API and related tooling.
+            Choose the path that fits your environment.
+          </p>
+
+          <h4 id="docs-install-brew">macOS (Homebrew)</h4>
+          <pre class="api-code"><code data-lang="bash">brew tap JudeSafo/tap
+        brew install haiphen
+
+        # Verify
+        haiphen --help</code></pre>
+
+          <h4>From source (GitHub)</h4>
+          <pre class="api-code"><code data-lang="bash">git clone https://github.com/JudeSafo/haiphen-cli.git
+        cd haiphen-cli
+
+        # Build (Go toolchain required)
+        go build -o haiphen ./cmd/haiphen
+
+        # Run
+        ./haiphen --help</code></pre>
+
+          <h4>Prebuilt binaries (Linux / Windows)</h4>
+          <p class="api-muted">
+            Download the latest release artifact for your OS/arch from GitHub Releases, then place it on your <code>PATH</code>.
+          </p>
+
+          <pre class="api-code"><code data-lang="bash"># Linux example (adjust artifact name to your release)
+        curl -fsSL -o haiphen.tar.gz "https://github.com/JudeSafo/haiphen-cli/releases/latest/download/&lt;artifact&gt;.tar.gz"
+        tar -xzf haiphen.tar.gz
+        sudo install -m 0755 haiphen /usr/local/bin/haiphen
+        haiphen --help</code></pre>
+
+          <pre class="api-code"><code data-lang="powershell"># Windows example (adjust artifact name to your release)
+        Invoke-WebRequest -Uri "https://github.com/JudeSafo/haiphen-cli/releases/latest/download/&lt;artifact&gt;.zip" -OutFile "haiphen.zip"
+        Expand-Archive .\haiphen.zip -DestinationPath .\haiphen
+        # Put haiphen.exe somewhere on PATH, then:
+        haiphen.exe --help</code></pre>
+        </section>
+
         <!-- Quickstart -->
         <section class="api-section" id="docs-quickstart" data-api-section>
           <h3>Quickstart (CLI)</h3>

@@ -4,6 +4,7 @@
   const DEFAULT_SECTIONS = [
     { id: 'docs-overview', label: 'Overview' },
     { id: 'docs-quickstart', label: 'Quickstart' },
+    { id: 'docs-install', label: 'Download' },    
     { id: 'docs-try', label: 'Try it' },
     { id: 'docs-auth', label: 'Authentication' },
     { id: 'docs-rate-limits', label: 'Rate limits' },
