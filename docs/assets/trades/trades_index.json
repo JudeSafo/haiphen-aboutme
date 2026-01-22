@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-01-22T16:30:28.843Z",
+  "updated_at": "2026-01-22T16:33:42.295Z",
   "max_days": 3,
   "items": [
     {
@@ -7,7 +7,7 @@
       "screenshot": "assets/trades/archive/2026-01-22.png",
       "balance_screenshot": "assets/trades/archive/balance_2026-01-22.png",
       "json": "assets/trades/archive/2026-01-22.json",
-      "updated_at": "2026-01-22T16:30:28.783Z",
+      "updated_at": "2026-01-22T16:33:42.237Z",
       "headline": "Haiphen Day Trading snapshot (fallback metrics)",
       "has_screenshot": true,
       "has_balance_screenshot": true,
