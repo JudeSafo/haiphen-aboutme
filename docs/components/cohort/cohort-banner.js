@@ -23,13 +23,13 @@
     storageKey: 'haiphen.cohort_banner.dismissed_at',
 
     // Default content
-    badgeText: 'Survey',
-    messageText: 'Onboarding Survey: 3-month intelligence Cohort 🧠+📊',
-    ctaText: 'Join cohort',
+    badgeText: '2-minute Survey',
+    messageText: 'Intelligence Cohort Screening 🧠+📊',
+    ctaText: 'Take Survey',
     // Set this to your desired target:
     // - '#contact-us' routes to Contact section hash already in your router
     // - 'https://...' external link
-    ctaHref: '#contact-us',
+    ctaHref: '#cohort',
 
     // Banner should show on these pages (most static sites = always true)
     shouldShow: () => true,

@@ -280,7 +280,7 @@
 		nav.navbar{
 		  top: var(--cohort-banner-offset) !important;
 		}
-		
+
 		.main-container{
 		  min-height: 100vh;
 		  display: flex;
@@ -2491,12 +2491,15 @@
 		  FAQ: 'faq',
 		  Contact: 'contact-us',
 		  Docs: 'docs',
+		  Contact: 'contact-us',
 		};
 
 		const HASH_SECTION = Object.fromEntries(
 		  Object.entries(SECTION_HASH).map(([k, v]) => [v, k])
 		);
-
+		
+		// ✅ Cohort lives under Contact, so route #cohort -> showSection('Contact')
+		HASH_SECTION['cohort'] = 'Contact';
 		function clearHash({ replace = false } = {}) {
 		  const url = window.location.pathname + window.location.search;
 		  if (replace) history.replaceState(null, '', url);

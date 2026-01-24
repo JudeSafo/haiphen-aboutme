@@ -1,15 +1,15 @@
 <section class="hp-cohort" aria-label="Cohort survey">
   <div class="hp-cohort-card">
     <div class="hp-cohort-head">
-      <h3 class="hp-cohort-title">Cohort</h3>
+      <h3 class="hp-cohort-title">Cohort: Build With Us</h3>
       <p class="hp-cohort-sub">
-        Short survey → confirmation email + (optional) daily intel subscription.
+         We are testing potential revenue streams with a small set of professionals. 1) Cohorts last 3-months 2) We provide edge, target metrics & hands on assistance throughout 3) We quantify our signals before and after leverage
       </p>
     </div>
 
     <div class="hp-cohort-actions">
       <button class="btn btn-primary" type="button" data-cohort-open>
-        Take the cohort survey
+        Take Survey
       </button>
       <span class="hp-cohort-muted">~2 minutes</span>
     </div>
@@ -141,10 +141,37 @@
       </form>
 
       <div class="hp-cohort-receipt" hidden data-cohort-receipt>
-        <h3>Submitted</h3>
-        <p>Confirmation sent to: <strong data-cohort-receipt-email>—</strong></p>
-        <p>Submission: <strong data-cohort-receipt-id>—</strong></p>
-        <button class="btn btn-ghost" type="button" data-cohort-close>Close</button>
+        <h3 style="margin:0 0 8px 0;">Submitted ✅</h3>
+
+        <p style="margin:0 0 6px 0;">
+          Confirmation sent to: <strong data-cohort-receipt-email>—</strong>
+        </p>
+        <p style="margin:0 0 14px 0;">
+          Submission: <strong data-cohort-receipt-id>—</strong>
+        </p>
+
+        <div class="hp-cohort-divider"></div>
+
+        <div style="margin-top:12px;font-weight:900;">Next steps</div>
+        <div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:10px;">
+          <a class="btn btn-primary" data-cohort-next-calendar href="https://calendar.app.google/jQzWz98eCC5jMLrQA" target="_blank" rel="noopener">
+            Schedule onboarding
+          </a>
+          <a class="btn btn-ghost" data-cohort-next-program href="#cohort">
+            Program details
+          </a>
+          <a class="btn btn-ghost" data-cohort-next-docs href="#docs">
+            Read docs
+          </a>
+        </div>
+
+        <p style="margin:12px 0 0 0;color:var(--muted);font-weight:700;line-height:1.45;">
+          Want to update anything? Reply to the confirmation email and we’ll patch your submission.
+        </p>
+
+        <div style="margin-top:14px;display:flex;gap:10px;">
+          <button class="btn btn-ghost" type="button" data-cohort-close>Close</button>
+        </div>
       </div>
     </div>
   </div>
