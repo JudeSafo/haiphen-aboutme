@@ -2,7 +2,7 @@
 .site-sidebar {
   position: fixed;
   left: 16px;
-  top: 92px; /* below header */
+  top: calc(var(--cohort-banner-offset) + var(--header-h) + var(--sidebar-top-gap));
   z-index: 900;
 
   width: 168px;

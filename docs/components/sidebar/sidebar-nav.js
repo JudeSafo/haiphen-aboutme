@@ -28,12 +28,47 @@
   function scrollToWithHeaderOffset(targetEl, extra = 12) {
     if (!targetEl) return;
 
-    const headerH = getHeaderHeightPx();
-    const y = window.scrollY + targetEl.getBoundingClientRect().top - headerH - extra;
+    const header =
+      document.querySelector('.site-header') ||
+      document.querySelector('#site-header .site-header') ||
+      document.querySelector('nav.navbar');
 
+    const headerH =
+      header?.getBoundingClientRect().height ||
+      parseInt(getComputedStyle(document.documentElement).getPropertyValue('--header-h') || '70', 10) ||
+      70;
+
+    const bannerH =
+      parseInt(getComputedStyle(document.documentElement).getPropertyValue('--cohort-banner-offset') || '0', 10) ||
+      0;
+
+    const topChrome = headerH + bannerH;
+
+    const y = window.scrollY + targetEl.getBoundingClientRect().top - topChrome - extra;
     window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
   }
+  function getTopChromeHeightPx() {
+    const header =
+      document.querySelector('.site-header') ||
+      document.querySelector('#site-header .site-header') ||
+      document.querySelector('nav.navbar');
 
+    const cssHeaderVar = getComputedStyle(document.documentElement)
+      .getPropertyValue('--header-h')
+      .trim();
+
+    const headerFallback = Number.parseInt(cssHeaderVar || '70', 10) || 70;
+    const headerMeasured = header?.getBoundingClientRect().height || 0;
+    const headerH = Math.max(headerFallback, headerMeasured || 0);
+
+    const bannerVar = getComputedStyle(document.documentElement)
+      .getPropertyValue('--cohort-banner-offset')
+      .trim();
+
+    const bannerH = Number.parseInt(bannerVar || '0', 10) || 0;
+
+    return headerH + bannerH;
+  }
   function openAnyDetailsAncestors(el) {
     // If target is inside <details>, open them so the user actually sees it.
     let node = el?.parentElement;

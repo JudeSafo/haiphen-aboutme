@@ -1,0 +1,151 @@
+<section class="hp-cohort" aria-label="Cohort survey">
+  <div class="hp-cohort-card">
+    <div class="hp-cohort-head">
+      <h3 class="hp-cohort-title">Cohort</h3>
+      <p class="hp-cohort-sub">
+        Short survey → confirmation email + (optional) daily intel subscription.
+      </p>
+    </div>
+
+    <div class="hp-cohort-actions">
+      <button class="btn btn-primary" type="button" data-cohort-open>
+        Take the cohort survey
+      </button>
+      <span class="hp-cohort-muted">~2 minutes</span>
+    </div>
+  </div>
+
+  <!-- Overlay -->
+  <div class="hp-cohort-overlay" hidden data-cohort-overlay aria-hidden="true">
+    <div class="hp-cohort-backdrop" data-cohort-close></div>
+
+    <div class="hp-cohort-modal" role="dialog" aria-modal="true" aria-label="Cohort survey dialog">
+      <div class="hp-cohort-modal-head">
+        <div>
+          <div class="hp-cohort-modal-title">Cohort survey</div>
+          <div class="hp-cohort-modal-sub">Help me understand your background & interests.</div>
+        </div>
+        <button class="hp-cohort-x" type="button" aria-label="Close" data-cohort-close>✕</button>
+      </div>
+
+      <form class="hp-cohort-form" data-cohort-form novalidate>
+        <div class="hp-cohort-grid">
+          <label class="hp-cohort-field">
+            <span>Name</span>
+            <input name="name" type="text" maxlength="120" autocomplete="name" placeholder="Your name" />
+          </label>
+
+          <label class="hp-cohort-field">
+            <span>Email *</span>
+            <input name="email" type="email" maxlength="200" autocomplete="email" required placeholder="you@domain.com" />
+          </label>
+
+          <label class="hp-cohort-field">
+            <span>Occupation</span>
+            <input name="occupation" type="text" maxlength="200" placeholder="Trader, engineer, founder..." />
+          </label>
+
+          <label class="hp-cohort-field">
+            <span>Education</span>
+            <input name="education" type="text" maxlength="200" placeholder="Degree, self-taught, etc." />
+          </label>
+
+          <label class="hp-cohort-field hp-cohort-field-full">
+            <span>LinkedIn</span>
+            <input name="linkedin" type="url" maxlength="300" placeholder="https://linkedin.com/in/..." />
+          </label>
+
+          <div class="hp-cohort-divider hp-cohort-field-full"></div>
+
+          <label class="hp-cohort-field hp-cohort-field-full">
+            <span>1) Financial background/affiliation/literacy</span>
+            <select name="financial_affiliation">
+              <option value="">Select…</option>
+              <option>Retail trader</option>
+              <option>Professional trader</option>
+              <option>Advisor / wealth mgmt</option>
+              <option>Fintech</option>
+              <option>Student / learning</option>
+              <option>Other</option>
+            </select>
+          </label>
+
+          <label class="hp-cohort-field hp-cohort-field-full">
+            <span>2) Entrepreneurial background</span>
+            <textarea name="entrepreneurial_background" rows="3" maxlength="2000" placeholder="Side projects, startups, interests…"></textarea>
+          </label>
+
+          <label class="hp-cohort-field hp-cohort-field-full">
+            <span>3) Familiarity with signals intelligence companies</span>
+            <select name="sigint_familiarity">
+              <option value="">Select…</option>
+              <option>Not familiar</option>
+              <option>Somewhat familiar</option>
+              <option>Very familiar</option>
+              <option>Professional / worked in the space</option>
+            </select>
+          </label>
+
+          <label class="hp-cohort-field hp-cohort-field-full">
+            <span>4) Trading experience</span>
+            <select name="trading_experience">
+              <option value="">Select…</option>
+              <option>None yet</option>
+              <option>Retail (self-directed)</option>
+              <option>Managed / advisor</option>
+              <option>Professional / institutional</option>
+            </select>
+          </label>
+
+          <label class="hp-cohort-field hp-cohort-field-full">
+            <span>5) Retirement plans / portfolio diversity</span>
+            <textarea name="retirement_portfolio" rows="3" maxlength="2000" placeholder="Timeline, diversification, asset exposure…"></textarea>
+          </label>
+
+          <label class="hp-cohort-field hp-cohort-field-full">
+            <span>6) Tech background</span>
+            <select name="tech_background">
+              <option value="">Select…</option>
+              <option>Non-technical</option>
+              <option>Hobbyist</option>
+              <option>Professional engineer</option>
+              <option>Full stack</option>
+              <option>Data / ML</option>
+              <option>Infra / SRE</option>
+            </select>
+          </label>
+
+          <label class="hp-cohort-field hp-cohort-field-full">
+            <span>7) Interest in US economy / banking / macro</span>
+            <select name="macro_interest">
+              <option value="">Select…</option>
+              <option>Low</option>
+              <option>Medium</option>
+              <option>High</option>
+            </select>
+          </label>
+
+          <label class="hp-cohort-check hp-cohort-field-full">
+            <input name="subscribeDaily" type="checkbox" />
+            <span>Subscribe me to daily emails / trading intel</span>
+          </label>
+
+          <!-- Honeypot -->
+          <input name="website" type="text" class="hp-cohort-honey" tabindex="-1" autocomplete="off" aria-hidden="true" />
+
+          <div class="hp-cohort-foot hp-cohort-field-full">
+            <button class="btn btn-primary" type="submit" data-cohort-submit>Submit</button>
+            <span class="hp-cohort-status" data-cohort-status role="status" aria-live="polite"></span>
+          </div>
+        </div>
+      </form>
+
+      <div class="hp-cohort-receipt" hidden data-cohort-receipt>
+        <h3>Submitted</h3>
+        <p>Confirmation sent to: <strong data-cohort-receipt-email>—</strong></p>
+        <p>Submission: <strong data-cohort-receipt-id>—</strong></p>
+        <button class="btn btn-ghost" type="button" data-cohort-close>Close</button>
+      </div>
+    </div>
+  </div>
+</section>

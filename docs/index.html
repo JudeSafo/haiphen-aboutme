@@ -39,8 +39,11 @@
 	  <script src="components/api-docs/api-docs.js"></script>
 	  <script src="components/api-docs/api-access.js"></script>
 	  <script src="components/contact-form/contact-form.js"></script>
+ 	  <script src="components/cohort/cohort.js"></script>
+ 	  <script src="components/cohort/cohort-banner.js" defer></script>
+	  <link rel="stylesheet" href="components/cohort/cohort-banner.css" />
+	  <link rel="stylesheet" href="components/cohort/cohort.css" />	  
 	  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
-	  <script src="components/gating/entitlement-gate.js"></script>
 	  <link rel="stylesheet" href="components/contact-form/contact-form.css" />
 	  <link rel="stylesheet" href="components/terms-gate/terms-gate.css" data-terms-gate-css="1" />
 	  <script src="components/terms-gate/terms-gate.js"></script>
@@ -258,6 +261,26 @@
 		  --header-h: 70px;
 		}
 
+		:root{
+		  /* 0 when banner is hidden; JS will set to banner height when shown */
+		  --cohort-banner-offset: 0px;
+
+		  /* keep your existing look/spacing */
+		  --sidebar-top-gap: 22px; /* 92px - 70px = 22px */
+		}
+
+		/* Body: reserve space for BOTH banner + header */
+		body{
+		  padding-top: calc(var(--header-h) + var(--cohort-banner-offset));
+		}
+
+		/* Force fixed header down when banner is visible */
+		.site-header,
+		#site-header .site-header,
+		nav.navbar{
+		  top: var(--cohort-banner-offset) !important;
+		}
+		
 		.main-container{
 		  min-height: 100vh;
 		  display: flex;
@@ -513,7 +536,7 @@
 		/* A scrollable stack that snap-locks to each child panel */
 		.snap-stack{
 		  /* viewport minus fixed header and a little breathing room */
-		  height: calc(100vh - var(--header-h) - 24px);
+		  height: calc(100vh - var(--header-h) - var(--cohort-banner-offset) - 24px);
 		  overflow-y: auto;
 		  overscroll-behavior: contain;
 		  scroll-snap-type: y mandatory;
@@ -531,7 +554,7 @@
 		  scroll-snap-align: center;
 		  scroll-snap-stop: always;
 
-		  min-height: calc(100vh - var(--header-h) - 24px);
+		  min-height: calc(100vh - var(--header-h) - var(--cohort-banner-offset) - 24px);
 		  display: flex;
 		  align-items: center;
 		  justify-content: center;
@@ -1076,8 +1099,6 @@
 		</section>
 
 		<div id="section-menu-mount"></div>
-	    
-	    <div id="section-menu-mount"></div>
 
 	    <!-- Content Widget (Appears on Click) -->
 	    <div id="content-widget" class="content-widget"></div>
@@ -2233,6 +2254,9 @@
 		  "Contact": `
 		    <section id="contact-us">
 		      <div id="contact-form-mount"></div>
+
+		      <!-- Cohort goes directly beneath contact form -->
+		      <div id="cohort-mount"></div>
 		    </section>
 		  `,
 	      "Docs": `
@@ -2421,14 +2445,26 @@
 		  if (resolved === "Contact") {
 		    (async () => {
 		      try {
-		        const mount = document.querySelector("#contact-form-mount");
-		        const resp = await fetch("components/contact-form/contact-form.html", { cache: "no-store" });
-		        mount.innerHTML = await resp.text();
+		        // --- Contact form ---
+		        const contactMount = document.querySelector("#contact-form-mount");
+		        if (!contactMount) throw new Error("Missing #contact-form-mount");
 
-		        // ✅ wire after DOM injection
-		        window.HAIPHEN?.ContactForm?.init?.(mount);
+		        const resp = await fetch("components/contact-form/contact-form.html", { cache: "no-store" });
+		        contactMount.innerHTML = await resp.text();
+		        window.HAIPHEN?.ContactForm?.init?.(contactMount);
+
+		        // --- Cohort (NEW) ---
+		        const cohortMount = document.querySelector("#cohort-mount");
+		        if (!cohortMount) throw new Error("Missing #cohort-mount");
+
+		        const cohortHtmlResp = await fetch("components/cohort/cohort.html", { cache: "no-store" });
+		        cohortMount.innerHTML = await cohortHtmlResp.text();
+
+		        // optional: only init if provided
+		        window.HAIPHEN?.Cohort?.init?.(cohortMount);
+
 		      } catch (e) {
-		        console.warn("[Contact] failed to load contact form", e);
+		        console.warn("[Contact] failed to load Contact + Cohort", e);
 		      }
 
 		      requestAnimationFrame(() => {

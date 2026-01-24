@@ -1,0 +1,118 @@
+/* docs/components/cohort/cohort-banner.css */
+
+:root{
+  --cohort-banner-bg: rgba(16, 185, 129, 0.14); /* emerald-ish tint */
+  --cohort-banner-border: rgba(16, 185, 129, 0.28);
+  --cohort-banner-text: #064e3b;
+  --cohort-banner-pill: rgba(16, 185, 129, 0.18);
+  --cohort-banner-shadow: 0 10px 24px rgba(2,6,23,.08);
+  --cohort-banner-h: 44px; /* used by JS to offset header */
+}
+
+.hp-cohort-banner{
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 1600; /* above header(1500), below modals */
+  background: var(--cohort-banner-bg);
+  border-bottom: 1px solid var(--cohort-banner-border);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.hp-cohort-banner[hidden]{ display:none !important; }
+
+.hp-cohort-banner__inner{
+  max-width: 1180px;
+  margin: 0 auto;
+  height: var(--cohort-banner-h);
+  padding: 0 16px;
+
+  display: grid;
+  grid-template-columns: 1fr minmax(0, auto) 1fr;
+  align-items: center;
+  gap: 14px;
+}
+
+.hp-cohort-banner__left{
+  grid-column: 2;
+  justify-self: center;
+
+  display:flex;
+  align-items:center;
+  justify-content: center;
+  gap: 10px;
+  min-width: 0;
+  text-align: center;
+}
+
+.hp-cohort-banner__actions{
+  grid-column: 3;
+  justify-self: end;
+
+  display:flex;
+  align-items:center;
+  gap: 10px;
+}
+
+.hp-cohort-banner__badge{
+  display:inline-flex;
+  align-items:center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(6, 95, 70, 0.18);
+  background: var(--cohort-banner-pill);
+  color: var(--cohort-banner-text);
+  font: 900 12px/1 ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+  white-space: nowrap;
+}
+
+.hp-cohort-banner__msg{
+  color: var(--cohort-banner-text);
+  font: 800 13px/1.15 ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+  opacity: .95;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hp-cohort-banner__cta{
+  display:inline-flex;
+  align-items:center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  text-decoration:none;
+  color: white;
+  font: 900 12px/1 ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+  background: linear-gradient(180deg, rgba(16,185,129,1), rgba(5,150,105,1));
+  box-shadow: 0 10px 22px rgba(16,185,129,.22);
+  transition: transform .12s ease, filter .12s ease, box-shadow .12s ease;
+  user-select:none;
+}
+.hp-cohort-banner__cta:hover{
+  transform: translateY(-1px);
+  filter: brightness(1.02);
+  box-shadow: 0 14px 28px rgba(16,185,129,.28);
+}
+
+.hp-cohort-banner__x{
+  appearance:none;
+  border: 1px solid rgba(6, 95, 70, 0.22);
+  background: rgba(255,255,255,0.65);
+  border-radius: 12px;
+  padding: 7px 10px;
+  cursor:pointer;
+  font-weight: 1000;
+  color: rgba(6, 95, 70, 0.95);
+  line-height: 1;
+}
+.hp-cohort-banner__x:hover{
+  background: rgba(255,255,255,0.78);
+}
+
+@media (max-width: 720px){
+  :root{ --cohort-banner-h: 52px; }
+  .hp-cohort-banner__msg{ white-space: normal; line-height: 1.2; }
+  .hp-cohort-banner__badge{ display:none; }
+}
