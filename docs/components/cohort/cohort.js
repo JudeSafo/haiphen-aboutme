@@ -79,6 +79,8 @@
     receipt.hidden = true;
     form.reset();
     setStatus(root, "");
+    const formEl = q(root, "[data-cohort-form]");
+    if (formEl) renderProgress(root, formEl);    
   }
 
   function disableForm(root, disabled) {
@@ -137,6 +139,12 @@
       }
     });
 
+    // Progress wiring
+    renderProgress(root, form);
+
+    const onInput = () => renderProgress(root, form);
+    form.addEventListener("input", onInput, { passive: true });
+    form.addEventListener("change", onInput, { passive: true });
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
       setStatus(root, "");
@@ -192,6 +200,58 @@
     return attachOnce(root);
   }
 
+
+  function clamp(n, lo, hi) { return Math.max(lo, Math.min(hi, n)); }
+
+  function computeProgressFromForm(form) {
+    // Treat these as “core” for completion intent:
+    // - email is required
+    // - the 7 numbered questions are the real “survey”
+    const keys = [
+      "email",
+      "financial_affiliation",
+      "entrepreneurial_background",
+      "sigint_familiarity",
+      "trading_experience",
+      "retirement_portfolio",
+      "tech_background",
+      "macro_interest",
+    ];
+
+    const getVal = (name) => {
+      const el = form.elements.namedItem(name);
+      if (!el) return "";
+      // for NodeList-like, pick first
+      const node = Array.isArray(el) ? el[0] : el;
+      return String(node?.value ?? "").trim();
+    };
+
+    let answered = 0;
+    for (const k of keys) {
+      const v = getVal(k);
+      if (v.length > 0) answered++;
+    }
+
+    const total = keys.length;
+    const pct = Math.round((answered / total) * 100);
+    return { answered, total, pct };
+  }
+
+  function renderProgress(root, form) {
+    const barFill = q(root, "[data-cohort-progress-bar]");
+    const textEl = q(root, "[data-cohort-progress-text]");
+    const bar = q(root, ".hp-cohort-hero__bar");
+
+    if (!form || !barFill || !textEl || !bar) return;
+
+    const p = computeProgressFromForm(form);
+    const pct = clamp(p.pct, 0, 100);
+
+    barFill.style.width = `${pct}%`;
+    textEl.textContent = `Progress: ${pct}%`;
+
+    bar.setAttribute("aria-valuenow", String(pct));
+  }
   window.HAIPHEN = window.HAIPHEN || {};
   window.HAIPHEN.Cohort = {
     init,

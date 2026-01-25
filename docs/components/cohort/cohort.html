@@ -1,9 +1,9 @@
 <section class="hp-cohort" aria-label="Cohort survey">
   <div class="hp-cohort-card">
     <div class="hp-cohort-head">
-      <h3 class="hp-cohort-title">Cohort: Build With Us</h3>
+      <h3 class="hp-cohort-title">Cohort Screening</h3>
       <p class="hp-cohort-sub">
-         We are testing potential revenue streams with a small set of professionals. 1) Cohorts last 3-months 2) We provide edge, target metrics & hands on assistance throughout 3) We quantify our signals before and after leverage
+          Build With Us: We are testing potential revenue streams with a small set of professionals. 1) Cohorts last 3-months 2) We provide edge, target metrics & hands on assistance throughout 3) We quantify our signals before and after leverage
       </p>
     </div>
 
@@ -20,12 +20,45 @@
     <div class="hp-cohort-backdrop" data-cohort-close></div>
 
     <div class="hp-cohort-modal" role="dialog" aria-modal="true" aria-label="Cohort survey dialog">
-      <div class="hp-cohort-modal-head">
-        <div>
-          <div class="hp-cohort-modal-title">Cohort survey</div>
-          <div class="hp-cohort-modal-sub">Help me understand your background & interests.</div>
+      <div class="hp-cohort-modal-head hp-cohort-hero">
+        <div class="hp-cohort-hero__bg" aria-hidden="true"></div>
+
+        <div class="hp-cohort-hero__content">
+          <div class="hp-cohort-hero__badge">2-minute cohort screening</div>
+
+          <div class="hp-cohort-hero__title">Build with us</div>
+          <div class="hp-cohort-hero__sub">
+            Answer a few questions so we can tailor onboarding, program resources, and follow-ups.
+          </div>
+
+          <ul class="hp-cohort-hero__bullets">
+            <li>Fast: ~2 minutes</li>
+            <li>Private: used for onboarding & program fit</li>
+            <li>Reply-to: you can update answers by email</li>
+          </ul>
+
+          <div class="hp-cohort-hero__progress" aria-label="Survey progress">
+            <div class="hp-cohort-hero__progressRow">
+              <div class="hp-cohort-hero__progressText" data-cohort-progress-text>Progress: 0%</div>
+              <div class="hp-cohort-hero__progressMini">Tip: answer at least 2 questions to submit</div>
+            </div>
+            <div class="hp-cohort-hero__bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+              <div class="hp-cohort-hero__barFill" data-cohort-progress-bar style="width:0%"></div>
+            </div>
+          </div>
         </div>
-        <button class="hp-cohort-x" type="button" aria-label="Close" data-cohort-close>✕</button>
+
+        <div class="hp-cohort-hero__portrait" aria-hidden="true">
+          <img
+            class="hp-cohort-hero__img"
+            src="assets/nature1.png"
+            alt=""
+            loading="lazy"
+            decoding="async"
+          />
+        </div>
+
+        <button class="hp-cohort-x hp-cohort-hero__close" type="button" aria-label="Close" data-cohort-close>✕</button>
       </div>
 
       <form class="hp-cohort-form" data-cohort-form novalidate>

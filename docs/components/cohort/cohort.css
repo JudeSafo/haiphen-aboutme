@@ -152,3 +152,146 @@
 @media (max-width: 720px){
   .hp-cohort-grid{ grid-template-columns: 1fr; }
 }
+
+/* --- Cohort hero header (professional upgrade) --- */
+
+.hp-cohort-hero{
+  position: relative;
+  padding: 16px 16px;
+  border-bottom: 1px solid rgba(15,23,42,.08);
+  overflow: hidden;
+
+  /* Slightly taller header so it reads as a “hero” */
+  min-height: 152px;
+}
+
+.hp-cohort-hero__bg{
+  position:absolute;
+  inset:0;
+  background:
+    radial-gradient(900px 220px at 10% 10%, rgba(90,155,212,0.20), transparent 60%),
+    radial-gradient(720px 220px at 80% 0%, rgba(16,185,129,0.16), transparent 55%),
+    linear-gradient(180deg, rgba(255,255,255,0.96), rgba(248,250,252,0.96));
+  pointer-events:none;
+}
+
+.hp-cohort-hero__content{
+  position: relative;
+  z-index: 2;
+  padding-right: 160px; /* space for portrait */
+}
+
+.hp-cohort-hero__badge{
+  display:inline-flex;
+  align-items:center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(15,23,42,.10);
+  background: rgba(255,255,255,0.80);
+  color: rgba(2,6,23,.78);
+  font-weight: 900;
+  font-size: 12px;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.hp-cohort-hero__title{
+  margin-top: 10px;
+  font-weight: 1000;
+  font-size: 18px;
+  letter-spacing: -0.01em;
+  color: #0f172a;
+}
+
+.hp-cohort-hero__sub{
+  margin-top: 6px;
+  max-width: 560px;
+  font-weight: 750;
+  font-size: 13px;
+  line-height: 1.45;
+  color: rgba(2,6,23,.70);
+}
+
+.hp-cohort-hero__bullets{
+  margin: 10px 0 0 0;
+  padding-left: 18px;
+  color: rgba(2,6,23,.65);
+  font-weight: 750;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.hp-cohort-hero__progress{
+  margin-top: 12px;
+  max-width: 560px;
+}
+
+.hp-cohort-hero__progressRow{
+  display:flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: baseline;
+  margin-bottom: 8px;
+}
+
+.hp-cohort-hero__progressText{
+  font-weight: 900;
+  font-size: 12px;
+  color: rgba(2,6,23,.78);
+}
+
+.hp-cohort-hero__progressMini{
+  font-weight: 800;
+  font-size: 11px;
+  color: rgba(2,6,23,.55);
+}
+
+.hp-cohort-hero__bar{
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(15,23,42,.06);
+  border: 1px solid rgba(15,23,42,.08);
+  overflow: hidden;
+}
+
+.hp-cohort-hero__barFill{
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(90,155,212,1), rgba(16,185,129,1));
+  transition: width .18s ease;
+}
+
+.hp-cohort-hero__portrait{
+  position: absolute;
+  right: 12px;
+  top: 12px;
+  bottom: 12px;
+  width: 136px;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(15,23,42,.10);
+  box-shadow: 0 14px 34px rgba(2,6,23,.18);
+  background: rgba(255,255,255,0.6);
+}
+
+.hp-cohort-hero__img{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.02);
+  filter: saturate(1.04) contrast(1.02);
+}
+
+.hp-cohort-hero__close{
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 3;
+}
+
+@media (max-width: 860px){
+  .hp-cohort-hero__content{ padding-right: 0; }
+  .hp-cohort-hero__portrait{ display:none; }
+  .hp-cohort-hero{ min-height: 0; }
+}

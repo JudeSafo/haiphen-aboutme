@@ -2253,10 +2253,10 @@
 	      `,
 		  "Contact": `
 		    <section id="contact-us">
-		      <div id="contact-form-mount"></div>
-
 		      <!-- Cohort goes directly beneath contact form -->
 		      <div id="cohort-mount"></div>
+
+		      <div id="contact-form-mount"></div>
 		    </section>
 		  `,
 	      "Docs": `
@@ -2463,6 +2463,10 @@
 		        // optional: only init if provided
 		        window.HAIPHEN?.Cohort?.init?.(cohortMount);
 
+				// If this navigation came from #cohort, open immediately after init.
+				if (String(window.location.hash || '').toLowerCase() === '#cohort') {
+				  openCohortModalWhenReady();
+				}
 		      } catch (e) {
 		        console.warn("[Contact] failed to load Contact + Cohort", e);
 		      }
@@ -2491,13 +2495,13 @@
 		  FAQ: 'faq',
 		  Contact: 'contact-us',
 		  Docs: 'docs',
-		  Contact: 'contact-us',
+		  Cohort: 'cohort',
 		};
 
 		const HASH_SECTION = Object.fromEntries(
 		  Object.entries(SECTION_HASH).map(([k, v]) => [v, k])
 		);
-		
+
 		// ✅ Cohort lives under Contact, so route #cohort -> showSection('Contact')
 		HASH_SECTION['cohort'] = 'Contact';
 		function clearHash({ replace = false } = {}) {
@@ -2543,6 +2547,51 @@
 		  }
 		}
 
+		function openCohortModalWhenReady({ maxAttempts = 40, delayMs = 50 } = {}) {
+		  const LOG = '[router#cohort]';
+
+		  let attempts = 0;
+
+		  const tick = () => {
+		    attempts++;
+
+		    const mount = document.querySelector('#cohort-mount');
+		    const cohortApi = window.HAIPHEN?.Cohort;
+
+		    // We consider it "ready" when:
+		    // - mount exists
+		    // - cohort API exists
+		    // - overlay DOM exists under the mount (meaning cohort.html is injected)
+		    const overlay = mount?.querySelector?.('[data-cohort-overlay]');
+		    const ready = !!(mount && overlay && typeof cohortApi?.open === 'function');
+
+		    if (ready) {
+		      try {
+		        // Prefer API call over "clicking" a button (less fragile)
+		        cohortApi.open(mount);
+		        return;
+		      } catch (e) {
+		        console.warn(LOG, 'open() failed', e);
+		        // fall through to retry
+		      }
+		    }
+
+		    if (attempts >= maxAttempts) {
+		      console.warn(LOG, 'gave up waiting for cohort to mount', {
+		        attempts,
+		        hasMount: !!mount,
+		        hasOverlay: !!overlay,
+		        hasApi: typeof cohortApi?.open === 'function',
+		      });
+		      return;
+		    }
+
+		    setTimeout(tick, delayMs);
+		  };
+
+		  tick();
+		}
+
 		function routeFromHash() {
 		  const { slug, subId } = parseHash();
 
@@ -2557,11 +2606,15 @@
 		  if (typeof window.showSection === "function") {
 		    window.showSection(section);
 		    activateSectionMenuFor(section);
+
+		    // Special-case: #cohort should auto-open the survey modal
+		    if (slug === 'cohort') {
+		      openCohortModalWhenReady();
+		    }
 		  }
 
 		  if (!subId) return;
 
-		  // Wait for injected DOM, then scroll to subId if present
 		  requestAnimationFrame(() => {
 		    requestAnimationFrame(() => {
 		      const el = document.getElementById(subId);
