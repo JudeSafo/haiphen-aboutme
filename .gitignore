@@ -28,3 +28,7 @@
 *.exe
 *.bin
 *.out
+
+# Email send payloads (real recipients)
+scripts/email_data/*.json
+!scripts/email_data/*.example.json
