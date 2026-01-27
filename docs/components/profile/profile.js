@@ -21,9 +21,11 @@
 
   const MOUNT_ID = 'content-widget'; // your dynamic content root
 
-  // Internal state to manage “show raw key once” UX without it being immediately hidden by re-hydrate.
+  // Keep reveal sticky until user dismisses it.
   const STATE = {
-    justRotated: false,
+    revealVisible: false,
+    revealRawKey: '',
+    revealMasked: false, // default show; allow hide toggle
   };
 
   function qs(sel, root = document) {
@@ -57,7 +59,6 @@
   }
 
   function escapeAttr(v) {
-    // good enough for attribute contexts; keep it strict
     return escapeHtml(v).replace(/`/g, '&#96;');
   }
 
@@ -150,12 +151,44 @@
     window.location.assign(u.toString());
   }
 
-  function showToast(msg) {
-    // keep it simple for now; swap to your site-wide toast later
+  function setStatus(root, msg, kind /* "ok" | "warn" | "" */) {
+    const el = qs('[data-profile-status]', root);
+    if (!el) return;
+    if (!msg) {
+      el.hidden = true;
+      el.textContent = '';
+      el.classList.remove('hp-status--ok', 'hp-status--warn');
+      return;
+    }
+    el.hidden = false;
+    el.textContent = String(msg);
+    el.classList.remove('hp-status--ok', 'hp-status--warn');
+    if (kind === 'ok') el.classList.add('hp-status--ok');
+    if (kind === 'warn') el.classList.add('hp-status--warn');
+  }
+
+  async function copyToClipboard(text) {
+    const raw = String(text || '');
+    if (!raw) return false;
+
     try {
-      window.alert(String(msg));
+      await navigator.clipboard.writeText(raw);
+      return true;
     } catch {
-      /* noop */
+      // fallback
+      try {
+        const ta = document.createElement('textarea');
+        ta.value = raw;
+        ta.style.position = 'fixed';
+        ta.style.left = '-9999px';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        ta.remove();
+        return true;
+      } catch {
+        return false;
+      }
     }
   }
 
@@ -171,7 +204,6 @@
     await injectCssOnce('assets/base.css');
     await injectCssOnce('components/profile/profile.css');
 
-    // If already mounted, don’t re-fetch/rewrite HTML; just re-hydrate.
     if (!mount.__haiphenProfileMounted) {
       const html = await fetchText('components/profile/profile.html');
       mount.innerHTML = html;
@@ -180,28 +212,46 @@
     }
 
     await hydrate(mount);
-    // --- Snap Profile into view like showSection() does ---
+
     requestAnimationFrame(() => {
-      // Scroll to the Profile section header inside the widget (best target)
       const title = mount.querySelector('.hp-profile__title') || mount;
       scrollToWithHeaderOffsetCompat(title, 12);
-
-      // Optional: keyboard focus (matches “snaps into focus” feel)
       try {
         title?.setAttribute?.('tabindex', '-1');
         title?.focus?.({ preventScroll: true });
       } catch {
         /* noop */
       }
-    });    
+    });
+  }
+
+  function renderReveal(root) {
+    const reveal = qs('[data-profile-reveal]', root);
+    const keyEl = qs('[data-profile-newkey]', root);
+    const toggleBtn = qs('[data-profile-action="toggle-visibility"]', root);
+
+    if (!reveal || !keyEl) return;
+
+    if (!STATE.revealVisible || !STATE.revealRawKey) {
+      reveal.hidden = true;
+      return;
+    }
+
+    reveal.hidden = false;
+
+    if (STATE.revealMasked) {
+      keyEl.textContent = '••••••••••••••••••••••••••••••••';
+      keyEl.setAttribute('data-masked', '1');
+      if (toggleBtn) toggleBtn.textContent = 'Show';
+    } else {
+      keyEl.textContent = STATE.revealRawKey;
+      keyEl.removeAttribute('data-masked');
+      if (toggleBtn) toggleBtn.textContent = 'Hide';
+    }
   }
 
   async function hydrate(root) {
-    // Only hide reveal region on normal hydrate; after rotate we keep it visible.
-    const reveal = qs('[data-profile-reveal]', root);
-    if (reveal) {
-      reveal.hidden = !STATE.justRotated;
-    }
+    setStatus(root, '', '');
 
     // 1) cookie-auth user + plan + active key metadata
     let me;
@@ -230,12 +280,13 @@
       qs('[data-profile-active-scopes]', root),
       Array.isArray(k?.scopes) ? k.scopes.join(', ') : '—'
     );
+    setText(qs('[data-profile-active-id]', root), k?.key_id || '—');
 
     // 2) list keys table
     await refreshKeysTable(root);
 
-    // Once we have hydrated after rotate, clear the flag so a later refresh hides again.
-    STATE.justRotated = false;
+    // 3) render sticky reveal (if present)
+    renderReveal(root);
   }
 
   async function refreshKeysTable(root) {
@@ -270,9 +321,17 @@
         const badgeText = isActive ? 'active' : 'revoked';
         const scopes = Array.isArray(k.scopes) ? k.scopes.join(', ') : '—';
 
-        const revokeBtn = isActive
-          ? `<button class="hp-profile__btn hp-profile__btn--ghost" type="button"
-              data-profile-action="revoke" data-key-id="${escapeAttr(k.key_id)}">Revoke</button>`
+        const actions = isActive
+          ? `
+            <span class="hp-rowActions">
+              <button class="hp-rowBtn" type="button" data-profile-action="copy-prefix-row" data-key-prefix="${escapeAttr(
+                k.key_prefix || ''
+              )}">Copy prefix</button>
+              <button class="hp-rowBtn" type="button" data-profile-action="revoke" data-key-id="${escapeAttr(
+                k.key_id
+              )}">Revoke</button>
+            </span>
+          `
           : `<span class="hp-muted">—</span>`;
 
         return `
@@ -285,7 +344,7 @@
           <td>${escapeHtml(fmtIso(k.created_at))}</td>
           <td>${escapeHtml(k.last_used_at ? fmtIso(k.last_used_at) : '—')}</td>
           <td>${escapeHtml(k.revoked_at ? fmtIso(k.revoked_at) : '—')}</td>
-          <td style="text-align:right;">${revokeBtn}</td>
+          <td style="text-align:right;">${actions}</td>
         </tr>
       `;
       })
@@ -299,6 +358,7 @@
     btn.disabled = true;
     const prev = btn.textContent;
     btn.textContent = 'Rotating…';
+    setStatus(root, 'Rotating key…', '');
 
     try {
       // Find current active key_id from /v1/keys/list (so rotate can revoke it)
@@ -308,26 +368,22 @@
 
       const res = await postJson(`${API_ORIGIN}/v1/keys/rotate`, {
         revoke_key_id: active?.key_id || undefined,
-        // scopes: undefined -> API defaults; pass explicit scopes if you want:
-        // scopes: ["metrics:read","rss:read"]
       });
 
       const raw = res?.api_key;
       if (!raw) throw new Error('Rotate succeeded but API did not return api_key');
 
-      // Reveal once (and keep visible through the subsequent hydrate)
-      const reveal = qs('[data-profile-reveal]', root);
-      const keyEl = qs('[data-profile-newkey]', root);
-      if (keyEl) keyEl.textContent = String(raw);
-      if (reveal) reveal.hidden = false;
+      // Sticky reveal until dismissed (prevents “I never saw it”)
+      STATE.revealRawKey = String(raw);
+      STATE.revealVisible = true;
+      STATE.revealMasked = false;
 
-      STATE.justRotated = true;
+      setStatus(root, 'New API key created. Copy it now (shown only once).', 'ok');
 
-      // Refresh summaries/tables (active key metadata updates via /v1/me)
       await hydrate(root);
     } catch (e) {
       console.warn(LOG, 'rotate failed', e);
-      showToast(`Rotate failed: ${e?.message || e}`);
+      setStatus(root, `Rotate failed: ${e?.message || e}`, 'warn');
     } finally {
       btn.textContent = prev;
       btn.disabled = false;
@@ -341,46 +397,82 @@
     if (!ok) return;
 
     try {
+      setStatus(root, 'Revoking key…', '');
       await postJson(`${API_ORIGIN}/v1/keys/revoke`, { key_id: String(keyId) });
+
+      // If user revoked active, also clear reveal state (raw key is no longer useful)
+      const activeId = (qs('[data-profile-active-id]', root)?.textContent || '').trim();
+      if (activeId && String(activeId) === String(keyId)) {
+        STATE.revealVisible = false;
+        STATE.revealRawKey = '';
+      }
+
+      setStatus(root, 'Key revoked.', 'ok');
       await hydrate(root);
     } catch (e) {
       console.warn(LOG, 'revoke failed', e);
-      showToast(`Revoke failed: ${e?.message || e}`);
+      setStatus(root, `Revoke failed: ${e?.message || e}`, 'warn');
     }
+  }
+
+  async function revokeActiveKey(root) {
+    const activeId = (qs('[data-profile-active-id]', root)?.textContent || '').trim();
+    if (!activeId || activeId === '—') {
+      setStatus(root, 'No active key found.', 'warn');
+      return;
+    }
+    await revokeKey(root, activeId);
   }
 
   async function copyNewKey(root) {
     const keyEl = qs('[data-profile-newkey]', root);
-    const raw = (keyEl?.textContent || '').trim();
-    if (!raw || raw === '—') return;
+    const isMasked = keyEl?.getAttribute('data-masked') === '1';
 
-    try {
-      await navigator.clipboard.writeText(raw);
-      showToast('Copied.');
-    } catch {
-      // fallback
-      const ta = document.createElement('textarea');
-      ta.value = raw;
-      ta.style.position = 'fixed';
-      ta.style.left = '-9999px';
-      document.body.appendChild(ta);
-      ta.select();
-      document.execCommand('copy');
-      ta.remove();
-      showToast('Copied.');
+    if (!STATE.revealRawKey || !STATE.revealVisible) {
+      setStatus(root, 'No new key to copy. Click “Rotate key” to generate one.', 'warn');
+      return;
     }
+    if (isMasked) {
+      setStatus(root, 'Key is hidden. Click “Show” first, then copy.', 'warn');
+      return;
+    }
+
+    const ok = await copyToClipboard(STATE.revealRawKey);
+    setStatus(root, ok ? 'Copied.' : 'Copy failed. Your browser may block clipboard access.', ok ? 'ok' : 'warn');
+  }
+
+  async function copyPrefix(root) {
+    const prefix = (qs('[data-profile-active-prefix]', root)?.textContent || '').trim();
+    if (!prefix || prefix === '—') {
+      setStatus(root, 'No active prefix to copy.', 'warn');
+      return;
+    }
+    const ok = await copyToClipboard(prefix);
+    setStatus(root, ok ? 'Prefix copied.' : 'Copy failed.', ok ? 'ok' : 'warn');
+  }
+
+  function toggleRevealVisibility(root) {
+    if (!STATE.revealVisible) return;
+    STATE.revealMasked = !STATE.revealMasked;
+    renderReveal(root);
+  }
+
+  function dismissReveal(root) {
+    STATE.revealVisible = false;
+    STATE.revealRawKey = '';
+    STATE.revealMasked = false;
+    setStatus(root, 'Dismissed. (Raw token can’t be viewed again.)', '');
+    renderReveal(root);
   }
 
   function scrollToWithHeaderOffsetCompat(targetEl, extra = 12) {
     if (!targetEl) return;
 
-    // Prefer the global helper if it exists (keeps behavior consistent site-wide)
     if (typeof window.scrollToWithHeaderOffset === 'function') {
       window.scrollToWithHeaderOffset(targetEl, extra);
       return;
     }
 
-    // Fallback: mimic index.html's scrollToWithHeaderOffset implementation
     const header =
       document.querySelector('.site-header') ||
       document.querySelector('#site-header .site-header') ||
@@ -397,12 +489,11 @@
 
   function ensureContentWidgetVisible() {
     const widget = document.getElementById(MOUNT_ID);
-    if (widget) widget.classList.add('active'); // mirrors showSection()
+    if (widget) widget.classList.add('active');
     return widget;
   }
 
   function wire(root) {
-    // Prevent double-wiring if ensureMounted() is called repeatedly.
     if (root.__haiphenProfileWired) return;
     root.__haiphenProfileWired = true;
 
@@ -423,11 +514,48 @@
         return;
       }
 
+      const toggleVis = t?.closest?.('[data-profile-action="toggle-visibility"]');
+      if (toggleVis) {
+        e.preventDefault();
+        toggleRevealVisibility(root);
+        return;
+      }
+
+      const dismiss = t?.closest?.('[data-profile-action="dismiss-reveal"]');
+      if (dismiss) {
+        e.preventDefault();
+        dismissReveal(root);
+        return;
+      }
+
       const revoke = t?.closest?.('[data-profile-action="revoke"]');
       if (revoke) {
         e.preventDefault();
         const keyId = revoke.getAttribute('data-key-id');
         await revokeKey(root, keyId);
+        return;
+      }
+
+      const revokeActive = t?.closest?.('[data-profile-action="revoke-active"]');
+      if (revokeActive) {
+        e.preventDefault();
+        await revokeActiveKey(root);
+        return;
+      }
+
+      const copyPrefixBtn = t?.closest?.('[data-profile-action="copy-prefix"]');
+      if (copyPrefixBtn) {
+        e.preventDefault();
+        await copyPrefix(root);
+        return;
+      }
+
+      const copyPrefixRow = t?.closest?.('[data-profile-action="copy-prefix-row"]');
+      if (copyPrefixRow) {
+        e.preventDefault();
+        const prefix = copyPrefixRow.getAttribute('data-key-prefix') || '';
+        const ok = await copyToClipboard(prefix);
+        setStatus(root, ok ? 'Prefix copied.' : 'Copy failed.', ok ? 'ok' : 'warn');
         return;
       }
 
@@ -450,7 +578,12 @@
       await ensureMounted();
     } catch (e) {
       console.warn(LOG, 'failed to mount profile', e);
-      showToast(`Unable to load profile: ${e?.message || e}`);
+      setStatus(ensureMountEl(), `Unable to load profile: ${e?.message || e}`, 'warn');
+      try {
+        window.alert(`Unable to load profile: ${e?.message || e}`);
+      } catch {
+        /* noop */
+      }
     }
   }
 

@@ -8,7 +8,11 @@
       </p>
     </div>
     <div class="hp-profile__actions">
-      <a class="hp-profile__btn hp-profile__btn--ghost" href="https://auth.haiphen.io/logout?to=https%3A%2F%2Fhaiphen.io%2F" data-profile-action="logout">
+      <a
+        class="hp-profile__btn hp-profile__btn--ghost"
+        href="https://auth.haiphen.io/logout?to=https%3A%2F%2Fhaiphen.io%2F"
+        data-profile-action="logout"
+      >
         Logout
       </a>
     </div>
@@ -62,17 +66,29 @@
       </div>
 
       <div class="hp-card__bd">
-        <!-- New key reveal (only after rotate) -->
+        <!-- Inline status / toast -->
+        <div class="hp-status" data-profile-status hidden></div>
+
+        <!-- New key reveal (sticky until dismissed) -->
         <div class="hp-reveal" data-profile-reveal hidden>
           <div class="hp-reveal__hd">
-            <div class="hp-reveal__title">New API key</div>
-            <div class="hp-reveal__sub">
-              Copy this now. You won’t be able to view it again.
+            <div>
+              <div class="hp-reveal__title">New API key</div>
+              <div class="hp-reveal__sub">Copy this now. You won’t be able to view it again.</div>
+            </div>
+
+            <div class="hp-reveal__hdActions">
+              <button class="hp-profile__btn hp-profile__btn--ghost" type="button" data-profile-action="toggle-visibility">
+                Hide
+              </button>
+              <button class="hp-profile__btn hp-profile__btn--ghost" type="button" data-profile-action="dismiss-reveal">
+                Dismiss
+              </button>
             </div>
           </div>
 
           <div class="hp-reveal__codeRow">
-            <code class="hp-code" data-profile-newkey>—</code>
+            <code class="hp-code hp-code--reveal" data-profile-newkey>—</code>
             <button class="hp-profile__btn hp-profile__btn--ghost" type="button" data-profile-action="copy-new">
               Copy
             </button>
@@ -85,13 +101,27 @@
 
         <!-- Active key summary -->
         <div class="hp-activeKey" data-profile-activekey>
-          <div class="hp-activeKey__title">Active key</div>
+          <div class="hp-activeKey__top">
+            <div class="hp-activeKey__title">Active key</div>
+            <div class="hp-activeKey__actions">
+              <button class="hp-profile__btn hp-profile__btn--ghost" type="button" data-profile-action="copy-prefix">
+                Copy prefix
+              </button>
+              <button class="hp-profile__btn hp-profile__btn--ghost" type="button" data-profile-action="revoke-active">
+                Revoke
+              </button>
+            </div>
+          </div>
+
           <div class="hp-activeKey__meta">
             <div><span class="hp-muted">Prefix:</span> <code class="hp-code" data-profile-active-prefix>—</code></div>
             <div><span class="hp-muted">Scopes:</span> <span data-profile-active-scopes>—</span></div>
             <div><span class="hp-muted">Created:</span> <span data-profile-active-created>—</span></div>
             <div><span class="hp-muted">Last used:</span> <span data-profile-active-used>—</span></div>
           </div>
+
+          <!-- hidden: active key id (so revoke-active can work without re-listing) -->
+          <div data-profile-active-id hidden>—</div>
         </div>
 
         <div class="hp-divider"></div>
