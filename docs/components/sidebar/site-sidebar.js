@@ -27,9 +27,9 @@
     document.head.appendChild(link);
   }
 
-  function setActive(root, sectionName) {
-    root.querySelectorAll('[data-section]').forEach((a) => {
-      a.classList.toggle('is-active', a.getAttribute('data-section') === sectionName);
+  function setActiveLink(root, activeAnchorEl) {
+    root.querySelectorAll('a.site-sidebar__link').forEach((a) => {
+      a.classList.toggle('is-active', a === activeAnchorEl);
     });
   }
 
@@ -51,7 +51,7 @@
           target: target || null,
           emphasize: emph || target || null,
         });
-        setActive(root, section);
+        setActiveLink(root, a);
         return;
       }
 
