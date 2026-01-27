@@ -21,6 +21,11 @@
 
   const MOUNT_ID = 'content-widget'; // your dynamic content root
 
+  // Internal state to manage “show raw key once” UX without it being immediately hidden by re-hydrate.
+  const STATE = {
+    justRotated: false,
+  };
+
   function qs(sel, root = document) {
     return root.querySelector(sel);
   }
@@ -70,7 +75,7 @@
     link.href = href;
     document.head.appendChild(link);
   }
-  
+
   function shouldAutoOpenProfile() {
     const h = String(window.location.hash || '').toLowerCase();
     return h === '#profile' || h.startsWith('#profile:');
@@ -78,29 +83,12 @@
 
   function setProfileHash() {
     try {
-      // don’t clobber other SPA state if you use more complex hashes later
-      if (!window.location.hash || !String(window.location.hash).toLowerCase().startsWith('#profile')) {
-        window.location.hash = '#profile';
-      }
-    } catch {/* noop */}
-  }
-
-  // Optional: auto-open if user visits /#profile directly
-  window.addEventListener('DOMContentLoaded', () => {
-    if (shouldAutoOpenProfile() && typeof NS.showProfile === 'function') {
-      NS.showProfile().catch((e) => console.warn(LOG, 'auto-open profile failed', e));
+      const h = String(window.location.hash || '').toLowerCase();
+      if (!h || !h.startsWith('#profile')) window.location.hash = '#profile';
+    } catch {
+      /* noop */
     }
-  });
-
-  // Public API
-  NS.showProfile = showProfile;
-
-  // If profile is opened via sidebar, "persist" it by setting hash
-  const _origShowProfile = NS.showProfile;
-  NS.showProfile = async function wrappedShowProfile() {
-    setProfileHash();
-    return _origShowProfile();
-  };
+  }
 
   async function getJson(url) {
     const r = await fetch(url, {
@@ -109,6 +97,7 @@
       cache: 'no-store',
       headers: { accept: 'application/json' },
     });
+
     const text = await r.text();
     let data;
     try {
@@ -116,6 +105,7 @@
     } catch {
       data = { raw: text };
     }
+
     if (!r.ok) {
       const msg = data?.error?.message || data?.error || `HTTP ${r.status}`;
       const err = new Error(msg);
@@ -134,6 +124,7 @@
       headers: { 'content-type': 'application/json', accept: 'application/json' },
       body: JSON.stringify(body || {}),
     });
+
     const text = await r.text();
     let data;
     try {
@@ -141,6 +132,7 @@
     } catch {
       data = { raw: text };
     }
+
     if (!r.ok) {
       const msg = data?.error?.message || data?.error || `HTTP ${r.status}`;
       const err = new Error(msg);
@@ -167,24 +159,35 @@
     }
   }
 
-  async function ensureMounted() {
+  function ensureMountEl() {
     const mount = document.getElementById(MOUNT_ID);
     if (!mount) throw new Error(`${LOG} missing #${MOUNT_ID}`);
+    return mount;
+  }
+
+  async function ensureMounted() {
+    const mount = ensureMountEl();
 
     await injectCssOnce('assets/base.css');
     await injectCssOnce('components/profile/profile.css');
 
-    const html = await fetchText('components/profile/profile.html');
-    mount.innerHTML = html;
+    // If already mounted, don’t re-fetch/rewrite HTML; just re-hydrate.
+    if (!mount.__haiphenProfileMounted) {
+      const html = await fetchText('components/profile/profile.html');
+      mount.innerHTML = html;
+      wire(mount);
+      mount.__haiphenProfileMounted = true;
+    }
 
-    wire(mount);
     await hydrate(mount);
   }
 
   async function hydrate(root) {
-    // Hide "reveal" region on (re)hydrate unless we just rotated.
+    // Only hide reveal region on normal hydrate; after rotate we keep it visible.
     const reveal = qs('[data-profile-reveal]', root);
-    if (reveal) reveal.hidden = true;
+    if (reveal) {
+      reveal.hidden = !STATE.justRotated;
+    }
 
     // 1) cookie-auth user + plan + active key metadata
     let me;
@@ -205,7 +208,6 @@
     const plan = me?.plan || me?.entitlements?.plan || 'free';
     setText(qs('[data-profile-plan]', root), plan);
 
-    // active key summary (metadata only)
     const k = me?.api_key || null;
     setText(qs('[data-profile-active-prefix]', root), k?.key_prefix || '—');
     setText(qs('[data-profile-active-created]', root), fmtIso(k?.created_at));
@@ -217,6 +219,9 @@
 
     // 2) list keys table
     await refreshKeysTable(root);
+
+    // Once we have hydrated after rotate, clear the flag so a later refresh hides again.
+    STATE.justRotated = false;
   }
 
   async function refreshKeysTable(root) {
@@ -296,11 +301,13 @@
       const raw = res?.api_key;
       if (!raw) throw new Error('Rotate succeeded but API did not return api_key');
 
-      // Reveal once
+      // Reveal once (and keep visible through the subsequent hydrate)
       const reveal = qs('[data-profile-reveal]', root);
       const keyEl = qs('[data-profile-newkey]', root);
       if (keyEl) keyEl.textContent = String(raw);
       if (reveal) reveal.hidden = false;
+
+      STATE.justRotated = true;
 
       // Refresh summaries/tables (active key metadata updates via /v1/me)
       await hydrate(root);
@@ -380,11 +387,10 @@
         return;
       }
 
+      // Not present in your current HTML, but harmless to keep.
       const close = t?.closest?.('[data-profile-action="close"]');
       if (close) {
         e.preventDefault();
-        // If your profile is in an overlay, hide it here.
-        // If it's a page, you can route elsewhere.
         try {
           if (typeof NS.hideOverlay === 'function') NS.hideOverlay();
         } catch {
@@ -403,15 +409,24 @@
     }
   }
 
-  // Public API
-  NS.showProfile = showProfile;
+  // ---- Public API (single assignment, wrapped once) ----
+  NS.showProfile = async function showProfileWithHash() {
+    setProfileHash();
+    return await showProfile();
+  };
+
+  // Optional: auto-open if user visits /#profile directly
+  window.addEventListener('DOMContentLoaded', () => {
+    if (shouldAutoOpenProfile()) {
+      NS.showProfile().catch((e) => console.warn(LOG, 'auto-open profile failed', e));
+    }
+  });
 
   // Sidebar navigation hook
   window.addEventListener('haiphen:session:navigate', (ev) => {
     const page = ev?.detail?.page;
     if (page === 'profile') {
-      // Best-effort; do not throw in event loop
-      showProfile().catch((e) => console.warn(LOG, 'showProfile failed', e));
+      NS.showProfile().catch((e) => console.warn(LOG, 'showProfile failed', e));
     }
   });
 })();
