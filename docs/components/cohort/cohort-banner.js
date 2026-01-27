@@ -24,7 +24,7 @@
 
     // Default content
     badgeText: '2-minute Survey',
-    messageText: '🧠 FinTech Cohort Screening Survey 📊',
+    messageText: '🧠 FinTech Screening Survey 📊',
     ctaText: 'Take Survey',
     // Set this to your desired target:
     // - '#contact-us' routes to Contact section hash already in your router

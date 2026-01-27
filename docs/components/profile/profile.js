@@ -180,6 +180,20 @@
     }
 
     await hydrate(mount);
+    // --- Snap Profile into view like showSection() does ---
+    requestAnimationFrame(() => {
+      // Scroll to the Profile section header inside the widget (best target)
+      const title = mount.querySelector('.hp-profile__title') || mount;
+      scrollToWithHeaderOffsetCompat(title, 12);
+
+      // Optional: keyboard focus (matches “snaps into focus” feel)
+      try {
+        title?.setAttribute?.('tabindex', '-1');
+        title?.focus?.({ preventScroll: true });
+      } catch {
+        /* noop */
+      }
+    });    
   }
 
   async function hydrate(root) {
@@ -357,6 +371,36 @@
     }
   }
 
+  function scrollToWithHeaderOffsetCompat(targetEl, extra = 12) {
+    if (!targetEl) return;
+
+    // Prefer the global helper if it exists (keeps behavior consistent site-wide)
+    if (typeof window.scrollToWithHeaderOffset === 'function') {
+      window.scrollToWithHeaderOffset(targetEl, extra);
+      return;
+    }
+
+    // Fallback: mimic index.html's scrollToWithHeaderOffset implementation
+    const header =
+      document.querySelector('.site-header') ||
+      document.querySelector('#site-header .site-header') ||
+      document.querySelector('nav.navbar');
+
+    const headerH =
+      header?.getBoundingClientRect().height ||
+      parseInt(getComputedStyle(document.documentElement).getPropertyValue('--header-h') || '70', 10) ||
+      70;
+
+    const y = window.scrollY + targetEl.getBoundingClientRect().top - headerH - extra;
+    window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
+  }
+
+  function ensureContentWidgetVisible() {
+    const widget = document.getElementById(MOUNT_ID);
+    if (widget) widget.classList.add('active'); // mirrors showSection()
+    return widget;
+  }
+
   function wire(root) {
     // Prevent double-wiring if ensureMounted() is called repeatedly.
     if (root.__haiphenProfileWired) return;
@@ -402,6 +446,7 @@
 
   async function showProfile() {
     try {
+      ensureContentWidgetVisible();
       await ensureMounted();
     } catch (e) {
       console.warn(LOG, 'failed to mount profile', e);
@@ -426,6 +471,7 @@
   window.addEventListener('haiphen:session:navigate', (ev) => {
     const page = ev?.detail?.page;
     if (page === 'profile') {
+      ensureContentWidgetVisible();
       NS.showProfile().catch((e) => console.warn(LOG, 'showProfile failed', e));
     }
   });
