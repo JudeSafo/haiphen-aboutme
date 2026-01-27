@@ -1,0 +1,125 @@
+<!-- docs/components/profile/profile.html -->
+<section class="hp-profile" aria-label="Profile">
+  <div class="hp-profile__top">
+    <div class="hp-profile__titlewrap">
+      <h2 class="hp-profile__title">Profile</h2>
+      <p class="hp-profile__sub">
+        Manage your Haiphen account settings and API keys.
+      </p>
+    </div>
+    <div class="hp-profile__actions">
+      <a class="hp-profile__btn hp-profile__btn--ghost" href="https://auth.haiphen.io/logout?to=https%3A%2F%2Fhaiphen.io%2F" data-profile-action="logout">
+        Logout
+      </a>
+    </div>
+  </div>
+
+  <div class="hp-profile__grid">
+    <!-- Account -->
+    <div class="hp-card">
+      <div class="hp-card__hd">
+        <div>
+          <div class="hp-card__title">Account</div>
+          <div class="hp-card__sub">Signed-in identity and plan status.</div>
+        </div>
+      </div>
+
+      <div class="hp-card__bd">
+        <div class="hp-kv">
+          <div class="hp-kv__row">
+            <div class="hp-kv__k">User</div>
+            <div class="hp-kv__v" data-profile-user>—</div>
+          </div>
+          <div class="hp-kv__row">
+            <div class="hp-kv__k">Email</div>
+            <div class="hp-kv__v" data-profile-email>—</div>
+          </div>
+          <div class="hp-kv__row">
+            <div class="hp-kv__k">Plan</div>
+            <div class="hp-kv__v"><span class="hp-pill" data-profile-plan>—</span></div>
+          </div>
+        </div>
+
+        <div class="hp-note">
+          Cookie auth is used for the dashboard. API keys (Bearer tokens) are used for metrics/RSS/webhooks.
+        </div>
+      </div>
+    </div>
+
+    <!-- API Keys -->
+    <div class="hp-card">
+      <div class="hp-card__hd hp-card__hd--split">
+        <div>
+          <div class="hp-card__title">API Keys</div>
+          <div class="hp-card__sub">Rotate, copy, and revoke keys. Your raw token is shown only once.</div>
+        </div>
+
+        <div class="hp-card__hdActions">
+          <button class="hp-profile__btn hp-profile__btn--primary" type="button" data-profile-action="rotate">
+            Rotate key
+          </button>
+        </div>
+      </div>
+
+      <div class="hp-card__bd">
+        <!-- New key reveal (only after rotate) -->
+        <div class="hp-reveal" data-profile-reveal hidden>
+          <div class="hp-reveal__hd">
+            <div class="hp-reveal__title">New API key</div>
+            <div class="hp-reveal__sub">
+              Copy this now. You won’t be able to view it again.
+            </div>
+          </div>
+
+          <div class="hp-reveal__codeRow">
+            <code class="hp-code" data-profile-newkey>—</code>
+            <button class="hp-profile__btn hp-profile__btn--ghost" type="button" data-profile-action="copy-new">
+              Copy
+            </button>
+          </div>
+
+          <div class="hp-reveal__foot">
+            Store this in a password manager or secrets vault (1Password, Bitwarden, Doppler, etc).
+          </div>
+        </div>
+
+        <!-- Active key summary -->
+        <div class="hp-activeKey" data-profile-activekey>
+          <div class="hp-activeKey__title">Active key</div>
+          <div class="hp-activeKey__meta">
+            <div><span class="hp-muted">Prefix:</span> <code class="hp-code" data-profile-active-prefix>—</code></div>
+            <div><span class="hp-muted">Scopes:</span> <span data-profile-active-scopes>—</span></div>
+            <div><span class="hp-muted">Created:</span> <span data-profile-active-created>—</span></div>
+            <div><span class="hp-muted">Last used:</span> <span data-profile-active-used>—</span></div>
+          </div>
+        </div>
+
+        <div class="hp-divider"></div>
+
+        <!-- Keys table -->
+        <div class="hp-tableWrap">
+          <table class="hp-table" aria-label="API keys">
+            <thead>
+              <tr>
+                <th>Status</th>
+                <th>Prefix</th>
+                <th>Scopes</th>
+                <th>Created</th>
+                <th>Last used</th>
+                <th>Revoked</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody data-profile-keys-tbody>
+              <tr><td colspan="7" class="hp-muted">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="hp-note hp-note--danger">
+          Never paste API keys into public Slack channels or GitHub issues. Revoke immediately if exposed.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

@@ -185,12 +185,30 @@
           // extensible hook: let your app/router own this later
           window.dispatchEvent(new CustomEvent('haiphen:session:navigate', { detail: { page } }));
 
-          // sensible defaults today (no new pages required)
+          // sensible defaults today
           if (page === 'profile') {
-            // If you later build a Profile section: showSection('Profile')
-            console.info('[sidebar-session] profile clicked (hook: haiphen:session:navigate)');
-          } else if (page === 'settings') {
-            console.info('[sidebar-session] settings clicked (hook: haiphen:session:navigate)');
+            // 1) Prefer direct component invocation
+            if (typeof window.HAIPHEN?.showProfile === 'function') {
+              try { await window.HAIPHEN.showProfile(); } catch (err) {
+                console.warn('[sidebar-session] showProfile failed', err);
+              }
+              return;
+            }
+
+            // 2) Fallback: if you later wire Profile into showSection()
+            if (typeof window.showSection === 'function') {
+              window.showSection('Profile');
+              return;
+            }
+
+            console.warn('[sidebar-session] profile clicked but no handler present');
+            return;
+          }
+
+          if (page === 'settings') {
+            // You can implement later; for now don’t throw.
+            console.info('[sidebar-session] settings clicked (unimplemented)');
+            return;
           }
           return;
         }

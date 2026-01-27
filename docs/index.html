@@ -50,7 +50,8 @@
 	  <script src="components/terms-gate/checkout-router.js"></script>
       <script src="components/hero-device-launcher/hero-device-launcher.js"></script>
       <link rel="stylesheet" href="components/hero-device-launcher/hero-device-launcher.css" />
-
+	  <script defer src="components/profile/profile.js"></script>
+	  
 	  <script>
 	    window.HAIPHEN = window.HAIPHEN || {};
 	    window.HAIPHEN.TURNSTILE_SITE_KEY = "0x4AAAAAACKr8sUWJUM68QdF"; // site key (public)
@@ -2593,9 +2594,20 @@
 
 		function routeFromHash() {
 		  const { slug, subId } = parseHash();
+		  if (!slug) { activateSectionMenuFor(null); return; }
 
-		  if (!slug) {
-		    activateSectionMenuFor(null);
+		  // ✅ NEW: profile is not a normal injected "sectionContent" page
+		  if (slug === 'profile') {
+		    try {
+		      // Optionally ensure widget is visible before profile mounts into it
+		      const contentWidget = document.getElementById("content-widget");
+		      if (contentWidget) contentWidget.classList.add("active");
+
+		      // Open profile
+		      window.HAIPHEN?.showProfile?.();
+		    } catch (e) {
+		      console.warn('[router] #profile failed', e);
+		    }
 		    return;
 		  }
 
@@ -2606,10 +2618,7 @@
 		    window.showSection(section);
 		    activateSectionMenuFor(section);
 
-		    // Special-case: #cohort should auto-open the survey modal
-		    if (slug === 'cohort') {
-		      openCohortModalWhenReady();
-		    }
+		    if (slug === 'cohort') openCohortModalWhenReady();
 		  }
 
 		  if (!subId) return;
