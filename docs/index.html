@@ -2592,6 +2592,41 @@
 		  tick();
 		}
 
+		function scrollToIdWhenReady(id, { maxAttempts = 60, delayMs = 50, extra = 12 } = {}) {
+		  const LOG = '[router:scrollToIdWhenReady]';
+		  const targetId = String(id || '').trim();
+		  if (!targetId) return;
+
+		  let attempts = 0;
+
+		  const tick = () => {
+		    attempts++;
+
+		    const el = document.getElementById(targetId);
+
+		    if (el) {
+		      try {
+		        scrollToWithHeaderOffset(el, extra);
+		      } catch (e) {
+		        console.warn(LOG, 'scroll failed', e);
+		      }
+		      return;
+		    }
+
+		    if (attempts >= maxAttempts) {
+		      console.warn(LOG, 'gave up waiting for element', {
+		        id: targetId,
+		        attempts,
+		        hash: window.location.hash,
+		      });
+		      return;
+		    }
+
+		    setTimeout(tick, delayMs);
+		  };
+
+		  tick();
+		}
 		function routeFromHash() {
 		  const { slug, subId } = parseHash();
 		  if (!slug) { activateSectionMenuFor(null); return; }

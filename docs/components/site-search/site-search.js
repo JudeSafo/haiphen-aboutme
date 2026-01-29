@@ -248,9 +248,15 @@
       return;
     }
 
-    // Fallback: direct section + scroll (still works if router missing)
+    // inside navigateTo(entry), in the "Fallback: direct section + scroll" branch:
     if (entry.section && typeof window.showSection === "function") {
       window.showSection(entry.section);
+
+      // Wait for the element to exist (in injected content), then scroll
+      if (entry.elementId && typeof window.scrollToIdWhenReady === 'function') {
+        window.scrollToIdWhenReady(entry.elementId, { maxAttempts: 80, delayMs: 50, extra: 12 });
+        return;
+      }
 
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
