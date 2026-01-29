@@ -275,6 +275,56 @@
     if (entry.elementId) scrollToIdWithHeaderOffset(entry.elementId);
   }
 
+  function navigateTo(entry) {
+    closeOverlay();
+
+    const sub = entry.elementId || entry.hash || "";
+
+    // 1) Imperative navigation first (gives immediate UI response)
+    if (entry.section && typeof window.showSection === "function") {
+      window.showSection(entry.section);
+
+      // Try to scroll once the element exists; retry briefly for async mounts
+      if (entry.elementId) {
+        const id = entry.elementId;
+        let tries = 0;
+        const maxTries = 80;
+
+        const tick = () => {
+          tries++;
+          const ok = typeof window.scrollToIdSmart === 'function'
+            ? window.scrollToIdSmart(id, 12)
+            : scrollToIdWithHeaderOffset(id);
+
+          if (ok) return;
+          if (tries >= maxTries) return;
+          setTimeout(tick, 50);
+        };
+
+        tick();
+      }
+
+      // 2) Update hash for shareability after UI is already moving
+      if (typeof window.setHashForSection === "function") {
+        window.setHashForSection(entry.section, sub);
+      }
+
+      return;
+    }
+
+    // Fallbacks (if showSection isn't available)
+    if (entry.section && typeof window.setHashForSection === "function") {
+      window.setHashForSection(entry.section, sub);
+      return;
+    }
+
+    if (entry.hash) {
+      window.location.hash = `#${entry.hash}`;
+      return;
+    }
+    if (entry.elementId) scrollToIdWithHeaderOffset(entry.elementId);
+  }
+
   function wireOverlayInputs() {
     const input = byId("site-search-input");
     if (!input || input.__wired) return;

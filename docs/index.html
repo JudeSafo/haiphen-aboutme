@@ -2592,6 +2592,46 @@
 		  tick();
 		}
 
+		function findScrollableAncestor(el) {
+		  let cur = el?.parentElement || null;
+		  while (cur && cur !== document.body) {
+		    const cs = getComputedStyle(cur);
+		    const oy = cs.overflowY;
+		    const canScroll = (oy === 'auto' || oy === 'scroll') && cur.scrollHeight > cur.clientHeight + 2;
+		    if (canScroll) return cur;
+		    cur = cur.parentElement;
+		  }
+		  return null;
+		}
+
+		function scrollToIdSmart(elementId, extra = 12) {
+		  const el = document.getElementById(elementId);
+		  if (!el) return false;
+
+		  const scroller = findScrollableAncestor(el);
+
+		  // Case A: element lives inside an internal scroll container (e.g. .snap-stack)
+		  if (scroller) {
+		    // Scroll the container so the element is visible
+		    const top = el.offsetTop - extra;
+		    scroller.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+
+		    // Optional: also ensure the widget itself is visible (if needed)
+		    // (This won't fight the snap-stack; it just brings the widget into view.)
+		    const widget = document.getElementById('content-widget');
+		    if (widget) widget.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+		    return true;
+		  }
+
+		  // Case B: normal document flow
+		  scrollToWithHeaderOffset(el, extra);
+		  return true;
+		}
+
+		// expose for site-search.js
+		window.scrollToIdSmart = scrollToIdSmart;
+		
 		function scrollToIdWhenReady(id, { maxAttempts = 60, delayMs = 50, extra = 12 } = {}) {
 		  const LOG = '[router:scrollToIdWhenReady]';
 		  const targetId = String(id || '').trim();
@@ -2656,14 +2696,10 @@
 		    if (slug === 'cohort') openCohortModalWhenReady();
 		  }
 
-		  if (!subId) return;
+  		  if (!subId) return;
 
-		  requestAnimationFrame(() => {
-		    requestAnimationFrame(() => {
-		      const el = document.getElementById(subId);
-		      if (el) scrollToWithHeaderOffset(el, 12);
-		    });
-		  });
+		  // Wait until the injected section (and any async inner mounts) actually exist.
+		  scrollToIdWhenReady(subId, { maxAttempts: 80, delayMs: 50, extra: 12 });
 		}
 
 		window.addEventListener("hashchange", routeFromHash);
