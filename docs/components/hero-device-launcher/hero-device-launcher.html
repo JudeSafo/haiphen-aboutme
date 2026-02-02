@@ -1,7 +1,8 @@
 <!-- docs/components/hero-device-launcher/hero-device-launcher.html -->
 <div class="hdl" data-hdl-root>
   <div class="hdl-panel" data-hdl-panel aria-hidden="true">
-    <div class="hdl-inner" role="navigation" aria-label="Device launcher">      
+    <!-- Existing icon launcher row -->
+    <div class="hdl-inner" role="navigation" aria-label="Device launcher">
       <a class="hdl-btn" href="#docs" data-device="android" aria-label="Open docs (mobile)">
         <img
           class="hdl-ic"
@@ -26,6 +27,27 @@
         <span class="hdl-label" aria-hidden="true">Terminal</span>
       </a>
     </div>
+    <!-- Claude-like CTA block -->
+    <div class="hdl-cta" role="group" aria-label="Get Haiphen">
+      <div class="hdl-cta-row">
+        <span class="hdl-cta-title">Get Haiphen:</span>
 
+        <div class="hdl-cta-pill" role="group" aria-label="Install command">
+          <code class="hdl-cta-code" data-hdl-command></code>
+          <button class="hdl-cta-copy" type="button" data-hdl-action="copy" aria-label="Copy command to clipboard">
+            Copy
+          </button>
+        </div>
+      </div>
+
+      <button
+        class="hdl-cta-docs"
+        type="button"
+        data-hdl-action="docs"
+        aria-label="Read the documentation"
+      >
+        Or read the documentation
+      </button>
+    </div>    
   </div>
 </div>

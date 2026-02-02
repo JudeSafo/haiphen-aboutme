@@ -2,11 +2,16 @@
 (() => {
   const NS = (window.HAIPHEN = window.HAIPHEN || {});
   const LOG = '[hero-device]';
+
+  // ✅ Align these with your docs install section.
   const INSTALL_HASH = '#docs:docs-install-brew';
+
+  // ✅ The Claude-like command shown + copied.
+  // Update to match whatever your docs recommend.
+  const INSTALL_COMMAND = 'brew install haiphen';
 
   function routeToDocsInstall(source = 'hero_install_cta') {
     try {
-      // Prefer the docs access flow (auth → entitlement → return to docs)
       const fn = window?.HAIPHEN?.ApiAccess?.requestAccess;
       if (typeof fn === 'function') {
         fn({ returnHash: INSTALL_HASH, source });
@@ -16,13 +21,38 @@
       console.warn(`${LOG} requestAccess failed`, err);
     }
 
-    // Conservative fallback
     try {
       if (typeof window.showSection === 'function') window.showSection('Docs');
     } catch {}
     try {
       window.location.hash = INSTALL_HASH;
     } catch {}
+  }
+
+  async function copyToClipboard(text) {
+    const raw = String(text || '');
+    if (!raw) return false;
+
+    try {
+      await navigator.clipboard.writeText(raw);
+      return true;
+    } catch {
+      try {
+        const ta = document.createElement('textarea');
+        ta.value = raw;
+        ta.setAttribute('readonly', 'true');
+        ta.style.position = 'fixed';
+        ta.style.left = '-9999px';
+        ta.style.top = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        const ok = document.execCommand('copy');
+        ta.remove();
+        return !!ok;
+      } catch {
+        return false;
+      }
+    }
   }
 
   function isOpen(root) {
@@ -54,6 +84,10 @@
     const hero = document.querySelector('section.hero');
     const trigger = document.querySelector('[data-hdl-trigger]');
 
+    // Fill the command text in the CTA block, if present.
+    const cmdEl = root.querySelector('[data-hdl-command]');
+    if (cmdEl) cmdEl.textContent = INSTALL_COMMAND;
+
     // Keep open when hovering the trigger region OR the panel itself
     const hoverTargets = [trigger, root].filter(Boolean);
     hoverTargets.forEach((el) => {
@@ -71,7 +105,6 @@
         toggle(root);
       });
 
-      // Keyboard accessibility (Enter/Space)
       trigger.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault?.();
@@ -90,23 +123,41 @@
       { passive: true }
     );
 
-    // Click handler for the install CTA
-    const cta = root.querySelector('[data-hdl-action="jump-install-brew"]');
-    if (cta) {
-      cta.addEventListener('click', (e) => {
-        e.preventDefault?.();
-        e.stopPropagation?.();
-        routeToDocsInstall('hero_install_cta');
-      });
-    }
-
-    // If user clicks anywhere outside the hero, close it (nice UX)
+    // Click anywhere outside the hero closes
     document.addEventListener('click', (e) => {
       const t = e.target;
       const clickedInHero = !!(hero && hero.contains(t));
       const clickedInPanel = !!(root && root.contains(t));
       if (!clickedInHero && !clickedInPanel) close(root);
     });
+
+    // CTA: copy
+    const copyBtn = root.querySelector('[data-hdl-action="copy"]');
+    if (copyBtn) {
+      copyBtn.addEventListener('click', async (e) => {
+        e.preventDefault?.();
+        e.stopPropagation?.();
+
+        const ok = await copyToClipboard(INSTALL_COMMAND);
+        const prev = copyBtn.textContent;
+        copyBtn.textContent = ok ? 'Copied' : 'Copy failed';
+        copyBtn.disabled = true;
+        window.setTimeout(() => {
+          copyBtn.textContent = prev || 'Copy';
+          copyBtn.disabled = false;
+        }, 900);
+      });
+    }
+
+    // CTA: docs
+    const docsBtn = root.querySelector('[data-hdl-action="docs"]');
+    if (docsBtn) {
+      docsBtn.addEventListener('click', (e) => {
+        e.preventDefault?.();
+        e.stopPropagation?.();
+        routeToDocsInstall('hero_install_docs');
+      });
+    }
   }
 
   async function loadHeroDeviceLauncher(mountSelector = '#hero-device-launcher-mount') {
