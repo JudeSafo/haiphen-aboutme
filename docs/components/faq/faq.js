@@ -11,6 +11,46 @@
    */
   const DEFAULT_FAQS = [
     {
+      q: "What deliverables do you actually ship?",
+      aHtml:
+        `Typically: (1) a working pipeline/service, (2) published artifacts (JSON, exports, screenshots), (3) observability (logs/metrics/traces) + runbooks, (4) reliability hardening (retries/idempotency/backfills), and (5) security boundaries (least privilege, key rotation posture).`,
+      aText:
+        "Typically: working pipeline/service, published artifacts, observability + runbooks, reliability hardening, and security boundaries.",
+      tags: ["services", "engineering", "deliverables"],
+    },
+    {
+      q: "What does a 'thin vertical slice' mean in practice?",
+      a:
+        "One signal → one decision → one output. Example: ingest a single source, compute a KPI, publish JSON, render one UI widget, and add monitoring. Once it’s reliable, scale horizontally (more signals).",
+      tags: ["engineering", "services"],
+    },
+    {
+      q: "How do you define success for a project?",
+      a:
+        "Success is measurable: latency/throughput targets, error budgets, alert coverage, correctness checks, and the ability to explain any output (lineage). If you can’t debug it, you don’t own it.",
+      tags: ["engineering", "telemetry", "services"],
+    },
+    {
+      q: "How do you handle sensitive data?",
+      a:
+        "We design for least privilege and separation of concerns: scoped tokens, minimized retention, audit logs, and clear data boundaries. If needed we can keep raw data in your environment and only publish derived artifacts.",
+      tags: ["security", "services"],
+    },
+    {
+      q: "Can you integrate with our existing stack?",
+      a:
+        "Yes — we usually meet you where you are: your cloud, your CI, your observability, your auth. The goal is to reduce operational friction, not add another mystery system.",
+      tags: ["services", "engineering"],
+    },
+    {
+      q: "What’s the relationship between Mission and the Trades telemetry?",
+      aHtml:
+        `Trades is a living example of the philosophy: publish artifacts, keep a daily archive, and make metrics clickable for diagnosis. Mission explains the general pattern; Trades shows it running. See <a href="#fintech">Trades</a> and <a href="#collaborate">Mission</a>.`,
+      aText:
+        "Trades is a living example of the philosophy: publish artifacts, keep a daily archive, and make metrics clickable for diagnosis.",
+      tags: ["general", "telemetry", "navigation"],
+    },    
+    {
       q: "What is Haiphen in one sentence?",
       aHtml:
         `Haiphen is a signals-intelligence engineering studio: we build inspectable, production-grade pipelines for ML/NLP, security, and telemetry-heavy systems — including the trading telemetry you see on the <a href="#fintech">Trades</a> section.`,
