@@ -1084,16 +1084,22 @@
 	  <div class="main-container">
 	    <!-- Hero Section -->
 		<section class="hero">
-		  <!-- NEW: unified trigger region -->
-		  <div class="hero-launcher-trigger" data-hdl-trigger role="button" tabindex="0" aria-label="Open device launcher">
-		    <div class="hero-logo">
-		      <img src="assets/robot_haiphen.svg" alt="Haiphen Robot Logo">
-		    </div>
-
-		    <p class="hero-tagline" style="margin-bottom: 0.5rem;">
-		      API Everything ®[<span style="color: red;">♥</span>]
-		    </p>
+		  <!-- Logo stays NON-clickable -->
+		  <div class="hero-logo">
+		    <img src="assets/robot_haiphen.svg" alt="Haiphen Robot Logo">
 		  </div>
+
+		  <!-- Only the tagline is the trigger -->
+		  <p
+		    class="hero-tagline hero-tagline-trigger"
+		    data-hdl-trigger
+		    role="button"
+		    tabindex="0"
+		    aria-label="Open device launcher"
+		    style="margin-bottom: 0.5rem;"
+		  >
+		    API Everything ®[<span style="color: red;">♥</span>]
+		  </p>
 
 		  <!-- unchanged -->
 		  <div id="hero-device-launcher-mount"></div>
