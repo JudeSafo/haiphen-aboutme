@@ -1,7 +1,18 @@
 {
-  "updated_at": "2026-02-03T22:26:34.485Z",
+  "updated_at": "2026-02-04T14:00:24.171Z",
   "max_days": 3,
   "items": [
+    {
+      "date": "2026-02-04",
+      "screenshot": "assets/trades/archive/2026-02-04.png",
+      "balance_screenshot": "assets/trades/archive/balance_2026-02-04.png",
+      "json": "assets/trades/archive/2026-02-04.json",
+      "updated_at": "2026-02-04T14:00:24.032Z",
+      "headline": "Haiphen Day Trading snapshot (fallback metrics)",
+      "has_screenshot": true,
+      "has_balance_screenshot": true,
+      "has_json": true
+    },
     {
       "date": "2026-02-03",
       "screenshot": "assets/trades/archive/2026-02-03.png",
