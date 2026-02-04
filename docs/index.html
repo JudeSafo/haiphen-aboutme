@@ -99,7 +99,35 @@
 	      padding-top: 70px;
 	      min-height: 100vh;
 	    }
-	    
+			    
+		/* ============================================================
+		   Mission hero SVG (value prop)
+		============================================================ */
+		.mission-hero{
+		  margin: 1.25rem auto 1.25rem;
+		  max-width: 980px;
+		  width: 100%;
+		  padding: 0.75rem;
+		  border-radius: 16px;
+		  background: rgba(255,255,255,0.92);
+		  border: 1px solid #e6ecf3;
+		  box-shadow: 0 10px 24px rgba(0,0,0,0.08);
+		}
+
+		.mission-hero__img{
+		  display: block;
+		  width: 100%;
+		  height: auto;
+		  max-height: 520px;   /* matches your SVG viewBox height */
+		}
+
+		/* On smaller screens, reduce padding + keep it clean */
+		@media (max-width: 640px){
+		  .mission-hero{
+		    padding: 0.5rem;
+		    border-radius: 14px;
+		  }
+		}	    
 	    /* ============================================================
 	       Fixed Navbar (Top)
 	    ============================================================ */
@@ -1798,7 +1826,16 @@
 			  <p>
 	          <a href="https://haiphen.io" target="_blank" rel="noopener noreferrer"><strong>Haiphen</strong></a>[Hi-fen]: Haiphen is a <strong>signals intelligence</strong> software startup focused on delivering custom, open src solutions to various cloud, edge, and infra obstacles. We operate across a variety of technical, financial, business, and scientific domains.
 	        </p>
-
+			<!-- Mission visual (value prop hero) -->
+			<figure class="mission-hero" aria-label="Haiphen value proposition">
+			  <img
+			    class="mission-hero__img"
+			    src="assets/haiphen-value-prop-hero.svg"
+			    alt="Haiphen value proposition: Signals → Engine → Interfaces"
+			    loading="lazy"
+			    decoding="async"
+			  />
+			</figure>
 	        <div class="about-columns">
 	          <div class="about-col">
 	            <p>
