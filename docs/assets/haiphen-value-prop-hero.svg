@@ -26,6 +26,25 @@
       <stop offset="1" stop-color="#7EE7D1" stop-opacity="0"/>
     </radialGradient>
 
+    <!-- Subtle RGB accents (kept very light) -->
+    <radialGradient id="blobRed" cx="22%" cy="70%" r="55%">
+      <stop offset="0" stop-color="#FF5A5F" stop-opacity="0.18"/>
+      <stop offset="0.45" stop-color="#FF5A5F" stop-opacity="0.07"/>
+      <stop offset="1" stop-color="#FF5A5F" stop-opacity="0"/>
+    </radialGradient>
+
+    <radialGradient id="blobYellow" cx="52%" cy="18%" r="55%">
+      <stop offset="0" stop-color="#FFD166" stop-opacity="0.16"/>
+      <stop offset="0.45" stop-color="#FFD166" stop-opacity="0.06"/>
+      <stop offset="1" stop-color="#FFD166" stop-opacity="0"/>
+    </radialGradient>
+
+    <radialGradient id="blobGreen" cx="84%" cy="62%" r="55%">
+      <stop offset="0" stop-color="#2ECC71" stop-opacity="0.14"/>
+      <stop offset="0.45" stop-color="#2ECC71" stop-opacity="0.055"/>
+      <stop offset="1" stop-color="#2ECC71" stop-opacity="0"/>
+    </radialGradient>
+
     <!-- Glass card -->
     <filter id="glassShadow" x="-30%" y="-30%" width="160%" height="160%">
       <feDropShadow dx="0" dy="12" stdDeviation="14" flood-color="#000" flood-opacity="0.18"/>
@@ -53,6 +72,9 @@
       .blob1 { fill: url(#blobBlue); }
       .blob2 { fill: url(#blobSky); }
       .blob3 { fill: url(#blobMint); }
+      .blobR { fill: url(#blobRed); }
+      .blobY { fill: url(#blobYellow); }
+      .blobG { fill: url(#blobGreen); }
 
       .frame {
         fill: rgba(255,255,255,0.60);
@@ -60,15 +82,16 @@
         stroke-width: 1.2;
       }
 
+      /* Footer title/subtitle (moved down, smaller, centered) */
       .title {
         fill: rgba(44,62,80,0.92);
-        font: 800 26px ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-        letter-spacing: 0.2px;
+        font: 800 22px ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+        letter-spacing: 0.18px;
       }
       .subtitle {
         fill: rgba(44,62,80,0.62);
-        font: 650 14.5px ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-        letter-spacing: 0.2px;
+        font: 650 13.5px ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+        letter-spacing: 0.18px;
       }
 
       .chip {
@@ -92,10 +115,6 @@
         font: 800 14px ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
         letter-spacing: 0.28px;
       }
-      .nodeHint {
-        fill: rgba(44,62,80,0.62);
-        font: 650 12px ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-      }
 
       .line { stroke: rgba(44,62,80,0.45); stroke-width: 2.4; fill: none; stroke-linecap: round; }
       .lineSoft { stroke: rgba(44,62,80,0.14); stroke-width: 1.2; fill: none; }
@@ -104,9 +123,9 @@
       .iconFill { fill: rgba(44,62,80,0.78); }
 
       .mini {
-        fill: rgba(44,62,80,0.70);
-        font: 750 11.5px ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-        letter-spacing: 0.18px;
+        fill: rgba(44,62,80,0.62);
+        font: 750 10.5px ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+        letter-spacing: 0.14px;
       }
     </style>
   </defs>
@@ -117,146 +136,156 @@
   <circle class="blob2" cx="820" cy="150" r="300"/>
   <circle class="blob3" cx="870" cy="430" r="320"/>
 
+  <!-- subtle RGB accents -->
+  <circle class="blobR" cx="280" cy="390" r="220"/>
+  <circle class="blobY" cx="620" cy="110" r="220"/>
+  <circle class="blobG" cx="980" cy="340" r="220"/>
+
   <!-- Frame -->
   <g filter="url(#glassShadow)">
     <rect class="frame" x="26" y="26" width="1148" height="468" rx="24"/>
   </g>
 
-  <!-- Header -->
-  <text class="title" x="70" y="88">Haiphen</text>
-  <text class="subtitle" x="70" y="114">Signals → Engine → Interfaces</text>
+  <!-- Pipeline guide line (centered through nodes) -->
+  <path class="lineSoft" d="M120 264 H1080"/>
 
-  <!-- Compliance chip -->
-  <g transform="translate(1002,68)">
-    <rect class="chip" x="0" y="0" width="152" height="30" rx="15"/>
-    <text class="chipText" x="76" y="20" text-anchor="middle">NOT INVESTING</text>
-  </g>
-
-  <!-- Pipeline line -->
-  <path class="lineSoft" d="M160 300 H1040"/>
-
+  <!-- =========================
+       BIGGER NODES (scale 1.25)
+       Centers align at y=264
+  ========================= -->
   <!-- Node 1: Signals -->
-  <g transform="translate(150,185)" filter="url(#softGlow)">
-    <rect class="nodeCard" x="0" y="0" width="260" height="230" rx="22"/>
-    <text class="nodeLabel" x="130" y="44" text-anchor="middle">SIGNALS</text>
+  <g transform="translate(70,120)">
+    <g transform="scale(1.25)" filter="url(#softGlow)">
+      <rect class="nodeCard" x="0" y="0" width="260" height="230" rx="22"/>
+      <text class="nodeLabel" x="130" y="44" text-anchor="middle">SIGNALS</text>
 
-    <!-- Radar icon -->
-    <g transform="translate(98,72)">
-      <circle class="iconStroke" cx="32" cy="32" r="26"/>
-      <circle class="iconStroke" cx="32" cy="32" r="14" opacity="0.8"/>
-      <path class="iconStroke" d="M32 32 L54 20"/>
-      <circle class="iconFill" cx="54" cy="20" r="4"/>
-    </g>
+      <!-- Radar icon -->
+      <g transform="translate(98,72)">
+        <circle class="iconStroke" cx="32" cy="32" r="26"/>
+        <circle class="iconStroke" cx="32" cy="32" r="14" opacity="0.8"/>
+        <path class="iconStroke" d="M32 32 L54 20"/>
+        <circle class="iconFill" cx="54" cy="20" r="4"/>
+      </g>
 
-    <!-- Minimal hint chips -->
-    <g transform="translate(34,164)">
-      <rect class="chip" x="0" y="0" width="90" height="26" rx="13"/>
-      <text class="chipText" x="45" y="18" text-anchor="middle">INGEST</text>
+      <!-- Minimal hint chips -->
+      <g transform="translate(34,164)">
+        <rect class="chip" x="0" y="0" width="90" height="26" rx="13"/>
+        <text class="chipText" x="45" y="18" text-anchor="middle">INGEST</text>
 
-      <rect class="chip" x="102" y="0" width="90" height="26" rx="13"/>
-      <text class="chipText" x="147" y="18" text-anchor="middle">SCORE</text>
+        <rect class="chip" x="102" y="0" width="90" height="26" rx="13"/>
+        <text class="chipText" x="147" y="18" text-anchor="middle">SCORE</text>
 
-      <rect class="chip" x="51" y="34" width="120" height="26" rx="13"/>
-      <text class="chipText" x="111" y="52" text-anchor="middle">BASELINE</text>
+        <rect class="chip" x="51" y="34" width="120" height="26" rx="13"/>
+        <text class="chipText" x="111" y="52" text-anchor="middle">BASELINE</text>
+      </g>
     </g>
   </g>
 
   <!-- Arrow 1 -->
-  <path class="line" d="M420 300 H500" marker-end="url(#arrow)"/>
+  <path class="line" d="M395 264 H438" marker-end="url(#arrow)"/>
 
   <!-- Node 2: Engine -->
-  <g transform="translate(470,165)" filter="url(#softGlow)">
-    <rect class="nodeCard" x="0" y="0" width="260" height="270" rx="22"/>
-    <text class="nodeLabel" x="130" y="44" text-anchor="middle">ENGINE</text>
+  <g transform="translate(437.5,95)">
+    <g transform="scale(1.25)" filter="url(#softGlow)">
+      <rect class="nodeCard" x="0" y="0" width="260" height="270" rx="22"/>
+      <text class="nodeLabel" x="130" y="44" text-anchor="middle">ENGINE</text>
 
-    <!-- Pipeline icon -->
-    <g transform="translate(42,80)">
-      <rect x="0" y="0" width="176" height="76" rx="18" fill="rgba(255,255,255,0.66)" stroke="rgba(90,155,212,0.20)" stroke-width="1.2"/>
-      <circle class="iconFill" cx="32" cy="38" r="6" opacity="0.9"/>
-      <circle class="iconFill" cx="74" cy="38" r="6" opacity="0.9"/>
-      <circle class="iconFill" cx="116" cy="38" r="6" opacity="0.9"/>
-      <circle class="iconFill" cx="158" cy="38" r="6" opacity="0.9"/>
-      <path class="iconStroke" d="M40 38 H66" opacity="0.8"/>
-      <path class="iconStroke" d="M82 38 H108" opacity="0.8"/>
-      <path class="iconStroke" d="M124 38 H150" opacity="0.8"/>
-    </g>
+      <!-- Pipeline icon -->
+      <g transform="translate(42,80)">
+        <rect x="0" y="0" width="176" height="76" rx="18" fill="rgba(255,255,255,0.66)" stroke="rgba(90,155,212,0.20)" stroke-width="1.2"/>
+        <circle class="iconFill" cx="32" cy="38" r="6" opacity="0.9"/>
+        <circle class="iconFill" cx="74" cy="38" r="6" opacity="0.9"/>
+        <circle class="iconFill" cx="116" cy="38" r="6" opacity="0.9"/>
+        <circle class="iconFill" cx="158" cy="38" r="6" opacity="0.9"/>
+        <path class="iconStroke" d="M40 38 H66" opacity="0.8"/>
+        <path class="iconStroke" d="M82 38 H108" opacity="0.8"/>
+        <path class="iconStroke" d="M124 38 H150" opacity="0.8"/>
+      </g>
 
-    <!-- Guardrail chips -->
-    <g transform="translate(34,176)">
-      <rect class="chip" x="0" y="0" width="92" height="28" rx="14"/>
-      <text class="chipText" x="46" y="19" text-anchor="middle">$0</text>
+      <!-- Guardrail chips -->
+      <g transform="translate(34,176)">
+        <rect class="chip" x="0" y="0" width="92" height="28" rx="14"/>
+        <text class="chipText" x="46" y="19" text-anchor="middle">$0</text>
 
-      <rect class="chip" x="104" y="0" width="120" height="28" rx="14"/>
-      <text class="chipText" x="164" y="19" text-anchor="middle">&lt; 1 MIN</text>
+        <rect class="chip" x="104" y="0" width="120" height="28" rx="14"/>
+        <text class="chipText" x="164" y="19" text-anchor="middle">&lt; 1 MIN</text>
 
-      <rect class="chip" x="0" y="38" width="138" height="28" rx="14"/>
-      <text class="chipText" x="69" y="57" text-anchor="middle">DAILY PNL</text>
+        <rect class="chip" x="0" y="38" width="138" height="28" rx="14"/>
+        <text class="chipText" x="69" y="57" text-anchor="middle">DAILY PNL</text>
 
-      <rect class="chip" x="150" y="38" width="74" height="28" rx="14"/>
-      <text class="chipText" x="187" y="57" text-anchor="middle">TUNE</text>
+        <rect class="chip" x="150" y="38" width="74" height="28" rx="14"/>
+        <text class="chipText" x="187" y="57" text-anchor="middle">TUNE</text>
+      </g>
     </g>
   </g>
 
   <!-- Arrow 2 -->
-  <path class="line" d="M740 300 H820" marker-end="url(#arrow)"/>
+  <path class="line" d="M762.5 264 H805" marker-end="url(#arrow)"/>
 
   <!-- Node 3: Interfaces -->
-  <g transform="translate(790,185)" filter="url(#softGlow)">
-    <rect class="nodeCard" x="0" y="0" width="260" height="230" rx="22"/>
-    <text class="nodeLabel" x="130" y="44" text-anchor="middle">INTERFACES</text>
+  <g transform="translate(805,120)">
+    <g transform="scale(1.25)" filter="url(#softGlow)">
+      <rect class="nodeCard" x="0" y="0" width="260" height="230" rx="22"/>
+      <text class="nodeLabel" x="130" y="44" text-anchor="middle">INTERFACES</text>
 
-    <!-- Icon row -->
-    <g transform="translate(36,78)">
-      <!-- Web -->
-      <rect x="0" y="0" width="52" height="52" rx="16" fill="rgba(255,255,255,0.66)" stroke="rgba(90,155,212,0.20)" stroke-width="1.2"/>
-      <path class="iconStroke" d="M14 20 H38"/>
-      <path class="iconStroke" d="M14 30 H32"/>
-      <circle class="iconFill" cx="18" cy="16" r="2"/>
-      <circle class="iconFill" cx="24" cy="16" r="2"/>
-      <circle class="iconFill" cx="30" cy="16" r="2"/>
-
-      <!-- API -->
-      <g transform="translate(62,0)">
+      <!-- Icon row -->
+      <g transform="translate(36,78)">
+        <!-- Web -->
         <rect x="0" y="0" width="52" height="52" rx="16" fill="rgba(255,255,255,0.66)" stroke="rgba(90,155,212,0.20)" stroke-width="1.2"/>
-        <path class="iconStroke" d="M22 18 L16 26 L22 34" />
-        <path class="iconStroke" d="M30 18 L36 26 L30 34" />
-        <path class="iconStroke" d="M26 18 L26 34" opacity="0.55"/>
+        <path class="iconStroke" d="M14 20 H38"/>
+        <path class="iconStroke" d="M14 30 H32"/>
+        <circle class="iconFill" cx="18" cy="16" r="2"/>
+        <circle class="iconFill" cx="24" cy="16" r="2"/>
+        <circle class="iconFill" cx="30" cy="16" r="2"/>
+
+        <!-- API -->
+        <g transform="translate(62,0)">
+          <rect x="0" y="0" width="52" height="52" rx="16" fill="rgba(255,255,255,0.66)" stroke="rgba(90,155,212,0.20)" stroke-width="1.2"/>
+          <path class="iconStroke" d="M22 18 L16 26 L22 34" />
+          <path class="iconStroke" d="M30 18 L36 26 L30 34" />
+          <path class="iconStroke" d="M26 18 L26 34" opacity="0.55"/>
+        </g>
+
+        <!-- Websocket -->
+        <g transform="translate(124,0)">
+          <rect x="0" y="0" width="52" height="52" rx="16" fill="rgba(255,255,255,0.66)" stroke="rgba(90,155,212,0.20)" stroke-width="1.2"/>
+          <path class="iconStroke" d="M14 22 C18 18, 22 18, 26 22 C30 26, 34 26, 38 22"/>
+          <path class="iconStroke" d="M14 32 C18 28, 22 28, 26 32 C30 36, 34 36, 38 32"/>
+        </g>
+
+        <!-- CLI -->
+        <g transform="translate(186,0)">
+          <rect x="0" y="0" width="52" height="52" rx="16" fill="rgba(255,255,255,0.66)" stroke="rgba(90,155,212,0.20)" stroke-width="1.2"/>
+          <path class="iconStroke" d="M16 22 L24 28 L16 34"/>
+          <path class="iconStroke" d="M28 34 H38"/>
+        </g>
       </g>
 
-      <!-- Websocket -->
-      <g transform="translate(124,0)">
+      <g transform="translate(88,140)">
+        <!-- Email -->
         <rect x="0" y="0" width="52" height="52" rx="16" fill="rgba(255,255,255,0.66)" stroke="rgba(90,155,212,0.20)" stroke-width="1.2"/>
-        <path class="iconStroke" d="M14 22 C18 18, 22 18, 26 22 C30 26, 34 26, 38 22"/>
-        <path class="iconStroke" d="M14 32 C18 28, 22 28, 26 32 C30 36, 34 36, 38 32"/>
-      </g>
+        <path class="iconStroke" d="M14 20 H38 V36 H14 Z"/>
+        <path class="iconStroke" d="M14 20 L26 29 L38 20"/>
 
-      <!-- CLI -->
-      <g transform="translate(186,0)">
-        <rect x="0" y="0" width="52" height="52" rx="16" fill="rgba(255,255,255,0.66)" stroke="rgba(90,155,212,0.20)" stroke-width="1.2"/>
-        <path class="iconStroke" d="M16 22 L24 28 L16 34"/>
-        <path class="iconStroke" d="M28 34 H38"/>
-      </g>
-    </g>
-
-    <g transform="translate(88,140)">
-      <!-- Email -->
-      <rect x="0" y="0" width="52" height="52" rx="16" fill="rgba(255,255,255,0.66)" stroke="rgba(90,155,212,0.20)" stroke-width="1.2"/>
-      <path class="iconStroke" d="M14 20 H38 V36 H14 Z"/>
-      <path class="iconStroke" d="M14 20 L26 29 L38 20"/>
-
-      <!-- Chat -->
-      <g transform="translate(62,0)">
-        <rect x="0" y="0" width="52" height="52" rx="16" fill="rgba(255,255,255,0.66)" stroke="rgba(90,155,212,0.20)" stroke-width="1.2"/>
-        <path class="iconStroke" d="M14 18 H38 V34 H22 L16 40 V34 H14 Z"/>
-        <circle class="iconFill" cx="22" cy="26" r="2"/>
-        <circle class="iconFill" cx="28" cy="26" r="2"/>
-        <circle class="iconFill" cx="34" cy="26" r="2"/>
+        <!-- Chat -->
+        <g transform="translate(62,0)">
+          <rect x="0" y="0" width="52" height="52" rx="16" fill="rgba(255,255,255,0.66)" stroke="rgba(90,155,212,0.20)" stroke-width="1.2"/>
+          <path class="iconStroke" d="M14 18 H38 V34 H22 L16 40 V34 H14 Z"/>
+          <circle class="iconFill" cx="22" cy="26" r="2"/>
+          <circle class="iconFill" cx="28" cy="26" r="2"/>
+          <circle class="iconFill" cx="34" cy="26" r="2"/>
+        </g>
       </g>
     </g>
   </g>
 
-  <!-- Tiny footer line -->
-  <g transform="translate(70,446)">
-    <text class="mini" x="0" y="0">Enterprise-ready delivery • OAuth gateway • rotating keys • 24h response</text>
-  </g>
+  <!-- =========================
+       Footer (bottom center)
+  ========================= -->
+  <text class="title" x="600" y="470" text-anchor="middle">Haiphen</text>
+  <text class="subtitle" x="600" y="492" text-anchor="middle">Signals → Engine → Interfaces</text>
+
+  <text class="mini" x="600" y="510" text-anchor="middle">
+    Enterprise-ready delivery • OAuth gateway • rotating keys • 24h response
+  </text>
 </svg>
