@@ -1,71 +1,107 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 520" role="img" aria-label="Haiphen: Signals to Engine to Interfaces">
+<svg xmlns="http://www.w3.org/2000/svg"
+     xmlns:xlink="http://www.w3.org/1999/xlink"
+     viewBox="0 0 1200 520"
+     role="img"
+     aria-label="Haiphen: Signals to Engine to Interfaces">
   <defs>
-    <!-- Soft “paper” background to match the site -->
+    <!-- Base background -->
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#F7FAFE"/>
-      <stop offset="0.55" stop-color="#F3F8FF"/>
-      <stop offset="1" stop-color="#EEF4FD"/>
+      <stop offset="0.55" stop-color="#F2F7FF"/>
+      <stop offset="1" stop-color="#ECF3FF"/>
     </linearGradient>
 
-    <!-- Brand-aligned blobs (Haiphen blue + airy accents) -->
-    <radialGradient id="blobBlue" cx="30%" cy="28%" r="65%">
-      <stop offset="0" stop-color="#5A9BD4" stop-opacity="0.42"/>
-      <stop offset="0.45" stop-color="#5A9BD4" stop-opacity="0.16"/>
+    <!-- Big soft blobs -->
+    <radialGradient id="blobBlue" cx="30%" cy="28%" r="70%">
+      <stop offset="0" stop-color="#5A9BD4" stop-opacity="0.44"/>
+      <stop offset="0.48" stop-color="#5A9BD4" stop-opacity="0.16"/>
       <stop offset="1" stop-color="#5A9BD4" stop-opacity="0"/>
     </radialGradient>
-
-    <radialGradient id="blobSky" cx="70%" cy="26%" r="70%">
-      <stop offset="0" stop-color="#9ED6FF" stop-opacity="0.40"/>
-      <stop offset="0.45" stop-color="#9ED6FF" stop-opacity="0.14"/>
+    <radialGradient id="blobSky" cx="74%" cy="24%" r="75%">
+      <stop offset="0" stop-color="#9ED6FF" stop-opacity="0.38"/>
+      <stop offset="0.50" stop-color="#9ED6FF" stop-opacity="0.14"/>
       <stop offset="1" stop-color="#9ED6FF" stop-opacity="0"/>
     </radialGradient>
-
-    <radialGradient id="blobMint" cx="72%" cy="78%" r="75%">
-      <stop offset="0" stop-color="#7EE7D1" stop-opacity="0.34"/>
-      <stop offset="0.50" stop-color="#7EE7D1" stop-opacity="0.12"/>
+    <radialGradient id="blobMint" cx="72%" cy="82%" r="80%">
+      <stop offset="0" stop-color="#7EE7D1" stop-opacity="0.32"/>
+      <stop offset="0.52" stop-color="#7EE7D1" stop-opacity="0.12"/>
       <stop offset="1" stop-color="#7EE7D1" stop-opacity="0"/>
     </radialGradient>
 
-    <!-- Subtle RGB accents (kept very light) -->
-    <radialGradient id="blobRed" cx="22%" cy="70%" r="55%">
-      <stop offset="0" stop-color="#FF5A5F" stop-opacity="0.18"/>
-      <stop offset="0.45" stop-color="#FF5A5F" stop-opacity="0.07"/>
+    <!-- Subtle RGB accents -->
+    <radialGradient id="blobRed" cx="22%" cy="72%" r="55%">
+      <stop offset="0" stop-color="#FF5A5F" stop-opacity="0.16"/>
+      <stop offset="0.55" stop-color="#FF5A5F" stop-opacity="0.06"/>
       <stop offset="1" stop-color="#FF5A5F" stop-opacity="0"/>
     </radialGradient>
-
-    <radialGradient id="blobYellow" cx="52%" cy="18%" r="55%">
-      <stop offset="0" stop-color="#FFD166" stop-opacity="0.16"/>
-      <stop offset="0.45" stop-color="#FFD166" stop-opacity="0.06"/>
+    <radialGradient id="blobYellow" cx="52%" cy="16%" r="55%">
+      <stop offset="0" stop-color="#FFD166" stop-opacity="0.14"/>
+      <stop offset="0.55" stop-color="#FFD166" stop-opacity="0.05"/>
       <stop offset="1" stop-color="#FFD166" stop-opacity="0"/>
     </radialGradient>
-
-    <radialGradient id="blobGreen" cx="84%" cy="62%" r="55%">
-      <stop offset="0" stop-color="#2ECC71" stop-opacity="0.14"/>
-      <stop offset="0.45" stop-color="#2ECC71" stop-opacity="0.055"/>
+    <radialGradient id="blobGreen" cx="86%" cy="60%" r="55%">
+      <stop offset="0" stop-color="#2ECC71" stop-opacity="0.12"/>
+      <stop offset="0.55" stop-color="#2ECC71" stop-opacity="0.05"/>
       <stop offset="1" stop-color="#2ECC71" stop-opacity="0"/>
     </radialGradient>
 
-    <!-- Glass card -->
+    <!-- Micro-grid pattern (professional “blueprint” texture) -->
+    <pattern id="microGrid" width="24" height="24" patternUnits="userSpaceOnUse">
+      <path d="M24 0H0V24" fill="none" stroke="rgba(44,62,80,0.05)" stroke-width="1"/>
+      <path d="M12 0V24M0 12H24" fill="none" stroke="rgba(44,62,80,0.035)" stroke-width="1"/>
+      <circle cx="0" cy="0" r="1" fill="rgba(44,62,80,0.06)"/>
+    </pattern>
+
+    <!-- Vignette to pull focus toward center -->
+    <radialGradient id="vignette" cx="50%" cy="45%" r="70%">
+      <stop offset="0" stop-color="rgba(0,0,0,0)" />
+      <stop offset="1" stop-color="rgba(0,0,0,0.09)" />
+    </radialGradient>
+
+    <!-- Glass frame -->
     <filter id="glassShadow" x="-30%" y="-30%" width="160%" height="160%">
       <feDropShadow dx="0" dy="12" stdDeviation="14" flood-color="#000" flood-opacity="0.18"/>
     </filter>
 
+    <!-- Soft glow (nodes/icons) -->
     <filter id="softGlow" x="-40%" y="-40%" width="180%" height="180%">
       <feGaussianBlur stdDeviation="6" result="blur"/>
       <feColorMatrix in="blur" type="matrix"
         values="1 0 0 0 0
                 0 1 0 0 0
                 0 0 1 0 0
-                0 0 0 0.38 0" result="glow"/>
+                0 0 0 0.36 0" result="glow"/>
       <feMerge>
         <feMergeNode in="glow"/>
         <feMergeNode in="SourceGraphic"/>
       </feMerge>
     </filter>
 
+    <!-- Arrow marker -->
     <marker id="arrow" markerWidth="14" markerHeight="14" refX="11" refY="7" orient="auto">
       <path d="M 2 2 L 11 7 L 2 12" fill="none" stroke="rgba(44,62,80,0.55)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
     </marker>
+
+    <!-- Arrow gradient -->
+    <linearGradient id="flowGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="rgba(90,155,212,0.25)"/>
+      <stop offset="0.5" stop-color="rgba(44,62,80,0.55)"/>
+      <stop offset="1" stop-color="rgba(126,231,209,0.25)"/>
+    </linearGradient>
+
+    <!-- Node header gradients -->
+    <linearGradient id="hdrSignals" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="rgba(126,231,209,0.85)"/>
+      <stop offset="1" stop-color="rgba(158,214,255,0.78)"/>
+    </linearGradient>
+    <linearGradient id="hdrEngine" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="rgba(90,155,212,0.90)"/>
+      <stop offset="1" stop-color="rgba(118,142,255,0.78)"/>
+    </linearGradient>
+    <linearGradient id="hdrInterfaces" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="rgba(255,209,102,0.85)"/>
+      <stop offset="1" stop-color="rgba(255,122,89,0.70)"/>
+    </linearGradient>
 
     <style>
       .bg { fill: url(#bg); }
@@ -77,199 +113,273 @@
       .blobG { fill: url(#blobGreen); }
 
       .frame {
-        fill: rgba(255,255,255,0.60);
-        stroke: rgba(90,155,212,0.16);
+        fill: rgba(255,255,255,0.62);
+        stroke: rgba(90,155,212,0.18);
         stroke-width: 1.2;
       }
 
-      /* Footer title/subtitle (moved down, smaller, centered) */
-      .title {
-        fill: rgba(44,62,80,0.92);
-        font: 800 22px ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-        letter-spacing: 0.18px;
+      .nodeCard {
+        fill: rgba(255,255,255,0.70);
+        stroke: rgba(90,155,212,0.22);
+        stroke-width: 1.35;
       }
-      .subtitle {
-        fill: rgba(44,62,80,0.62);
-        font: 650 13.5px ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-        letter-spacing: 0.18px;
+
+      .nodeHeader {
+        stroke: rgba(255,255,255,0.55);
+        stroke-width: 1;
+      }
+
+      .nodeLabel {
+        fill: rgba(17,24,39,0.92);
+        font: 900 15px ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+        letter-spacing: 0.30px;
+      }
+
+      .nodeSub {
+        fill: rgba(17,24,39,0.62);
+        font: 700 12px ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
       }
 
       .chip {
-        fill: rgba(255,255,255,0.70);
+        fill: rgba(255,255,255,0.78);
         stroke: rgba(90,155,212,0.22);
         stroke-width: 1;
       }
       .chipText {
-        fill: rgba(44,62,80,0.72);
-        font: 800 11.5px ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-        letter-spacing: 0.24px;
+        fill: rgba(17,24,39,0.72);
+        font: 850 11.5px ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+        letter-spacing: 0.22px;
       }
 
-      .nodeCard {
-        fill: rgba(255,255,255,0.66);
-        stroke: rgba(90,155,212,0.20);
-        stroke-width: 1.2;
-      }
-      .nodeLabel {
-        fill: rgba(44,62,80,0.92);
-        font: 800 14px ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-        letter-spacing: 0.28px;
-      }
-
-      .line { stroke: rgba(44,62,80,0.45); stroke-width: 2.4; fill: none; stroke-linecap: round; }
       .lineSoft { stroke: rgba(44,62,80,0.14); stroke-width: 1.2; fill: none; }
+      .lineFlow { stroke: url(#flowGrad); stroke-width: 3.0; fill: none; stroke-linecap: round; }
 
-      .iconStroke { stroke: rgba(44,62,80,0.78); stroke-width: 2.4; fill: none; stroke-linecap: round; stroke-linejoin: round; }
-      .iconFill { fill: rgba(44,62,80,0.78); }
+      .iconStroke { stroke: rgba(17,24,39,0.78); stroke-width: 2.4; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+      .iconFill { fill: rgba(17,24,39,0.78); }
 
-      .mini {
-        fill: rgba(44,62,80,0.62);
+      .footerTitle {
+        fill: rgba(17,24,39,0.88);
+        font: 900 22px ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+        letter-spacing: 0.18px;
+      }
+      .footerSub {
+        fill: rgba(17,24,39,0.62);
+        font: 750 13.5px ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+        letter-spacing: 0.16px;
+      }
+      .footerMini {
+        fill: rgba(17,24,39,0.56);
         font: 750 10.5px ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
         letter-spacing: 0.14px;
       }
     </style>
   </defs>
 
-  <!-- Background + soft blobs -->
+  <!-- Background -->
   <rect class="bg" x="0" y="0" width="1200" height="520" rx="28"/>
   <circle class="blob1" cx="320" cy="150" r="260"/>
   <circle class="blob2" cx="820" cy="150" r="300"/>
   <circle class="blob3" cx="870" cy="430" r="320"/>
-
-  <!-- subtle RGB accents -->
   <circle class="blobR" cx="280" cy="390" r="220"/>
   <circle class="blobY" cx="620" cy="110" r="220"/>
   <circle class="blobG" cx="980" cy="340" r="220"/>
+
+  <!-- Micro-grid overlay -->
+  <rect x="0" y="0" width="1200" height="520" rx="28" fill="url(#microGrid)" opacity="0.85"/>
+  <!-- Vignette -->
+  <rect x="0" y="0" width="1200" height="520" rx="28" fill="url(#vignette)"/>
 
   <!-- Frame -->
   <g filter="url(#glassShadow)">
     <rect class="frame" x="26" y="26" width="1148" height="468" rx="24"/>
   </g>
 
-  <!-- Pipeline guide line (centered through nodes) -->
+  <!-- OPTIONAL: top-left brand mark (swap href to robot_haiphen.png if desired) -->
+  <!-- If you don't want it, delete this block -->
+  <g transform="translate(56,48)" opacity="0.95">
+    <image
+      x="0" y="0" width="34" height="34"
+      href="logo.png"
+      xlink:href="logo.png"
+      preserveAspectRatio="xMidYMid meet"
+    />
+  </g>
+
+  <!-- Pipeline guide line -->
   <path class="lineSoft" d="M120 264 H1080"/>
+
+  <!-- Decorative “status LEDs” for subtle R/Y/G accents -->
+  <g opacity="0.9">
+    <circle cx="160" cy="76" r="5" fill="rgba(46,204,113,0.55)"/>
+    <circle cx="178" cy="76" r="5" fill="rgba(255,209,102,0.55)"/>
+    <circle cx="196" cy="76" r="5" fill="rgba(255,90,95,0.55)"/>
+  </g>
 
   <!-- =========================
        BIGGER NODES (scale 1.25)
-       Centers align at y=264
+       Rebuilt with consistent layout + pixel-aligned insets
   ========================= -->
+
   <!-- Node 1: Signals -->
   <g transform="translate(70,120)">
     <g transform="scale(1.25)" filter="url(#softGlow)">
+      <!-- Card -->
       <rect class="nodeCard" x="0" y="0" width="260" height="230" rx="22"/>
-      <text class="nodeLabel" x="130" y="44" text-anchor="middle">SIGNALS</text>
 
-      <!-- Radar icon -->
-      <g transform="translate(98,72)">
+      <!-- Header (exact inset, no funky path) -->
+      <!-- 8px inset gives breathing room + matches rounded corners visually -->
+      <rect x="8" y="8" width="244" height="62" rx="16"
+            fill="url(#hdrSignals)" opacity="0.88" class="nodeHeader"/>
+
+      <!-- Header text (centered) -->
+      <text class="nodeLabel" x="130" y="34" text-anchor="middle" dominant-baseline="middle">SIGNALS</text>
+      <text class="nodeSub"   x="130" y="56" text-anchor="middle" dominant-baseline="middle">Ingest • Score • Baseline</text>
+
+      <!-- Content area origin -->
+      <!-- Content top starts at y=78 (8 + 62 + 8) -->
+      <!-- Radar tile (centered) -->
+      <g transform="translate(98,88)">
         <circle class="iconStroke" cx="32" cy="32" r="26"/>
         <circle class="iconStroke" cx="32" cy="32" r="14" opacity="0.8"/>
         <path class="iconStroke" d="M32 32 L54 20"/>
         <circle class="iconFill" cx="54" cy="20" r="4"/>
       </g>
 
-      <!-- Minimal hint chips -->
-      <g transform="translate(34,164)">
-        <rect class="chip" x="0" y="0" width="90" height="26" rx="13"/>
-        <text class="chipText" x="45" y="18" text-anchor="middle">INGEST</text>
+      <!-- Chips: consistent grid -->
+      <g transform="translate(28,168)">
+        <!-- Row 1 -->
+        <rect class="chip" x="0"   y="0" width="96" height="28" rx="14"/>
+        <text class="chipText" x="48"  y="14" text-anchor="middle" dominant-baseline="middle">INGEST</text>
 
-        <rect class="chip" x="102" y="0" width="90" height="26" rx="13"/>
-        <text class="chipText" x="147" y="18" text-anchor="middle">SCORE</text>
+        <rect class="chip" x="108" y="0" width="96" height="28" rx="14"/>
+        <text class="chipText" x="156" y="14" text-anchor="middle" dominant-baseline="middle">SCORE</text>
 
-        <rect class="chip" x="51" y="34" width="120" height="26" rx="13"/>
-        <text class="chipText" x="111" y="52" text-anchor="middle">BASELINE</text>
+        <!-- Row 2 (centered) -->
+        <rect class="chip" x="54"  y="36" width="152" height="28" rx="14"/>
+        <text class="chipText" x="130" y="50" text-anchor="middle" dominant-baseline="middle">BASELINE</text>
       </g>
     </g>
   </g>
 
   <!-- Arrow 1 -->
-  <path class="line" d="M395 264 H438" marker-end="url(#arrow)"/>
+  <path class="lineFlow" d="M395 264 H438" marker-end="url(#arrow)"/>
 
   <!-- Node 2: Engine -->
   <g transform="translate(437.5,95)">
     <g transform="scale(1.25)" filter="url(#softGlow)">
+      <!-- Card -->
       <rect class="nodeCard" x="0" y="0" width="260" height="270" rx="22"/>
-      <text class="nodeLabel" x="130" y="44" text-anchor="middle">ENGINE</text>
 
-      <!-- Pipeline icon -->
-      <g transform="translate(42,80)">
-        <rect x="0" y="0" width="176" height="76" rx="18" fill="rgba(255,255,255,0.66)" stroke="rgba(90,155,212,0.20)" stroke-width="1.2"/>
-        <circle class="iconFill" cx="32" cy="38" r="6" opacity="0.9"/>
-        <circle class="iconFill" cx="74" cy="38" r="6" opacity="0.9"/>
+      <!-- Header -->
+      <rect x="8" y="8" width="244" height="62" rx="16"
+            fill="url(#hdrEngine)" opacity="0.90" class="nodeHeader"/>
+
+      <text class="nodeLabel" x="130" y="34" text-anchor="middle" dominant-baseline="middle">ENGINE</text>
+      <text class="nodeSub"   x="130" y="56" text-anchor="middle" dominant-baseline="middle">Rules • Guardrails • Orchestration</text>
+
+      <!-- Pipeline tile (perfectly centered) -->
+      <!-- Tile box: 176×76, centered at x=130 -->
+      <g transform="translate(42,94)">
+        <rect x="0" y="0" width="176" height="76" rx="18"
+              fill="rgba(255,255,255,0.72)" stroke="rgba(90,155,212,0.22)" stroke-width="1.2"/>
+
+        <!-- Centerline = y=38; dots aligned to that -->
+        <circle class="iconFill" cx="32"  cy="38" r="6" opacity="0.9"/>
+        <circle class="iconFill" cx="74"  cy="38" r="6" opacity="0.9"/>
         <circle class="iconFill" cx="116" cy="38" r="6" opacity="0.9"/>
         <circle class="iconFill" cx="158" cy="38" r="6" opacity="0.9"/>
-        <path class="iconStroke" d="M40 38 H66" opacity="0.8"/>
+
+        <path class="iconStroke" d="M40 38 H66"  opacity="0.8"/>
         <path class="iconStroke" d="M82 38 H108" opacity="0.8"/>
         <path class="iconStroke" d="M124 38 H150" opacity="0.8"/>
       </g>
 
-      <!-- Guardrail chips -->
-      <g transform="translate(34,176)">
-        <rect class="chip" x="0" y="0" width="92" height="28" rx="14"/>
-        <text class="chipText" x="46" y="19" text-anchor="middle">$0</text>
+      <!-- Guardrail chips: 2x2 grid, aligned + equal widths -->
+      <g transform="translate(28,182)">
+        <!-- Row 1 -->
+        <rect class="chip" x="0"   y="0" width="108" height="30" rx="15"/>
+        <text class="chipText" x="54"  y="15" text-anchor="middle" dominant-baseline="middle">$0</text>
 
-        <rect class="chip" x="104" y="0" width="120" height="28" rx="14"/>
-        <text class="chipText" x="164" y="19" text-anchor="middle">&lt; 1 MIN</text>
+        <rect class="chip" x="120" y="0" width="112" height="30" rx="15"/>
+        <text class="chipText" x="176" y="15" text-anchor="middle" dominant-baseline="middle">&lt; 1 MIN</text>
 
-        <rect class="chip" x="0" y="38" width="138" height="28" rx="14"/>
-        <text class="chipText" x="69" y="57" text-anchor="middle">DAILY PNL</text>
+        <!-- Row 2 -->
+        <rect class="chip" x="0"   y="40" width="152" height="30" rx="15"/>
+        <text class="chipText" x="76"  y="55" text-anchor="middle" dominant-baseline="middle">DAILY PNL</text>
 
-        <rect class="chip" x="150" y="38" width="74" height="28" rx="14"/>
-        <text class="chipText" x="187" y="57" text-anchor="middle">TUNE</text>
+        <rect class="chip" x="164" y="40" width="68" height="30" rx="15"/>
+        <text class="chipText" x="198" y="55" text-anchor="middle" dominant-baseline="middle">TUNE</text>
       </g>
     </g>
   </g>
 
   <!-- Arrow 2 -->
-  <path class="line" d="M762.5 264 H805" marker-end="url(#arrow)"/>
+  <path class="lineFlow" d="M762.5 264 H805" marker-end="url(#arrow)"/>
 
   <!-- Node 3: Interfaces -->
   <g transform="translate(805,120)">
     <g transform="scale(1.25)" filter="url(#softGlow)">
+      <!-- Card -->
       <rect class="nodeCard" x="0" y="0" width="260" height="230" rx="22"/>
-      <text class="nodeLabel" x="130" y="44" text-anchor="middle">INTERFACES</text>
 
-      <!-- Icon row -->
-      <g transform="translate(36,78)">
+      <!-- Header -->
+      <rect x="8" y="8" width="244" height="62" rx="16"
+            fill="url(#hdrInterfaces)" opacity="0.88" class="nodeHeader"/>
+
+      <text class="nodeLabel" x="130" y="34" text-anchor="middle" dominant-baseline="middle">INTERFACES</text>
+      <text class="nodeSub"   x="130" y="56" text-anchor="middle" dominant-baseline="middle">Web • API • Realtime • CLI</text>
+
+      <!-- Icon tiles: consistent 52x52 with even gaps, centered block -->
+      <!-- Total width = 4*52 + 3*12 = 244; starts at x=8 -->
+      <g transform="translate(8,88)">
+        <!-- Shared tile props -->
         <!-- Web -->
-        <rect x="0" y="0" width="52" height="52" rx="16" fill="rgba(255,255,255,0.66)" stroke="rgba(90,155,212,0.20)" stroke-width="1.2"/>
-        <path class="iconStroke" d="M14 20 H38"/>
-        <path class="iconStroke" d="M14 30 H32"/>
+        <rect x="0" y="0" width="52" height="52" rx="16"
+              fill="rgba(255,255,255,0.72)" stroke="rgba(90,155,212,0.22)" stroke-width="1.2"/>
+        <path class="iconStroke" d="M14 22 H38"/>
+        <path class="iconStroke" d="M14 32 H32"/>
         <circle class="iconFill" cx="18" cy="16" r="2"/>
         <circle class="iconFill" cx="24" cy="16" r="2"/>
         <circle class="iconFill" cx="30" cy="16" r="2"/>
 
         <!-- API -->
-        <g transform="translate(62,0)">
-          <rect x="0" y="0" width="52" height="52" rx="16" fill="rgba(255,255,255,0.66)" stroke="rgba(90,155,212,0.20)" stroke-width="1.2"/>
-          <path class="iconStroke" d="M22 18 L16 26 L22 34" />
-          <path class="iconStroke" d="M30 18 L36 26 L30 34" />
+        <g transform="translate(64,0)">
+          <rect x="0" y="0" width="52" height="52" rx="16"
+                fill="rgba(255,255,255,0.72)" stroke="rgba(90,155,212,0.22)" stroke-width="1.2"/>
+          <path class="iconStroke" d="M22 18 L16 26 L22 34"/>
+          <path class="iconStroke" d="M30 18 L36 26 L30 34"/>
           <path class="iconStroke" d="M26 18 L26 34" opacity="0.55"/>
         </g>
 
         <!-- Websocket -->
-        <g transform="translate(124,0)">
-          <rect x="0" y="0" width="52" height="52" rx="16" fill="rgba(255,255,255,0.66)" stroke="rgba(90,155,212,0.20)" stroke-width="1.2"/>
+        <g transform="translate(128,0)">
+          <rect x="0" y="0" width="52" height="52" rx="16"
+                fill="rgba(255,255,255,0.72)" stroke="rgba(90,155,212,0.22)" stroke-width="1.2"/>
           <path class="iconStroke" d="M14 22 C18 18, 22 18, 26 22 C30 26, 34 26, 38 22"/>
           <path class="iconStroke" d="M14 32 C18 28, 22 28, 26 32 C30 36, 34 36, 38 32"/>
         </g>
 
         <!-- CLI -->
-        <g transform="translate(186,0)">
-          <rect x="0" y="0" width="52" height="52" rx="16" fill="rgba(255,255,255,0.66)" stroke="rgba(90,155,212,0.20)" stroke-width="1.2"/>
+        <g transform="translate(192,0)">
+          <rect x="0" y="0" width="52" height="52" rx="16"
+                fill="rgba(255,255,255,0.72)" stroke="rgba(90,155,212,0.22)" stroke-width="1.2"/>
           <path class="iconStroke" d="M16 22 L24 28 L16 34"/>
           <path class="iconStroke" d="M28 34 H38"/>
         </g>
       </g>
 
-      <g transform="translate(88,140)">
+      <!-- Second row: two tiles centered under the 4-tile row -->
+      <g transform="translate(72,152)">
         <!-- Email -->
-        <rect x="0" y="0" width="52" height="52" rx="16" fill="rgba(255,255,255,0.66)" stroke="rgba(90,155,212,0.20)" stroke-width="1.2"/>
+        <rect x="0" y="0" width="52" height="52" rx="16"
+              fill="rgba(255,255,255,0.72)" stroke="rgba(90,155,212,0.22)" stroke-width="1.2"/>
         <path class="iconStroke" d="M14 20 H38 V36 H14 Z"/>
         <path class="iconStroke" d="M14 20 L26 29 L38 20"/>
 
         <!-- Chat -->
-        <g transform="translate(62,0)">
-          <rect x="0" y="0" width="52" height="52" rx="16" fill="rgba(255,255,255,0.66)" stroke="rgba(90,155,212,0.20)" stroke-width="1.2"/>
+        <g transform="translate(64,0)">
+          <rect x="0" y="0" width="52" height="52" rx="16"
+                fill="rgba(255,255,255,0.72)" stroke="rgba(90,155,212,0.22)" stroke-width="1.2"/>
           <path class="iconStroke" d="M14 18 H38 V34 H22 L16 40 V34 H14 Z"/>
           <circle class="iconFill" cx="22" cy="26" r="2"/>
           <circle class="iconFill" cx="28" cy="26" r="2"/>
@@ -279,13 +389,8 @@
     </g>
   </g>
 
-  <!-- =========================
-       Footer (bottom center)
-  ========================= -->
-  <text class="title" x="600" y="470" text-anchor="middle">Haiphen</text>
-  <text class="subtitle" x="600" y="492" text-anchor="middle">Signals → Engine → Interfaces</text>
-
-  <text class="mini" x="600" y="510" text-anchor="middle">
-    Enterprise-ready delivery • OAuth gateway • rotating keys • 24h response
-  </text>
+  <!-- Footer (bottom center) -->
+  <text class="footerTitle" x="600" y="470" text-anchor="middle">Signals → Engine → Interfaces</text>
+  <text class="footerSub" x="600" y="492" text-anchor="middle">Haiphen pipeline diagram • clean inputs, deterministic transforms, multi-channel outputs</text>
+  <text class="footerMini" x="600" y="510" text-anchor="middle">Enterprise-ready delivery • OAuth gateway • rotating keys • 24h response</text>
 </svg>
