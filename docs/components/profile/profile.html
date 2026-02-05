@@ -151,5 +151,48 @@
         </div>
       </div>
     </div>
+
+    <!-- Email Preferences -->
+    <div class="hp-card hp-card--full">
+      <div class="hp-card__hd">
+        <div>
+          <div class="hp-card__title">Email Preferences</div>
+          <div class="hp-card__sub">Control which program emails you receive.</div>
+        </div>
+      </div>
+
+      <div class="hp-card__bd">
+        <div class="hp-status" data-profile-pref-status hidden></div>
+
+        <form class="hp-pref" data-profile-pref-form>
+          <label class="hp-pref__item">
+            <input type="checkbox" name="daily_digest" />
+            <span>Daily Market Digest</span>
+          </label>
+
+          <label class="hp-pref__item">
+            <input type="checkbox" name="weekly_summary" />
+            <span>Weekly Performance Summary</span>
+          </label>
+
+          <label class="hp-pref__item">
+            <input type="checkbox" name="product_updates" />
+            <span>Product Updates & Announcements</span>
+          </label>
+
+          <label class="hp-pref__item">
+            <input type="checkbox" name="cohort_comms" />
+            <span>Cohort Program Communications</span>
+          </label>
+
+          <div class="hp-pref__actions">
+            <button class="hp-profile__btn hp-profile__btn--primary" type="submit" data-profile-pref-save>
+              Save preferences
+            </button>
+            <span class="hp-pref__note">Applies to future sends.</span>
+          </div>
+        </form>
+      </div>
+    </div>
   </div>
 </section>

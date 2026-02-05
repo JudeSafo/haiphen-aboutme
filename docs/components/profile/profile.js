@@ -18,6 +18,7 @@
 
   const API_ORIGIN = 'https://api.haiphen.io';
   const AUTH_ORIGIN = 'https://auth.haiphen.io';
+  const CONTACT_ORIGIN = 'https://haiphen-contact.pi-307.workers.dev';
 
   const MOUNT_ID = 'content-widget'; // your dynamic content root
 
@@ -167,6 +168,74 @@
     if (kind === 'warn') el.classList.add('hp-status--warn');
   }
 
+  function setPrefStatus(root, msg, kind /* "ok" | "warn" | "" */) {
+    const el = qs('[data-profile-pref-status]', root);
+    if (!el) return;
+    if (!msg) {
+      el.hidden = true;
+      el.textContent = '';
+      el.classList.remove('hp-status--ok', 'hp-status--warn');
+      return;
+    }
+    el.hidden = false;
+    el.textContent = String(msg);
+    el.classList.remove('hp-status--ok', 'hp-status--warn');
+    if (kind === 'ok') el.classList.add('hp-status--ok');
+    if (kind === 'warn') el.classList.add('hp-status--warn');
+  }
+
+  function applyPreferencesToForm(root, prefs) {
+    const defaults = {
+      daily_digest: true,
+      weekly_summary: true,
+      product_updates: true,
+      cohort_comms: true,
+    };
+    const merged = Object.assign({}, defaults, prefs || {});
+    Object.keys(merged).forEach((k) => {
+      const el = root.querySelector(`input[name="${k}"]`);
+      if (el) el.checked = !!merged[k];
+    });
+  }
+
+  function collectPreferences(root) {
+    return {
+      daily_digest: !!qs('input[name="daily_digest"]', root)?.checked,
+      weekly_summary: !!qs('input[name="weekly_summary"]', root)?.checked,
+      product_updates: !!qs('input[name="product_updates"]', root)?.checked,
+      cohort_comms: !!qs('input[name="cohort_comms"]', root)?.checked,
+    };
+  }
+
+  async function hydratePreferences(root) {
+    const form = qs('[data-profile-pref-form]', root);
+    if (!form) return;
+    try {
+      const data = await getJson(`${CONTACT_ORIGIN}/preferences/subscriptions`);
+      const prefs = data?.preferences || {};
+      applyPreferencesToForm(root, prefs);
+      setPrefStatus(root, '', '');
+    } catch (e) {
+      setPrefStatus(root, 'Unable to load email preferences.', 'warn');
+    }
+  }
+
+  async function savePreferences(root) {
+    const btn = qs('[data-profile-pref-save]', root);
+    if (btn) btn.disabled = true;
+    setPrefStatus(root, 'Saving preferences…', '');
+    try {
+      const prefs = collectPreferences(root);
+      const res = await postJson(`${CONTACT_ORIGIN}/preferences/subscriptions`, { preferences: prefs });
+      applyPreferencesToForm(root, res?.preferences || prefs);
+      setPrefStatus(root, 'Preferences saved.', 'ok');
+    } catch (e) {
+      setPrefStatus(root, `Save failed: ${e?.message || e}`, 'warn');
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  }
+
   async function copyToClipboard(text) {
     const raw = String(text || '');
     if (!raw) return false;
@@ -284,6 +353,9 @@
 
     // 2) list keys table
     await refreshKeysTable(root);
+
+    // 2b) email preferences
+    await hydratePreferences(root);
 
     // 3) render sticky reveal (if present)
     renderReveal(root);
@@ -570,6 +642,14 @@
         }
       }
     });
+
+    const prefForm = qs('[data-profile-pref-form]', root);
+    if (prefForm) {
+      prefForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        await savePreferences(root);
+      });
+    }
   }
 
   async function showProfile() {
