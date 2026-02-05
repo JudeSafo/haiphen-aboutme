@@ -18,7 +18,7 @@
 
   const API_ORIGIN = 'https://api.haiphen.io';
   const AUTH_ORIGIN = 'https://auth.haiphen.io';
-  const CONTACT_ORIGIN = 'https://haiphen-contact.pi-307.workers.dev';
+  const CONTACT_ORIGIN = 'https://contact.haiphen.io';
 
   const MOUNT_ID = 'content-widget'; // your dynamic content root
 
@@ -216,6 +216,12 @@
       applyPreferencesToForm(root, prefs);
       setPrefStatus(root, '', '');
     } catch (e) {
+      // If user isn't authenticated to the contact service yet, don't scream.
+      if (e && (e.status === 401 || e.status === 403)) {
+        setPrefStatus(root, 'Log in to manage email preferences.', 'warn');
+        return;
+      }
+      console.warn(LOG, 'failed to load email preferences', e);
       setPrefStatus(root, 'Unable to load email preferences.', 'warn');
     }
   }
@@ -230,9 +236,11 @@
       applyPreferencesToForm(root, res?.preferences || prefs);
       setPrefStatus(root, 'Preferences saved.', 'ok');
     } catch (e) {
+      if (e && (e.status === 401 || e.status === 403)) {
+        setPrefStatus(root, 'Log in to save email preferences.', 'warn');
+        return;
+      }
       setPrefStatus(root, `Save failed: ${e?.message || e}`, 'warn');
-    } finally {
-      if (btn) btn.disabled = false;
     }
   }
 
