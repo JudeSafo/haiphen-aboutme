@@ -199,6 +199,7 @@
     const root = rootEl || document;
     const ok = attachOnce(root);
     applyEmbedLinks(root);
+    wireLightbox(root);
     if (ok) initCohortProgram(root);
     return ok;
   }
@@ -215,6 +216,30 @@
         link.href = viewer.toString();
         link.dataset.hpEmbedWired = "1";
       } catch (_) {}
+    });
+  }
+
+  function wireLightbox(root) {
+    if (!root || root.dataset.hpCohortLightbox === "1") return;
+    root.dataset.hpCohortLightbox = "1";
+
+    root.addEventListener("click", (e) => {
+      const img = e.target?.closest?.("img[data-lightbox]");
+      if (img && typeof window.openLightbox === "function") {
+        const src = img.getAttribute("src");
+        if (src) window.openLightbox(src);
+        return;
+      }
+
+      const svg = e.target?.closest?.("svg[data-lightbox-svg]");
+      if (svg && typeof window.openLightbox === "function") {
+        const serialized = new XMLSerializer().serializeToString(svg);
+        const encoded = encodeURIComponent(serialized)
+          .replace(/'/g, "%27")
+          .replace(/\"/g, "%22");
+        const dataUri = `data:image/svg+xml;charset=UTF-8,${encoded}`;
+        window.openLightbox(dataUri);
+      }
     });
   }
 

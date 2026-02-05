@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#F7FAFF"/>
+      <stop offset="100%" stop-color="#EFF5FF"/>
+    </linearGradient>
+    <filter id="softShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#0b2a3d" flood-opacity="0.12"/>
+    </filter>
+    <style>
+      .title { font: 700 36px Inter, Segoe UI, Roboto, Helvetica, Arial, sans-serif; fill:#0b2a3d; }
+      .subtitle { font: 500 18px Inter, Segoe UI, Roboto, Helvetica, Arial, sans-serif; fill:#6b7280; }
+      .label { font: 600 22px Inter, Segoe UI, Roboto, Helvetica, Arial, sans-serif; fill:#0b2a3d; }
+      .muted { font: 500 16px Inter, Segoe UI, Roboto, Helvetica, Arial, sans-serif; fill:#6b7280; }
+      .card { stroke:#D5E2F5; stroke-width:2; rx:20; filter:url(#softShadow); }
+    </style>
+  </defs>
+
+  <rect width="1200" height="800" rx="28" fill="url(#bg)"/>
+
+  <text x="60" y="90" class="title">Account Protection Stack</text>
+  <text x="60" y="120" class="subtitle">Each layer covers the gaps of the one below it.</text>
+
+  <!-- Bottom layer -->
+  <rect x="260" y="520" width="680" height="120" rx="20" fill="#5A9BD4" class="card"/>
+  <text x="320" y="585" class="label" fill="#FFFFFF">Password Manager</text>
+  <text x="320" y="615" class="muted" fill="#EAF2FB">Unique passwords everywhere</text>
+
+  <!-- Middle layer -->
+  <rect x="300" y="380" width="600" height="120" rx="20" fill="#9BC2E6" class="card"/>
+  <text x="340" y="445" class="label">Two-factor Authentication</text>
+  <text x="340" y="475" class="muted">Extra lock for every login</text>
+
+  <!-- Top layer -->
+  <rect x="340" y="240" width="520" height="120" rx="20" fill="#D6E6F7" class="card"/>
+  <text x="380" y="305" class="label">Recovery Methods</text>
+  <text x="380" y="335" class="muted">Backup codes and trusted contacts</text>
+
+  <!-- Shield icon -->
+  <g>
+    <path d="M930 230 L990 250 L990 310 C990 350 960 380 930 395 C900 380 870 350 870 310 L870 250 Z" fill="#5A9BD4"/>
+    <path d="M930 250 L970 265 L970 305 C970 330 952 350 930 362 C908 350 890 330 890 305 L890 265 Z" fill="#FFFFFF" opacity="0.9"/>
+  </g>
+</svg>

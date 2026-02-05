@@ -347,6 +347,7 @@
   background: rgba(255,255,255,0.75);
   padding: 16px;
   box-shadow: 0 12px 30px rgba(2,6,23,.12);
+  overflow: visible;
 }
 
 .hp-cohort-hero2__diagram path{
@@ -356,6 +357,15 @@
   stroke-dasharray: 520;
   stroke-dashoffset: 520;
   animation: hp-draw 1.6s ease forwards;
+}
+.hp-cohort-hero2__diagram{
+  cursor: zoom-in;
+  transition: transform .2s ease, filter .2s ease, box-shadow .2s ease;
+  transform-origin: center;
+}
+.hp-cohort-hero2__diagram:hover{
+  transform: scale(1.04);
+  filter: drop-shadow(0 16px 26px rgba(2,6,23,.18));
 }
 .hp-cohort-hero2__diagram .hp-fill{
   fill: rgba(90,155,212,0.20);
@@ -588,12 +598,22 @@
   border: 1px solid rgba(15,23,42,.10);
   background: rgba(255,255,255,.92);
   box-shadow: 0 10px 26px rgba(2,6,23,.08);
+  position: relative;
+  z-index: 0;
 }
 .hp-cohort-figure img{
   width: 100%;
   height: auto;
   display: block;
   border-radius: 12px;
+  cursor: zoom-in;
+  transition: transform .2s ease, box-shadow .2s ease;
+  will-change: transform;
+}
+.hp-cohort-figure img:hover{
+  transform: scale(1.04);
+  box-shadow: 0 18px 36px rgba(2,6,23,.22);
+  z-index: 2;
 }
 .hp-cohort-figure figcaption{
   margin-top: 8px;

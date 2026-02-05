@@ -66,10 +66,26 @@
     revealEls.forEach((el) => obs.observe(el));
   }
 
+  function wireLightbox(root) {
+    if (!root || root.dataset.hpMissionLightbox === '1') return;
+    root.dataset.hpMissionLightbox = '1';
+
+    root.addEventListener('click', (e) => {
+      const img = e.target?.closest?.('img[data-lightbox]');
+      if (!img) return;
+      const src = img.getAttribute('src');
+      if (!src) return;
+      if (typeof window.openLightbox === 'function') {
+        window.openLightbox(src);
+      }
+    });
+  }
+
   function initMission(root) {
     if (!root) return;
     renderGallery(root);
     initReveal(root);
+    wireLightbox(root);
   }
 
   NS.loadMission = async function loadMission() {

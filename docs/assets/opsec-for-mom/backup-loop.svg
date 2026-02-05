@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#F7FAFF"/>
+      <stop offset="100%" stop-color="#EFF5FF"/>
+    </linearGradient>
+    <filter id="softShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#0b2a3d" flood-opacity="0.12"/>
+    </filter>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#9BBCE5"/>
+    </marker>
+    <style>
+      .title { font: 700 36px Inter, Segoe UI, Roboto, Helvetica, Arial, sans-serif; fill:#0b2a3d; }
+      .subtitle { font: 500 18px Inter, Segoe UI, Roboto, Helvetica, Arial, sans-serif; fill:#6b7280; }
+      .label { font: 600 18px Inter, Segoe UI, Roboto, Helvetica, Arial, sans-serif; fill:#0b2a3d; }
+      .muted { font: 500 14px Inter, Segoe UI, Roboto, Helvetica, Arial, sans-serif; fill:#6b7280; }
+      .node { fill:#ffffff; stroke:#D5E2F5; stroke-width:2; filter:url(#softShadow); }
+      .arrow { stroke:#9BBCE5; stroke-width:3; fill:none; }
+    </style>
+  </defs>
+
+  <rect width="1200" height="800" rx="28" fill="url(#bg)"/>
+
+  <text x="60" y="90" class="title">Backup Loop</text>
+  <text x="60" y="120" class="subtitle">A simple cycle that keeps your data safe.</text>
+
+  <!-- Arrows -->
+  <path d="M400 420 Q400 300 600 220" class="arrow" marker-end="url(#arrow)"/>
+  <path d="M600 220 Q800 300 800 420" class="arrow" marker-end="url(#arrow)"/>
+  <path d="M800 420 Q800 540 600 620" class="arrow" marker-end="url(#arrow)"/>
+  <path d="M600 620 Q400 540 400 420" class="arrow" marker-end="url(#arrow)"/>
+
+  <!-- Nodes -->
+  <g>
+    <circle cx="400" cy="420" r="70" class="node"/>
+    <rect x="360" y="395" width="80" height="40" rx="6" fill="#F0F6FF" stroke="#9BBCE5" stroke-width="2"/>
+    <rect x="370" y="410" width="60" height="10" rx="5" fill="#9BBCE5"/>
+    <text x="400" y="500" text-anchor="middle" class="label">Device</text>
+  </g>
+
+  <g>
+    <circle cx="600" cy="220" r="70" class="node"/>
+    <path d="M560 210
+             C560 190 580 175 605 175
+             C622 155 655 155 670 175
+             C690 175 705 190 705 210
+             C705 230 690 245 670 245
+             L570 245
+             C550 245 535 230 535 212
+             C535 205 545 198 560 210 Z" fill="#F0F6FF" stroke="#9BBCE5" stroke-width="2"/>
+    <text x="600" y="300" text-anchor="middle" class="label">Cloud Backup</text>
+  </g>
+
+  <g>
+    <circle cx="800" cy="420" r="70" class="node"/>
+    <rect x="760" y="395" width="80" height="50" rx="8" fill="#F0F6FF" stroke="#9BBCE5" stroke-width="2"/>
+    <rect x="775" y="405" width="50" height="10" rx="5" fill="#9BBCE5"/>
+    <text x="800" y="500" text-anchor="middle" class="label">External Drive</text>
+  </g>
+
+  <g>
+    <circle cx="600" cy="620" r="70" class="node"/>
+    <circle cx="600" cy="610" r="22" fill="#F0F6FF" stroke="#9BBCE5" stroke-width="2"/>
+    <path d="M600 600 L600 610 L610 615" stroke="#9BBCE5" stroke-width="3" fill="none"/>
+    <text x="600" y="700" text-anchor="middle" class="label">Monthly Test</text>
+  </g>
+</svg>
