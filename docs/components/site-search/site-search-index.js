@@ -43,6 +43,8 @@
       // --- FAQ / Contact
       { label: "FAQ", section: "FAQ", elementId: "faq-mount", keywords: ["faq", "questions", "help"] },
       { label: "Contact", section: "Contact", elementId: "contact-us", keywords: ["contact", "email", "calendar"] },
+      { label: "Cohort Program", section: "Contact", elementId: "cohort", keywords: ["cohort", "onboarding", "program", "signals"] },
+      { label: "Cohort Briefing Video", section: "Contact", elementId: "cohort-video", keywords: ["cohort", "video", "briefing"] },
     ]);
   });
 })();

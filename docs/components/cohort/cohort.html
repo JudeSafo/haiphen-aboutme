@@ -1,21 +1,259 @@
-<section class="hp-cohort" aria-label="Cohort survey">
-  <div class="hp-cohort-card">
-    <div class="hp-cohort-head">
-      <h3 class="hp-cohort-title">Cohort Screening</h3>
-      <p class="hp-cohort-sub">
-          Build With Us: We are testing potential revenue streams with a small set of professionals. 1) Cohorts last 3-months 2) We provide edge, target metrics & hands on assistance throughout 3) We quantify our signals before and after leverage
-      </p>
-    </div>
-
-    <div class="hp-cohort-actions">
-      <button class="btn btn-primary" type="button" data-cohort-open>
-        Take Survey
-      </button>
-      <span class="hp-cohort-muted">~2 minutes</span>
-    </div>
+<section class="hp-cohort" aria-label="Cohort program">
+  <div class="hp-cohort-sep hp-cohort-reveal" aria-hidden="true">
+    <span>Cohort Program</span>
+    <div class="hp-cohort-sep__line"></div>
+    <span class="hp-cohort-sep__hint">Scroll to explore</span>
   </div>
 
-  <!-- Overlay -->
+  <!-- HERO -->
+  <header id="cohort" class="hp-cohort-hero2 hp-cohort-reveal">
+    <div class="hp-cohort-hero2__content">
+      <span class="hp-cohort-pill">Cohort Program</span>
+      <h2 class="hp-cohort-hero2__title">Cohort Onboarding & Enablement</h2>
+      <p class="hp-cohort-hero2__sub">
+        A structured 3‑month program that gives you hands‑on access to Haiphen’s
+        signals infrastructure, APIs, datasets, and onboarding guidance.
+      </p>
+
+      <div class="hp-cohort-hero2__cta">
+        <button class="btn btn-primary" type="button" data-cohort-open data-open="cohort">Take Survey</button>
+        <a class="btn btn-ghost" href="https://calendar.app.google/jQzWz98eCC5jMLrQA" target="_blank" rel="noopener">
+          Schedule onboarding
+        </a>
+      </div>
+    </div>
+
+    <div class="hp-cohort-hero2__visual" aria-hidden="true">
+      <svg class="hp-cohort-hero2__diagram" viewBox="0 0 420 260" role="img" aria-label="Signals delivery diagram">
+        <defs>
+          <linearGradient id="ch-card" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="rgba(90,155,212,0.22)"/>
+            <stop offset="100%" stop-color="rgba(90,155,212,0.10)"/>
+          </linearGradient>
+          <linearGradient id="ch-card2" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="rgba(16,185,129,0.18)"/>
+            <stop offset="100%" stop-color="rgba(16,185,129,0.08)"/>
+          </linearGradient>
+          <pattern id="ch-dots" width="12" height="12" patternUnits="userSpaceOnUse">
+            <circle cx="2" cy="2" r=".5" fill="rgba(15,23,42,0.06)"/>
+          </pattern>
+        </defs>
+
+        <!-- Background dot pattern -->
+        <rect width="420" height="260" fill="url(#ch-dots)" rx="12"/>
+
+        <!-- Row 1: Infrastructure layer -->
+        <!-- Signals node -->
+        <rect x="16" y="24" width="120" height="56" rx="12" fill="url(#ch-card)" stroke="rgba(90,155,212,0.35)" stroke-width="1"/>
+        <circle cx="36" cy="48" r="6" fill="rgba(90,155,212,0.2)" stroke="rgba(90,155,212,0.45)" stroke-width="1"/>
+        <polyline points="33,48 35,50 39,46" fill="none" stroke="rgba(90,155,212,0.8)" stroke-width="1.2" stroke-linecap="round"/>
+        <text x="48" y="46" font-family="ui-sans-serif,system-ui" font-size="11" font-weight="800" fill="#0f172a">Signals</text>
+        <text x="48" y="60" font-family="ui-monospace,monospace" font-size="7.5" fill="rgba(15,23,42,0.45)" font-weight="600">2M+ daily feeds</text>
+
+        <!-- API node -->
+        <rect x="156" y="24" width="120" height="56" rx="12" fill="url(#ch-card)" stroke="rgba(90,155,212,0.35)" stroke-width="1"/>
+        <circle cx="176" cy="48" r="6" fill="rgba(90,155,212,0.2)" stroke="rgba(90,155,212,0.45)" stroke-width="1"/>
+        <text x="173" y="51" font-family="ui-monospace,monospace" font-size="7" font-weight="700" fill="rgba(90,155,212,0.8)">{}</text>
+        <text x="188" y="46" font-family="ui-sans-serif,system-ui" font-size="11" font-weight="800" fill="#0f172a">API</text>
+        <text x="188" y="60" font-family="ui-monospace,monospace" font-size="7.5" fill="rgba(15,23,42,0.45)" font-weight="600">REST + Webhooks</text>
+
+        <!-- CLI node -->
+        <rect x="296" y="24" width="108" height="56" rx="12" fill="url(#ch-card)" stroke="rgba(90,155,212,0.35)" stroke-width="1"/>
+        <circle cx="316" cy="48" r="6" fill="rgba(90,155,212,0.2)" stroke="rgba(90,155,212,0.45)" stroke-width="1"/>
+        <text x="313" y="51" font-family="ui-monospace,monospace" font-size="7" font-weight="700" fill="rgba(90,155,212,0.8)">$_</text>
+        <text x="328" y="46" font-family="ui-sans-serif,system-ui" font-size="11" font-weight="800" fill="#0f172a">CLI</text>
+        <text x="328" y="60" font-family="ui-monospace,monospace" font-size="7.5" fill="rgba(15,23,42,0.45)" font-weight="600">Win/Mac/Linux</text>
+
+        <!-- Row 2: Delivery layer -->
+        <!-- Web App node -->
+        <rect x="52" y="120" width="148" height="56" rx="12" fill="url(#ch-card2)" stroke="rgba(16,185,129,0.35)" stroke-width="1"/>
+        <circle cx="72" cy="144" r="6" fill="rgba(16,185,129,0.2)" stroke="rgba(16,185,129,0.45)" stroke-width="1"/>
+        <rect x="69" y="141" width="6" height="6" rx="1" fill="none" stroke="rgba(16,185,129,0.8)" stroke-width="1"/>
+        <text x="84" y="142" font-family="ui-sans-serif,system-ui" font-size="11" font-weight="800" fill="#0f172a">Web App</text>
+        <text x="84" y="156" font-family="ui-monospace,monospace" font-size="7.5" fill="rgba(15,23,42,0.45)" font-weight="600">Dashboard + metrics</text>
+
+        <!-- Daily Digest node -->
+        <rect x="222" y="120" width="174" height="56" rx="12" fill="url(#ch-card2)" stroke="rgba(16,185,129,0.35)" stroke-width="1"/>
+        <circle cx="242" cy="144" r="6" fill="rgba(16,185,129,0.2)" stroke="rgba(16,185,129,0.45)" stroke-width="1"/>
+        <line x1="239" y1="142" x2="245" y2="142" stroke="rgba(16,185,129,0.8)" stroke-width=".8" stroke-linecap="round"/>
+        <line x1="239" y1="144" x2="244" y2="144" stroke="rgba(16,185,129,0.8)" stroke-width=".8" stroke-linecap="round"/>
+        <line x1="239" y1="146" x2="243" y2="146" stroke="rgba(16,185,129,0.8)" stroke-width=".8" stroke-linecap="round"/>
+        <text x="254" y="142" font-family="ui-sans-serif,system-ui" font-size="11" font-weight="800" fill="#0f172a">Daily Digest</text>
+        <text x="254" y="156" font-family="ui-monospace,monospace" font-size="7.5" fill="rgba(15,23,42,0.45)" font-weight="600">KPIs + trading intel</text>
+
+        <!-- Connection lines -->
+        <path d="M136 52 H156"/>
+        <path d="M276 52 H296"/>
+        <path d="M106 80 V120"/>
+        <path d="M280 80 V120"/>
+        <path d="M200 148 H222"/>
+
+        <!-- Row labels -->
+        <text x="16" y="104" font-family="ui-monospace,monospace" font-size="7" font-weight="800" letter-spacing=".1em" fill="rgba(15,23,42,0.2)">INFRASTRUCTURE</text>
+        <text x="16" y="196" font-family="ui-monospace,monospace" font-size="7" font-weight="800" letter-spacing=".1em" fill="rgba(15,23,42,0.2)">DELIVERY</text>
+
+        <!-- Websocket label on connector -->
+        <text x="106" y="104" font-family="ui-monospace,monospace" font-size="6" fill="rgba(15,23,42,0.25)" text-anchor="middle">WS</text>
+
+        <!-- Bottom: Slack/Discord indicator -->
+        <rect x="120" y="202" width="180" height="36" rx="10" fill="rgba(139,92,246,0.08)" stroke="rgba(139,92,246,0.2)" stroke-width=".8"/>
+        <text x="210" y="218" text-anchor="middle" font-family="ui-sans-serif,system-ui" font-size="9" font-weight="700" fill="rgba(139,92,246,0.55)">Slack / Discord Community</text>
+        <text x="210" y="230" text-anchor="middle" font-family="ui-monospace,monospace" font-size="6.5" fill="rgba(139,92,246,0.35)">24hr response window</text>
+      </svg>
+    </div>
+  </header>
+
+  <!-- VIDEO BRIEFING -->
+  <section class="hp-cohort-section hp-cohort-video hp-cohort-reveal" id="cohort-video">
+    <h2>Program Briefing</h2>
+    <div class="hp-cohort-video__frame">
+      <iframe
+        src="https://drive.google.com/file/d/1pjF73rMSsbIJbgS0dOyFL0eX1vbCJm2Z/preview"
+        allow="autoplay; encrypted-media"
+        title="Haiphen Cohort Program Briefing"
+        allowfullscreen
+      ></iframe>
+    </div>
+    <p class="hp-cohort-note">
+      Self‑paced overview of deliverables, onboarding steps, and expectations.
+    </p>
+  </section>
+
+  <!-- PROGRAM OVERVIEW -->
+  <section class="hp-cohort-section hp-cohort-reveal" id="cohort-overview">
+    <h2>Program Overview</h2>
+    <div class="hp-cohort-grid">
+      <div class="hp-cohort-card hp-cohort-reveal">
+        <h3>What is the cohort?</h3>
+        <p>
+          A time‑boxed onboarding and enablement period. It provides structured access to
+          Haiphen’s platform, APIs, datasets, documentation, and community.
+        </p>
+      </div>
+      <div class="hp-cohort-card hp-cohort-reveal">
+        <h3>What problem does it solve?</h3>
+        <p>
+          Reduces integration friction and accelerates time‑to‑signal by pairing
+          direct access with guided onboarding and QA.
+        </p>
+      </div>
+      <div class="hp-cohort-card hp-cohort-reveal">
+        <h3>Who is it for?</h3>
+        <p>
+          Professionals evaluating quantitative signal delivery, fintech infrastructure,
+          or trading‑adjacent automation workflows.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- WHAT'S INCLUDED -->
+  <section class="hp-cohort-section hp-cohort-reveal" id="cohort-included">
+    <h2>What’s Included</h2>
+    <div class="hp-cohort-includes">
+      <div class="hp-cohort-include">Web application access</div>
+      <div class="hp-cohort-include">API + Webhooks</div>
+      <div class="hp-cohort-include">Websocket feeds</div>
+      <div class="hp-cohort-include">CLI (Win/Mac/Linux)</div>
+      <div class="hp-cohort-include">Daily metrics + KPIs</div>
+      <div class="hp-cohort-include">Documentation + FAQ</div>
+      <div class="hp-cohort-include">Slack/Discord community</div>
+      <div class="hp-cohort-include">24‑hour response window</div>
+    </div>
+    <p class="hp-cohort-note">Term: Three (3) months.</p>
+  </section>
+
+  <!-- TIMELINE -->
+  <section class="hp-cohort-section hp-cohort-reveal" id="cohort-timeline">
+    <h2>Program Timeline</h2>
+    <div class="hp-cohort-timeline">
+      <div class="hp-cohort-phase hp-cohort-reveal">
+        <h3>Phase 1: Onboarding & Setup</h3>
+        <p>Access provisioning, walkthrough, and integration setup.</p>
+      </div>
+      <div class="hp-cohort-phase hp-cohort-reveal">
+        <h3>Phase 2: Active Trading Period</h3>
+        <p>Daily signals, performance transparency, and operational tuning.</p>
+      </div>
+      <div class="hp-cohort-phase hp-cohort-reveal">
+        <h3>Phase 3: Review & Optimization</h3>
+        <p>Regressions, backtesting, and parameter iteration.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="hp-cohort-section hp-cohort-reveal" id="cohort-how">
+    <h2>How It Works</h2>
+    <ol class="hp-cohort-steps hp-cohort-reveal">
+      <li>Apply via the screening survey</li>
+      <li>Review + selection</li>
+      <li>Service agreement + deposit</li>
+      <li>Onboarding walkthrough</li>
+      <li>Integration + daily signal delivery</li>
+      <li>Performance review + optimization</li>
+    </ol>
+    <div class="hp-cohort-card hp-cohort-reveal">
+      <h3>Selection Criteria</h3>
+      <p>Professional fit, intent, and ability to evaluate signals responsibly.</p>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="hp-cohort-section hp-cohort-reveal" id="cohort-faq">
+    <h2>FAQ</h2>
+    <details class="hp-cohort-faq hp-cohort-reveal">
+      <summary>Is this managed trading or consulting?</summary>
+      <p>No. The cohort is enablement only — not managed services or outcome‑based delivery.</p>
+    </details>
+    <details class="hp-cohort-faq hp-cohort-reveal">
+      <summary>How long is the cohort?</summary>
+      <p>Three (3) months, per the service agreement.</p>
+    </details>
+    <details class="hp-cohort-faq hp-cohort-reveal">
+      <summary>What are the SLA targets?</summary>
+      <p>Community responses within 24–72 business hours. Critical issues within 12 business hours.</p>
+    </details>
+    <details class="hp-cohort-faq hp-cohort-reveal">
+      <summary>Are fees refundable once the cohort begins?</summary>
+      <p>Fees are non‑refundable once a cohort begins unless explicitly stated otherwise.</p>
+    </details>
+    <details class="hp-cohort-faq hp-cohort-reveal">
+      <summary>Are results guaranteed?</summary>
+      <p>No. Services are provided “as‑is” with no guarantees of performance or revenue.</p>
+    </details>
+  </section>
+
+  <!-- DECK FIGURES -->
+  <section class="hp-cohort-section hp-cohort-reveal" id="cohort-figures">
+    <h2>Program Figures</h2>
+    <div class="hp-cohort-figures">
+      <figure class="hp-cohort-figure">
+        <img src="assets/cohort/deck-figure-1.png" alt="Haiphen deck figure" loading="lazy" decoding="async" />
+        <figcaption>Selected figure from the investor/client deck.</figcaption>
+      </figure>
+      <figure class="hp-cohort-figure">
+        <img src="assets/cohort/deck-figure-2.png" alt="Haiphen deck figure" loading="lazy" decoding="async" />
+        <figcaption>Selected figure from the investor/client deck.</figcaption>
+      </figure>
+      <figure class="hp-cohort-figure">
+        <img src="assets/cohort/deck-figure-3.png" alt="Haiphen deck figure" loading="lazy" decoding="async" />
+        <figcaption>Selected figure from the investor/client deck.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="hp-cohort-section hp-cohort-cta hp-cohort-reveal" id="cohort-cta">
+    <h2>Ready to Apply?</h2>
+    <p>Take the 2‑minute survey and we’ll follow up with next steps.</p>
+    <div class="hp-cohort-cta__actions">
+      <button class="btn btn-primary" type="button" data-open="cohort">Apply Now</button>
+      <a class="btn btn-ghost" href="mailto:pi@haiphenai.com">Questions? Email us</a>
+    </div>
+  </section>
+
+  <!-- Overlay (survey form stays intact) -->
   <div class="hp-cohort-overlay" hidden data-cohort-overlay aria-hidden="true">
     <div class="hp-cohort-backdrop" data-cohort-close></div>
 
@@ -190,7 +428,7 @@
           <a class="btn btn-primary" data-cohort-next-calendar href="https://calendar.app.google/jQzWz98eCC5jMLrQA" target="_blank" rel="noopener">
             Schedule onboarding
           </a>
-          <a class="btn btn-ghost" data-cohort-next-program href="#cohort-program">
+          <a class="btn btn-ghost" data-cohort-next-program href="#cohort">
             Program details
           </a>
           <a class="btn btn-ghost" data-cohort-next-docs href="#docs">

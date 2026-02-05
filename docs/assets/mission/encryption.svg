@@ -1,0 +1,137 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 240" role="img" aria-label="Encryption layer">
+  <defs>
+    <linearGradient id="en-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0b1220"/>
+      <stop offset="100%" stop-color="#0f1b2e"/>
+    </linearGradient>
+    <linearGradient id="en-lock" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="rgba(90,155,212,0.4)"/>
+      <stop offset="100%" stop-color="rgba(90,155,212,0.15)"/>
+    </linearGradient>
+    <linearGradient id="en-tunnel" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="rgba(90,155,212,0.02)"/>
+      <stop offset="30%" stop-color="rgba(90,155,212,0.12)"/>
+      <stop offset="70%" stop-color="rgba(16,185,129,0.12)"/>
+      <stop offset="100%" stop-color="rgba(16,185,129,0.02)"/>
+    </linearGradient>
+    <filter id="en-glow">
+      <feGaussianBlur stdDeviation="2.5" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="en-glow-lg">
+      <feGaussianBlur stdDeviation="5" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <pattern id="en-dots" width="16" height="16" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r=".6" fill="rgba(148,163,184,0.1)"/>
+    </pattern>
+    <clipPath id="en-clip"><rect x="14" y="14" width="332" height="212" rx="18"/></clipPath>
+  </defs>
+
+  <!-- Background -->
+  <rect x="14" y="14" width="332" height="212" rx="18" fill="url(#en-bg)" stroke="rgba(148,163,184,0.18)" stroke-width="1"/>
+  <rect x="14" y="14" width="332" height="212" rx="18" fill="url(#en-dots)" clip-path="url(#en-clip)"/>
+
+  <!-- Encrypted tunnel visualization -->
+  <rect x="38" y="84" width="284" height="72" rx="14" fill="url(#en-tunnel)" stroke="rgba(148,163,184,0.12)" stroke-width=".8" stroke-dasharray="4,4"/>
+
+  <!-- Tunnel inner -->
+  <rect x="52" y="96" width="256" height="48" rx="10" fill="rgba(15,23,42,0.4)" stroke="rgba(90,155,212,0.15)" stroke-width=".8"/>
+
+  <!-- Data packets flowing through tunnel -->
+  <g>
+    <!-- Packet 1 (entering - plaintext indicator) -->
+    <rect x="60" y="108" width="36" height="24" rx="5" fill="rgba(148,163,184,0.08)" stroke="rgba(148,163,184,0.25)" stroke-width=".8"/>
+    <text x="64" y="118" font-family="ui-monospace,monospace" font-size="5.5" fill="rgba(148,163,184,0.5)">DATA</text>
+    <text x="64" y="126" font-family="ui-monospace,monospace" font-size="5" fill="rgba(148,163,184,0.35)">plain</text>
+
+    <!-- Packet 2 (encrypting) -->
+    <rect x="110" y="108" width="36" height="24" rx="5" fill="rgba(90,155,212,0.1)" stroke="rgba(90,155,212,0.3)" stroke-width=".8"/>
+    <text x="113" y="118" font-family="ui-monospace,monospace" font-size="5.5" fill="rgba(90,155,212,0.7)">AES</text>
+    <text x="113" y="126" font-family="ui-monospace,monospace" font-size="5" fill="rgba(90,155,212,0.5)">256</text>
+    <rect x="134" y="110" width="8" height="8" rx="2" fill="none" stroke="rgba(90,155,212,0.4)" stroke-width=".6"/>
+
+    <!-- Packet 3 (encrypted) -->
+    <rect x="160" y="108" width="36" height="24" rx="5" fill="rgba(90,155,212,0.15)" stroke="rgba(90,155,212,0.4)" stroke-width=".8"/>
+    <text x="163" y="118" font-family="ui-monospace,monospace" font-size="5.5" fill="rgba(90,155,212,0.8)">x4F2</text>
+    <text x="163" y="126" font-family="ui-monospace,monospace" font-size="5.5" fill="rgba(90,155,212,0.6)">9aB1</text>
+
+    <!-- Packet 4 (HMAC signed) -->
+    <rect x="210" y="108" width="36" height="24" rx="5" fill="rgba(16,185,129,0.1)" stroke="rgba(16,185,129,0.35)" stroke-width=".8"/>
+    <text x="213" y="118" font-family="ui-monospace,monospace" font-size="5.5" fill="rgba(16,185,129,0.7)">HMAC</text>
+    <text x="213" y="126" font-family="ui-monospace,monospace" font-size="5" fill="rgba(16,185,129,0.5)">signed</text>
+
+    <!-- Packet 5 (delivered) -->
+    <rect x="260" y="108" width="36" height="24" rx="5" fill="rgba(16,185,129,0.15)" stroke="rgba(16,185,129,0.4)" stroke-width=".8"/>
+    <text x="264" y="118" font-family="ui-monospace,monospace" font-size="5.5" fill="rgba(16,185,129,0.8)">✓</text>
+    <text x="272" y="118" font-family="ui-monospace,monospace" font-size="5.5" fill="rgba(16,185,129,0.7)">OK</text>
+    <text x="264" y="126" font-family="ui-monospace,monospace" font-size="5" fill="rgba(16,185,129,0.5)">verified</text>
+  </g>
+
+  <!-- Flow arrows between packets -->
+  <g stroke="rgba(148,163,184,0.2)" stroke-width=".6" fill="rgba(148,163,184,0.2)">
+    <path d="M96 120 L108 120" fill="none"/>
+    <polygon points="106,117 110,120 106,123"/>
+    <path d="M146 120 L158 120" fill="none"/>
+    <polygon points="156,117 160,120 156,123"/>
+    <path d="M196 120 L208 120" fill="none"/>
+    <polygon points="206,117 210,120 206,123"/>
+    <path d="M246 120 L258 120" fill="none"/>
+    <polygon points="256,117 260,120 256,123"/>
+  </g>
+
+  <!-- Central lock icon (above tunnel) -->
+  <g transform="translate(155,28)" filter="url(#en-glow)">
+    <!-- Lock body -->
+    <rect x="12" y="24" width="26" height="22" rx="5" fill="url(#en-lock)" stroke="rgba(90,155,212,0.6)" stroke-width="1.2"/>
+    <!-- Lock shackle -->
+    <path d="M17 24 V18 C17 8 33 8 33 18 V24" fill="none" stroke="rgba(90,155,212,0.6)" stroke-width="2" stroke-linecap="round"/>
+    <!-- Keyhole -->
+    <circle cx="25" cy="33" r="3.5" fill="rgba(16,185,129,0.6)"/>
+    <rect x="23.5" y="33" width="3" height="6" rx="1.5" fill="rgba(16,185,129,0.5)"/>
+  </g>
+
+  <!-- Key rotation arrows around lock -->
+  <g transform="translate(180,50)" stroke="rgba(90,155,212,0.3)" stroke-width="1" fill="none">
+    <path d="M-30 0 A30 30 0 0 1 0 -30"/>
+    <polygon points="-2,-32 2,-28 -5,-28" fill="rgba(90,155,212,0.3)"/>
+    <path d="M30 0 A30 30 0 0 1 0 30"/>
+    <polygon points="2,32 -2,28 5,28" fill="rgba(90,155,212,0.3)"/>
+  </g>
+
+  <!-- Token/credential badges (top corners) -->
+  <g transform="translate(28,30)" font-family="ui-monospace,monospace">
+    <rect width="72" height="36" rx="8" fill="rgba(15,23,42,0.5)" stroke="rgba(148,163,184,0.18)" stroke-width=".8"/>
+    <text x="8" y="14" font-size="6" font-weight="700" fill="rgba(90,155,212,0.7)">JWT</text>
+    <text x="8" y="24" font-size="5.5" fill="rgba(148,163,184,0.4)">HS256 · jti</text>
+    <circle cx="60" cy="12" r="4" fill="rgba(16,185,129,0.2)" stroke="#10B981" stroke-width=".6"/>
+    <path d="M57.5 12 L59 13.5 L62.5 10.5" fill="none" stroke="#10B981" stroke-width=".8" stroke-linecap="round"/>
+  </g>
+
+  <g transform="translate(260,30)" font-family="ui-monospace,monospace">
+    <rect width="72" height="36" rx="8" fill="rgba(15,23,42,0.5)" stroke="rgba(148,163,184,0.18)" stroke-width=".8"/>
+    <text x="8" y="14" font-size="6" font-weight="700" fill="rgba(16,185,129,0.7)">API KEY</text>
+    <text x="8" y="24" font-size="5.5" fill="rgba(148,163,184,0.4)">scoped · rot.</text>
+    <circle cx="60" cy="12" r="4" fill="rgba(16,185,129,0.2)" stroke="#10B981" stroke-width=".6"/>
+    <path d="M57.5 12 L59 13.5 L62.5 10.5" fill="none" stroke="#10B981" stroke-width=".8" stroke-linecap="round"/>
+  </g>
+
+  <!-- Bottom labels -->
+  <g font-family="ui-monospace,monospace" font-size="7" font-weight="700" fill="rgba(148,163,184,0.35)">
+    <text x="50" y="178">INGRESS</text>
+    <text x="156" y="178">ENCRYPTED TRANSPORT</text>
+    <text x="274" y="178">EGRESS</text>
+  </g>
+
+  <!-- Protocol indicators at bottom -->
+  <g transform="translate(46,188)" font-family="ui-monospace,monospace" font-size="6">
+    <rect width="48" height="16" rx="4" fill="rgba(90,155,212,0.08)" stroke="rgba(90,155,212,0.2)" stroke-width=".6"/>
+    <text x="6" y="11" fill="rgba(90,155,212,0.55)">TLS 1.3</text>
+    <rect x="56" width="60" height="16" rx="4" fill="rgba(16,185,129,0.08)" stroke="rgba(16,185,129,0.2)" stroke-width=".6"/>
+    <text x="62" y="11" fill="rgba(16,185,129,0.55)">HMAC-SHA</text>
+    <rect x="124" width="58" height="16" rx="4" fill="rgba(139,92,246,0.08)" stroke="rgba(139,92,246,0.2)" stroke-width=".6"/>
+    <text x="130" y="11" fill="rgba(139,92,246,0.55)">AES-256</text>
+    <rect x="190" width="72" height="16" rx="4" fill="rgba(245,158,11,0.08)" stroke="rgba(245,158,11,0.2)" stroke-width=".6"/>
+    <text x="196" y="11" fill="rgba(245,158,11,0.55)">KEY ROTATE</text>
+  </g>
+</svg>

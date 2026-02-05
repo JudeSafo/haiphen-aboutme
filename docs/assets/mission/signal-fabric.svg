@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 340" role="img" aria-label="Signal normalization diagram">
+  <defs>
+    <style>
+      .bg { fill: #0b1220; stroke: rgba(148,163,184,0.2); stroke-width: 1.2; }
+      .grid { stroke: rgba(148,163,184,0.18); stroke-width: 1; }
+      .line { fill: none; stroke: #5A9BD4; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+      .dash { stroke-dasharray: 6 10; animation: dash 7s linear infinite; }
+      .node { fill: #10B981; stroke: rgba(11,18,32,0.6); stroke-width: 2; animation: pulse 2.4s ease-in-out infinite; }
+      .chip { fill: rgba(148,163,184,0.18); stroke: rgba(148,163,184,0.35); stroke-width: 1; }
+      .label { font: 700 11px/1.2 ui-sans-serif, system-ui; fill: #e2e8f0; }
+      @keyframes dash { to { stroke-dashoffset: -90; } }
+      @keyframes pulse { 0%,100% { transform: scale(1); opacity: 0.85; } 50% { transform: scale(1.22); opacity: 1; } }
+    </style>
+  </defs>
+  <rect x="16" y="16" width="488" height="308" rx="22" class="bg" />
+  <path d="M60 90 H460" class="grid" />
+  <path d="M60 140 H460" class="grid" />
+  <path d="M60 190 H460" class="grid" />
+  <path d="M60 240 H460" class="grid" />
+
+  <path d="M70 240 L140 170 L210 200 L280 120 L350 150 L430 100" class="line dash" />
+  <circle cx="140" cy="170" r="7" class="node" />
+  <circle cx="280" cy="120" r="7" class="node" />
+  <circle cx="430" cy="100" r="7" class="node" />
+
+  <rect x="70" y="52" width="110" height="28" rx="10" class="chip" />
+  <rect x="200" y="52" width="120" height="28" rx="10" class="chip" />
+  <rect x="340" y="52" width="110" height="28" rx="10" class="chip" />
+  <text x="88" y="70" class="label">Market Data</text>
+  <text x="220" y="70" class="label">Macro Events</text>
+  <text x="360" y="70" class="label">Alt Feeds</text>
+</svg>

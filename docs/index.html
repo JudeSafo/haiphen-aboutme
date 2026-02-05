@@ -39,6 +39,7 @@
 	  <script src="components/api-docs/api-docs.js"></script>
 	  <script src="components/api-docs/api-access.js"></script>
 	  <script src="components/contact-form/contact-form.js"></script>
+	  <script src="components/mission/mission.js"></script>
  	  <script src="components/cohort/cohort.js"></script>
  	  <script src="components/cohort/cohort-banner.js" defer></script>
 	  <link rel="stylesheet" href="components/cohort/cohort-banner.css" />
@@ -100,34 +101,6 @@
 	      min-height: 100vh;
 	    }
 			    
-		/* ============================================================
-		   Mission hero SVG (value prop)
-		============================================================ */
-		.mission-hero{
-		  margin: 1.25rem auto 1.25rem;
-		  max-width: 980px;
-		  width: 100%;
-		  padding: 0.75rem;
-		  border-radius: 16px;
-		  background: rgba(255,255,255,0.92);
-		  border: 1px solid #e6ecf3;
-		  box-shadow: 0 10px 24px rgba(0,0,0,0.08);
-		}
-
-		.mission-hero__img{
-		  display: block;
-		  width: 100%;
-		  height: auto;
-		  max-height: 520px;   /* matches your SVG viewBox height */
-		}
-
-		/* On smaller screens, reduce padding + keep it clean */
-		@media (max-width: 640px){
-		  .mission-hero{
-		    padding: 0.5rem;
-		    border-radius: 14px;
-		  }
-		}	    
 	    /* ============================================================
 	       Fixed Navbar (Top)
 	    ============================================================ */
@@ -1821,417 +1794,11 @@
 			  </div>
 			`,
 	      "OnePager": `
- 			  <h2 id="mission-top">Mission</h2>
-			  <br>
-			  <p>
-	          <a href="https://haiphen.io" target="_blank" rel="noopener noreferrer"><strong>Haiphen</strong></a>[Hi-fen]: We're a <strong>signals intelligence</strong> startup centered around solving cloud, edge, and infra obstacles. We operate across a variety of technical, financial, business, and scientific domains.
-	        </p>
-			<!-- Mission visual (value prop hero) -->
-			<figure class="mission-hero" aria-label="Haiphen value proposition">
-			  <img
-			    class="mission-hero__img"
-			    src="assets/haiphen-value-prop-hero.svg"
-			    alt="Haiphen value proposition: Signals → Engine → Interfaces"
-			    loading="lazy"
-			    decoding="async"
-			  />
-			</figure>
-	        <div class="about-columns">
-	          <div class="about-col">
-	            <p>
-	              We process 2M+ signals across the internet each day for downstream applications and usecases. With a deep foundation in <strong>Computational Linguistics</strong>, <strong>NLP</strong>, and <strong>ML</strong>, we geek out over building the plumbing and infra (e.g. data pipelines, ETL, entity extraction, pruning, clustering) that simplifies unwanted haziness into reliable API calls. Consider us your personal DBA (database admin) but with a domain expertise that actively persists in your data through its entire lifecycle.
-	            </p>
-	          </div>
-
-	          <div class="about-col">
-	            <p>
-	              We're excited about the future: the more <strong>custom solutions</strong> we're able deliver, the closer we move towards our vision of productizing <strong>knowledge graphs</strong> into every company (without the headache). <i>Note</i>: we're intentional barebones as you may have noticed. We believe good software was and should be transparent, inspectable and about what's under the hood.
-	            </p>
-	          </div>
-	        </div>
-	        </div>
-	        <h2>Haiphen One Pager</h2>
-	        <div id="onepager-buttons" style="margin-bottom: 1rem;">
-	          <button onclick="toggleOnePager('default')">Genomics</button>
-	          <button onclick="toggleOnePager('zerodays')">ZeroDays</button>
-	        </div>
-	        <div id="onepager-container" class="onepager-container">
-	          <!-- Left Click Zone for Back Navigation -->
-	          <div class="onepager-click-zone onepager-click-left" onclick="changePage(-1)"></div>
-
-	          <!-- Displayed Page Image -->
-	          <img id="onepager-image" src="" alt="One Pager Page">
-
-	          <!-- Right Click Zone for Next Navigation -->
-	          <div class="onepager-click-zone onepager-click-right" onclick="changePage(1)"></div>
-
-	          <!-- Navigation Arrows -->
-	          <button id="onepager-prev" class="onepager-arrow onepager-prev" onclick="changePage(-1)">&#10094;</button>
-	          <button id="onepager-next" class="onepager-arrow onepager-next" onclick="changePage(1)">&#10095;</button>
-	        </div>
-	          <!-- How it works (compact visual) -->
-	          <div class="trades-panel">
-	            <div class="panel-head">
-	              <h3>How it works</h3>
-	              <p class="trades-muted">Derivatives ingestion, processing pipeline (details expandable below).</p>
-	            </div>
-
-	            <div id="trades-pipeline" class="pipeline">
-	              <div class="pipe-step">
-	                <div class="pipe-node">1</div>
-	                <div class="pipe-text">
-	                  <div class="pipe-title">Ingest</div>
-	                  <div class="pipe-sub">Market data + signals</div>
-	                </div>
-	              </div>
-	              <div class="pipe-arrow">→</div>
-
-	              <div class="pipe-step">
-	                <div class="pipe-node">2</div>
-	                <div class="pipe-text">
-	                  <div class="pipe-title">Score</div>
-	                  <div class="pipe-sub">Arb & risk filters</div>
-	                </div>
-	              </div>
-	              <div class="pipe-arrow">→</div>
-
-	              <div class="pipe-step">
-	                <div class="pipe-node">3</div>
-	                <div class="pipe-text">
-	                  <div class="pipe-title">Execute</div>
-	                  <div class="pipe-sub">Orders + guardrails</div>
-	                </div>
-	              </div>
-	              <div class="pipe-arrow">→</div>
-
-	              <div class="pipe-step">
-	                <div class="pipe-node">4</div>
-	                <div class="pipe-text">
-	                  <div class="pipe-title">Monitor</div>
-	                  <div class="pipe-sub">Telemetry + exits</div>
-	                </div>
-	              </div>
-	              <div class="pipe-arrow">→</div>
-
-	              <div class="pipe-step">
-	                <div class="pipe-node">5</div>
-	                <div class="pipe-text">
-	                  <div class="pipe-title">Report</div>
-	                  <div class="pipe-sub">KPIs + archive</div>
-	                </div>
-	              </div>
-	            </div>
-
-
-	            <br>
-	            <!-- New Steps Row -->
-	            <div class="steps-container">
-	              <div class="step">
-	                <a href="https://example.com/step1" target="_blank" rel="noopener noreferrer">
-	                  <img src="assets/step1.svg" alt="Step 1">
-	                </a>
-	                <p>Diagnose &amp; Draft</p>
-	              </div>
-	              <div class="step">
-	                <a href="https://example.com/step2" target="_blank" rel="noopener noreferrer">
-	                  <img src="assets/step2.svg" alt="Step 2">
-	                </a>
-	                <p>Execute &amp; Enrich</p>
-	              </div>
-	              <div class="step">
-	                <a href="https://example.com/step3" target="_blank" rel="noopener noreferrer">
-	                  <img src="assets/step3.svg" alt="Step 3">
-	                </a>
-	                <p>Review &amp; Revise</p>
-	              </div>
-	            </div>
-	            <br>
-
-	            <div class="trades-accordions">
-	              <details class="acc" open>
-	                <summary>Risk posture & controls</summary>
-	                <ul>
-	                  <li><strong>Intraday only:</strong> no overnight holdings; exposure is exited daily.</li>
-	                  <li><strong>Speed-first strategy:</strong> short-lived positions, frequent reuse of edges.</li>
-	                  <li><strong>Monitoring & exits:</strong> automated close logic + portfolio teardown.</li>
-	                  <li><em>(You can expand this list with your real controls: locks, limits, slippage checks, etc.)</em></li>
-	                </ul>
-	              </details>
-
-	              <details class="acc">
-	                <summary>What these metrics represent</summary>
-	                <p class="trades-muted" style="margin-top:.5rem;">
-	                  The table below is populated from daily runs. It summarizes execution volume, P&L deltas,
-	                  and stability indicators. Archive cards allow day-to-day comparison.
-	                </p>
-	              </details>
-	            </div>
-	          </div>          
-	        <div class="about-columns">
-	        <!-- about/paragraph placeholders -->
-	        <div class="services-about">
-	          <h3>Services</h3>
-	          <p>The current landscape of 'Tech' problems go beyond traditional verticals that can be arbitrarily segregated by legacy labels and/or specialties. We've taken a 'hacker-centric', solve first ask later, domain agnostic approach of simply meeting problems where they reside. That can be anywhere from the knowledge graph db powering a Harvard research lab to the firmware needed to customize your lawn mower. We freelance with commercial and residential clients putting out current fires wherever they reside. This removes the frothy silicon valley VC environment of contrived 'luxury' solutions to problems that don't exist.</p>
-	          <ul class="inline-bullets">
-	            <li><a href="https://example.com/robotics" target="_blank" rel="noopener noreferrer">Robotics</a></li>
-	            <li><a href="https://example.com/opsec" target="_blank" rel="noopener noreferrer">Operational Security</a></li>
-	            <li><a href="https://example.com/event-detection" target="_blank" rel="noopener noreferrer">Event Detection</a></li>
-	            <li><a href="https://example.com/welding" target="_blank" rel="noopener noreferrer">Decision Engine</a></li>
-	            <li><a href="https://example.com/carpentry" target="_blank" rel="noopener noreferrer">Dissasemblers</a></li>
-	          </ul>            
-	        </div>
-
-	        <div class="tech-container">
-	        <div class="tech-right svg-stack" style="display:flex; justify-content:center; align-items:center; padding:1rem 0;">
-	            <object type="image/svg+xml" data="assets/signal_chain.svg" class="tech-svg">
-	              Your browser does not support SVG.
-	            </object>
-	            <br>
-	            <object type="image/svg+xml" data="assets/data_sorter1.svg" class="tech-svg">
-	              Your browser does not support SVG.
-	            </object>              
-	          </div>
-	          <div class="tech-left">
-	            <h3 id="services-signals">Signals</h3>
-	            <p style="text-indent: 2em;">
-	              The difference between the Google(s), Amazon(s), Twitter(s) big tech giants and the consumers using those products comes down to signals. Users are always handicapped by an asymmetry in information and ability to act on them. This is not un-intentional. 
-	            </p>
-	            <p style="text-indent: 2em;">
-	            The infrastructure needed to <strong>scale</strong>, process and automate your <strong>decision making</strong> are the cornerstone of any business no matter the industry or the product. We're building infrastructure to make this accessible to every participant on the internet, as it should be.
-	            </p>
-	            <br>
-	            <div class="tech-bullets">
-	              <ul>
-	                <li>Decision engines</li>
-	                <li>Algorithmic day trading</li>
-	                <li>Risk analysis</li>
-	                <li>Portfolio optimization</li>
-	                <li>News alert feed</li>
-	                <li>Underwriting</li>
-	                <li>Data pruning</li>
-	                <li>Data enrichment</li>
-	                <li>Concept mapping</li>
-	                <li>Domain segregation</li>
-	                <li>QA</li>
-	              </ul>
-	            </div> 
-	            <br>                        
-	          </div>            
-	        </div>
-
-	        <style>
-	          .tech-container {
-	            display: flex; gap: 2rem; align-items: center;
-	            justify-content: center; flex-wrap: wrap; text-align: left;
-	            margin-top: 2rem;
-	          }
-	          .tech-left {
-	            flex: 1; min-width: 280px;
-	          }
-	          .tech-right {
-	            flex: 1; min-width: 280px;
-	          }
-	          .tech-list {
-	            list-style-type: disc; padding-left: 20px;
-	            font-size: 1rem; line-height: 1.8;
-	          }
-	          .tech-list li i {
-	            font-style: italic; font-weight: normal;
-	          }
-	        </style>          
-
-	        <div class="tech-container">
-	          <div class="tech-left">
-	            <h3 id="ethos">Ethos</h3>
-	            <p style="text-indent: 2em;">
-	              <strong>Open Source</strong> everything: We spent years building our own stand alone OS environment
-	              to train, test and deploy all of our models. Hence we're able to provide unmatched
-	              value proposition: chain of custody insight and transparency into every asset
-	              build so you minimize <strong>vulnerabilities</strong>. That includes the website your viewing now. 
-	              All the code available via github. You're free to contribute as you see fit. 
-	            </p>
-	            <br>
-	            <h3>Stack</h3>
-	            <ul class="tech-list">
-	              <li><i>Backend:</i> Apache Framework, Redis, Postgres</li>
-	              <li><i>Data:</i> Scala, HDFS, Postgres</li>
-	              <li><i>Network:</i> Istio, SD-WAN solutions</li>
-	              <li><i>Platform:</i> Ansible, Terraform, Kubernetes</li>
-	              <li><i>Access Control:</i> Keycloak, OpenFGA</li>
-	              <li><i>Telemetry:</i> Prometheus, Grafana, ELK Stack</li>
-	            </ul>
-	            <br>
-	            <h3>Secure</h3>
-	            <p style="text-indent: 2em;">
-	              Industry best practices, zero-trust <strong>security protocols</strong> (e.g. SALSA, GUAC) alongside 
-	              with proactive threat detection and mitigation to protect
-	              your critical systems.
-	            </p>
-	          </div>
-	          <div class="tech-right">
-	            <object type="image/svg+xml" data="assets/tech_animated.svg" class="tech-svg">
-	              Your browser does not support SVG.
-	            </object>
-	          </div>
-	        </div>
-	        <style>
-	          .tech-container {
-	            display: flex; gap: 2rem; align-items: center;
-	            justify-content: center; flex-wrap: wrap; text-align: left;
-	            margin-top: 2rem;
-	          }
-	          .tech-left {
-	            flex: 1; min-width: 280px;
-	          }
-	          .tech-right {
-	            flex: 1; min-width: 280px;
-	          }
-	          .tech-list {
-	            list-style-type: disc; padding-left: 20px;
-	            font-size: 1rem; line-height: 1.8;
-	          }
-	          .tech-list li i {
-	            font-style: italic; font-weight: normal;
-	          }
-	        </style>
-	        <div id="lightbox" onclick="closeLightbox()">
-	          <img src="" alt="preview">
-	        </div>
-	        <br>
-			<div class="services-about">
-			  <h3 id="collaborate">Collaborate</h3>
-			  <p>Contact us here, schedule a service appointment here, look through our past client work here</p>
-			  <p><!-- paragraph 2 --></p>
-			</div>
-	        <br>          
-	        <!-- scrollable gallery -->
-	        <h3 id="services-gallery">Gallery</h3>
-	        <div class="services-gallery-wrapper">
-	          <div class="services-gallery">
-	            ${servicesImages
-	              .map(({file,cap}) =>
-	                `<figure class="gallery-item">
-	                  <img src="assets/robotics/${file}" alt="${cap}"
-	                        onclick="openLightbox(this.src)">
-	                  <figcaption>${cap}</figcaption>
-	                </figure>`
-	              ).join('')}
-	          </div>
-	        </div>
-
-
-	        <p class="service-keys">
-	          <strong>Services:</strong>
-	          <a class="service-key" href="https://docs.google.com/forms/d/e/1FAIpQLSc8HhR9nIEE-DBgtKq2CQ-Y4PJ8Mr0pbE07fzGE15FhcfqG6g/viewform?usp=header" target="_blank" rel="noopener noreferrer">
-	            Consulting
-	            <span class="service-tooltip">Hardvard, Fidelity, Techstars: Be our next collaborater. Fill in your information (below) or contact us directly to get started</span>
-	          </a>,
-	          <a class="service-key" href="https://en.wikipedia.org/wiki/Consultant" target="_blank" rel="noopener noreferrer">
-	            Knowledge Graph DB
-	            <span class="service-tooltip"><strong>Intelligent persistent data-store</strong>: We build machine learning intelligence into the foundation of your data pipeline so you get predictable, reliable intelligence downstream.</span>
-	          </a>,
-	          <a class="service-key" href="https://en.wikipedia.org/wiki/Quality_assurance" target="_blank" rel="noopener noreferrer">
-	            QA
-	            <span class="service-tooltip"><strong>AI/ML QA</strong> can be surprisingly different from normal. Leverage in-built elements of our event driven architecture for real-time detection, telemetry, pruning and improvement from the time of inception of your data.</span>
-	          </a>, 
-	          <a class="service-key" href="https://en.wikipedia.org/wiki/Access_control" target="_blank" rel="noopener noreferrer">
-	            Access Control
-	            <span class="service-tooltip">Beyond authentication, full <strong>ZeroTrust</strong>, real-time, tracking of assets and data <strong>telemetry</strong> built directly into your data pipeline</span>
-	          </a>,
-	          <a class="service-key" href="https://en.wikipedia.org/wiki/Open_source" target="_blank" rel="noopener noreferrer">
-	            Open Src
-	            <span class="service-tooltip">Most importantly, we build everything on open src so you have full transparency and ownership</span>
-	          </a>,
-	          <a class="service-key" href="javascript:void(0);" onclick="showSection('Tech')">
-	            Infra.
-	            <span class="service-tooltip">Robust infrastructure design and management.</span>
-	          </a>
-	        </p>
-	        <style>
-	          .about-columns {
-	            display: flex;
-	            gap: 2rem;
-	            margin: 2rem 0;
-	            flex-wrap: wrap;
-	          }
-	          .about-col {
-	            flex: 1;
-	            min-width: 280px;
-	            text-align: left;
-	          }
-	        </style>        
-
-			<ul style="margin-top: 0.5rem;">
-			  <!-- First Portfolio Item: ETL Ingestion Engine -->
-			  <li style="list-style: disc; margin-bottom: 2rem;">
-			    <p style="margin-bottom: 0.5rem; font-size: 1.1rem; text-align: center;">
-			      <strong>ETL Ingestion Engine:</strong> Prior work with a DEI tech startup
-			      to build out their data infrastructure pipeline from crawling raw
-			      unstructured pdf data to building a basic KG database.
-			    </p>
-			    <div style="text-align: center;">
-			      <a href="https://github.com/JudeSafo/All_Language_Model" target="_blank" rel="noopener noreferrer">
-			        <img src="assets/gitPortfolio_esg.png" alt="All Language Model"
-			          style="max-width:80%; height:auto; border: 1px solid #ccc; border-radius: 4px;">
-			      </a>
-			    </div>
-			  </li>
-
-			  <!-- Second Portfolio Item: Protein Biomarker Indexing (Genomics Use Case) -->
-			  <li style="list-style: disc; margin-bottom: 2rem;">
-			    <p style="margin-bottom: 0.5rem; font-size: 1.1rem; text-align: center;">
-			      <strong>Protein Biomarker Indexing:</strong> Engagmenet with a Harvard Genetics research lab,
-			      crawling PubMed articles to identify co-occurrences of diseases and biomarker
-			      conditions for potential overlapping treatment options.
-			    </p>
-			    <div style="text-align: center;">
-			      <a href="javascript:void(0)" onclick="showSection('OnePager')">
-			        <img src="assets/genomics_usecase.png" alt="Genomics Use Case"
-			          style="max-width:80%; height:auto; border: 1px solid #ccc; border-radius: 4px;">
-			      </a>
-			    </div>
-			  </li>
-
-			  <!-- Third Portfolio Item: Web Crawler -->
-			  <li style="list-style: disc; margin-bottom: 2rem;">
-			    <p style="margin-bottom: 0.5rem; font-size: 1.1rem; text-align: center;">
-			      <strong>Web Crawler:</strong> Custom, open src search engine for curating and parsing
-			      unstructured pdf data (e.g. research, financials) for downstream applications.
-			    </p>
-			    <div style="text-align: center;">
-			      <img src="assets/haiphen-gif5.gif" alt="Haiphen AI Showcase"
-			        style="max-width:80%; height:auto; border: 1px solid #ccc; border-radius: 4px;">
-			    </div>
-			  </li>
-
-			  <!-- Fourth Portfolio Item: Distilled LLM -->
-			  <li style="list-style: disc; margin-bottom: 2rem;">
-			    <p style="margin-bottom: 0.5rem; font-size: 1.1rem;">
-			      <strong>Distilled RAG LLM:</strong> Custom open src LLM for specific business use cases,
-			      e.g. answering DEI questions.
-			    </p>
-			    <div style="text-align: center;">
-			      <img src="assets/haiphen-gif3.gif" alt="LLM"
-			        style="max-width:80%; height:auto; border: 1px solid #ccc; border-radius: 4px;">
-			    </div>
-			  </li>
-
-			  <!-- Fifth Portfolio Item: ZeroDays Follina Investigation -->
-			  <li style="list-style: disc; margin-bottom: 2rem;">
-			    <p style="margin-bottom: 0.5rem; font-size: 1.1rem; text-align: center;">
-			      <strong>ZeroDays Follina Investigation:</strong> An in-depth investigation
-			      of Confluence vulnerabilities with Follina, producing actionable security insights.
-			    </p>
-			    <div style="text-align: center;">
-			      <a href="javascript:void(0)" onclick="showSection('OnePager')">
-			        <img src="assets/haiphen-follina-screenshot.png" alt="ZeroDays Investigation"
-			          style="max-width:80%; height:auto; border: 1px solid #ccc; border-radius: 4px;">
-			      </a>
-			    </div>
-			  </li>
-			</ul>        
-	      `,
-		  "FAQ": `
+    <section id="mission-section">
+      <div id="mission-mount"></div>
+    </section>
+  `,
+      "FAQ": `
 		    <section id="faq">
 		      <div id="faq-mount"></div>
 		    </section>
@@ -2333,7 +1900,11 @@
 	        parseInt(getComputedStyle(document.documentElement).getPropertyValue('--header-h') || '70', 10) ||
 	        70;
 
-	      const y = window.scrollY + targetEl.getBoundingClientRect().top - headerH - extra;
+	      const bannerH =
+	        parseInt(getComputedStyle(document.documentElement).getPropertyValue('--cohort-banner-offset') || '0', 10) ||
+	        0;
+
+	      const y = window.scrollY + targetEl.getBoundingClientRect().top - headerH - bannerH - extra;
 	      window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
 	    }
 
@@ -2413,16 +1984,18 @@
 		    })();
 		  }
 
-		  if (resolved === "FAQ") {
-		    (async () => {
-		      try { await window.HAIPHEN?.loadFAQ?.(); }
-		      catch (e) { console.warn("[FAQ] loadFAQ failed", e); }
-		    })();
-		  }
-
 		  if (resolved === "OnePager") {
-		    currentPageIndex = 0;
-		    renderOnePagerPage();
+		    (async () => {
+		      try { await window.HAIPHEN?.loadMission?.(); }
+		      catch (e) { console.warn("[Mission] loadMission failed", e); }
+		      currentPageIndex = 0;
+		      renderOnePagerPage();
+		      requestAnimationFrame(() => {
+		        const top = document.getElementById("mission-top") || document.getElementById("mission-section") || contentWidget;
+		        scrollToWithHeaderOffset(top, 12);
+		      });
+		    })();
+		    return;
 		  }
 
 		  // Default scroll behavior for non-Trades sections
@@ -2503,10 +2076,6 @@
 		        // optional: only init if provided
 		        window.HAIPHEN?.Cohort?.init?.(cohortMount);
 
-				// If this navigation came from #cohort, open immediately after init.
-				if (String(window.location.hash || '').toLowerCase() === '#cohort') {
-				  openCohortModalWhenReady();
-				}
 		      } catch (e) {
 		        console.warn("[Contact] failed to load Contact + Cohort", e);
 		      }
@@ -2732,11 +2301,18 @@
 		  if (typeof window.showSection === "function") {
 		    window.showSection(section);
 		    activateSectionMenuFor(section);
-
-		    if (slug === 'cohort') openCohortModalWhenReady();
 		  }
 
-  		  if (!subId) return;
+		  if (slug === 'cohort' && !subId) {
+		    scrollToIdWhenReady('cohort', { maxAttempts: 80, delayMs: 50, extra: 12 });
+		    return;
+		  }
+
+		  if (slug === 'cohort' && (subId === 'survey' || subId === 'apply')) {
+		    openCohortModalWhenReady();
+		  }
+
+		  if (!subId) return;
 
 		  // Wait until the injected section (and any async inner mounts) actually exist.
 		  scrollToIdWhenReady(subId, { maxAttempts: 80, delayMs: 50, extra: 12 });

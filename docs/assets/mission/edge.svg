@@ -1,0 +1,159 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 240" role="img" aria-label="Edge network">
+  <defs>
+    <linearGradient id="ed-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0b1220"/>
+      <stop offset="100%" stop-color="#0f1b2e"/>
+    </linearGradient>
+    <linearGradient id="ed-hub" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="rgba(90,155,212,0.25)"/>
+      <stop offset="100%" stop-color="rgba(16,185,129,0.15)"/>
+    </linearGradient>
+    <radialGradient id="ed-pulse" cx="50%" cy="50%">
+      <stop offset="0%" stop-color="rgba(90,155,212,0.15)"/>
+      <stop offset="100%" stop-color="rgba(90,155,212,0)"/>
+    </radialGradient>
+    <filter id="ed-glow">
+      <feGaussianBlur stdDeviation="2.5" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="ed-glow-sm">
+      <feGaussianBlur stdDeviation="1.2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <pattern id="ed-dots" width="16" height="16" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r=".6" fill="rgba(148,163,184,0.1)"/>
+    </pattern>
+    <clipPath id="ed-clip"><rect x="14" y="14" width="332" height="212" rx="18"/></clipPath>
+  </defs>
+
+  <!-- Background -->
+  <rect x="14" y="14" width="332" height="212" rx="18" fill="url(#ed-bg)" stroke="rgba(148,163,184,0.18)" stroke-width="1"/>
+  <rect x="14" y="14" width="332" height="212" rx="18" fill="url(#ed-dots)" clip-path="url(#ed-clip)"/>
+
+  <!-- Central hub pulse -->
+  <circle cx="180" cy="120" r="60" fill="url(#ed-pulse)">
+    <animate attributeName="r" values="50;65;50" dur="4s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values=".6;.3;.6" dur="4s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- Connection lines (hub to nodes) -->
+  <g stroke="rgba(90,155,212,0.18)" stroke-width="1" fill="none">
+    <!-- To US-EAST -->
+    <line x1="180" y1="120" x2="66" y2="56"/>
+    <!-- To US-WEST -->
+    <line x1="180" y1="120" x2="56" y2="168"/>
+    <!-- To EU-WEST -->
+    <line x1="180" y1="120" x2="296" y2="52"/>
+    <!-- To APAC -->
+    <line x1="180" y1="120" x2="306" y2="170"/>
+    <!-- To LATAM -->
+    <line x1="180" y1="120" x2="108" y2="196"/>
+    <!-- To MEA -->
+    <line x1="180" y1="120" x2="260" y2="200"/>
+  </g>
+
+  <!-- Animated data particles along connections -->
+  <g>
+    <circle r="2" fill="#5A9BD4" opacity=".7">
+      <animateMotion dur="2.5s" repeatCount="indefinite" path="M180,120 L66,56"/>
+    </circle>
+    <circle r="2" fill="#10B981" opacity=".7">
+      <animateMotion dur="3s" repeatCount="indefinite" path="M180,120 L296,52"/>
+    </circle>
+    <circle r="2" fill="#5A9BD4" opacity=".7">
+      <animateMotion dur="2.8s" repeatCount="indefinite" path="M180,120 L56,168"/>
+    </circle>
+    <circle r="2" fill="#10B981" opacity=".7">
+      <animateMotion dur="3.2s" repeatCount="indefinite" path="M180,120 L306,170"/>
+    </circle>
+    <circle r="1.5" fill="#8B5CF6" opacity=".6">
+      <animateMotion dur="3.5s" repeatCount="indefinite" path="M180,120 L108,196"/>
+    </circle>
+    <circle r="1.5" fill="#F59E0B" opacity=".6">
+      <animateMotion dur="3.8s" repeatCount="indefinite" path="M180,120 L260,200"/>
+    </circle>
+  </g>
+
+  <!-- Cross-node mesh connections (secondary) -->
+  <g stroke="rgba(148,163,184,0.07)" stroke-width=".6" fill="none" stroke-dasharray="3,4">
+    <line x1="66" y1="56" x2="296" y2="52"/>
+    <line x1="56" y1="168" x2="306" y2="170"/>
+    <line x1="66" y1="56" x2="56" y2="168"/>
+    <line x1="296" y1="52" x2="306" y2="170"/>
+  </g>
+
+  <!-- Central hub -->
+  <g transform="translate(180,120)">
+    <!-- Outer ring -->
+    <circle r="32" fill="url(#ed-hub)" stroke="rgba(90,155,212,0.35)" stroke-width="1.2"/>
+    <!-- Inner ring -->
+    <circle r="20" fill="rgba(15,23,42,0.7)" stroke="rgba(90,155,212,0.4)" stroke-width="1"/>
+    <!-- Core -->
+    <circle r="10" fill="rgba(90,155,212,0.15)" stroke="rgba(90,155,212,0.5)" stroke-width=".8"/>
+    <circle r="4" fill="#5A9BD4" opacity=".6" filter="url(#ed-glow)"/>
+    <!-- Label -->
+    <text y="4" text-anchor="middle" font-family="ui-monospace,monospace" font-size="5" font-weight="700" fill="rgba(226,232,240,0.8)">HUB</text>
+    <!-- Hexagon outline for orchestrator feel -->
+    <polygon points="0,-26 22.5,-13 22.5,13 0,26 -22.5,13 -22.5,-13" fill="none" stroke="rgba(90,155,212,0.12)" stroke-width=".6"/>
+  </g>
+
+  <!-- Edge nodes -->
+  <!-- US-EAST -->
+  <g transform="translate(66,56)">
+    <circle r="14" fill="rgba(15,23,42,0.7)" stroke="rgba(90,155,212,0.4)" stroke-width="1"/>
+    <circle r="5" fill="rgba(90,155,212,0.3)" filter="url(#ed-glow-sm)"/>
+    <circle r="2.5" fill="#5A9BD4" opacity=".7"/>
+    <text y="-20" text-anchor="middle" font-family="ui-monospace,monospace" font-size="6" font-weight="700" fill="rgba(226,232,240,0.55)">US-EAST</text>
+    <text y="-12" text-anchor="middle" font-family="ui-monospace,monospace" font-size="5" fill="rgba(16,185,129,0.5)">4ms</text>
+  </g>
+
+  <!-- US-WEST -->
+  <g transform="translate(56,168)">
+    <circle r="14" fill="rgba(15,23,42,0.7)" stroke="rgba(16,185,129,0.4)" stroke-width="1"/>
+    <circle r="5" fill="rgba(16,185,129,0.3)" filter="url(#ed-glow-sm)"/>
+    <circle r="2.5" fill="#10B981" opacity=".7"/>
+    <text y="24" text-anchor="middle" font-family="ui-monospace,monospace" font-size="6" font-weight="700" fill="rgba(226,232,240,0.55)">US-WEST</text>
+    <text y="32" text-anchor="middle" font-family="ui-monospace,monospace" font-size="5" fill="rgba(16,185,129,0.5)">8ms</text>
+  </g>
+
+  <!-- EU-WEST -->
+  <g transform="translate(296,52)">
+    <circle r="14" fill="rgba(15,23,42,0.7)" stroke="rgba(90,155,212,0.4)" stroke-width="1"/>
+    <circle r="5" fill="rgba(90,155,212,0.3)" filter="url(#ed-glow-sm)"/>
+    <circle r="2.5" fill="#5A9BD4" opacity=".7"/>
+    <text y="-20" text-anchor="middle" font-family="ui-monospace,monospace" font-size="6" font-weight="700" fill="rgba(226,232,240,0.55)">EU-WEST</text>
+    <text y="-12" text-anchor="middle" font-family="ui-monospace,monospace" font-size="5" fill="rgba(16,185,129,0.5)">22ms</text>
+  </g>
+
+  <!-- APAC -->
+  <g transform="translate(306,170)">
+    <circle r="14" fill="rgba(15,23,42,0.7)" stroke="rgba(16,185,129,0.4)" stroke-width="1"/>
+    <circle r="5" fill="rgba(16,185,129,0.3)" filter="url(#ed-glow-sm)"/>
+    <circle r="2.5" fill="#10B981" opacity=".7"/>
+    <text y="24" text-anchor="middle" font-family="ui-monospace,monospace" font-size="6" font-weight="700" fill="rgba(226,232,240,0.55)">APAC</text>
+    <text y="32" text-anchor="middle" font-family="ui-monospace,monospace" font-size="5" fill="rgba(16,185,129,0.5)">48ms</text>
+  </g>
+
+  <!-- LATAM (smaller node) -->
+  <g transform="translate(108,196)">
+    <circle r="10" fill="rgba(15,23,42,0.6)" stroke="rgba(139,92,246,0.35)" stroke-width=".8"/>
+    <circle r="3.5" fill="rgba(139,92,246,0.3)"/>
+    <circle r="1.8" fill="#8B5CF6" opacity=".6"/>
+    <text y="18" text-anchor="middle" font-family="ui-monospace,monospace" font-size="5.5" font-weight="700" fill="rgba(226,232,240,0.45)">LATAM</text>
+  </g>
+
+  <!-- MEA (smaller node) -->
+  <g transform="translate(260,200)">
+    <circle r="10" fill="rgba(15,23,42,0.6)" stroke="rgba(245,158,11,0.35)" stroke-width=".8"/>
+    <circle r="3.5" fill="rgba(245,158,11,0.3)"/>
+    <circle r="1.8" fill="#F59E0B" opacity=".6"/>
+    <text y="18" text-anchor="middle" font-family="ui-monospace,monospace" font-size="5.5" font-weight="700" fill="rgba(226,232,240,0.45)">MEA</text>
+  </g>
+
+  <!-- Bottom stats bar -->
+  <g transform="translate(140,22)" font-family="ui-monospace,monospace" font-size="6">
+    <rect width="80" height="16" rx="4" fill="rgba(15,23,42,0.5)" stroke="rgba(148,163,184,0.15)" stroke-width=".6"/>
+    <text x="6" y="11" fill="rgba(16,185,129,0.6)">6 REGIONS</text>
+    <text x="54" y="11" fill="rgba(148,163,184,0.4)">99.9%</text>
+  </g>
+</svg>

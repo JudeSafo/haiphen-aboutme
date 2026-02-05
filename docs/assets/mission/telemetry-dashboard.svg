@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 340" role="img" aria-label="Execution telemetry dashboard">
+  <defs>
+    <style>
+      .bg { fill: #0b1220; stroke: rgba(148,163,184,0.2); stroke-width: 1.2; }
+      .bar { fill: rgba(90,155,212,0.55); animation: rise 3.2s ease-in-out infinite; }
+      .bar:nth-of-type(2) { animation-delay: .2s; }
+      .bar:nth-of-type(3) { animation-delay: .4s; }
+      .bar:nth-of-type(4) { animation-delay: .6s; }
+      .bar:nth-of-type(5) { animation-delay: .8s; }
+      .line { fill: none; stroke: #10B981; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 6 10; animation: dash 6s linear infinite; }
+      .node { fill: #10B981; animation: pulse 2.6s ease-in-out infinite; }
+      .grid { stroke: rgba(148,163,184,0.18); stroke-width: 1; }
+      .chip { fill: rgba(148,163,184,0.18); stroke: rgba(148,163,184,0.35); stroke-width: 1; }
+      .label { font: 700 11px/1.2 ui-sans-serif, system-ui; fill: #e2e8f0; }
+      @keyframes dash { to { stroke-dashoffset: -80; } }
+      @keyframes pulse { 0%,100% { transform: scale(1); opacity: 0.85; } 50% { transform: scale(1.18); opacity: 1; } }
+      @keyframes rise { 0%,100% { opacity: 0.7; } 50% { opacity: 1; } }
+    </style>
+  </defs>
+  <rect x="16" y="16" width="488" height="308" rx="22" class="bg" />
+  <path d="M70 230 H450" class="grid" />
+  <path d="M70 190 H450" class="grid" />
+  <path d="M70 150 H450" class="grid" />
+
+  <rect x="90" y="170" width="34" height="90" rx="8" class="bar" />
+  <rect x="145" y="140" width="34" height="120" rx="8" class="bar" />
+  <rect x="200" y="120" width="34" height="140" rx="8" class="bar" />
+  <rect x="255" y="160" width="34" height="100" rx="8" class="bar" />
+  <rect x="310" y="130" width="34" height="130" rx="8" class="bar" />
+
+  <path d="M90 120 C150 100, 230 160, 350 110" class="line" />
+  <circle cx="350" cy="110" r="7" class="node" />
+
+  <rect x="70" y="60" width="140" height="28" rx="10" class="chip" />
+  <text x="88" y="79" class="label">Latency KPIs</text>
+</svg>

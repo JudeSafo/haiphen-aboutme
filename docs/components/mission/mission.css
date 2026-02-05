@@ -1,0 +1,238 @@
+/* docs/components/mission/mission.css */
+
+.mission{
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 1rem 3rem;
+  text-align: left;
+}
+
+.mission-intro{
+  margin: 1.5rem 0 2rem;
+}
+
+.mission-intro p{
+  margin: 0 0 1rem;
+}
+
+.about-columns{
+  display: flex;
+  gap: 2rem;
+  margin: 2rem 0;
+  flex-wrap: wrap;
+}
+
+.about-col{
+  flex: 1;
+  min-width: 280px;
+  text-align: left;
+}
+
+.mission-hero-main{
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 2rem;
+  align-items: center;
+  padding: 2rem;
+  border-radius: 22px;
+  background: linear-gradient(135deg, rgba(15,23,42,0.98), rgba(2,6,23,0.92));
+  border: 1px solid rgba(148,163,184,0.22);
+  box-shadow: 0 24px 60px rgba(2,6,23,0.35);
+  color: #e2e8f0;
+}
+
+.mission-hero-main h2,
+.mission-hero-main p{
+  color: #e2e8f0;
+}
+
+.mission-eyebrow{
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(148,163,184,0.16);
+  color: #e2e8f0;
+  font-weight: 800;
+  font-size: 0.72rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.mission-lede{
+  margin-top: 0.8rem;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: rgba(226,232,240,0.85);
+}
+
+.mission-hero__actions{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  margin-top: 1.2rem;
+}
+
+.mission-hero__figure{
+  padding: 0.5rem;
+  border-radius: 18px;
+  background: rgba(2,6,23,0.6);
+  border: 1px solid rgba(148,163,184,0.2);
+}
+
+.mission-figure{
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Legacy hero figure (from original Mission section) */
+.mission-hero{
+  margin: 1.25rem auto 1.25rem;
+  max-width: 980px;
+  width: 100%;
+  padding: 0.75rem;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.92);
+  border: 1px solid #e6ecf3;
+  box-shadow: 0 10px 24px rgba(0,0,0,0.08);
+}
+
+.mission-hero__img{
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 520px;
+}
+
+.mission-grid{
+  margin-top: 2rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.mission-card{
+  background: rgba(255,255,255,0.96);
+  border: 1px solid rgba(15,23,42,0.08);
+  border-radius: 16px;
+  padding: 1.2rem;
+  box-shadow: 0 12px 28px rgba(15,23,42,0.08);
+}
+
+.mission-card h3{
+  margin: 0 0 0.4rem;
+}
+
+.mission-card p{
+  margin: 0;
+  color: rgba(15,23,42,0.7);
+  font-weight: 600;
+}
+
+.mission-block{
+  margin-top: 2.2rem;
+  padding: 1.6rem;
+  border-radius: 20px;
+  background: rgba(255,255,255,0.96);
+  border: 1px solid rgba(15,23,42,0.08);
+  box-shadow: 0 18px 40px rgba(15,23,42,0.1);
+}
+
+.mission-block__copy{
+  flex: 1.1;
+}
+
+.mission-block__figure{
+  flex: 0.9;
+  padding: 0.6rem;
+  border-radius: 18px;
+  background: rgba(2,6,23,0.92);
+  border: 1px solid rgba(148,163,184,0.2);
+}
+
+.mission-block__copy h3{
+  margin: 0.6rem 0 0.5rem;
+  font-weight: 900;
+  color: #0f172a;
+}
+
+.mission-block__copy p{
+  margin: 0;
+  color: rgba(15,23,42,0.72);
+  font-weight: 600;
+}
+
+.mission-list{
+  margin: 0.9rem 0 0;
+  padding-left: 1.1rem;
+  color: rgba(15,23,42,0.7);
+  font-weight: 600;
+}
+
+.mission-links{
+  margin-top: 0.8rem;
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.mission-links a{
+  font-weight: 700;
+}
+
+.mission-block{
+  display: flex;
+  gap: 1.8rem;
+  align-items: center;
+}
+
+.mission-block--reverse{
+  flex-direction: row-reverse;
+}
+
+.mission-legacy{
+  margin-bottom: 2.5rem;
+}
+
+.mission-legacy__head p{
+  margin: 0;
+  color: var(--muted);
+}
+
+.mission-reveal{
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity .6s ease, transform .6s ease;
+}
+
+.mission-reveal.is-visible{
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (max-width: 980px){
+  .mission-hero-main{
+    grid-template-columns: 1fr;
+  }
+  .mission-block,
+  .mission-block--reverse{
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 720px){
+  .mission-hero-main{
+    padding: 1.4rem;
+  }
+  .mission-block{
+    padding: 1.2rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce){
+  .mission-reveal{
+    opacity: 1;
+    transform: none;
+  }
+}

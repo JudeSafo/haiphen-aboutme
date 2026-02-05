@@ -197,7 +197,25 @@
 
   function init(rootEl) {
     const root = rootEl || document;
-    return attachOnce(root);
+    const ok = attachOnce(root);
+    applyEmbedLinks(root);
+    if (ok) initCohortProgram(root);
+    return ok;
+  }
+
+  function applyEmbedLinks(root) {
+    qa(root, "[data-embed-src]").forEach((link) => {
+      if (link.dataset.hpEmbedWired === "1") return;
+      const src = link.dataset.embedSrc;
+      if (!src) return;
+      try {
+        const abs = new URL(src, window.location.origin).href;
+        const viewer = new URL("https://view.officeapps.live.com/op/embed.aspx");
+        viewer.searchParams.set("src", abs);
+        link.href = viewer.toString();
+        link.dataset.hpEmbedWired = "1";
+      } catch (_) {}
+    });
   }
 
 
@@ -251,6 +269,55 @@
     textEl.textContent = `Progress: ${pct}%`;
 
     bar.setAttribute("aria-valuenow", String(pct));
+  }
+
+  // ---- Cohort program interactions (non-survey) ----
+  function initCohortProgram(root) {
+    const scope = root || document;
+
+    // 1) Scroll reveal
+    const revealEls = [...scope.querySelectorAll('.hp-cohort-reveal')];
+    if (revealEls.length) {
+      const obs = new IntersectionObserver(
+        (entries) => {
+          for (const e of entries) {
+            if (e.isIntersecting) {
+              e.target.classList.add('is-visible');
+              obs.unobserve(e.target);
+            }
+          }
+        },
+        { threshold: 0.15 }
+      );
+      revealEls.forEach((el) => obs.observe(el));
+    }
+
+    // 2) Timeline phase highlighting
+    const phases = [...scope.querySelectorAll('.hp-cohort-phase')];
+    if (phases.length) {
+      const phaseObs = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((e) => {
+            if (e.isIntersecting) {
+              phases.forEach((p) => p.classList.remove('is-active'));
+              e.target.classList.add('is-active');
+            }
+          });
+        },
+        { threshold: 0.6 }
+      );
+      phases.forEach((el) => phaseObs.observe(el));
+    }
+
+    // 3) FAQ smooth open/close
+    const faqs = [...scope.querySelectorAll('.hp-cohort-faq')];
+    faqs.forEach((d) => {
+      d.addEventListener('toggle', () => {
+        if (d.open) {
+          d.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        }
+      });
+    });
   }
   window.HAIPHEN = window.HAIPHEN || {};
   window.HAIPHEN.Cohort = {

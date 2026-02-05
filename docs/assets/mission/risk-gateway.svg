@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 340" role="img" aria-label="Risk governance gateway">
+  <defs>
+    <style>
+      .bg { fill: #0b1220; stroke: rgba(148,163,184,0.2); stroke-width: 1.2; }
+      .ring { fill: none; stroke: rgba(16,185,129,0.45); stroke-width: 3; stroke-dasharray: 8 10; animation: spin 12s linear infinite; }
+      .shield { fill: rgba(15,23,42,0.8); stroke: rgba(148,163,184,0.4); stroke-width: 2; }
+      .check { fill: none; stroke: #5A9BD4; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+      .chip { fill: rgba(148,163,184,0.18); stroke: rgba(148,163,184,0.35); stroke-width: 1; }
+      .label { font: 700 11px/1.2 ui-sans-serif, system-ui; fill: #e2e8f0; }
+      .gate { stroke: rgba(148,163,184,0.25); stroke-width: 2; }
+      @keyframes spin { to { transform: rotate(360deg); transform-origin: 260px 170px; } }
+    </style>
+  </defs>
+  <rect x="16" y="16" width="488" height="308" rx="22" class="bg" />
+  <circle cx="260" cy="170" r="86" class="ring" />
+  <path d="M260 92 L320 120 V184 C320 215 289 244 260 256 C231 244 200 215 200 184 V120 Z" class="shield" />
+  <path d="M232 178 L252 198 L292 150" class="check" />
+
+  <path d="M110 170 H190" class="gate" />
+  <path d="M330 170 H410" class="gate" />
+
+  <rect x="80" y="70" width="120" height="28" rx="10" class="chip" />
+  <rect x="320" y="70" width="120" height="28" rx="10" class="chip" />
+  <text x="100" y="88" class="label">Policy Gates</text>
+  <text x="340" y="88" class="label">Audit Trails</text>
+</svg>

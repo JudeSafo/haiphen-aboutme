@@ -1,0 +1,109 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 240" role="img" aria-label="Operational security">
+  <defs>
+    <linearGradient id="op-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0b1220"/>
+      <stop offset="100%" stop-color="#0f1b2e"/>
+    </linearGradient>
+    <linearGradient id="op-shield" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#5A9BD4"/>
+      <stop offset="100%" stop-color="#3a7ab8"/>
+    </linearGradient>
+    <linearGradient id="op-bar" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#10B981"/>
+      <stop offset="100%" stop-color="#5A9BD4"/>
+    </linearGradient>
+    <filter id="op-glow">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="op-glow-sm">
+      <feGaussianBlur stdDeviation="1.5" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <pattern id="op-dots" width="16" height="16" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r=".6" fill="rgba(148,163,184,0.12)"/>
+    </pattern>
+    <clipPath id="op-clip"><rect x="14" y="14" width="332" height="212" rx="18"/></clipPath>
+  </defs>
+
+  <!-- Background -->
+  <rect x="14" y="14" width="332" height="212" rx="18" fill="url(#op-bg)" stroke="rgba(148,163,184,0.18)" stroke-width="1"/>
+  <rect x="14" y="14" width="332" height="212" rx="18" fill="url(#op-dots)" clip-path="url(#op-clip)"/>
+
+  <!-- Radial accent glow -->
+  <ellipse cx="120" cy="120" rx="100" ry="80" fill="rgba(90,155,212,0.06)"/>
+
+  <!-- Shield (layered, gradient) -->
+  <g transform="translate(70,46)">
+    <!-- Outer shield shape -->
+    <path d="M50 6 L92 24 V62 C92 88 72 106 50 114 C28 106 8 88 8 62 V24 Z"
+          fill="none" stroke="rgba(90,155,212,0.25)" stroke-width="1.5"/>
+    <!-- Inner shield fill -->
+    <path d="M50 14 L84 28 V60 C84 82 68 98 50 106 C32 98 16 82 16 60 V28 Z"
+          fill="url(#op-shield)" opacity="0.18" stroke="rgba(90,155,212,0.5)" stroke-width="1"/>
+    <!-- Shield inner glow -->
+    <path d="M50 24 L74 34 V58 C74 74 62 86 50 92 C38 86 26 74 26 58 V34 Z"
+          fill="rgba(90,155,212,0.08)" stroke="rgba(90,155,212,0.35)" stroke-width=".8"/>
+    <!-- Checkmark -->
+    <path d="M38 58 L46 66 L64 46" fill="none" stroke="#10B981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" filter="url(#op-glow-sm)"/>
+    <!-- Lock keyhole -->
+    <circle cx="50" cy="72" r="4" fill="rgba(16,185,129,0.25)" stroke="#10B981" stroke-width=".8"/>
+    <rect x="48.5" y="72" width="3" height="7" rx="1.5" fill="rgba(16,185,129,0.3)"/>
+  </g>
+
+  <!-- Audit log panel (right side) -->
+  <g transform="translate(180,36)">
+    <!-- Panel background -->
+    <rect width="152" height="168" rx="10" fill="rgba(15,23,42,0.6)" stroke="rgba(148,163,184,0.18)" stroke-width=".8"/>
+    <!-- Header bar -->
+    <rect width="152" height="24" rx="10" fill="rgba(148,163,184,0.08)"/>
+    <rect y="14" width="152" height="10" fill="rgba(148,163,184,0.08)"/>
+    <circle cx="14" cy="12" r="3" fill="#10B981" opacity=".8"/>
+    <text x="24" y="15.5" font-family="ui-monospace,monospace" font-size="8" font-weight="700" fill="#e2e8f0" opacity=".7">AUDIT LOG</text>
+    <text x="112" y="15.5" font-family="ui-monospace,monospace" font-size="6.5" fill="rgba(148,163,184,0.5)">LIVE</text>
+    <circle cx="106" cy="12" r="2" fill="#10B981" opacity=".6">
+      <animate attributeName="opacity" values=".6;1;.6" dur="2s" repeatCount="indefinite"/>
+    </circle>
+
+    <!-- Log entries -->
+    <g font-family="ui-monospace,monospace" font-size="7" fill="rgba(226,232,240,0.6)">
+      <text x="10" y="40"><tspan fill="#10B981">✓</tspan> 09:41:02  auth.verify    <tspan fill="rgba(90,155,212,.8)">200</tspan></text>
+      <text x="10" y="54"><tspan fill="#10B981">✓</tspan> 09:41:01  webhook.sign   <tspan fill="rgba(90,155,212,.8)">200</tspan></text>
+      <text x="10" y="68"><tspan fill="#10B981">✓</tspan> 09:40:58  key.rotate     <tspan fill="rgba(90,155,212,.8)">200</tspan></text>
+      <text x="10" y="82"><tspan fill="#F59E0B">⚠</tspan> 09:40:55  rate.exceed    <tspan fill="rgba(245,158,11,.8)">429</tspan></text>
+      <text x="10" y="96"><tspan fill="#10B981">✓</tspan> 09:40:52  token.issue    <tspan fill="rgba(90,155,212,.8)">201</tspan></text>
+      <text x="10" y="110"><tspan fill="#10B981">✓</tspan> 09:40:50  revoke.check   <tspan fill="rgba(90,155,212,.8)">200</tspan></text>
+      <text x="10" y="124"><tspan fill="#10B981">✓</tspan> 09:40:48  acl.evaluate   <tspan fill="rgba(90,155,212,.8)">200</tspan></text>
+    </g>
+
+    <!-- Metrics bar at bottom -->
+    <g transform="translate(0,136)">
+      <rect width="152" height="32" rx="0" ry="0" fill="rgba(148,163,184,0.04)"/>
+      <rect y="0" width="152" height="1" fill="rgba(148,163,184,0.12)"/>
+      <!-- Mini bar chart -->
+      <rect x="10" y="18" width="6" height="8" rx="1" fill="rgba(16,185,129,0.4)"/>
+      <rect x="19" y="14" width="6" height="12" rx="1" fill="rgba(16,185,129,0.5)"/>
+      <rect x="28" y="10" width="6" height="16" rx="1" fill="rgba(16,185,129,0.6)"/>
+      <rect x="37" y="12" width="6" height="14" rx="1" fill="rgba(16,185,129,0.5)"/>
+      <rect x="46" y="8" width="6" height="18" rx="1" fill="rgba(90,155,212,0.6)"/>
+      <rect x="55" y="6" width="6" height="20" rx="1" fill="rgba(90,155,212,0.7)"/>
+      <text x="72" y="16" font-family="ui-monospace,monospace" font-size="7" fill="rgba(226,232,240,0.5)">99.97%</text>
+      <text x="72" y="24" font-family="ui-monospace,monospace" font-size="6" fill="rgba(148,163,184,0.4)">uptime</text>
+    </g>
+  </g>
+
+  <!-- Status indicators (left column, below shield) -->
+  <g transform="translate(40,172)" font-family="ui-sans-serif,system-ui" font-size="7.5" font-weight="700">
+    <circle cx="6" cy="4" r="3.5" fill="#10B981" opacity=".7" filter="url(#op-glow-sm)"/>
+    <text x="14" y="7" fill="rgba(226,232,240,0.65)">Zero-trust active</text>
+    <circle cx="6" cy="20" r="3.5" fill="#10B981" opacity=".7" filter="url(#op-glow-sm)"/>
+    <text x="14" y="23" fill="rgba(226,232,240,0.65)">HMAC verification</text>
+    <circle cx="6" cy="36" r="3.5" fill="#10B981" opacity=".7" filter="url(#op-glow-sm)"/>
+    <text x="14" y="39" fill="rgba(226,232,240,0.65)">Revocation enforce</text>
+  </g>
+
+  <!-- Connection lines from shield to log panel -->
+  <line x1="162" y1="80" x2="180" y2="60" stroke="rgba(90,155,212,0.2)" stroke-width=".8" stroke-dasharray="3,3"/>
+  <line x1="162" y1="100" x2="180" y2="100" stroke="rgba(90,155,212,0.2)" stroke-width=".8" stroke-dasharray="3,3"/>
+  <line x1="162" y1="120" x2="180" y2="140" stroke="rgba(90,155,212,0.2)" stroke-width=".8" stroke-dasharray="3,3"/>
+</svg>
