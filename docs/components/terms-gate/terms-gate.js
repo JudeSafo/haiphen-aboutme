@@ -1,7 +1,7 @@
 /* global window, document, fetch */
 (function () {
   const DEFAULTS = {
-    tosVersion: "sla_v0.1_2026-01-10",
+    tosVersion: "sla_v0.2_2026-01-22",
     title: "Service Agreement",
     // where the HTML content lives (static)
      contentUrl: "/components/terms-gate/terms-content.html",

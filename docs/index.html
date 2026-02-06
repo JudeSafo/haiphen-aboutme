@@ -49,6 +49,7 @@
 	  <link rel="stylesheet" href="components/terms-gate/terms-gate.css" data-terms-gate-css="1" />
 	  <script src="components/terms-gate/terms-gate.js"></script>
 	  <script src="components/terms-gate/checkout-router.js"></script>
+	  <script src="components/terms-gate/tos-resume.js"></script>
       <script src="components/hero-device-launcher/hero-device-launcher.js"></script>
       <link rel="stylesheet" href="components/hero-device-launcher/hero-device-launcher.css" />
 	  <script defer src="components/profile/profile.js"></script>
@@ -2133,8 +2134,9 @@
 		  if (!raw) return { slug: "", subId: "" };
 
 		  const [slugPart, subPart] = raw.split(":");
+		  const cleanSlug = String(slugPart || "").split("?")[0];
 		  return {
-		    slug: (slugPart || "").toLowerCase(),
+		    slug: cleanSlug.toLowerCase(),
 		    subId: (subPart || "").trim(),
 		  };
 		}

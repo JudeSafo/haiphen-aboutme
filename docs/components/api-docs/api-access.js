@@ -146,7 +146,7 @@
   async function startCanonicalCheckout({
     priceId,
     plan,
-    tosVersion = 'sla_v0.1_2026-01-10',
+    tosVersion = 'sla_v0.2_2026-01-22',
     checkoutOrigin = 'https://checkout.haiphen.io',
     source = 'api_access',
   } = {}) {
@@ -589,7 +589,7 @@
         // If you want to force plan selection instead, remove this and routeToServices().
         priceId: 'price_1SmGzEJRL3AYFpZZIjsqhB1T',
         plan: 'fintech_pro',
-        tosVersion: 'sla_v0.1_2026-01-10',
+        tosVersion: 'sla_v0.2_2026-01-22',
         checkoutOrigin: 'https://checkout.haiphen.io',
         source: 'api_docs_request_access',
       });

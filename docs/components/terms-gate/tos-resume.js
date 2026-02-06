@@ -44,7 +44,7 @@
     const tos = (p.get("tos") || "").trim();
     if (tos !== "required") return;
 
-    const tosVersion = (p.get("tos_version") || "sla_v0.1_2026-01-10").trim();
+    const tosVersion = (p.get("tos_version") || "sla_v0.2_2026-01-22").trim();
     const resume = safeResume(p.get("resume"));
 
     if (!resume) {

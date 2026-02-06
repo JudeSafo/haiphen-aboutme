@@ -87,7 +87,7 @@
       return;
     }
 
-    const resolvedTosVersion = String(tosVersion || 'sla_v0.1_2026-01-10').trim();
+    const resolvedTosVersion = String(tosVersion || 'sla_v0.2_2026-01-22').trim();
     const resolvedCheckoutOrigin = String(checkoutOrigin || 'https://checkout.haiphen.io').trim();
 
     // Prefer the official API exposed by checkout-router.js
@@ -164,7 +164,7 @@
 
     const planKey = String(opts.planKey || '').trim();
     const priceId = String(opts.priceId || '').trim();
-    const tosVersion = String(opts.tosVersion || 'sla_v0.1_2026-01-10').trim();
+    const tosVersion = String(opts.tosVersion || 'sla_v0.2_2026-01-22').trim();
     const checkoutOrigin = String(opts.checkoutOrigin || 'https://checkout.haiphen.io').trim();
 
     // Canonical check via API
@@ -217,7 +217,7 @@
           (checkoutBtn.getAttribute('data-plan') || '').trim() ||
           (checkoutBtn.closest('.plan')?.getAttribute('data-plan') || '').trim();
 
-        const tosVersion = (checkoutBtn.getAttribute('data-tos-version') || 'sla_v0.1_2026-01-10').trim();
+        const tosVersion = (checkoutBtn.getAttribute('data-tos-version') || 'sla_v0.2_2026-01-22').trim();
         const checkoutOrigin = (checkoutBtn.getAttribute('data-checkout-origin') || 'https://checkout.haiphen.io').trim();
 
         await handleSubscribe({
@@ -247,7 +247,7 @@
         await handleSubscribe({
           planKey,
           // legacy buttons don't carry these, so we default:
-          tosVersion: 'sla_v0.1_2026-01-10',
+          tosVersion: 'sla_v0.2_2026-01-22',
           checkoutOrigin: 'https://checkout.haiphen.io',
         });
         return;

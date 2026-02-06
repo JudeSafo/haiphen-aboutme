@@ -4,7 +4,7 @@
 
   const DEFAULTS = {
     checkoutOrigin: "https://checkout.haiphen.io",
-    tosVersion: "sla_v0.1_2026-01-10",
+    tosVersion: "sla_v0.2_2026-01-22",
     contentUrl: "/components/terms-gate/terms-content.html",
   };
 
