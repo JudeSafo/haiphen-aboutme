@@ -29,6 +29,7 @@
 
       // --- Services section (snap stack)
       { label: "Services", section: "Services", elementId: "services-plans-mount", keywords: ["services", "plans", "pricing"] },
+      { label: "Services • Cohort Checkout", section: "Services", elementId: "services-subscribe-banner", keywords: ["subscribe", "checkout", "cohort", "onboarding"] },
       { label: "Services • Plans", section: "Services", elementId: "services-plans-mount", keywords: ["plans", "pricing", "tiers"] },
       { label: "Services • Hardtech", section: "Services", elementId: "services-hardtech-mount", keywords: ["hardware", "embedded", "robotics"] },
 

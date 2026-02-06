@@ -27,7 +27,45 @@
     returnTo: 'haiphen.checkout.return_to',
   };
 
+  const SUBSCRIBE_HASH = 'subscribe';
+  let subscribeFocus = false;
+
   function qs(id) { return document.getElementById(id); }
+
+  function currentHashSlug() {
+    const raw = String(window.location.hash || '').replace(/^#/, '').trim();
+    if (!raw) return '';
+    return String(raw.split(':')[0] || '').split('?')[0].toLowerCase();
+  }
+
+  function applySubscribeFocus() {
+    const plansMount = qs('services-plans-mount');
+    const hardtechMount = qs('services-hardtech-mount');
+
+    const plansSection = plansMount?.querySelector('.services-plans') || null;
+    const banner = plansMount?.querySelector('#services-subscribe-banner') || null;
+
+    if (plansSection) {
+      plansSection.classList.toggle('services-plans--subscribe-focus', subscribeFocus);
+    }
+    if (banner) {
+      banner.hidden = !subscribeFocus;
+    }
+    if (hardtechMount) {
+      hardtechMount.hidden = subscribeFocus;
+      hardtechMount.setAttribute('aria-hidden', subscribeFocus ? 'true' : 'false');
+    }
+  }
+
+  function setServicesSubscribeFocus(enabled) {
+    subscribeFocus = Boolean(enabled);
+    applySubscribeFocus();
+  }
+
+  function syncFocusFromHash() {
+    if (currentHashSlug() !== SUBSCRIBE_HASH) return;
+    setServicesSubscribeFocus(true);
+  }
 
   async function fetchText(url) {
     const resp = await fetch(url, { cache: 'no-store' });
@@ -281,8 +319,16 @@
       mountId: 'services-hardtech-mount',
       htmlUrl: 'components/services-plans/services-hardtech.html',
     });
+
+    applySubscribeFocus();
+    syncFocusFromHash();
   }
 
   window.HAIPHEN = window.HAIPHEN || {};
   window.HAIPHEN.loadServicesPlans = loadServicesPlans;
+  window.HAIPHEN.setServicesSubscribeFocus = setServicesSubscribeFocus;
+
+  window.addEventListener('hashchange', () => {
+    if (currentHashSlug() === SUBSCRIBE_HASH) setServicesSubscribeFocus(true);
+  });
 })();

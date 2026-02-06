@@ -2103,6 +2103,7 @@
 		const SECTION_HASH = {
 		  Trades: 'fintech',
 		  Services: 'services',
+		  Subscribe: 'subscribe',
 		  OnePager: 'collaborate',
 		  FAQ: 'faq',
 		  Contact: 'contact-us',
@@ -2284,7 +2285,25 @@
 		}
 		function routeFromHash() {
 		  const { slug, subId } = parseHash();
-		  if (!slug) { activateSectionMenuFor(null); return; }
+		  if (!slug) {
+		    window.HAIPHEN?.setServicesSubscribeFocus?.(false);
+		    activateSectionMenuFor(null);
+		    return;
+		  }
+
+		  if (slug !== 'subscribe') {
+		    window.HAIPHEN?.setServicesSubscribeFocus?.(false);
+		  }
+
+		  if (slug === 'subscribe') {
+		    if (typeof window.showSection === "function") {
+		      window.showSection("Services");
+		      activateSectionMenuFor("Services");
+		    }
+		    window.HAIPHEN?.setServicesSubscribeFocus?.(true);
+		    scrollToIdWhenReady('services-subscribe-banner', { maxAttempts: 80, delayMs: 50, extra: 12 });
+		    return;
+		  }
 
 		  if (slug === 'onboarding') {
 		    try {

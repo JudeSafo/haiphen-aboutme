@@ -9,6 +9,49 @@
   text-align: left;
 }
 
+.services-subscribe-banner{
+  display: block;
+}
+.services-subscribe-banner__inner{
+  border: 1px solid rgba(90,155,212,0.35);
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(90,155,212,0.14) 0%, rgba(90,155,212,0.05) 100%);
+  padding: 1rem;
+}
+.services-subscribe-banner__kicker{
+  display: inline-flex;
+  font-size: .75rem;
+  font-weight: 900;
+  color: #2f455d;
+  background: rgba(255,255,255,0.68);
+  border: 1px solid rgba(20,32,51,0.14);
+  border-radius: 9999px;
+  padding: .16rem .52rem;
+}
+.services-subscribe-banner__title{
+  margin: .55rem 0 .3rem;
+  color: #1f3348;
+}
+.services-subscribe-banner__sub{
+  margin: 0 0 .9rem;
+  color: #405465;
+  line-height: 1.5;
+}
+.services-subscribe-banner__cta{
+  width: 100%;
+  justify-content: center;
+}
+
+.services-plans--subscribe-focus{
+  max-width: 760px;
+  margin: 0 auto 1.2rem;
+}
+.services-plans--subscribe-focus .services-plans__head,
+.services-plans--subscribe-focus .services-plans__grid,
+.services-plans--subscribe-focus .services-plans__note{
+  display: none !important;
+}
+
 .services-plans__head{
   margin-bottom: .9rem;
 }
