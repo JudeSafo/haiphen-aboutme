@@ -9,7 +9,7 @@
  *
  * Notes:
  *  - Used by banner routing (#cohort) and header/menu triggers.
- *  - Overlay lives inside the Contact section mount (#cohort-mount).
+ *  - Overlay lives inside the Trades section mount (#cohort-mount).
  */
 (function () {
   const API_ORIGIN = "https://haiphen-contact.pi-307.workers.dev";

@@ -1708,6 +1708,8 @@
 				>
 				  Request API access
 				</button>				
+				<!-- Cohort Program (moved under Fintech/Trades) -->
+				<div id="cohort-mount"></div>
 				<details class="fintech-tech" id="fintech-tech">
 				  <summary id="portfolio-top">Tech</summary>
 				  <div id="portfolio-content-top" aria-hidden="true" style="height:1px;"></div>
@@ -1865,8 +1867,6 @@
 		  "Contact": `
 		    <section id="contact-us">
 		      <div id="contact-form-mount"></div>
-		      <!-- Cohort goes directly beneath contact form -->
-		      <div id="cohort-mount"></div>		  	
 		    </section>
 		  `,
 	      "Docs": `
@@ -2030,6 +2030,16 @@
 		      } catch (e) {
 		        console.warn("[Trades] loadTradesData failed", e);
 		      }
+		      try {
+		        const cohortMount = document.querySelector("#cohort-mount");
+		        if (!cohortMount) throw new Error("Missing #cohort-mount");
+
+		        const cohortHtmlResp = await fetch("components/cohort/cohort.html", { cache: "no-store" });
+		        cohortMount.innerHTML = await cohortHtmlResp.text();
+		        window.HAIPHEN?.Cohort?.init?.(cohortMount);
+		      } catch (e) {
+		        console.warn("[Trades] failed to load Cohort", e);
+		      }
 
 		      requestAnimationFrame(() => {
 		        const tradesTop = document.getElementById("trades-top");
@@ -2068,19 +2078,8 @@
 		        const resp = await fetch("components/contact-form/contact-form.html", { cache: "no-store" });
 		        contactMount.innerHTML = await resp.text();
 		        window.HAIPHEN?.ContactForm?.init?.(contactMount);
-
-		        // --- Cohort (NEW) ---
-		        const cohortMount = document.querySelector("#cohort-mount");
-		        if (!cohortMount) throw new Error("Missing #cohort-mount");
-
-		        const cohortHtmlResp = await fetch("components/cohort/cohort.html", { cache: "no-store" });
-		        cohortMount.innerHTML = await cohortHtmlResp.text();
-
-		        // optional: only init if provided
-		        window.HAIPHEN?.Cohort?.init?.(cohortMount);
-
 		      } catch (e) {
-		        console.warn("[Contact] failed to load Contact + Cohort", e);
+		        console.warn("[Contact] failed to load Contact", e);
 		      }
 
 		      requestAnimationFrame(() => {
@@ -2114,8 +2113,8 @@
 		  Object.entries(SECTION_HASH).map(([k, v]) => [v, k])
 		);
 
-		// ✅ Cohort lives under Contact, so route #cohort -> showSection('Contact')
-		HASH_SECTION['cohort'] = 'Contact';
+		// ✅ Cohort lives under Trades, so route #cohort -> showSection('Trades')
+		HASH_SECTION['cohort'] = 'Trades';
 		function clearHash({ replace = false } = {}) {
 		  const url = window.location.pathname + window.location.search;
 		  if (replace) history.replaceState(null, '', url);
