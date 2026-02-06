@@ -2108,6 +2108,8 @@
 		  Contact: 'contact-us',
 		  Docs: 'docs',
 		  Cohort: 'cohort',
+		  Profile: 'profile',
+		  Onboarding: 'onboarding',
 		};
 
 		const HASH_SECTION = Object.fromEntries(
@@ -2284,6 +2286,17 @@
 		  const { slug, subId } = parseHash();
 		  if (!slug) { activateSectionMenuFor(null); return; }
 
+		  if (slug === 'onboarding') {
+		    try {
+		      const contentWidget = document.getElementById("content-widget");
+		      if (contentWidget) contentWidget.classList.add("active");
+		      window.HAIPHEN?.showProfile?.({ preserveHash: true, subId: 'profile-onboarding' });
+		    } catch (e) {
+		      console.warn('[router] #onboarding failed', e);
+		    }
+		    return;
+		  }
+
 		  // ✅ NEW: profile is not a normal injected "sectionContent" page
 		  if (slug === 'profile') {
 		    try {
@@ -2292,7 +2305,7 @@
 		      if (contentWidget) contentWidget.classList.add("active");
 
 		      // Open profile
-		      window.HAIPHEN?.showProfile?.();
+		      window.HAIPHEN?.showProfile?.({ preserveHash: true, subId: subId || '' });
 		    } catch (e) {
 		      console.warn('[router] #profile failed', e);
 		    }

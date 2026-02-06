@@ -29,8 +29,21 @@
     revealMasked: false, // default show; allow hide toggle
   };
 
+  const ONBOARDING_LINK_DEFAULTS = {
+    app_url: 'https://app.haiphen.io/',
+    docs_url: '#docs',
+    profile_url: '#profile',
+    cohort_url: '#cohort',
+    calendar_url: 'https://calendar.app.google/jQzWz98eCC5jMLrQA',
+    support_email: 'mailto:pi@haiphenai.com',
+  };
+
   function qs(sel, root = document) {
     return root.querySelector(sel);
+  }
+
+  function qa(sel, root = document) {
+    return [...root.querySelectorAll(sel)];
   }
 
   function setText(el, v) {
@@ -83,12 +96,51 @@
     return h === '#profile' || h.startsWith('#profile:');
   }
 
-  function setProfileHash() {
+  function hashSubId() {
+    try {
+      const raw = String(window.location.hash || '');
+      const m = raw.match(/^#profile:(.+)$/i);
+      return (m?.[1] || '').trim();
+    } catch {
+      return '';
+    }
+  }
+
+  function setProfileHash(subId = '') {
     try {
       const h = String(window.location.hash || '').toLowerCase();
-      if (!h || !h.startsWith('#profile')) window.location.hash = '#profile';
+      const target = subId ? `#profile:${subId}` : '#profile';
+      if (h !== String(target).toLowerCase()) window.location.hash = target;
     } catch {
       /* noop */
+    }
+  }
+
+  function applyOnboardingLinks(root, links) {
+    const merged = Object.assign({}, ONBOARDING_LINK_DEFAULTS, links || {});
+    qa('[data-onboarding-link]', root).forEach((el) => {
+      const key = String(el.getAttribute('data-onboarding-link') || '').trim();
+      if (!key || !merged[key]) return;
+
+      const val = String(merged[key]).trim();
+      if (!val) return;
+
+      if (key === 'support_email' && !/^mailto:/i.test(val)) {
+        el.setAttribute('href', `mailto:${val}`);
+      } else {
+        el.setAttribute('href', val);
+      }
+    });
+  }
+
+  async function hydrateOnboardingLinks(root) {
+    applyOnboardingLinks(root, ONBOARDING_LINK_DEFAULTS);
+    try {
+      const data = await getJson(`${API_ORIGIN}/v1/onboarding/resources`);
+      applyOnboardingLinks(root, data?.links || {});
+    } catch (e) {
+      // Fallback defaults are already applied.
+      console.warn(LOG, 'failed to load onboarding resources', e);
     }
   }
 
@@ -275,7 +327,7 @@
     return mount;
   }
 
-  async function ensureMounted() {
+  async function ensureMounted(opts = {}) {
     const mount = ensureMountEl();
 
     await injectCssOnce('assets/base.css');
@@ -291,11 +343,15 @@
     await hydrate(mount);
 
     requestAnimationFrame(() => {
-      const title = mount.querySelector('.hp-profile__title') || mount;
-      scrollToWithHeaderOffsetCompat(title, 12);
+      const requestedSubId = String(opts?.subId || '').trim();
+      const target =
+        (requestedSubId && document.getElementById(requestedSubId)) ||
+        mount.querySelector('.hp-profile__title') ||
+        mount;
+      scrollToWithHeaderOffsetCompat(target, 12);
       try {
-        title?.setAttribute?.('tabindex', '-1');
-        title?.focus?.({ preventScroll: true });
+        target?.setAttribute?.('tabindex', '-1');
+        target?.focus?.({ preventScroll: true });
       } catch {
         /* noop */
       }
@@ -364,6 +420,9 @@
 
     // 2b) email preferences
     await hydratePreferences(root);
+
+    // 2c) onboarding links
+    await hydrateOnboardingLinks(root);
 
     // 3) render sticky reveal (if present)
     renderReveal(root);
@@ -660,10 +719,10 @@
     }
   }
 
-  async function showProfile() {
+  async function showProfile(opts = {}) {
     try {
       ensureContentWidgetVisible();
-      await ensureMounted();
+      await ensureMounted(opts);
     } catch (e) {
       console.warn(LOG, 'failed to mount profile', e);
       setStatus(ensureMountEl(), `Unable to load profile: ${e?.message || e}`, 'warn');
@@ -676,15 +735,19 @@
   }
 
   // ---- Public API (single assignment, wrapped once) ----
-  NS.showProfile = async function showProfileWithHash() {
-    setProfileHash();
-    return await showProfile();
+  NS.showProfile = async function showProfileWithHash(opts = {}) {
+    const preserveHash = !!opts?.preserveHash;
+    const subId = String(opts?.subId || '').trim();
+    if (!preserveHash) setProfileHash(subId);
+    return await showProfile({ subId });
   };
 
   // Optional: auto-open if user visits /#profile directly
   window.addEventListener('DOMContentLoaded', () => {
     if (shouldAutoOpenProfile()) {
-      NS.showProfile().catch((e) => console.warn(LOG, 'auto-open profile failed', e));
+      NS.showProfile({ preserveHash: true, subId: hashSubId() }).catch((e) =>
+        console.warn(LOG, 'auto-open profile failed', e)
+      );
     }
   });
 

@@ -123,7 +123,11 @@
     // 0) Require login BEFORE showing terms gate
     try {
       const rt = encodeURIComponent(window.location.href);
-      await getJson(`${cfg.checkoutOrigin}/v1/auth/require?return_to=${rt}`);
+      const authState = await getJson(`${cfg.checkoutOrigin}/v1/auth/require?return_to=${rt}`);
+      if (authState?.entitled && authState?.redirect_url) {
+        window.location.assign(String(authState.redirect_url));
+        return { close() {} };
+      }
     } catch (e) {
       // If not logged in, bounce to auth
       if (e && (e.status === 401 || e.status === 403)) {
@@ -253,6 +257,10 @@
         if (!session?.url) throw new Error("Missing checkout URL from server");
         window.location.assign(session.url);
       } catch (e) {
+        if (e?.status === 409 && e?.data?.error === "already_entitled" && e?.data?.redirect_url) {
+          window.location.assign(String(e.data.redirect_url));
+          return;
+        }
         console.error("terms-gate: continue failed", e);
         showError(e?.message || "Unable to continue to checkout.");
         cont.disabled = !(nearBottom(scroll) && agree.checked);

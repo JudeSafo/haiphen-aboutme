@@ -3,7 +3,7 @@
  *
  * Behavior:
  * - If NOT logged in: redirect to auth login.
- * - If logged in AND entitled for services: do NOT send to checkout; route to services content.
+ * - If logged in AND entitled for services: do NOT send to checkout; route to onboarding hub.
  * - If logged in AND NOT entitled: route to Stripe checkout.
  *
  * Notes:
@@ -18,9 +18,9 @@
   const API_ORIGIN = 'https://api.haiphen.io';
   const AUTH_ORIGIN = 'https://auth.haiphen.io';
 
-  // Where to send entitled users when they click “Subscribe”.
-  // Pick something real in your site (a section id or route).
-  const SERVICES_DESTINATION_HASH = '#services';
+  // Where to send entitled users when they click "Subscribe".
+  // This now lands in the profile onboarding hub.
+  const SERVICES_DESTINATION_HASH = '#onboarding';
 
   const STORAGE = {
     selectedPlan: 'haiphen.checkout.selected_plan',
@@ -124,9 +124,12 @@
   }
 
   function routeEntitledUser() {
-    // If you have a better deep-link (e.g. #services:dashboard), use it.
-    if (typeof window.showSection === 'function') window.showSection('Services');
-    else window.location.hash = SERVICES_DESTINATION_HASH;
+    const cur = String(window.location.hash || '').toLowerCase();
+    if (cur === SERVICES_DESTINATION_HASH && typeof window.HAIPHEN?.showProfile === 'function') {
+      window.HAIPHEN.showProfile({ preserveHash: true, subId: 'profile-onboarding' });
+      return;
+    }
+    window.location.hash = SERVICES_DESTINATION_HASH;
   }
 
   async function getEntitlements() {

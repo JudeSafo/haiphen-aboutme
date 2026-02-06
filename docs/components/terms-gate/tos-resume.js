@@ -42,13 +42,16 @@
   async function run() {
     const p = parseParams();
     const tos = (p.get("tos") || "").trim();
-    if (tos !== "required") return;
+    if (tos !== "required") {
+      console.log(`${LOG} no tos required`, { tos });
+      return;
+    }
 
     const tosVersion = (p.get("tos_version") || "sla_v0.2_2026-01-22").trim();
     const resume = safeResume(p.get("resume"));
 
     if (!resume) {
-      console.warn(`${LOG} missing/invalid resume url`);
+      console.warn(`${LOG} missing/invalid resume url`, { tosVersion });
       return;
     }
 
@@ -57,6 +60,8 @@
       console.warn(`${LOG} TermsGate not loaded`);
       return;
     }
+
+    console.log(`${LOG} opening terms gate`, { tosVersion, resume });
 
     console.log(`${LOG} opening terms gate`, { tosVersion });
 

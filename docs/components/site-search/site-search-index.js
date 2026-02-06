@@ -45,6 +45,8 @@
       { label: "Contact", section: "Contact", elementId: "contact-us", keywords: ["contact", "email", "calendar"] },
       { label: "Cohort Program", section: "Trades", elementId: "cohort", keywords: ["cohort", "onboarding", "program", "signals"] },
       { label: "Cohort Briefing Video", section: "Trades", elementId: "cohort-video", keywords: ["cohort", "video", "briefing"] },
+      { label: "Profile", section: "Profile", elementId: "profile", keywords: ["profile", "account", "keys"] },
+      { label: "Onboarding Hub", section: "Onboarding", elementId: "profile-onboarding", keywords: ["onboarding", "setup", "welcome", "assets"] },
     ]);
   });
 })();

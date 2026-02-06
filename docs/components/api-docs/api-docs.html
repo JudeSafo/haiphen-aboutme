@@ -401,6 +401,24 @@ api_get() {
   -H "Authorization: Bearer $API_KEY" | jq .</code></pre>
             </div>
 
+            <!-- Onboarding resources -->
+            <div class="api-endpoint">
+              <div class="api-endpoint-top">
+                <span class="api-method">GET</span>
+                <code class="api-path" data-copy="/onboarding/resources">/onboarding/resources</code>
+                <button class="api-copy" type="button" data-copy-btn="/onboarding/resources">Copy</button>
+              </div>
+              <div class="api-endpoint-desc">Fetch onboarding links and entitlement context used by Profile and CLI.</div>
+              <div class="api-endpoint-meta">
+                <div><strong>Auth:</strong> Session JWT bearer (CLI) or auth cookie (web)</div>
+                <div><strong>Returns:</strong> <code>{ ok, user_login, plan, entitlements, links }</code></div>
+              </div>
+
+              <pre class="api-code"><code data-lang="bash"># CLI/session token (not API key):
+curl -sS "https://api.haiphen.io/v1/onboarding/resources" \
+  -H "Authorization: Bearer $HAIPHEN_JWT" | jq .</code></pre>
+            </div>
+
             <!-- Admin upsert -->
             <div class="api-endpoint">
               <div class="api-endpoint-top">
