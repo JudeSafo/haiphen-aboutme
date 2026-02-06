@@ -2,21 +2,39 @@
 <section class="services-plans" aria-label="Plans and subscriptions">
   <div id="services-subscribe-banner" class="services-subscribe-banner" hidden>
     <div class="services-subscribe-banner__inner">
-      <div class="services-subscribe-banner__kicker">Cohort Checkout</div>
-      <h3 class="services-subscribe-banner__title">Complete onboarding access</h3>
-      <p class="services-subscribe-banner__sub">
-        Continue through login and service-agreement acceptance before payment.
-      </p>
-      <button
-        class="services-subscribe-banner__cta btn btn-primary"
-        type="button"
-        data-checkout-price-id="price_1SvljOJRL3AYFpZZNOL2ggfI"
-        data-plan="pro"
-        data-tos-version="sla_v0.2_2026-01-22"
-        data-checkout-origin="https://checkout.haiphen.io"
-      >
-        Continue to Cohort Checkout
-      </button>
+      <figure class="services-subscribe-banner__media" aria-hidden="true">
+        <img
+          src="assets/robot_haiphen.svg"
+          alt=""
+          loading="lazy"
+          decoding="async"
+        />
+      </figure>
+      <div class="services-subscribe-banner__content">
+        <div class="services-subscribe-banner__kicker">Welcome to the Haiphen Cohort</div>
+        <h3 class="services-subscribe-banner__title">You are in the secure checkout flow</h3>
+        <p class="services-subscribe-banner__sub">
+          You are seeing this page because cohort onboarding is gated for account safety.
+          After you click continue, we will ask you to sign in, confirm the service agreement,
+          and then proceed to Stripe checkout.
+        </p>
+        <p class="services-subscribe-banner__sub services-subscribe-banner__sub--muted">
+          If your account is already paid, you will be redirected to your onboarding hub instead of being charged again.
+        </p>
+        <div class="services-subscribe-banner__actions">
+          <button
+            class="services-subscribe-banner__cta btn btn-primary"
+            type="button"
+            data-checkout-price-id="price_1SvljOJRL3AYFpZZNOL2ggfI"
+            data-plan="pro"
+            data-tos-version="sla_v0.2_2026-01-22"
+            data-checkout-origin="https://checkout.haiphen.io"
+          >
+            Continue to Secure Checkout
+          </button>
+          <a class="services-subscribe-banner__link" href="#cohort">Review Cohort Details</a>
+        </div>
+      </div>
     </div>
   </div>
 

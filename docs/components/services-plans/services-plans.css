@@ -13,10 +13,30 @@
   display: block;
 }
 .services-subscribe-banner__inner{
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 1rem;
+  align-items: center;
   border: 1px solid rgba(90,155,212,0.35);
   border-radius: 14px;
-  background: linear-gradient(180deg, rgba(90,155,212,0.14) 0%, rgba(90,155,212,0.05) 100%);
-  padding: 1rem;
+  background:
+    radial-gradient(1000px 260px at 85% -30%, rgba(90,155,212,0.18), transparent 60%),
+    linear-gradient(180deg, rgba(90,155,212,0.14) 0%, rgba(90,155,212,0.05) 100%);
+  padding: 1rem 1.05rem;
+}
+.services-subscribe-banner__media{
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.services-subscribe-banner__media img{
+  width: min(190px, 100%);
+  height: auto;
+  filter: drop-shadow(0 8px 16px rgba(0,0,0,0.12));
+}
+.services-subscribe-banner__content{
+  min-width: 0;
 }
 .services-subscribe-banner__kicker{
   display: inline-flex;
@@ -34,12 +54,28 @@
 }
 .services-subscribe-banner__sub{
   margin: 0 0 .9rem;
-  color: #405465;
+  color: #384d62;
   line-height: 1.5;
 }
+.services-subscribe-banner__sub--muted{
+  margin-top: -.35rem;
+  color: #4f6477;
+}
+.services-subscribe-banner__actions{
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .55rem .75rem;
+}
 .services-subscribe-banner__cta{
-  width: 100%;
+  min-width: 240px;
   justify-content: center;
+}
+.services-subscribe-banner__link{
+  color: #2d4f72;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 .services-plans--subscribe-focus{
@@ -223,6 +259,20 @@
 .note__txt{ color:#555; line-height:1.4; }
 
 @media (max-width: 920px){
+  .services-subscribe-banner__inner{
+    grid-template-columns: 1fr;
+    text-align: left;
+  }
+  .services-subscribe-banner__media{
+    justify-content: flex-start;
+  }
+  .services-subscribe-banner__media img{
+    width: min(140px, 46vw);
+  }
+  .services-subscribe-banner__cta{
+    width: 100%;
+    min-width: 0;
+  }
   .services-plans__grid{ grid-template-columns: 1fr; }
   .plan__desc{ min-height: unset; }
 }
