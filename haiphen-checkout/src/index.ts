@@ -171,6 +171,45 @@ export interface Env {
   ONBOARDING_REDIRECT_URL?: string; // e.g. https://haiphen.io/#onboarding
 }
 
+// ── Service catalogue constants ─────────────────────────────────────────────
+
+const VALID_SERVICE_IDS = new Set([
+  "haiphen_cli", "haiphen_webapp", "daily_newsletter", "haiphen_mobile",
+  "haiphen_desktop", "slackbot_discord", "haiphen_secure", "network_trace",
+  "knowledge_graph", "risk_analysis", "causal_chain", "supply_chain",
+]);
+
+const WAITLIST_SERVICE_IDS = new Set([
+  "haiphen_secure", "network_trace", "knowledge_graph", "risk_analysis",
+  "causal_chain", "supply_chain", "haiphen_mobile", "slackbot_discord",
+]);
+
+const SERVICE_TRIAL_LIMITS: Record<string, { type: "requests" | "days"; limit: number }> = {
+  haiphen_cli:     { type: "requests", limit: 100 },
+  haiphen_webapp:  { type: "days",     limit: 7 },
+  haiphen_mobile:  { type: "days",     limit: 14 },
+  haiphen_desktop: { type: "days",     limit: 30 },
+  haiphen_secure:  { type: "requests", limit: 50 },
+  network_trace:   { type: "requests", limit: 10 },
+  knowledge_graph: { type: "requests", limit: 1000 },
+  risk_analysis:   { type: "requests", limit: 25 },
+  causal_chain:    { type: "requests", limit: 10 },
+  supply_chain:    { type: "requests", limit: 5 },
+};
+
+interface ServiceCheckoutRequest {
+  service_id: string;
+  price_lookup_key: string;
+  return_url?: string;
+}
+
+interface WaitlistRequest {
+  email: string;
+  service_id: string;
+}
+
+// ── Helpers ─────────────────────────────────────────────────────────────────
+
 function json(data: unknown, init: ResponseInit = {}): Response {
   return new Response(JSON.stringify(data), {
     ...init,
@@ -1175,9 +1214,238 @@ export default {
               checkout_id: checkoutId ?? null,
             });
           }
+
+          // Service subscription tracking
+          const serviceId = obj?.metadata?.service_id as string | undefined;
+          if (userLogin && serviceId && VALID_SERVICE_IDS.has(serviceId)) {
+            await env.DB.prepare(
+              `INSERT INTO service_subscriptions (user_login, service_id, stripe_subscription_id, stripe_customer_id, status, current_period_start, updated_at)
+               VALUES (?, ?, ?, ?, 'active', datetime('now'), datetime('now'))
+               ON CONFLICT(user_login, service_id) DO UPDATE SET
+                 stripe_subscription_id = excluded.stripe_subscription_id,
+                 stripe_customer_id = excluded.stripe_customer_id,
+                 status = 'active',
+                 current_period_start = excluded.current_period_start,
+                 updated_at = excluded.updated_at`
+            )
+              .bind(
+                userLogin,
+                serviceId,
+                obj?.subscription ?? null,
+                obj?.customer ?? null,
+              )
+              .run();
+            console.log("service_subscription.activated", { userLogin, serviceId });
+          }
+        }
+
+        // Handle subscription status changes
+        if (type === "customer.subscription.updated" || type === "customer.subscription.deleted") {
+          const subId = obj?.id as string | undefined;
+          const subStatus = obj?.status as string | undefined;
+          const serviceId = obj?.metadata?.service_id as string | undefined;
+
+          if (subId && subStatus) {
+            const mappedStatus =
+              subStatus === "active" ? "active" :
+              subStatus === "trialing" ? "trialing" :
+              subStatus === "past_due" ? "past_due" :
+              subStatus === "canceled" || type === "customer.subscription.deleted" ? "canceled" :
+              subStatus === "paused" ? "paused" : null;
+
+            if (mappedStatus) {
+              const periodEnd = obj?.current_period_end
+                ? new Date(obj.current_period_end * 1000).toISOString()
+                : null;
+
+              await env.DB.prepare(
+                `UPDATE service_subscriptions
+                 SET status = ?, current_period_end = ?, updated_at = datetime('now')
+                 WHERE stripe_subscription_id = ?`
+              )
+                .bind(mappedStatus, periodEnd, subId)
+                .run();
+
+              console.log("service_subscription.status_updated", {
+                subId,
+                serviceId,
+                status: mappedStatus,
+              });
+            }
+          }
         }
 
         return json({ ok: true });
+      }
+
+      // ── Service-aware checkout ────────────────────────────────────────────
+      // POST /v1/checkout/service { service_id, price_lookup_key, return_url? }
+      if (url.pathname === "/v1/checkout/service" && req.method === "POST") {
+        const authed = await requireAuth(req, env);
+        const body = await readJson<ServiceCheckoutRequest>(req);
+
+        const serviceId = (body.service_id ?? "").trim();
+        if (!serviceId || !VALID_SERVICE_IDS.has(serviceId)) {
+          return badRequest("Invalid service_id");
+        }
+
+        const lookupKey = (body.price_lookup_key ?? "").trim();
+        if (!lookupKey) return badRequest("Missing price_lookup_key");
+
+        // Check for existing active subscription
+        const existingSub = await env.DB.prepare(
+          `SELECT status, trial_requests_used, trial_requests_limit, trial_ends_at
+           FROM service_subscriptions
+           WHERE user_login = ? AND service_id = ? AND status IN ('active','trialing')
+           LIMIT 1`
+        )
+          .bind(authed.userLogin, serviceId)
+          .first<{ status: string; trial_requests_used: number; trial_requests_limit: number; trial_ends_at: string | null }>();
+
+        if (existingSub && existingSub.status === "active") {
+          return json(
+            { ok: false, error: "already_subscribed", service_id: serviceId },
+            { status: 409, headers: h },
+          );
+        }
+
+        // Check trial eligibility
+        const trialConfig = SERVICE_TRIAL_LIMITS[serviceId];
+        if (trialConfig && !existingSub) {
+          const trialEndsAt = trialConfig.type === "days"
+            ? new Date(Date.now() + trialConfig.limit * 86400000).toISOString()
+            : null;
+
+          await env.DB.prepare(
+            `INSERT INTO service_subscriptions (user_login, service_id, status, trial_requests_limit, trial_ends_at, updated_at)
+             VALUES (?, ?, 'trialing', ?, ?, datetime('now'))
+             ON CONFLICT(user_login, service_id) DO UPDATE SET
+               status = 'trialing',
+               trial_requests_limit = excluded.trial_requests_limit,
+               trial_ends_at = excluded.trial_ends_at,
+               updated_at = excluded.updated_at`
+          )
+            .bind(
+              authed.userLogin,
+              serviceId,
+              trialConfig.type === "requests" ? trialConfig.limit : 0,
+              trialEndsAt,
+            )
+            .run();
+
+          return json(
+            {
+              ok: true,
+              trial: true,
+              service_id: serviceId,
+              trial_type: trialConfig.type,
+              trial_limit: trialConfig.limit,
+              trial_ends_at: trialEndsAt,
+            },
+            { headers: h },
+          );
+        }
+
+        // Resolve price from lookup_key
+        const priceRes = await fetch(
+          `https://api.stripe.com/v1/prices?lookup_keys=${encodeURIComponent(lookupKey)}&limit=1`,
+          { headers: { Authorization: `Bearer ${env.STRIPE_SECRET_KEY}` } },
+        );
+        const priceData = await priceRes.json() as any;
+        const priceId = priceData?.data?.[0]?.id;
+        if (!priceId) {
+          return badRequest("Price not found for lookup_key", { lookup_key: lookupKey });
+        }
+
+        // Create Stripe checkout session with service metadata
+        const checkoutId = crypto.randomUUID();
+        const successUrl =
+          env.CHECKOUT_SUCCESS_URL ??
+          `${env.PUBLIC_SITE_ORIGIN ?? "https://haiphen.io"}/?checkout=success`;
+        const cancelUrl =
+          env.CHECKOUT_CANCEL_URL ??
+          `${env.PUBLIC_SITE_ORIGIN ?? "https://haiphen.io"}/?checkout=cancel`;
+
+        await env.DB.prepare(
+          `INSERT INTO checkout_sessions (checkout_id, user_login, status, created_at, updated_at)
+           VALUES (?, ?, 'created', unixepoch(), unixepoch())`
+        )
+          .bind(checkoutId, authed.userLogin)
+          .run();
+
+        const form = new URLSearchParams();
+        form.set("mode", "subscription");
+        form.set("success_url", `${successUrl}&checkout_id=${checkoutId}&service_id=${serviceId}`);
+        form.set("cancel_url", `${cancelUrl}&checkout_id=${checkoutId}`);
+        form.set("client_reference_id", checkoutId);
+        form.set("line_items[0][price]", priceId);
+        form.set("line_items[0][quantity]", "1");
+
+        const promoId = String(env.STRIPE_PROMO_CODE_ID ?? "").trim();
+        if (promoId) form.set("discounts[0][promotion_code]", promoId);
+
+        form.set("metadata[user_login]", authed.userLogin);
+        form.set("metadata[checkout_id]", checkoutId);
+        form.set("metadata[service_id]", serviceId);
+        form.set("subscription_data[metadata][user_login]", authed.userLogin);
+        form.set("subscription_data[metadata][checkout_id]", checkoutId);
+        form.set("subscription_data[metadata][service_id]", serviceId);
+
+        const session = await stripePostForm(env, "/v1/checkout/sessions", form);
+
+        await env.DB.prepare(
+          `UPDATE checkout_sessions
+           SET stripe_session_id = ?, status='stripe_session_created', updated_at=unixepoch()
+           WHERE checkout_id = ?`
+        )
+          .bind(session.id, checkoutId)
+          .run();
+
+        return json(
+          {
+            ok: true,
+            checkout_id: checkoutId,
+            stripe_session_id: session.id,
+            url: session.url,
+            service_id: serviceId,
+          },
+          { headers: h },
+        );
+      }
+
+      // ── Waitlist for coming-soon services ─────────────────────────────────
+      // POST /v1/waitlist { email, service_id }
+      if (url.pathname === "/v1/waitlist" && req.method === "POST") {
+        const body = await readJson<WaitlistRequest>(req);
+
+        const email = (body.email ?? "").trim().toLowerCase();
+        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+          return badRequest("Invalid email address");
+        }
+
+        const serviceId = (body.service_id ?? "").trim();
+        if (!serviceId || !WAITLIST_SERVICE_IDS.has(serviceId)) {
+          return badRequest("Invalid or non-waitlist service_id");
+        }
+
+        const listId = `waitlist_${serviceId}`;
+
+        await env.DB.prepare(
+          `INSERT INTO email_list_subscribers (email, list_id, active, source, updated_at)
+           VALUES (?, ?, 1, 'services_waitlist', strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+           ON CONFLICT(email, list_id) DO UPDATE SET
+             active = 1,
+             updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now')`
+        )
+          .bind(email, listId)
+          .run();
+
+        console.log("waitlist.signup", { email: email.slice(0, 3) + "***", serviceId, listId });
+
+        return json(
+          { ok: true, service_id: serviceId, message: "You'll be notified when this service launches." },
+          { headers: h },
+        );
       }
 
       return json({ ok: false, error: "Not found" }, { status: 404, headers: h });
