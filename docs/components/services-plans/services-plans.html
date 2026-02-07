@@ -1,22 +1,17 @@
 <!-- docs/components/services-plans/services-plans.html -->
-<section class="services-plans" aria-label="Plans and subscriptions">
+<div class="hp-catalogue" aria-label="Services catalogue">
+
   <div id="services-subscribe-banner" class="services-subscribe-banner" hidden>
     <div class="services-subscribe-banner__inner">
       <figure class="services-subscribe-banner__media" aria-hidden="true">
-        <img
-          src="assets/robot_haiphen.svg"
-          alt=""
-          loading="lazy"
-          decoding="async"
-        />
+        <img src="assets/robot_haiphen.svg" alt="" loading="lazy" decoding="async" />
       </figure>
       <div class="services-subscribe-banner__content">
         <div class="services-subscribe-banner__kicker">Welcome to the Haiphen Cohort</div>
         <h3 class="services-subscribe-banner__title">You are in the secure checkout flow</h3>
         <p class="services-subscribe-banner__sub">
-          You are seeing this page because cohort onboarding is gated for account safety.
           After you click continue, we will ask you to sign in, confirm the service agreement,
-          and then proceed to Stripe checkout.
+          and proceed to Stripe checkout.
         </p>
         <p class="services-subscribe-banner__sub services-subscribe-banner__sub--muted">
           If your account is already paid, you will be redirected to your onboarding hub instead of being charged again.
@@ -29,141 +24,41 @@
             data-plan="pro"
             data-tos-version="sla_v0.2_2026-01-22"
             data-checkout-origin="https://checkout.haiphen.io"
-          >
-            Continue to Secure Checkout
-          </button>
+          >Continue to Secure Checkout</button>
           <a class="services-subscribe-banner__link" href="#cohort">Review Cohort Details</a>
         </div>
       </div>
     </div>
   </div>
 
-  <header class="services-plans__head">
-    <div class="services-plans__kicker">Financial</div>
-    <h2 class="services-plans__title">Streaming</h2>
-    <p class="services-plans__sub">
-      Subscribe for regular data feeds, archival data or customizations based on your needs. 
-    </p>
-  </header>
+  <!-- Featured -->
+  <section class="hp-catalogue__section" data-category="featured">
+    <header class="hp-catalogue__head">
+      <span class="hp-catalogue__kicker">Featured</span>
+      <h2 class="hp-catalogue__title">Command Center</h2>
+      <p class="hp-catalogue__sub">The hub for all Haiphen services.</p>
+    </header>
+    <div class="hp-catalogue__grid hp-catalogue__grid--featured" data-grid="featured"></div>
+  </section>
 
-  <div class="services-plans__grid" role="list">
-    <!-- Starter -->
-    <article class="plan" role="listitem" data-plan="signals_starter">
-      <div class="plan__top">
-        <div class="plan__icon" aria-hidden="true">
-          <img src="assets/icons/menu/rss.svg" alt="" />
-        </div>
-        <div class="plan__meta">
-          <div class="plan__name">Signals Starter</div>
-          <div class="plan__price">
-            <span class="plan__amt">$29</span><span class="plan__per">/mo</span>
-          </div>
-        </div>
-      </div>
+  <!-- Fintech -->
+  <section class="hp-catalogue__section" data-category="fintech">
+    <header class="hp-catalogue__head">
+      <span class="hp-catalogue__kicker">Financial</span>
+      <h2 class="hp-catalogue__title">Fintech Products</h2>
+      <p class="hp-catalogue__sub">Market data, portfolio intelligence, and trading tools.</p>
+    </header>
+    <div class="hp-catalogue__grid" data-grid="fintech"></div>
+  </section>
 
-      <p class="plan__desc">
-        Lightweight access to curated signals + alerts. Best for testing workflows.
-      </p>
+  <!-- Tech -->
+  <section class="hp-catalogue__section" data-category="tech">
+    <header class="hp-catalogue__head">
+      <span class="hp-catalogue__kicker">Technology</span>
+      <h2 class="hp-catalogue__title">Hard Tech</h2>
+      <p class="hp-catalogue__sub">Security, analysis, and intelligence engines for infrastructure.</p>
+    </header>
+    <div class="hp-catalogue__grid" data-grid="tech"></div>
+  </section>
 
-      <ul class="plan__bullets">
-        <li>Daily signal digest</li>
-        <li>Email notifications</li>
-        <li>Basic API docs</li>
-      </ul>
-
-      <button
-        class="plan__cta btn btn-primary"
-        type="button"
-        data-checkout-price-id="price_1SmGzEJRL3AYFpZZIjsqhB1T"
-        data-plan="signals_starter"
-        data-tos-version="sla_v0.2_2026-01-22"
-        data-checkout-origin="https://checkout.haiphen.io"
-      >
-        Subscribe
-      </button>
-
-      <div class="plan__foot">
-        <span class="pill">Fast setup</span>
-        <span class="pill pill-muted">Most popular entry</span>
-      </div>
-    </article>
-
-    <!-- Pro -->
-    <article class="plan plan--featured" role="listitem" data-plan="fintech_pro">
-      <div class="plan__badge" aria-hidden="true">Recommended</div>
-
-      <div class="plan__top">
-        <div class="plan__icon" aria-hidden="true">
-          <img src="assets/icons/menu/trade-engine.svg" alt="" />
-        </div>
-        <div class="plan__meta">
-          <div class="plan__name">Fintech Pro</div>
-          <div class="plan__price">
-            <span class="plan__amt">$149</span><span class="plan__per">/mo</span>
-          </div>
-        </div>
-      </div>
-
-      <p class="plan__desc">
-        Production-ready access patterns for decision engines, risk evaluation, and reporting.
-      </p>
-
-      <ul class="plan__bullets">
-        <li>Higher-rate API access</li>
-        <li>Telemetry + KPI templates</li>
-        <li>Priority support</li>
-      </ul>
-
-      <button
-        class="plan__cta btn btn-primary"
-        type="button"
-        data-checkout-price-id="price_1SmGzEJRL3AYFpZZIjsqhB1T"
-        data-plan="fintech_pro"
-        data-tos-version="sla_v0.2_2026-01-22"
-        data-checkout-origin="https://checkout.haiphen.io"
-      >
-        Subscribe
-      </button>
-
-      <div class="plan__foot">
-        <span class="pill">Best value</span>
-        <span class="pill pill-muted">Teams</span>
-      </div>
-    </article>
-
-    <!-- Enterprise -->
-    <article class="plan" role="listitem" data-plan="enterprise_custom">
-      <div class="plan__top">
-        <div class="plan__icon" aria-hidden="true">
-          <img src="assets/icons/menu/infra.svg" alt="" />
-        </div>
-        <div class="plan__meta">
-          <div class="plan__name">Enterprise / Custom</div>
-          <div class="plan__price">
-            <span class="plan__amt">$499</span><span class="plan__per">/mo</span>
-          </div>
-        </div>
-      </div>
-
-      <p class="plan__desc">
-        Dedicated builds, integration support, and custom SLAs for serious deployments.
-      </p>
-
-      <ul class="plan__bullets">
-        <li>Custom workflows + integration</li>
-        <li>Security review + hardening</li>
-        <li>Direct engineering channel</li>
-      </ul>
-
-      <button class="plan__cta btn btn-ghost" type="button" data-action="contact">
-        Contact sales
-      </button>
-
-      <div class="plan__foot">
-        <span class="pill">SLA</span>
-        <span class="pill pill-muted">Custom scope</span>
-      </div>
-    </article>
-  </div>
-
-</section>
+</div>
