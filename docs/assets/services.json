@@ -7,6 +7,7 @@
       "description": "Telemetry, data ingestion, manipulation, and command/control hub for all Haiphen services.",
       "category": "featured",
       "status": "available",
+      "docs_section": "docs-cli-commands",
       "pricing": {
         "free": { "label": "Free", "requests": 100 },
         "pro": { "price": 29, "label": "Pro", "lookup_key": "haiphen_cli_pro" },
@@ -29,6 +30,7 @@
       "description": "Real-time data visualization, portfolio management, and signal monitoring from any browser.",
       "category": "fintech",
       "status": "available",
+      "docs_section": "docs-overview",
       "pricing": {
         "standard": { "price": 19, "label": "Standard", "lookup_key": "haiphen_webapp_standard" }
       },
@@ -49,6 +51,7 @@
       "description": "Daily digest of market signals, anomaly detections, and curated analysis delivered to your inbox.",
       "category": "fintech",
       "status": "available",
+      "docs_section": "docs-rss-overview",
       "pricing": {
         "free": { "label": "Free" }
       },
@@ -69,6 +72,7 @@
       "description": "iOS and Android app for real-time portfolio monitoring, push alerts, and quick trade execution.",
       "category": "fintech",
       "status": "coming_soon",
+      "docs_section": null,
       "pricing": {
         "standard": { "price": 9.99, "label": "Standard", "lookup_key": "haiphen_mobile_standard" }
       },
@@ -89,6 +93,7 @@
       "description": "Cross-platform desktop application with advanced charting, local data processing, and multi-monitor support.",
       "category": "fintech",
       "status": "available",
+      "docs_section": "docs-install",
       "pricing": {
         "standard": { "price": 14.99, "label": "Standard", "lookup_key": "haiphen_desktop_standard" }
       },
@@ -109,6 +114,7 @@
       "description": "Real-time signal alerts and Haiphen commands directly in your team's Slack or Discord workspace.",
       "category": "fintech",
       "status": "coming_soon",
+      "docs_section": "docs-webhooks",
       "pricing": {
         "bundled": { "label": "Bundled with Pro" }
       },
@@ -129,6 +135,7 @@
       "description": "Automated vulnerability assessment and security posture monitoring for edge and industrial infrastructure.",
       "category": "tech",
       "status": "coming_soon",
+      "docs_section": "docs-secure",
       "pricing": {
         "standard": { "price": 39, "label": "Standard", "lookup_key": "haiphen_secure_standard" }
       },
@@ -149,6 +156,7 @@
       "description": "Packet-level inspection and protocol decoding for Modbus, OPC-UA, MQTT, and industrial networks.",
       "category": "tech",
       "status": "coming_soon",
+      "docs_section": "docs-network",
       "pricing": {
         "standard": { "price": 9.99, "label": "Standard", "lookup_key": "network_trace_standard" }
       },
@@ -169,6 +177,7 @@
       "description": "Entity extraction, relationship mapping, and queryable knowledge base built from your data streams.",
       "category": "tech",
       "status": "coming_soon",
+      "docs_section": "docs-graph",
       "pricing": {
         "standard": { "price": 99, "label": "Standard", "lookup_key": "knowledge_graph_standard" }
       },
@@ -189,6 +198,7 @@
       "description": "Scenario modeling, stress testing, and risk quantification for portfolios and infrastructure assets.",
       "category": "tech",
       "status": "coming_soon",
+      "docs_section": "docs-risk",
       "pricing": {
         "standard": { "price": 49, "label": "Standard", "lookup_key": "risk_analysis_standard" }
       },
@@ -209,6 +219,7 @@
       "description": "Causal inference and root cause analysis engine for complex event chains and system failures.",
       "category": "tech",
       "status": "coming_soon",
+      "docs_section": "docs-causal",
       "pricing": {
         "standard": { "price": 29, "label": "Standard", "lookup_key": "causal_chain_standard" }
       },
@@ -229,6 +240,7 @@
       "description": "Real-time supply chain visibility, risk scoring, and disruption forecasting across global networks.",
       "category": "tech",
       "status": "coming_soon",
+      "docs_section": "docs-supply",
       "pricing": {
         "standard": { "price": 79, "label": "Standard", "lookup_key": "supply_chain_standard" }
       },

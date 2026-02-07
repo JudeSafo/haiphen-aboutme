@@ -1,0 +1,20 @@
+{
+  "expo": {
+    "name": "Haiphen",
+    "slug": "haiphen-mobile",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "haiphen",
+    "platforms": ["ios", "android"],
+    "ios": {
+      "bundleIdentifier": "io.haiphen.mobile",
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "io.haiphen.mobile",
+      "adaptiveIcon": {
+        "backgroundColor": "#0f172a"
+      }
+    }
+  }
+}
