@@ -281,9 +281,16 @@ function onboardingLinks(env: Env) {
     cohort_url: String(env.ONBOARDING_COHORT_URL ?? "https://haiphen.io/#cohort").trim(),
     calendar_url: String(env.ONBOARDING_CALENDAR_URL ?? "https://calendar.app.google/jQzWz98eCC5jMLrQA").trim(),
     support_email: String(env.ONBOARDING_SUPPORT_EMAIL ?? "pi@haiphenai.com").trim(),
-    cli_docs_url: String(env.ONBOARDING_CLI_DOCS_URL ?? "https://haiphen.io/#docs").trim(),
+    cli_docs_url: String(env.ONBOARDING_CLI_DOCS_URL ?? "https://haiphen.io/#docs:docs-cli-commands").trim(),
     api_base_url: String(env.ONBOARDING_API_BASE_URL ?? "https://api.haiphen.io").trim(),
     websocket_url: String(env.ONBOARDING_WEBSOCKET_URL ?? "wss://api.haiphen.io/v1/telemetry/stream").trim(),
+    metrics_docs_url: "https://haiphen.io/#docs:docs-endpoints",
+    secure_docs_url: "https://haiphen.io/#docs:docs-secure",
+    network_docs_url: "https://haiphen.io/#docs:docs-network",
+    graph_docs_url: "https://haiphen.io/#docs:docs-graph",
+    risk_docs_url: "https://haiphen.io/#docs:docs-risk",
+    causal_docs_url: "https://haiphen.io/#docs:docs-causal",
+    supply_docs_url: "https://haiphen.io/#docs:docs-supply",
   };
 }
 

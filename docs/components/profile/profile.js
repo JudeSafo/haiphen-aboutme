@@ -36,6 +36,14 @@
     cohort_url: '#cohort',
     calendar_url: 'https://calendar.app.google/jQzWz98eCC5jMLrQA',
     support_email: 'mailto:pi@haiphenai.com',
+    cli_docs_url: '#docs:docs-cli-commands',
+    metrics_docs_url: '#docs:docs-endpoints',
+    secure_docs_url: '#docs:docs-secure',
+    network_docs_url: '#docs:docs-network',
+    graph_docs_url: '#docs:docs-graph',
+    risk_docs_url: '#docs:docs-risk',
+    causal_docs_url: '#docs:docs-causal',
+    supply_docs_url: '#docs:docs-supply',
   };
 
   function qs(sel, root = document) {
