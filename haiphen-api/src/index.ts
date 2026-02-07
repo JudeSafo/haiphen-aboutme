@@ -76,6 +76,11 @@ function corsHeaders(req: Request, env: Env) {
     .split(",")
     .map(s => s.trim());
 
+  // Allow localhost origins for local development
+  if (origin && /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
+    allowed.push(origin);
+  }
+
   const o = allowed.includes(origin) ? origin : "https://haiphen.io";
   return {
     "Access-Control-Allow-Origin": o,

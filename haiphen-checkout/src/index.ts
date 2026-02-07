@@ -334,15 +334,35 @@ type CheckoutSessionArgs = {
   tosVersion: string;
 };
 
+async function resolveStripePriceId(env: Env, priceIdOrKey: string): Promise<string> {
+  // If it already looks like a Stripe price ID, return as-is
+  if (priceIdOrKey.startsWith("price_")) return priceIdOrKey;
+
+  // Resolve lookup key → price ID via Stripe API
+  const qs = new URLSearchParams();
+  qs.set("lookup_keys[]", priceIdOrKey);
+  qs.set("limit", "1");
+  const res = await fetch(`https://api.stripe.com/v1/prices?${qs.toString()}`, {
+    headers: { Authorization: `Bearer ${env.STRIPE_SECRET_KEY}` },
+  });
+  const data = (await res.json()) as any;
+  const id = data?.data?.[0]?.id;
+  if (!id) throw Object.assign(new Error("price_not_found"), { status: 400 });
+  return id;
+}
+
 async function createStripeCheckoutSession(
   env: Env,
   authed: Authed,
   args: CheckoutSessionArgs
 ): Promise<{ checkoutId: string; stripeSessionId: string; stripeUrl: string }> {
-  const { priceId, plan, tosVersion } = args;
+  const { priceId: priceIdOrKey, plan, tosVersion } = args;
 
   // Enforce ToS acceptance (same as your POST route)
   await requireTosAccepted(env, authed.userLogin, tosVersion);
+
+  // Resolve lookup key to Stripe price ID if needed
+  const priceId = await resolveStripePriceId(env, priceIdOrKey);
 
   const checkoutId = crypto.randomUUID();
 
@@ -1353,13 +1373,10 @@ export default {
         }
 
         // Resolve price from lookup_key
-        const priceRes = await fetch(
-          `https://api.stripe.com/v1/prices?lookup_keys=${encodeURIComponent(lookupKey)}&limit=1`,
-          { headers: { Authorization: `Bearer ${env.STRIPE_SECRET_KEY}` } },
-        );
-        const priceData = await priceRes.json() as any;
-        const priceId = priceData?.data?.[0]?.id;
-        if (!priceId) {
+        let priceId: string;
+        try {
+          priceId = await resolveStripePriceId(env, lookupKey);
+        } catch {
           return badRequest("Price not found for lookup_key", { lookup_key: lookupKey });
         }
 
