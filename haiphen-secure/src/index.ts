@@ -1,25 +1,25 @@
-// haiphen-secure/src/index.ts — Edge Security Scanning service
+// haiphen-secure/src/index.ts — Edge Security Scanning service (D1-backed)
+
+import { matchCves, type AssetMetadata } from "./cve-matcher";
+import { runComplianceCheck } from "./compliance";
 
 type Env = {
+  DB: D1Database;
   JWT_SECRET: string;
   ALLOWED_ORIGINS?: string;
   INTERNAL_TOKEN?: string;
   QUOTA_API_URL?: string;
 };
 
-// ---- Shared helpers (inline, no cross-worker imports) ----
+// ---- Shared helpers ----
 
-function uuid(): string {
-  return crypto.randomUUID();
-}
+function uuid(): string { return crypto.randomUUID(); }
 
 function corsHeaders(req: Request, env: Env): Record<string, string> {
   const origin = req.headers.get("Origin") || "";
   const allowed = (env.ALLOWED_ORIGINS ?? "https://haiphen.io,https://www.haiphen.io,https://app.haiphen.io,https://auth.haiphen.io")
     .split(",").map(s => s.trim());
-  if (origin && /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
-    allowed.push(origin);
-  }
+  if (origin && /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) allowed.push(origin);
   const o = allowed.includes(origin) ? origin : "https://haiphen.io";
   return {
     "Access-Control-Allow-Origin": o,
@@ -28,10 +28,6 @@ function corsHeaders(req: Request, env: Env): Record<string, string> {
     "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
     "Vary": "Origin",
   };
-}
-
-function corsOptions(req: Request, env: Env): Response {
-  return new Response(null, { status: 204, headers: corsHeaders(req, env) });
 }
 
 function okJson(data: unknown, requestId: string, headers?: Record<string, string>): Response {
@@ -46,7 +42,7 @@ function errJson(code: string, message: string, requestId: string, status: numbe
   return new Response(JSON.stringify({ error: { code, message, request_id: requestId } }, null, 2), { status, headers: h });
 }
 
-// ---- JWT auth (cookie + bearer) ----
+// ---- JWT auth ----
 
 function base64UrlToBytes(b64url: string): Uint8Array {
   const pad = "=".repeat((4 - (b64url.length % 4)) % 4);
@@ -61,10 +57,7 @@ async function verifyJwt(token: string, secret: string): Promise<{ sub: string }
   const parts = token.split(".");
   if (parts.length !== 3) throw new Error("Malformed JWT");
   const [hB64, pB64, sB64] = parts;
-  const key = await crypto.subtle.importKey(
-    "raw", new TextEncoder().encode(secret),
-    { name: "HMAC", hash: "SHA-256" }, false, ["verify"]
-  );
+  const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["verify"]);
   const ok = await crypto.subtle.verify("HMAC", key, base64UrlToBytes(sB64), new TextEncoder().encode(`${hB64}.${pB64}`));
   if (!ok) throw new Error("Invalid signature");
   const claims = JSON.parse(new TextDecoder().decode(base64UrlToBytes(pB64)));
@@ -74,40 +67,40 @@ async function verifyJwt(token: string, secret: string): Promise<{ sub: string }
   return { sub: claims.sub };
 }
 
-async function authUser(req: Request, env: Env, requestId: string): Promise<{ user_login: string }> {
-  // Try cookie first
+function getAuthToken(req: Request): string | null {
   const cookie = (req.headers.get("Cookie") || "").match(/(?:^|;\s*)auth=([^;]+)/)?.[1];
-  if (cookie) {
-    const user = await verifyJwt(cookie, env.JWT_SECRET);
-    return { user_login: user.sub };
-  }
-  // Try bearer
+  if (cookie) return cookie;
   const bearer = (req.headers.get("Authorization") || "").match(/^Bearer\s+(.+)$/i)?.[1]?.trim();
-  if (bearer) {
-    const user = await verifyJwt(bearer, env.JWT_SECRET);
-    return { user_login: user.sub };
-  }
-  throw errJson("unauthorized", "Unauthorized", requestId, 401);
+  return bearer || null;
 }
 
-// ---- Daily quota check ----
+async function authUser(req: Request, env: Env, requestId: string): Promise<{ user_login: string }> {
+  const token = getAuthToken(req);
+  if (!token) throw errJson("unauthorized", "Unauthorized", requestId, 401);
+  try {
+    const user = await verifyJwt(token, env.JWT_SECRET);
+    return { user_login: user.sub };
+  } catch {
+    throw errJson("unauthorized", "Invalid or expired token", requestId, 401);
+  }
+}
 
-async function checkQuota(env: Env, userId: string, plan: string, sessionHash?: string): Promise<{ allowed: boolean; reason?: string }> {
+// ---- Quota check ----
+
+async function checkQuota(env: Env, userId: string, plan: string): Promise<{ allowed: boolean; reason?: string }> {
   const apiUrl = env.QUOTA_API_URL || "https://api.haiphen.io";
   const token = env.INTERNAL_TOKEN;
-  if (!token) return { allowed: true }; // fail-open if not configured
-
+  if (!token) return { allowed: true };
   try {
     const res = await fetch(`${apiUrl}/v1/internal/quota/consume`, {
       method: "POST",
       headers: { "Content-Type": "application/json", "X-Internal-Token": token },
-      body: JSON.stringify({ user_id: userId, plan, session_hash: sessionHash }),
+      body: JSON.stringify({ user_id: userId, plan }),
     });
-    if (!res.ok) return { allowed: true }; // fail-open on error
-    const data = await res.json() as { allowed: boolean; reason?: string };
-    return data;
+    if (!res.ok) return { allowed: true };
+    return await res.json() as { allowed: boolean; reason?: string };
   } catch {
-    return { allowed: true }; // fail-open if unreachable
+    return { allowed: true };
   }
 }
 
@@ -118,11 +111,11 @@ async function route(req: Request, env: Env): Promise<Response> {
   const url = new URL(req.url);
   const cors = corsHeaders(req, env);
 
-  if (req.method === "OPTIONS") return corsOptions(req, env);
+  if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: cors });
 
   // Health (public)
   if (req.method === "GET" && url.pathname === "/v1/health") {
-    return okJson({ ok: true, service: "haiphen-secure", time: new Date().toISOString(), version: "v1.0.0" }, requestId, cors);
+    return okJson({ ok: true, service: "haiphen-secure", time: new Date().toISOString(), version: "v2.0.0" }, requestId, cors);
   }
 
   // Status (public)
@@ -131,18 +124,23 @@ async function route(req: Request, env: Env): Promise<Response> {
       service: "haiphen-secure",
       status: "operational",
       capabilities: ["vulnerability", "compliance", "full"],
-      version: "v1.0.0",
+      version: "v2.0.0",
     }, requestId, cors);
   }
 
   // ---- Authenticated endpoints ----
 
-  // POST /v1/secure/scan — initiate a security scan
+  // POST /v1/secure/scan — initiate a security scan with real CVE matching
   if (req.method === "POST" && url.pathname === "/v1/secure/scan") {
     const user = await authUser(req, env, requestId);
     const quota = await checkQuota(env, user.user_login, "free");
     if (!quota.allowed) return errJson("quota_exceeded", quota.reason || "Daily quota exceeded", requestId, 429, cors);
-    const body = await req.json().catch(() => null) as null | { target: string; type?: string };
+
+    const body = await req.json().catch(() => null) as null | {
+      target: string;
+      type?: string;
+      asset_metadata?: AssetMetadata;
+    };
     if (!body?.target) return errJson("invalid_request", "Missing target", requestId, 400, cors);
 
     const scanType = body.type || "vulnerability";
@@ -150,51 +148,113 @@ async function route(req: Request, env: Env): Promise<Response> {
       return errJson("invalid_request", "Invalid scan type. Must be: vulnerability, compliance, or full", requestId, 400, cors);
     }
 
-    const scan_id = uuid();
+    const scanId = uuid();
+    const startedAt = new Date().toISOString();
+    const metadata = body.asset_metadata || {};
+
+    // Run CVE correlation against D1
+    const { findings, summary } = await matchCves(env.DB, body.target, metadata);
+
+    // Run compliance check if requested
+    const compliance = runComplianceCheck(findings, scanType);
+
+    const completedAt = new Date().toISOString();
+
+    // Persist scan results to D1
+    await env.DB.prepare(
+      `INSERT INTO secure_scans (scan_id, user_login, target, scan_type, status, asset_metadata_json, findings_json, summary_json, compliance_json, started_at, completed_at)
+       VALUES (?, ?, ?, ?, 'completed', ?, ?, ?, ?, ?, ?)`
+    ).bind(
+      scanId,
+      user.user_login,
+      body.target,
+      scanType,
+      JSON.stringify(metadata),
+      JSON.stringify(findings),
+      JSON.stringify(summary),
+      scanType !== "vulnerability" ? JSON.stringify(compliance) : null,
+      startedAt,
+      completedAt,
+    ).run();
+
     return okJson({
-      scan_id,
+      scan_id: scanId,
       target: body.target,
       type: scanType,
-      status: "queued",
+      status: "completed",
       initiated_by: user.user_login,
-      created_at: new Date().toISOString(),
-      estimated_duration_seconds: scanType === "full" ? 300 : 120,
+      started_at: startedAt,
+      completed_at: completedAt,
+      findings,
+      summary,
+      ...(scanType !== "vulnerability" ? { compliance } : {}),
     }, requestId, cors);
   }
 
-  // GET /v1/secure/scan/:id — get scan result
+  // GET /v1/secure/scan/:id — get scan result from D1
   const scanMatch = url.pathname.match(/^\/v1\/secure\/scan\/([a-f0-9-]+)$/);
   if (req.method === "GET" && scanMatch) {
     const user = await authUser(req, env, requestId);
-    const quota = await checkQuota(env, user.user_login, "free");
-    if (!quota.allowed) return errJson("quota_exceeded", quota.reason || "Daily quota exceeded", requestId, 429, cors);
     const scanId = scanMatch[1];
+
+    const row = await env.DB.prepare(
+      `SELECT scan_id, target, scan_type, status, asset_metadata_json, findings_json, summary_json, compliance_json, started_at, completed_at, created_at
+       FROM secure_scans WHERE scan_id = ? AND user_login = ?`
+    ).bind(scanId, user.user_login).first<{
+      scan_id: string; target: string; scan_type: string; status: string;
+      asset_metadata_json: string | null; findings_json: string | null;
+      summary_json: string | null; compliance_json: string | null;
+      started_at: string | null; completed_at: string | null; created_at: string;
+    }>();
+
+    if (!row) return errJson("not_found", "Scan not found", requestId, 404, cors);
+
     return okJson({
-      scan_id: scanId,
-      target: "192.168.1.0/24",
-      type: "vulnerability",
-      status: "completed",
-      started_at: new Date(Date.now() - 120000).toISOString(),
-      completed_at: new Date().toISOString(),
-      findings: [
-        { severity: "high", cve: "CVE-2024-21762", title: "FortiOS Out-of-Bounds Write", affected_asset: "fw-edge-01", remediation: "Update FortiOS to 7.4.3+" },
-        { severity: "medium", cve: "CVE-2024-3400", title: "PAN-OS Command Injection", affected_asset: "fw-dmz-02", remediation: "Apply PAN-OS hotfix" },
-        { severity: "low", cve: null, title: "SNMP community string default", affected_asset: "switch-floor3", remediation: "Change SNMP community string" },
-      ],
-      summary: { total: 3, high: 1, medium: 1, low: 1, info: 0 },
+      scan_id: row.scan_id,
+      target: row.target,
+      type: row.scan_type,
+      status: row.status,
+      asset_metadata: row.asset_metadata_json ? JSON.parse(row.asset_metadata_json) : null,
+      findings: row.findings_json ? JSON.parse(row.findings_json) : [],
+      summary: row.summary_json ? JSON.parse(row.summary_json) : null,
+      compliance: row.compliance_json ? JSON.parse(row.compliance_json) : null,
+      started_at: row.started_at,
+      completed_at: row.completed_at,
+      created_at: row.created_at,
     }, requestId, cors);
   }
 
-  // GET /v1/secure/scans — list scans
+  // GET /v1/secure/scans — paginated list from D1
   if (req.method === "GET" && url.pathname === "/v1/secure/scans") {
     const user = await authUser(req, env, requestId);
-    const quota = await checkQuota(env, user.user_login, "free");
-    if (!quota.allowed) return errJson("quota_exceeded", quota.reason || "Daily quota exceeded", requestId, 429, cors);
+    const limit = Math.min(parseInt(url.searchParams.get("limit") || "20", 10), 100);
+    const offset = parseInt(url.searchParams.get("offset") || "0", 10);
+
+    const rows = await env.DB.prepare(
+      `SELECT scan_id, target, scan_type, status, summary_json, created_at
+       FROM secure_scans WHERE user_login = ?
+       ORDER BY created_at DESC LIMIT ? OFFSET ?`
+    ).bind(user.user_login, limit, offset).all<{
+      scan_id: string; target: string; scan_type: string; status: string;
+      summary_json: string | null; created_at: string;
+    }>();
+
+    const countRow = await env.DB.prepare(
+      "SELECT COUNT(*) as cnt FROM secure_scans WHERE user_login = ?"
+    ).bind(user.user_login).first<{ cnt: number }>();
+
     return okJson({
-      items: [
-        { scan_id: "a1b2c3d4-0000-0000-0000-000000000001", target: "192.168.1.0/24", type: "vulnerability", status: "completed", created_at: "2026-02-07T10:00:00Z" },
-        { scan_id: "a1b2c3d4-0000-0000-0000-000000000002", target: "10.0.0.0/16", type: "compliance", status: "running", created_at: "2026-02-07T14:00:00Z" },
-      ],
+      items: rows.results.map(r => ({
+        scan_id: r.scan_id,
+        target: r.target,
+        type: r.scan_type,
+        status: r.status,
+        summary: r.summary_json ? JSON.parse(r.summary_json) : null,
+        created_at: r.created_at,
+      })),
+      total: countRow?.cnt ?? 0,
+      limit,
+      offset,
     }, requestId, cors);
   }
 
@@ -205,7 +265,7 @@ export default {
   async fetch(req: Request, env: Env): Promise<Response> {
     try {
       return await route(req, env);
-    } catch (e: any) {
+    } catch (e: unknown) {
       if (e instanceof Response) return e;
       const requestId = uuid();
       console.error("Unhandled error:", e);

@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Your Service Is Ready - Haiphen</title>
+  <!--[if mso]>
+  <noscript>
+    <xml>
+      <o:OfficeDocumentSettings>
+        <o:PixelsPerInch>96</o:PixelsPerInch>
+      </o:OfficeDocumentSettings>
+    </xml>
+  </noscript>
+  <![endif]-->
+</head>
+<body style="margin:0;padding:0;background-color:#f4f6f9;font-family:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;">
+
+  <!-- Preheader -->
+  <div style="display:none;font-size:1px;color:#f4f6f9;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;">
+    Your {{service_name}} service is activated and ready to use. Here's how to get started.
+  </div>
+
+  <!-- Outer wrapper -->
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#f4f6f9;">
+    <tr>
+      <td align="center" style="padding:24px 16px;">
+
+        <!-- Container -->
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" style="max-width:600px;width:100%;background-color:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.08);">
+
+          <!-- Header -->
+          <tr>
+            <td style="background-color:#0b1220;padding:32px 40px;text-align:center;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                <tr>
+                  <td align="center">
+                    <img src="https://haiphen.io/assets/robot_haiphen.png" alt="Haiphen" width="48" height="48" style="display:block;border:0;outline:none;margin-bottom:12px;">
+                    <h1 style="margin:0;font-size:22px;font-weight:700;color:#ffffff;letter-spacing:-0.3px;">Your Service Is Ready</h1>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Success banner -->
+          <tr>
+            <td style="background-color:#ecfdf5;padding:16px 40px;border-bottom:1px solid #d1fae5;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                <tr>
+                  <td style="vertical-align:middle;width:24px;padding-right:12px;">
+                    <div style="width:24px;height:24px;border-radius:50%;background-color:#10B981;text-align:center;line-height:24px;font-size:14px;color:#ffffff;">&#10003;</div>
+                  </td>
+                  <td style="vertical-align:middle;">
+                    <p style="margin:0;font-size:14px;font-weight:600;color:#065f46;">{{service_name}} is now active for {{user_login}}</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Body -->
+          <tr>
+            <td style="padding:40px;">
+
+              <!-- Greeting -->
+              <p style="margin:0 0 20px;font-size:16px;line-height:1.6;color:#1a1a2e;">
+                Hi {{name}},
+              </p>
+              <p style="margin:0 0 28px;font-size:16px;line-height:1.6;color:#1a1a2e;">
+                Your <strong>{{service_name}}</strong> service has been provisioned and is ready for traffic. Below you will find everything you need to start integrating.
+              </p>
+
+              <!-- API Endpoint card -->
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#0b1220;border-radius:6px;margin-bottom:28px;">
+                <tr>
+                  <td style="padding:20px 24px;">
+                    <p style="margin:0 0 6px;font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.8px;">API Endpoint</p>
+                    <p style="margin:0;font-size:15px;color:#5A9BD4;font-family:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;word-break:break-all;">{{service_endpoint}}</p>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Getting Started Steps -->
+              <h2 style="margin:0 0 20px;font-size:18px;font-weight:600;color:#1a1a2e;">Getting Started</h2>
+
+              {{#each getting_started_steps}}
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom:16px;">
+                <tr>
+                  <td style="vertical-align:top;width:36px;padding-top:2px;">
+                    <div style="width:28px;height:28px;border-radius:50%;background-color:#5A9BD4;color:#ffffff;font-size:13px;font-weight:700;text-align:center;line-height:28px;">{{this.step}}</div>
+                  </td>
+                  <td style="vertical-align:top;padding-left:12px;">
+                    <p style="margin:0;font-size:14px;line-height:1.6;color:#1a1a2e;">{{this.description}}</p>
+                  </td>
+                </tr>
+              </table>
+              {{/each}}
+
+              <!-- CLI command -->
+              <h2 style="margin:28px 0 12px;font-size:18px;font-weight:600;color:#1a1a2e;">Quick Start with CLI</h2>
+              <p style="margin:0 0 12px;font-size:14px;line-height:1.6;color:#64748b;">
+                If you have the Haiphen CLI installed, you can test your service immediately:
+              </p>
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#0b1220;border-radius:6px;margin-bottom:28px;">
+                <tr>
+                  <td style="padding:16px 20px;">
+                    <code style="font-size:13px;color:#10B981;font-family:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;word-break:break-all;">{{cli_command}}</code>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Documentation link -->
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;margin-bottom:28px;">
+                <tr>
+                  <td style="padding:20px 24px;">
+                    <h3 style="margin:0 0 8px;font-size:15px;font-weight:600;color:#1a1a2e;">Documentation</h3>
+                    <p style="margin:0 0 12px;font-size:14px;line-height:1.5;color:#64748b;">
+                      Full API reference, code samples, and integration guides are available in the docs.
+                    </p>
+                    <a href="{{docs_url}}" style="font-size:14px;font-weight:500;color:#5A9BD4;text-decoration:underline;">View Documentation &rarr;</a>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- CTA button -->
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                <tr>
+                  <td align="center">
+                    <!--[if mso]>
+                    <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="{{docs_url}}" style="height:48px;v-text-anchor:middle;width:220px;" arcsize="10%" strokecolor="#5A9BD4" fillcolor="#5A9BD4">
+                      <w:anchorlock/>
+                      <center style="color:#ffffff;font-family:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:15px;font-weight:600;">Open Documentation</center>
+                    </v:roundrect>
+                    <![endif]-->
+                    <!--[if !mso]><!-->
+                    <a href="{{docs_url}}" style="display:inline-block;background-color:#5A9BD4;color:#ffffff;font-size:15px;font-weight:600;text-decoration:none;padding:14px 32px;border-radius:6px;text-align:center;min-width:160px;">Open Documentation</a>
+                    <!--<![endif]-->
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Support note -->
+              <p style="margin:28px 0 0;font-size:14px;line-height:1.6;color:#64748b;">
+                If you run into any issues during setup, reach out to us at <a href="mailto:{{support_email}}" style="color:#5A9BD4;text-decoration:none;">{{support_email}}</a>. We are happy to help.
+              </p>
+
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background-color:#f8fafc;border-top:1px solid #e2e8f0;padding:28px 40px;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                <tr>
+                  <td align="center">
+                    <p style="margin:0 0 8px;font-size:13px;color:#94a3b8;line-height:1.5;">
+                      Haiphen &mdash; Semantic Edge Protocol Intelligence
+                    </p>
+                    <p style="margin:0 0 8px;font-size:12px;color:#94a3b8;line-height:1.5;">
+                      You received this email because a service was activated on your <a href="https://haiphen.io" style="color:#5A9BD4;text-decoration:none;">haiphen.io</a> account.
+                    </p>
+                    <p style="margin:0;font-size:12px;color:#94a3b8;line-height:1.5;">
+                      <a href="{{{unsubscribe}}}" style="color:#94a3b8;text-decoration:underline;">Unsubscribe</a>
+                      &nbsp;&bull;&nbsp;
+                      <a href="https://haiphen.io/about.html" style="color:#94a3b8;text-decoration:underline;">About</a>
+                      &nbsp;&bull;&nbsp;
+                      <a href="mailto:{{support_email}}" style="color:#94a3b8;text-decoration:underline;">Support</a>
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+        </table>
+        <!-- /Container -->
+
+      </td>
+    </tr>
+  </table>
+  <!-- /Outer wrapper -->
+
+</body>
+</html>

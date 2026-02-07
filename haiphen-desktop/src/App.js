@@ -18,6 +18,9 @@ import { useState, useEffect, useMemo } from "react";
 // react-router components
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 
+// Auth context
+import { useAuth } from "./context/AuthContext";
+
 // @mui material components
 import { ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
@@ -68,6 +71,7 @@ export default function App() {
   const [onMouseEnter, setOnMouseEnter] = useState(false);
   const [rtlCache, setRtlCache] = useState(null);
   const { pathname } = useLocation();
+  const { isAuthenticated, loading: authLoading } = useAuth();
 
   // Cache for the rtl
   useMemo(() => {
@@ -122,6 +126,11 @@ export default function App() {
       return null;
     });
 
+  // Redirect to login if not authenticated
+  const defaultRoute = !authLoading && !isAuthenticated && pathname !== "/login"
+    ? "/login"
+    : "/dashboard";
+
   const configsButton = (
     <MDBox
       display="flex"
@@ -155,7 +164,7 @@ export default function App() {
             <Sidenav
               color={sidenavColor}
               brand={(transparentSidenav && !darkMode) || whiteSidenav ? brandDark : brandWhite}
-              brandName="Material Dashboard 2"
+              brandName="Haiphen Desktop"
               routes={routes}
               onMouseEnter={handleOnMouseEnter}
               onMouseLeave={handleOnMouseLeave}
@@ -167,7 +176,7 @@ export default function App() {
         {layout === "vr" && <Configurator />}
         <Routes>
           {getRoutes(routes)}
-          <Route path="*" element={<Navigate to="/dashboard" />} />
+          <Route path="*" element={<Navigate to={defaultRoute} />} />
         </Routes>
       </ThemeProvider>
     </CacheProvider>
@@ -179,7 +188,7 @@ export default function App() {
           <Sidenav
             color={sidenavColor}
             brand={(transparentSidenav && !darkMode) || whiteSidenav ? brandDark : brandWhite}
-            brandName="Material Dashboard 2"
+            brandName="Haiphen Desktop"
             routes={routes}
             onMouseEnter={handleOnMouseEnter}
             onMouseLeave={handleOnMouseLeave}
@@ -191,7 +200,7 @@ export default function App() {
       {layout === "vr" && <Configurator />}
       <Routes>
         {getRoutes(routes)}
-        <Route path="*" element={<Navigate to="/dashboard" />} />
+        <Route path="*" element={<Navigate to={defaultRoute} />} />
       </Routes>
     </ThemeProvider>
   );

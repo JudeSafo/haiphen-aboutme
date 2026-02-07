@@ -11,6 +11,11 @@ compatibility_date = "2025-07-16"
 ALLOWED_ORIGINS = "https://haiphen.io,https://www.haiphen.io,https://app.haiphen.io,https://auth.haiphen.io"
 QUOTA_API_URL = "https://api.haiphen.io"
 
+[[d1_databases]]
+binding = "DB"
+database_name = "haiphen_api"
+database_id = "9a26fb67-b6e5-4d5f-8e62-3ecfde5ee8c2"
+
 # Secrets (set via `wrangler secret put`):
 # - JWT_SECRET (shared across all Haiphen workers)
 # - INTERNAL_TOKEN (service-to-service auth for quota API calls)

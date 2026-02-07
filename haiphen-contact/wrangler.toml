@@ -44,6 +44,15 @@ DAILY_FROM_NAME = "Haiphen"
 DAILY_SUBJECT_PREFIX = "Haiphen Daily"
 PUBLIC_APP_PROFILE_URL = "https://haiphen.io/#profile"
 TRADES_JSON_URL = "https://haiphen.io/assets/trades/trades.json"
+# Purchase confirmation (set after creating SendGrid template)
+PURCHASE_TEMPLATE_ID = ""
+PURCHASE_FROM_NAME = "Haiphen"
+# Trial expiry warning (set after creating SendGrid template)
+TRIAL_EXPIRING_TEMPLATE_ID = ""
+TRIAL_FROM_NAME = "Haiphen"
+# Usage quota alert (set after creating SendGrid template)
+USAGE_ALERT_TEMPLATE_ID = ""
+USAGE_FROM_NAME = "Haiphen"
 
 # If you add the D1 idempotency table for email events
 [[d1_databases]]

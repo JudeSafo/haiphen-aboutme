@@ -71,7 +71,7 @@
       "tagline": "Portfolio Intelligence On-the-Go",
       "description": "iOS and Android app for real-time portfolio monitoring, push alerts, and quick trade execution.",
       "category": "fintech",
-      "status": "coming_soon",
+      "status": "available",
       "docs_section": null,
       "pricing": {
         "standard": { "price": 9.99, "label": "Standard", "lookup_key": "haiphen_mobile_standard" }
@@ -83,7 +83,7 @@
         "Offline portfolio snapshots",
         "Quick-action trade widgets"
       ],
-      "cta": { "primary": "Notify Me", "secondary": null },
+      "cta": { "primary": "Start Free Trial", "secondary": "Learn More" },
       "icon": "device/ios"
     },
     {
@@ -113,7 +113,7 @@
       "tagline": "Team Alerts & Commands",
       "description": "Real-time signal alerts and Haiphen commands directly in your team's Slack or Discord workspace.",
       "category": "fintech",
-      "status": "coming_soon",
+      "status": "available",
       "docs_section": "docs-webhooks",
       "pricing": {
         "bundled": { "label": "Bundled with Pro" }
@@ -125,7 +125,7 @@
         "Portfolio summary on demand",
         "Team-wide signal sharing"
       ],
-      "cta": { "primary": "Notify Me", "secondary": null },
+      "cta": { "primary": "Get Started", "secondary": "Learn More" },
       "icon": "social/slack"
     },
     {
@@ -134,7 +134,7 @@
       "tagline": "Edge Security Scanning",
       "description": "Automated vulnerability assessment and security posture monitoring for edge and industrial infrastructure.",
       "category": "tech",
-      "status": "coming_soon",
+      "status": "available",
       "docs_section": "docs-secure",
       "pricing": {
         "standard": { "price": 39, "label": "Standard", "lookup_key": "haiphen_secure_standard" },
@@ -148,7 +148,7 @@
         "Compliance policy checks",
         "Automated remediation playbooks"
       ],
-      "cta": { "primary": "Notify Me", "secondary": null },
+      "cta": { "primary": "Start Free Trial", "secondary": "View Pricing" },
       "icon": "menu/shield"
     },
     {
@@ -157,7 +157,7 @@
       "tagline": "Deep Protocol Analysis",
       "description": "Packet-level inspection and protocol decoding for Modbus, OPC-UA, MQTT, and industrial networks.",
       "category": "tech",
-      "status": "coming_soon",
+      "status": "available",
       "docs_section": "docs-network",
       "pricing": {
         "standard": { "price": 9.99, "label": "Standard", "lookup_key": "network_trace_standard" },
@@ -171,7 +171,7 @@
         "Session reconstruction",
         "Exportable PCAP analysis"
       ],
-      "cta": { "primary": "Notify Me", "secondary": null },
+      "cta": { "primary": "Start Free Trial", "secondary": "View Pricing" },
       "icon": "cpu"
     },
     {
@@ -180,7 +180,7 @@
       "tagline": "Semantic Entity Intelligence",
       "description": "Entity extraction, relationship mapping, and queryable knowledge base built from your data streams.",
       "category": "tech",
-      "status": "coming_soon",
+      "status": "available",
       "docs_section": "docs-graph",
       "pricing": {
         "standard": { "price": 99, "label": "Standard", "lookup_key": "knowledge_graph_standard" },
@@ -194,7 +194,7 @@
         "GraphQL query interface",
         "Cross-source deduplication"
       ],
-      "cta": { "primary": "Notify Me", "secondary": null },
+      "cta": { "primary": "Start Free Trial", "secondary": "View Pricing" },
       "icon": "menu/link"
     },
     {
@@ -203,7 +203,7 @@
       "tagline": "Quantitative Risk Modeling",
       "description": "Scenario modeling, stress testing, and risk quantification for portfolios and infrastructure assets.",
       "category": "tech",
-      "status": "coming_soon",
+      "status": "available",
       "docs_section": "docs-risk",
       "pricing": {
         "standard": { "price": 49, "label": "Standard", "lookup_key": "risk_analysis_standard" },
@@ -217,7 +217,7 @@
         "Scenario stress testing",
         "Portfolio correlation analysis"
       ],
-      "cta": { "primary": "Notify Me", "secondary": null },
+      "cta": { "primary": "Start Free Trial", "secondary": "View Pricing" },
       "icon": "menu/trade-engine"
     },
     {
@@ -226,7 +226,7 @@
       "tagline": "Root Cause Intelligence",
       "description": "Causal inference and root cause analysis engine for complex event chains and system failures.",
       "category": "tech",
-      "status": "coming_soon",
+      "status": "available",
       "docs_section": "docs-causal",
       "pricing": {
         "standard": { "price": 29, "label": "Standard", "lookup_key": "causal_chain_standard" },
@@ -240,7 +240,7 @@
         "Incident timeline reconstruction",
         "Anomaly propagation tracking"
       ],
-      "cta": { "primary": "Notify Me", "secondary": null },
+      "cta": { "primary": "Start Free Trial", "secondary": "View Pricing" },
       "icon": "menu/rss"
     },
     {
@@ -249,7 +249,7 @@
       "tagline": "Disruption Intelligence",
       "description": "Real-time supply chain visibility, risk scoring, and disruption forecasting across global networks.",
       "category": "tech",
-      "status": "coming_soon",
+      "status": "available",
       "docs_section": "docs-supply",
       "pricing": {
         "standard": { "price": 79, "label": "Standard", "lookup_key": "supply_chain_standard" },
@@ -263,7 +263,7 @@
         "Alternative sourcing suggestions",
         "Geopolitical risk overlay"
       ],
-      "cta": { "primary": "Notify Me", "secondary": null },
+      "cta": { "primary": "Start Free Trial", "secondary": "View Pricing" },
       "icon": "menu/infra"
     }
   ]

@@ -38,6 +38,18 @@ export interface Env {
   ONBOARDING_CLI_DOCS_URL?: string;
   ONBOARDING_WEBSOCKET_URL?: string;
 
+  // Purchase confirmation
+  PURCHASE_TEMPLATE_ID?: string;
+  PURCHASE_FROM_NAME?: string;
+
+  // Trial expiry
+  TRIAL_EXPIRING_TEMPLATE_ID?: string;
+  TRIAL_FROM_NAME?: string;
+
+  // Usage alert
+  USAGE_ALERT_TEMPLATE_ID?: string;
+  USAGE_FROM_NAME?: string;
+
   // vars
   ALLOWED_ORIGINS: string;
   FROM_EMAIL: string;
@@ -307,6 +319,12 @@ export default {
         res = new Response("ok", { status: 200 });
       } else if (request.method === "POST" && path === "/api/digest/send") {
         res = await handleDigestSend(request, env);
+      } else if (request.method === "POST" && path === "/api/purchase/confirm") {
+        res = await handlePurchaseConfirm(request, env);
+      } else if (request.method === "POST" && path === "/api/trial/expiring") {
+        res = await handleTrialExpiring(request, env);
+      } else if (request.method === "POST" && path === "/api/usage/alert") {
+        res = await handleUsageAlert(request, env);
       } else {
         res = debugNotFound(request, url, path);
       }
@@ -1176,6 +1194,322 @@ async function handleContact(request: Request, env: Env): Promise<Response> {
     },
     200,
   );
+}
+
+// ----------------------
+// Purchase confirmation (HMAC-protected)
+// ----------------------
+
+type PurchaseConfirmPayload = {
+  user_login: string;
+  service_name: string;
+  plan: string;
+  price: string;
+  trial_days?: number;
+  receipt_url?: string;
+  request_id?: string;
+};
+
+async function handlePurchaseConfirm(request: Request, env: Env): Promise<Response> {
+  const raw = await request.text();
+
+  const sigOk = await verifyHmacRequest(request, env.WELCOME_HMAC_SECRET, raw);
+  if (!sigOk) return json({ ok: false, error: "unauthorized" }, 401);
+
+  let body: PurchaseConfirmPayload | null = null;
+  try {
+    body = raw ? (JSON.parse(raw) as PurchaseConfirmPayload) : null;
+  } catch {
+    body = null;
+  }
+  if (!body) return json({ ok: false, error: "Invalid JSON" }, 400);
+
+  const userLogin = String(body.user_login ?? "").trim();
+  const serviceName = String(body.service_name ?? "").trim();
+  const plan = String(body.plan ?? "").trim();
+  const price = String(body.price ?? "").trim();
+
+  if (!userLogin || !serviceName || !plan || !price) {
+    return json({ ok: false, error: "Missing required fields: user_login, service_name, plan, price" }, 400);
+  }
+
+  const trialDays = Number.isFinite(body.trial_days) ? Number(body.trial_days) : undefined;
+  const receiptUrl = String(body.receipt_url ?? "").trim() || undefined;
+  const requestId = String(body.request_id ?? "").trim() || crypto.randomUUID();
+
+  const templateId = String(env.PURCHASE_TEMPLATE_ID ?? "").trim();
+  if (!templateId) {
+    console.error("[purchase] PURCHASE_TEMPLATE_ID not configured", { requestId });
+    return json({ ok: false, error: "PURCHASE_TEMPLATE_ID not set" }, 500);
+  }
+
+  const user = await env.DB.prepare(
+    `SELECT user_login, email, name FROM users WHERE user_login = ? LIMIT 1`
+  )
+    .bind(userLogin)
+    .first<{ user_login: string; email: string | null; name: string | null }>();
+
+  if (!user) {
+    console.error("[purchase] unknown user", { userLogin, requestId });
+    return json({ ok: false, error: "Unknown user" }, 404);
+  }
+
+  const email = (user.email ?? "").trim();
+  if (!email) {
+    console.error("[purchase] user has no email", { userLogin, requestId });
+    return json({ ok: false, error: "User has no email" }, 412);
+  }
+
+  const fromName = (env.PURCHASE_FROM_NAME ?? env.FROM_NAME ?? "Haiphen").trim();
+  const fromEmail = env.FROM_EMAIL;
+  const supportEmail = (env.WELCOME_SUPPORT_EMAIL ?? "pi@haiphenai.com").trim();
+
+  const sgResp = await sendSendGrid(env.SENDGRID_API_KEY, {
+    from: { email: fromEmail, name: fromName },
+    template_id: templateId,
+    personalizations: [
+      {
+        to: [{ email, name: user.name ?? undefined }],
+        subject: `Haiphen — purchase confirmation for ${serviceName}`,
+        dynamic_template_data: {
+          name: user.name ?? userLogin,
+          user_login: userLogin,
+          service_name: serviceName,
+          plan,
+          price,
+          trial_days: trialDays,
+          trial_info: trialDays != null && trialDays > 0,
+          receipt_url: receiptUrl,
+          support_email: supportEmail,
+          docs_url: "https://haiphen.io/#docs",
+          login_url: "https://haiphen.io/#profile",
+        },
+      },
+    ],
+  });
+
+  if (!sgResp.ok) {
+    console.error("[purchase] SendGrid send failed", {
+      userLogin,
+      requestId,
+      templateId,
+      details: sgResp.details ?? null,
+    });
+    return json({ ok: false, error: "SendGrid send failed", details: sgResp.details }, 502);
+  }
+
+  console.log("[purchase] sent", { userLogin, requestId, messageId: sgResp.messageId ?? null });
+  return json({ ok: true, messageId: sgResp.messageId ?? undefined }, 200);
+}
+
+// ----------------------
+// Trial expiry notification (HMAC-protected)
+// ----------------------
+
+type TrialExpiringPayload = {
+  user_login: string;
+  service_name: string;
+  days_remaining: number;
+  trial_end_date: string;
+  current_plan?: string;
+  request_id?: string;
+};
+
+async function handleTrialExpiring(request: Request, env: Env): Promise<Response> {
+  const raw = await request.text();
+
+  const sigOk = await verifyHmacRequest(request, env.WELCOME_HMAC_SECRET, raw);
+  if (!sigOk) return json({ ok: false, error: "unauthorized" }, 401);
+
+  let body: TrialExpiringPayload | null = null;
+  try {
+    body = raw ? (JSON.parse(raw) as TrialExpiringPayload) : null;
+  } catch {
+    body = null;
+  }
+  if (!body) return json({ ok: false, error: "Invalid JSON" }, 400);
+
+  const userLogin = String(body.user_login ?? "").trim();
+  const serviceName = String(body.service_name ?? "").trim();
+  const daysRemaining = Number(body.days_remaining);
+  const trialEndDate = String(body.trial_end_date ?? "").trim();
+
+  if (!userLogin || !serviceName || !Number.isFinite(daysRemaining) || !trialEndDate) {
+    return json({ ok: false, error: "Missing required fields: user_login, service_name, days_remaining, trial_end_date" }, 400);
+  }
+
+  const currentPlan = String(body.current_plan ?? "").trim() || undefined;
+  const requestId = String(body.request_id ?? "").trim() || crypto.randomUUID();
+
+  const templateId = String(env.TRIAL_EXPIRING_TEMPLATE_ID ?? "").trim();
+  if (!templateId) {
+    console.error("[trial] TRIAL_EXPIRING_TEMPLATE_ID not configured", { requestId });
+    return json({ ok: false, error: "TRIAL_EXPIRING_TEMPLATE_ID not set" }, 500);
+  }
+
+  const user = await env.DB.prepare(
+    `SELECT user_login, email, name FROM users WHERE user_login = ? LIMIT 1`
+  )
+    .bind(userLogin)
+    .first<{ user_login: string; email: string | null; name: string | null }>();
+
+  if (!user) {
+    console.error("[trial] unknown user", { userLogin, requestId });
+    return json({ ok: false, error: "Unknown user" }, 404);
+  }
+
+  const email = (user.email ?? "").trim();
+  if (!email) {
+    console.error("[trial] user has no email", { userLogin, requestId });
+    return json({ ok: false, error: "User has no email" }, 412);
+  }
+
+  const fromName = (env.TRIAL_FROM_NAME ?? env.FROM_NAME ?? "Haiphen").trim();
+  const fromEmail = env.FROM_EMAIL;
+  const supportEmail = (env.WELCOME_SUPPORT_EMAIL ?? "pi@haiphenai.com").trim();
+
+  const sgResp = await sendSendGrid(env.SENDGRID_API_KEY, {
+    from: { email: fromEmail, name: fromName },
+    template_id: templateId,
+    personalizations: [
+      {
+        to: [{ email, name: user.name ?? undefined }],
+        subject: `Haiphen — your ${serviceName} trial expires in ${daysRemaining} day${daysRemaining === 1 ? "" : "s"}`,
+        dynamic_template_data: {
+          name: user.name ?? userLogin,
+          service_name: serviceName,
+          days_remaining: daysRemaining,
+          trial_end_date: trialEndDate,
+          current_plan: currentPlan,
+          upgrade_url: "https://haiphen.io/#services",
+          support_email: supportEmail,
+        },
+      },
+    ],
+  });
+
+  if (!sgResp.ok) {
+    console.error("[trial] SendGrid send failed", {
+      userLogin,
+      requestId,
+      templateId,
+      details: sgResp.details ?? null,
+    });
+    return json({ ok: false, error: "SendGrid send failed", details: sgResp.details }, 502);
+  }
+
+  console.log("[trial] sent", { userLogin, requestId, messageId: sgResp.messageId ?? null });
+  return json({ ok: true, messageId: sgResp.messageId ?? undefined }, 200);
+}
+
+// ----------------------
+// Usage alert notification (HMAC-protected)
+// ----------------------
+
+type UsageAlertPayload = {
+  user_login: string;
+  service_name: string;
+  usage_pct: number;
+  used_count: number;
+  limit_count: number;
+  reset_date: string;
+  current_plan?: string;
+  request_id?: string;
+};
+
+async function handleUsageAlert(request: Request, env: Env): Promise<Response> {
+  const raw = await request.text();
+
+  const sigOk = await verifyHmacRequest(request, env.WELCOME_HMAC_SECRET, raw);
+  if (!sigOk) return json({ ok: false, error: "unauthorized" }, 401);
+
+  let body: UsageAlertPayload | null = null;
+  try {
+    body = raw ? (JSON.parse(raw) as UsageAlertPayload) : null;
+  } catch {
+    body = null;
+  }
+  if (!body) return json({ ok: false, error: "Invalid JSON" }, 400);
+
+  const userLogin = String(body.user_login ?? "").trim();
+  const serviceName = String(body.service_name ?? "").trim();
+  const usagePct = Number(body.usage_pct);
+  const usedCount = Number(body.used_count);
+  const limitCount = Number(body.limit_count);
+  const resetDate = String(body.reset_date ?? "").trim();
+
+  if (
+    !userLogin || !serviceName ||
+    !Number.isFinite(usagePct) || !Number.isFinite(usedCount) || !Number.isFinite(limitCount) ||
+    !resetDate
+  ) {
+    return json({ ok: false, error: "Missing required fields: user_login, service_name, usage_pct, used_count, limit_count, reset_date" }, 400);
+  }
+
+  const currentPlan = String(body.current_plan ?? "").trim() || undefined;
+  const requestId = String(body.request_id ?? "").trim() || crypto.randomUUID();
+
+  const templateId = String(env.USAGE_ALERT_TEMPLATE_ID ?? "").trim();
+  if (!templateId) {
+    console.error("[usage] USAGE_ALERT_TEMPLATE_ID not configured", { requestId });
+    return json({ ok: false, error: "USAGE_ALERT_TEMPLATE_ID not set" }, 500);
+  }
+
+  const user = await env.DB.prepare(
+    `SELECT user_login, email, name FROM users WHERE user_login = ? LIMIT 1`
+  )
+    .bind(userLogin)
+    .first<{ user_login: string; email: string | null; name: string | null }>();
+
+  if (!user) {
+    console.error("[usage] unknown user", { userLogin, requestId });
+    return json({ ok: false, error: "Unknown user" }, 404);
+  }
+
+  const email = (user.email ?? "").trim();
+  if (!email) {
+    console.error("[usage] user has no email", { userLogin, requestId });
+    return json({ ok: false, error: "User has no email" }, 412);
+  }
+
+  const fromName = (env.USAGE_FROM_NAME ?? env.FROM_NAME ?? "Haiphen").trim();
+  const fromEmail = env.FROM_EMAIL;
+  const supportEmail = (env.WELCOME_SUPPORT_EMAIL ?? "pi@haiphenai.com").trim();
+
+  const sgResp = await sendSendGrid(env.SENDGRID_API_KEY, {
+    from: { email: fromEmail, name: fromName },
+    template_id: templateId,
+    personalizations: [
+      {
+        to: [{ email, name: user.name ?? undefined }],
+        subject: `Haiphen — ${serviceName} usage at ${usagePct}%`,
+        dynamic_template_data: {
+          name: user.name ?? userLogin,
+          service_name: serviceName,
+          usage_pct: usagePct,
+          used_count: usedCount,
+          limit_count: limitCount,
+          reset_date: resetDate,
+          current_plan: currentPlan,
+          upgrade_url: "https://haiphen.io/#services",
+          support_email: supportEmail,
+        },
+      },
+    ],
+  });
+
+  if (!sgResp.ok) {
+    console.error("[usage] SendGrid send failed", {
+      userLogin,
+      requestId,
+      templateId,
+      details: sgResp.details ?? null,
+    });
+    return json({ ok: false, error: "SendGrid send failed", details: sgResp.details }, 502);
+  }
+
+  console.log("[usage] sent", { userLogin, requestId, messageId: sgResp.messageId ?? null });
+  return json({ ok: true, messageId: sgResp.messageId ?? undefined }, 200);
 }
 
 function corsHeaders(req: Request, env: Env): Record<string, string> {

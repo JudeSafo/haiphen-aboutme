@@ -1,6 +1,10 @@
-// haiphen-supply/src/index.ts — Supply Chain Intelligence service
+// haiphen-supply/src/index.ts — Supply Chain Intelligence service (D1-backed)
+
+import { computeRiskScore, type SupplierData } from "./risk-scorer";
+import { findAlternatives } from "./alternative-finder";
 
 type Env = {
+  DB: D1Database;
   JWT_SECRET: string;
   ALLOWED_ORIGINS?: string;
   INTERNAL_TOKEN?: string;
@@ -15,11 +19,7 @@ function corsHeaders(req: Request, env: Env): Record<string, string> {
     .split(",").map(s => s.trim());
   if (origin && /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) allowed.push(origin);
   const o = allowed.includes(origin) ? origin : "https://haiphen.io";
-  return { "Access-Control-Allow-Origin": o, "Access-Control-Allow-Credentials": "true", "Access-Control-Allow-Headers": "Content-Type, Authorization", "Access-Control-Allow-Methods": "GET,POST,OPTIONS", "Vary": "Origin" };
-}
-
-function corsOptions(req: Request, env: Env): Response {
-  return new Response(null, { status: 204, headers: corsHeaders(req, env) });
+  return { "Access-Control-Allow-Origin": o, "Access-Control-Allow-Credentials": "true", "Access-Control-Allow-Headers": "Content-Type, Authorization", "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS", "Vary": "Origin" };
 }
 
 function okJson(data: unknown, rid: string, h?: Record<string, string>): Response {
@@ -59,126 +59,331 @@ async function verifyJwt(token: string, secret: string): Promise<{ sub: string }
 
 async function authUser(req: Request, env: Env, rid: string): Promise<{ user_login: string }> {
   const cookie = (req.headers.get("Cookie") || "").match(/(?:^|;\s*)auth=([^;]+)/)?.[1];
-  if (cookie) { const u = await verifyJwt(cookie, env.JWT_SECRET); return { user_login: u.sub }; }
+  if (cookie) { try { const u = await verifyJwt(cookie, env.JWT_SECRET); return { user_login: u.sub }; } catch { /* fall through */ } }
   const bearer = (req.headers.get("Authorization") || "").match(/^Bearer\s+(.+)$/i)?.[1]?.trim();
-  if (bearer) { const u = await verifyJwt(bearer, env.JWT_SECRET); return { user_login: u.sub }; }
+  if (bearer) { try { const u = await verifyJwt(bearer, env.JWT_SECRET); return { user_login: u.sub }; } catch { /* fall through */ } }
   throw errJson("unauthorized", "Unauthorized", rid, 401);
 }
 
-// ---- Daily quota check ----
-
-async function checkQuota(env: Env, userId: string, plan: string, sessionHash?: string): Promise<{ allowed: boolean; reason?: string }> {
+async function checkQuota(env: Env, userId: string, plan: string): Promise<{ allowed: boolean; reason?: string }> {
   const apiUrl = env.QUOTA_API_URL || "https://api.haiphen.io";
   const token = env.INTERNAL_TOKEN;
-  if (!token) return { allowed: true }; // fail-open if not configured
-
+  if (!token) return { allowed: true };
   try {
     const res = await fetch(`${apiUrl}/v1/internal/quota/consume`, {
       method: "POST",
       headers: { "Content-Type": "application/json", "X-Internal-Token": token },
-      body: JSON.stringify({ user_id: userId, plan, session_hash: sessionHash }),
+      body: JSON.stringify({ user_id: userId, plan }),
     });
-    if (!res.ok) return { allowed: true }; // fail-open on error
-    const data = await res.json() as { allowed: boolean; reason?: string };
-    return data;
-  } catch {
-    return { allowed: true }; // fail-open if unreachable
-  }
+    if (!res.ok) return { allowed: true };
+    return await res.json() as { allowed: boolean; reason?: string };
+  } catch { return { allowed: true }; }
 }
+
+// ---- Route handler ----
 
 async function route(req: Request, env: Env): Promise<Response> {
   const rid = uuid();
   const url = new URL(req.url);
   const cors = corsHeaders(req, env);
 
-  if (req.method === "OPTIONS") return corsOptions(req, env);
+  if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: cors });
 
   if (req.method === "GET" && url.pathname === "/v1/health") {
-    return okJson({ ok: true, service: "haiphen-supply", time: new Date().toISOString(), version: "v1.0.0" }, rid, cors);
+    return okJson({ ok: true, service: "haiphen-supply", time: new Date().toISOString(), version: "v2.0.0" }, rid, cors);
   }
 
-  // POST /v1/supply/assess — supplier risk assessment
+  // ---- Supplier CRUD ----
+
+  // POST /v1/supply/suppliers — create/upsert suppliers
+  if (req.method === "POST" && url.pathname === "/v1/supply/suppliers") {
+    const user = await authUser(req, env, rid);
+    const quota = await checkQuota(env, user.user_login, "free");
+    if (!quota.allowed) return errJson("quota_exceeded", quota.reason || "Daily quota exceeded", rid, 429, cors);
+
+    const body = await req.json().catch(() => null) as null | {
+      suppliers: Array<{
+        name: string;
+        country?: string;
+        region?: string;
+        tier?: number;
+        categories?: string[];
+        financial_score?: number;
+        geopolitical_score?: number;
+        delivery_score?: number;
+        single_source?: boolean;
+        metadata?: Record<string, unknown>;
+      }>;
+    };
+
+    if (!body?.suppliers || !Array.isArray(body.suppliers) || body.suppliers.length === 0) {
+      return errJson("invalid_request", "Missing suppliers array", rid, 400, cors);
+    }
+    if (body.suppliers.length > 100) {
+      return errJson("invalid_request", "Maximum 100 suppliers per request", rid, 400, cors);
+    }
+
+    const inserted: string[] = [];
+    const batchSize = 20;
+
+    for (let i = 0; i < body.suppliers.length; i += batchSize) {
+      const batch = body.suppliers.slice(i, i + batchSize);
+      const stmts = batch.map(s => {
+        const supplierId = uuid();
+        inserted.push(supplierId);
+        return env.DB.prepare(
+          `INSERT INTO supply_suppliers (supplier_id, user_login, name, country, region, tier, categories_json, financial_score, geopolitical_score, delivery_score, single_source, metadata_json)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+           ON CONFLICT(user_login, name) DO UPDATE SET
+             country = excluded.country, region = excluded.region, tier = excluded.tier,
+             categories_json = excluded.categories_json,
+             financial_score = excluded.financial_score, geopolitical_score = excluded.geopolitical_score,
+             delivery_score = excluded.delivery_score, single_source = excluded.single_source,
+             metadata_json = excluded.metadata_json, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now')`
+        ).bind(
+          supplierId, user.user_login, s.name,
+          s.country || null, s.region || null, s.tier ?? 1,
+          s.categories ? JSON.stringify(s.categories) : null,
+          s.financial_score ?? 50, s.geopolitical_score ?? 50, s.delivery_score ?? 50,
+          s.single_source ? 1 : 0,
+          s.metadata ? JSON.stringify(s.metadata) : null,
+        );
+      });
+      await env.DB.batch(stmts);
+    }
+
+    return okJson({ ingested: inserted.length, supplier_ids: inserted }, rid, cors);
+  }
+
+  // GET /v1/supply/suppliers — list suppliers
+  if (req.method === "GET" && url.pathname === "/v1/supply/suppliers") {
+    const user = await authUser(req, env, rid);
+    const limit = Math.min(parseInt(url.searchParams.get("limit") || "50", 10), 200);
+    const offset = parseInt(url.searchParams.get("offset") || "0", 10);
+    const status = url.searchParams.get("status") || "active";
+
+    const rows = await env.DB.prepare(
+      `SELECT supplier_id, name, country, region, tier, categories_json, financial_score, geopolitical_score, delivery_score, single_source, status, created_at
+       FROM supply_suppliers WHERE user_login = ? AND status = ?
+       ORDER BY name ASC LIMIT ? OFFSET ?`
+    ).bind(user.user_login, status, limit, offset).all<{
+      supplier_id: string; name: string; country: string | null; region: string | null;
+      tier: number; categories_json: string | null;
+      financial_score: number; geopolitical_score: number; delivery_score: number;
+      single_source: number; status: string; created_at: string;
+    }>();
+
+    const countRow = await env.DB.prepare(
+      "SELECT COUNT(*) as cnt FROM supply_suppliers WHERE user_login = ? AND status = ?"
+    ).bind(user.user_login, status).first<{ cnt: number }>();
+
+    return okJson({
+      items: rows.results.map(r => ({
+        ...r,
+        categories: r.categories_json ? JSON.parse(r.categories_json) : [],
+        single_source: r.single_source === 1,
+        categories_json: undefined,
+      })),
+      total: countRow?.cnt ?? 0,
+      limit,
+      offset,
+    }, rid, cors);
+  }
+
+  // ---- Risk Assessment ----
+
+  // POST /v1/supply/assess — run risk assessment
   if (req.method === "POST" && url.pathname === "/v1/supply/assess") {
     const user = await authUser(req, env, rid);
     const quota = await checkQuota(env, user.user_login, "free");
     if (!quota.allowed) return errJson("quota_exceeded", quota.reason || "Daily quota exceeded", rid, 429, cors);
-    const body = await req.json().catch(() => null) as null | { supplier: string; depth?: number };
-    if (!body?.supplier) return errJson("invalid_request", "Missing supplier name", rid, 400, cors);
 
-    const assess_id = uuid();
+    const body = await req.json().catch(() => null) as null | {
+      supplier_ids?: string[];
+      supplier_name?: string;
+    };
+
+    const assessmentId = uuid();
+    const startedAt = new Date().toISOString();
+
+    // Fetch suppliers
+    let supplierRows;
+    if (body?.supplier_ids && body.supplier_ids.length > 0) {
+      const placeholders = body.supplier_ids.map(() => "?").join(",");
+      supplierRows = await env.DB.prepare(
+        `SELECT supplier_id, name, country, region, tier, categories_json, financial_score, geopolitical_score, delivery_score, single_source
+         FROM supply_suppliers WHERE user_login = ? AND supplier_id IN (${placeholders})`
+      ).bind(user.user_login, ...body.supplier_ids).all<{
+        supplier_id: string; name: string; country: string | null; region: string | null;
+        tier: number; categories_json: string | null;
+        financial_score: number; geopolitical_score: number; delivery_score: number; single_source: number;
+      }>();
+    } else if (body?.supplier_name) {
+      supplierRows = await env.DB.prepare(
+        `SELECT supplier_id, name, country, region, tier, categories_json, financial_score, geopolitical_score, delivery_score, single_source
+         FROM supply_suppliers WHERE user_login = ? AND LOWER(name) LIKE LOWER(?) AND status = 'active'`
+      ).bind(user.user_login, `%${body.supplier_name}%`).all<{
+        supplier_id: string; name: string; country: string | null; region: string | null;
+        tier: number; categories_json: string | null;
+        financial_score: number; geopolitical_score: number; delivery_score: number; single_source: number;
+      }>();
+    } else {
+      // Assess all active suppliers
+      supplierRows = await env.DB.prepare(
+        `SELECT supplier_id, name, country, region, tier, categories_json, financial_score, geopolitical_score, delivery_score, single_source
+         FROM supply_suppliers WHERE user_login = ? AND status = 'active' LIMIT 100`
+      ).bind(user.user_login).all<{
+        supplier_id: string; name: string; country: string | null; region: string | null;
+        tier: number; categories_json: string | null;
+        financial_score: number; geopolitical_score: number; delivery_score: number; single_source: number;
+      }>();
+    }
+
+    if (supplierRows.results.length === 0) {
+      return errJson("not_found", "No suppliers found for assessment", rid, 404, cors);
+    }
+
+    // Convert to SupplierData
+    const suppliers: SupplierData[] = supplierRows.results.map(r => ({
+      supplier_id: r.supplier_id,
+      name: r.name,
+      country: r.country,
+      region: r.region,
+      tier: r.tier,
+      categories: r.categories_json ? JSON.parse(r.categories_json) : [],
+      financial_score: r.financial_score,
+      geopolitical_score: r.geopolitical_score,
+      delivery_score: r.delivery_score,
+      single_source: r.single_source === 1,
+    }));
+
+    // Compute risk score
+    const riskResult = computeRiskScore(suppliers);
+
+    // Find alternatives for high-risk suppliers
+    const highRiskIds = suppliers.filter(s =>
+      s.financial_score < 50 || s.single_source
+    ).map(s => s.supplier_id);
+    const targetCategories = suppliers.flatMap(s => s.categories);
+    const uniqueCategories = [...new Set(targetCategories)];
+    const alternatives = await findAlternatives(env.DB, user.user_login, suppliers.map(s => s.supplier_id), uniqueCategories);
+
+    const completedAt = new Date().toISOString();
+
+    // Persist alerts
+    if (riskResult.alerts.length > 0) {
+      const alertBatch = riskResult.alerts.slice(0, 50).map(a =>
+        env.DB.prepare(
+          `INSERT INTO supply_alerts (alert_id, user_login, supplier_id, alert_type, severity, title, description)
+           VALUES (?, ?, ?, ?, ?, ?, ?)`
+        ).bind(uuid(), user.user_login, a.supplier_id, a.type, a.severity, a.title, a.description)
+      );
+      await env.DB.batch(alertBatch);
+    }
+
+    // Persist assessment
+    await env.DB.prepare(
+      `INSERT INTO supply_assessments (assessment_id, user_login, status, supplier_ids_json, overall_risk_score, risk_breakdown_json, alerts_json, alternatives_json, recommendations_json, started_at, completed_at)
+       VALUES (?, ?, 'completed', ?, ?, ?, ?, ?, ?, ?, ?)`
+    ).bind(
+      assessmentId, user.user_login,
+      JSON.stringify(suppliers.map(s => s.supplier_id)),
+      riskResult.overall_score,
+      JSON.stringify(riskResult.breakdown),
+      JSON.stringify(riskResult.alerts),
+      JSON.stringify(alternatives),
+      JSON.stringify(riskResult.recommendations),
+      startedAt, completedAt,
+    ).run();
+
     return okJson({
-      assess_id,
-      supplier: body.supplier,
+      assessment_id: assessmentId,
       status: "completed",
-      assessed_by: user.user_login,
-      created_at: new Date().toISOString(),
-      risk_profile: {
-        overall_score: 0.68,
-        financial_stability: 0.82,
-        geopolitical_risk: 0.45,
-        delivery_reliability: 0.91,
-        single_source_risk: 0.35,
-        compliance_score: 0.78,
-      },
-      tiers: [
-        { tier: 1, supplier: body.supplier, location: "Shenzhen, China", lead_time_days: 14, risk_score: 0.68 },
-        { tier: 2, supplier: "Raw Materials Corp", location: "Jakarta, Indonesia", lead_time_days: 30, risk_score: 0.52 },
-        { tier: 3, supplier: "Mining Co Ltd", location: "Santiago, Chile", lead_time_days: 45, risk_score: 0.38 },
-      ],
-      alerts: [
-        { type: "geopolitical", severity: "medium", description: "Trade policy changes may affect import duties", probability: 0.30 },
-        { type: "logistics", severity: "low", description: "Port congestion forecasted for Q2", probability: 0.20 },
-      ],
-      alternatives: [
-        { supplier: "TechParts Taiwan", location: "Taipei, Taiwan", estimated_lead_time_days: 21, compatibility: 0.92 },
-        { supplier: "EuroParts GmbH", location: "Munich, Germany", estimated_lead_time_days: 18, compatibility: 0.85 },
-      ],
+      initiated_by: user.user_login,
+      started_at: startedAt,
+      completed_at: completedAt,
+      suppliers_assessed: suppliers.length,
+      overall_risk_score: riskResult.overall_score,
+      risk_level: riskResult.risk_level,
+      breakdown: riskResult.breakdown,
+      alerts: riskResult.alerts,
+      alternatives,
+      recommendations: riskResult.recommendations,
     }, rid, cors);
   }
 
-  // GET /v1/supply/assess/:id
+  // GET /v1/supply/assess/:id — retrieve assessment
   const assessMatch = url.pathname.match(/^\/v1\/supply\/assess\/([a-f0-9-]+)$/);
   if (req.method === "GET" && assessMatch) {
     const user = await authUser(req, env, rid);
-    const quota = await checkQuota(env, user.user_login, "free");
-    if (!quota.allowed) return errJson("quota_exceeded", quota.reason || "Daily quota exceeded", rid, 429, cors);
+    const assessmentId = assessMatch[1];
+
+    const row = await env.DB.prepare(
+      `SELECT assessment_id, status, supplier_ids_json, overall_risk_score, risk_breakdown_json, alerts_json, alternatives_json, recommendations_json, started_at, completed_at, created_at
+       FROM supply_assessments WHERE assessment_id = ? AND user_login = ?`
+    ).bind(assessmentId, user.user_login).first<{
+      assessment_id: string; status: string; supplier_ids_json: string;
+      overall_risk_score: number | null; risk_breakdown_json: string | null;
+      alerts_json: string | null; alternatives_json: string | null;
+      recommendations_json: string | null;
+      started_at: string | null; completed_at: string | null; created_at: string;
+    }>();
+
+    if (!row) return errJson("not_found", "Assessment not found", rid, 404, cors);
+
     return okJson({
-      assess_id: assessMatch[1],
-      supplier: "Acme Components Ltd",
-      status: "completed",
-      created_at: new Date(Date.now() - 86400000).toISOString(),
-      risk_profile: { overall_score: 0.68 },
-      tier_count: 3,
-      alert_count: 2,
+      assessment_id: row.assessment_id,
+      status: row.status,
+      overall_risk_score: row.overall_risk_score,
+      breakdown: row.risk_breakdown_json ? JSON.parse(row.risk_breakdown_json) : null,
+      alerts: row.alerts_json ? JSON.parse(row.alerts_json) : [],
+      alternatives: row.alternatives_json ? JSON.parse(row.alternatives_json) : [],
+      recommendations: row.recommendations_json ? JSON.parse(row.recommendations_json) : [],
+      started_at: row.started_at,
+      completed_at: row.completed_at,
+      created_at: row.created_at,
     }, rid, cors);
   }
 
-  // GET /v1/supply/suppliers
-  if (req.method === "GET" && url.pathname === "/v1/supply/suppliers") {
+  // GET /v1/supply/assessments — paginated list
+  if (req.method === "GET" && url.pathname === "/v1/supply/assessments") {
     const user = await authUser(req, env, rid);
-    const quota = await checkQuota(env, user.user_login, "free");
-    if (!quota.allowed) return errJson("quota_exceeded", quota.reason || "Daily quota exceeded", rid, 429, cors);
-    return okJson({
-      items: [
-        { id: "sup-001", name: "Acme Components Ltd", location: "Shenzhen, China", tier: 1, risk_score: 0.68, last_assessed: "2026-02-07T10:00:00Z" },
-        { id: "sup-002", name: "Industrial Sensors Inc", location: "Detroit, USA", tier: 1, risk_score: 0.25, last_assessed: "2026-02-05T14:00:00Z" },
-        { id: "sup-003", name: "Raw Materials Corp", location: "Jakarta, Indonesia", tier: 2, risk_score: 0.52, last_assessed: "2026-02-04T09:00:00Z" },
-      ],
-    }, rid, cors);
+    const limit = Math.min(parseInt(url.searchParams.get("limit") || "20", 10), 100);
+    const offset = parseInt(url.searchParams.get("offset") || "0", 10);
+
+    const rows = await env.DB.prepare(
+      `SELECT assessment_id, status, overall_risk_score, created_at
+       FROM supply_assessments WHERE user_login = ?
+       ORDER BY created_at DESC LIMIT ? OFFSET ?`
+    ).bind(user.user_login, limit, offset).all();
+
+    const countRow = await env.DB.prepare(
+      "SELECT COUNT(*) as cnt FROM supply_assessments WHERE user_login = ?"
+    ).bind(user.user_login).first<{ cnt: number }>();
+
+    return okJson({ items: rows.results, total: countRow?.cnt ?? 0, limit, offset }, rid, cors);
   }
 
-  // GET /v1/supply/alerts
+  // GET /v1/supply/alerts — list active alerts
   if (req.method === "GET" && url.pathname === "/v1/supply/alerts") {
     const user = await authUser(req, env, rid);
-    const quota = await checkQuota(env, user.user_login, "free");
-    if (!quota.allowed) return errJson("quota_exceeded", quota.reason || "Daily quota exceeded", rid, 429, cors);
-    return okJson({
-      items: [
-        { id: "alt-001", type: "geopolitical", severity: "high", supplier: "Acme Components Ltd", description: "New tariff regulations announced", created_at: "2026-02-07T08:00:00Z", acknowledged: false },
-        { id: "alt-002", type: "logistics", severity: "medium", supplier: "Raw Materials Corp", description: "Shipping route disruption in Strait of Malacca", created_at: "2026-02-06T22:00:00Z", acknowledged: true },
-        { id: "alt-003", type: "financial", severity: "low", supplier: "Industrial Sensors Inc", description: "Q4 earnings below expectations", created_at: "2026-02-05T16:00:00Z", acknowledged: true },
-      ],
-    }, rid, cors);
+    const limit = Math.min(parseInt(url.searchParams.get("limit") || "50", 10), 200);
+    const offset = parseInt(url.searchParams.get("offset") || "0", 10);
+    const unresolved = url.searchParams.get("unresolved") !== "false";
+
+    const rows = await env.DB.prepare(
+      `SELECT a.alert_id, a.supplier_id, s.name as supplier_name, a.alert_type, a.severity, a.title, a.description, a.is_resolved, a.created_at
+       FROM supply_alerts a
+       LEFT JOIN supply_suppliers s ON a.supplier_id = s.supplier_id
+       WHERE a.user_login = ? ${unresolved ? "AND a.is_resolved = 0" : ""}
+       ORDER BY a.created_at DESC LIMIT ? OFFSET ?`
+    ).bind(user.user_login, limit, offset).all();
+
+    const countRow = await env.DB.prepare(
+      `SELECT COUNT(*) as cnt FROM supply_alerts WHERE user_login = ? ${unresolved ? "AND is_resolved = 0" : ""}`
+    ).bind(user.user_login).first<{ cnt: number }>();
+
+    return okJson({ items: rows.results, total: countRow?.cnt ?? 0, limit, offset }, rid, cors);
   }
 
   return errJson("not_found", "Not found", rid, 404, cors);
@@ -187,8 +392,9 @@ async function route(req: Request, env: Env): Promise<Response> {
 export default {
   async fetch(req: Request, env: Env): Promise<Response> {
     try { return await route(req, env); }
-    catch (e: any) {
+    catch (e: unknown) {
       if (e instanceof Response) return e;
+      console.error("Unhandled error:", e);
       return errJson("internal", "Internal error", uuid(), 500);
     }
   },
