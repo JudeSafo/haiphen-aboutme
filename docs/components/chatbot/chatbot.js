@@ -69,6 +69,17 @@
     ],
   };
 
+  // Section docstrings: brief highlight shown when navigating to a section
+  const SECTION_DOCSTRINGS = {
+    Trades:   'Live trading metrics, KPIs, and portfolio analysis',
+    Docs:     'API reference, authentication guides, and CLI documentation',
+    Services: 'Explore subscription plans and Haiphen service catalogue',
+    OnePager: 'Platform overview, security ethos, and capabilities',
+    Profile:  'Manage your account, API keys, and preferences',
+    FAQ:      'Frequently asked questions and getting started guides',
+    Contact:  'Get in touch with the Haiphen team',
+  };
+
   function getCurrentSection() {
     const hash = String(window.location.hash || '').replace('#', '').split(':')[0];
     const SECTION_MAP = {
@@ -136,21 +147,25 @@
       const hoverInput = mount.querySelector('[data-chatbot-hover-input]');
       const closeBtn = mount.querySelector('[data-chatbot-close]');
       const promptsEl = mount.querySelector('[data-chatbot-prompts]');
+      const introEl = mount.querySelector('[data-chatbot-intro]');
+      const subtitleEl = mount.querySelector('[data-chatbot-subtitle]');
       const input = mount.querySelector('[data-chatbot-input]');
       const resultsEl = mount.querySelector('[data-chatbot-results]');
       if (!fab || !panel) return;
 
       let peekTimer = null;
+      let transitTimer = null;
       let isFullOpen = false;
 
       /* ---- State helpers ---- */
 
       const closeAll = () => {
-        panel.classList.remove('is-open', 'is-peek');
+        panel.classList.remove('is-open', 'is-peek', 'is-transit');
         if (hoverBar) hoverBar.classList.remove('is-visible');
         if (resultsEl) resultsEl.classList.remove('is-visible');
         isFullOpen = false;
         if (peekTimer) { clearTimeout(peekTimer); peekTimer = null; }
+        if (transitTimer) { clearTimeout(transitTimer); transitTimer = null; }
       };
 
       const openFull = () => {
@@ -162,12 +177,32 @@
       };
 
       const showPeek = () => {
+        // Set intro to the welcome subtitle
+        if (subtitleEl) subtitleEl.textContent = 'Here are some ways to get started:';
         renderPrompts();
         panel.classList.add('is-peek');
+        // Pulse the FAB to draw attention
+        fab.classList.add('is-pulsing');
+        fab.addEventListener('animationend', () => fab.classList.remove('is-pulsing'), { once: true });
         peekTimer = setTimeout(() => {
           panel.classList.remove('is-peek');
           peekTimer = null;
         }, 8000);
+      };
+
+      const showTransit = (section) => {
+        const doc = SECTION_DOCSTRINGS[section];
+        if (!doc) return;
+        // Cancel any existing transit
+        if (transitTimer) { clearTimeout(transitTimer); transitTimer = null; }
+        panel.classList.remove('is-open', 'is-peek', 'is-transit');
+        // Update intro subtitle with section docstring
+        if (subtitleEl) subtitleEl.textContent = doc;
+        panel.classList.add('is-transit');
+        transitTimer = setTimeout(() => {
+          panel.classList.remove('is-transit');
+          transitTimer = null;
+        }, 3000);
       };
 
       /* ---- Prompt rendering ---- */
@@ -189,10 +224,9 @@
       /* ---- FAB click: toggle full panel ---- */
 
       fab.addEventListener('click', () => {
-        // If peek is showing, promote to full open
-        if (panel.classList.contains('is-peek')) {
-          panel.classList.remove('is-peek');
-          if (peekTimer) { clearTimeout(peekTimer); peekTimer = null; }
+        // If peek or transit is showing, promote to full open
+        if (panel.classList.contains('is-peek') || panel.classList.contains('is-transit')) {
+          closeAll();
           openFull();
           return;
         }
@@ -204,8 +238,7 @@
       let hoverIntent = null;
 
       fab.addEventListener('mouseenter', () => {
-        // Only show hover bar when panel is not open
-        if (isFullOpen || panel.classList.contains('is-peek')) return;
+        if (isFullOpen || panel.classList.contains('is-peek') || panel.classList.contains('is-transit')) return;
         hoverIntent = setTimeout(() => {
           if (hoverBar) hoverBar.classList.add('is-visible');
         }, 150);
@@ -213,7 +246,6 @@
 
       const hideHoverBar = () => {
         if (hoverIntent) { clearTimeout(hoverIntent); hoverIntent = null; }
-        // Small delay so user can move cursor from FAB to hover bar
         setTimeout(() => {
           if (hoverBar && !hoverBar.matches(':hover') && !fab.matches(':hover')) {
             hoverBar.classList.remove('is-visible');
@@ -256,10 +288,14 @@
         if (e.key === 'Escape') closeAll();
       });
 
-      /* ---- Close panel and refresh prompts on hash change ---- */
+      /* ---- On navigation: close full panel, flash section docstring ---- */
 
       window.addEventListener('hashchange', () => {
         if (isFullOpen) closeAll();
+        const section = getCurrentSection();
+        if (section !== 'default') {
+          showTransit(section);
+        }
       });
 
       /* ---- Free-text search in full panel ---- */
@@ -289,7 +325,7 @@
         });
       }
 
-      /* ---- Initial peek on first visit ---- */
+      /* ---- Initial peek: company intro + starter prompts ---- */
 
       setTimeout(showPeek, 1500);
     }

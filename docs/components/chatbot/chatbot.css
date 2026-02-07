@@ -5,6 +5,7 @@
   z-index: 8000;
 }
 
+/* ---- FAB button ---- */
 .hp-chatbot__fab {
   width: 56px;
   height: 56px;
@@ -25,6 +26,17 @@
   transform: scale(1.05);
 }
 
+/* ---- FAB attention pulse: plays on load, removed by JS ---- */
+.hp-chatbot__fab.is-pulsing {
+  animation: hp-chatbot-pulse 1.6s ease-in-out 3;
+}
+
+@keyframes hp-chatbot-pulse {
+  0%   { box-shadow: 0 4px 16px rgba(0,0,0,0.15), 0 0 0 0 rgba(90,155,212,0.5); }
+  50%  { box-shadow: 0 4px 16px rgba(0,0,0,0.15), 0 0 0 14px rgba(90,155,212,0); }
+  100% { box-shadow: 0 4px 16px rgba(0,0,0,0.15), 0 0 0 0 rgba(90,155,212,0); }
+}
+
 /* ---- Panel: hidden by default, class-driven visibility ---- */
 .hp-chatbot__panel {
   position: absolute;
@@ -40,7 +52,7 @@
   flex-direction: column;
   overflow: hidden;
 
-  /* hidden by default — NO display:flex here */
+  /* hidden by default */
   display: none;
   opacity: 0;
   transform: translateY(8px);
@@ -53,7 +65,7 @@
   transform: translateY(0);
 }
 
-/* ---- Peek state: compact initial greeting, auto-dismisses ---- */
+/* ---- Peek state: compact greeting, auto-dismisses ---- */
 .hp-chatbot__panel.is-peek {
   display: flex;
   opacity: 1;
@@ -62,6 +74,19 @@
 
 .hp-chatbot__panel.is-peek .hp-chatbot__search,
 .hp-chatbot__panel.is-peek .hp-chatbot__results {
+  display: none;
+}
+
+/* ---- Transit flash: brief section docstring on navigation ---- */
+.hp-chatbot__panel.is-transit {
+  display: flex;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.hp-chatbot__panel.is-transit .hp-chatbot__search,
+.hp-chatbot__panel.is-transit .hp-chatbot__results,
+.hp-chatbot__panel.is-transit .hp-chatbot__prompts {
   display: none;
 }
 
@@ -103,6 +128,31 @@
 
 .hp-chatbot__hover-bar input:focus {
   border-color: rgba(90,155,212,0.4);
+}
+
+/* ---- Intro tagline block ---- */
+.hp-chatbot__intro {
+  padding: 10px 14px 4px;
+}
+
+.hp-chatbot__tagline {
+  font-size: 12px;
+  font-weight: 900;
+  color: #5A9BD4;
+  letter-spacing: 0.02em;
+  line-height: 1.4;
+}
+
+.hp-chatbot__subtitle {
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748b;
+  margin-top: 4px;
+}
+
+/* Hide intro in full-open mode (it shows in peek/transit only) */
+.hp-chatbot__panel.is-open .hp-chatbot__intro {
+  display: none;
 }
 
 /* ---- Inner elements ---- */
