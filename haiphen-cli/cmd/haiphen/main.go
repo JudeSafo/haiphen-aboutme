@@ -57,6 +57,14 @@ func main() {
 	root.AddCommand(cmdLogout(cfg, st))
 	root.AddCommand(cmdStatus(cfg, st))
 	root.AddCommand(cmdOnboarding(cfg, st))
+	root.AddCommand(cmdServices(cfg, st))
+	root.AddCommand(cmdMetrics(cfg, st))
+	root.AddCommand(cmdSecure(cfg, st))
+	root.AddCommand(cmdNetwork(cfg, st))
+	root.AddCommand(cmdGraph(cfg, st))
+	root.AddCommand(cmdRisk(cfg, st))
+	root.AddCommand(cmdCausal(cfg, st))
+	root.AddCommand(cmdSupply(cfg, st))
 
 	if err := root.Execute(); err != nil {
 		os.Exit(1)

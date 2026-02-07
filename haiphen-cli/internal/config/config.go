@@ -12,6 +12,14 @@ type Config struct {
 	// Local rate limiting defaults (per minute)
 	RateLimitPerMin int
 	Burst           int
+
+	// Service origins
+	SecureOrigin  string
+	NetworkOrigin string
+	GraphOrigin   string
+	RiskOrigin    string
+	CausalOrigin  string
+	SupplyOrigin  string
 }
 
 func Default() *Config {
@@ -23,5 +31,11 @@ func Default() *Config {
 		EntitlementRefreshMinutes: 10,
 		RateLimitPerMin:           120,
 		Burst:                     30,
+		SecureOrigin:              "https://secure.haiphen.io",
+		NetworkOrigin:             "https://network.haiphen.io",
+		GraphOrigin:               "https://graph.haiphen.io",
+		RiskOrigin:                "https://risk.haiphen.io",
+		CausalOrigin:              "https://causal.haiphen.io",
+		SupplyOrigin:              "https://supply.haiphen.io",
 	}
 }
