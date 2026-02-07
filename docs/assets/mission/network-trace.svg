@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 240" role="img" aria-label="Network protocol analysis">
+  <defs>
+    <linearGradient id="nt-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0b1220"/>
+      <stop offset="100%" stop-color="#0f1b2e"/>
+    </linearGradient>
+    <linearGradient id="nt-pkt" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#5A9BD4"/>
+      <stop offset="100%" stop-color="#10B981"/>
+    </linearGradient>
+    <filter id="nt-glow">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="nt-glow-sm">
+      <feGaussianBlur stdDeviation="1.5" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <pattern id="nt-dots" width="16" height="16" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r=".6" fill="rgba(148,163,184,0.12)"/>
+    </pattern>
+    <clipPath id="nt-clip"><rect x="14" y="14" width="332" height="212" rx="18"/></clipPath>
+  </defs>
+
+  <rect x="14" y="14" width="332" height="212" rx="18" fill="url(#nt-bg)" stroke="rgba(148,163,184,0.18)" stroke-width="1"/>
+  <rect x="14" y="14" width="332" height="212" rx="18" fill="url(#nt-dots)" clip-path="url(#nt-clip)"/>
+  <ellipse cx="180" cy="120" rx="120" ry="80" fill="rgba(90,155,212,0.04)"/>
+
+  <!-- Protocol layer stack (left side) -->
+  <g transform="translate(30,34)">
+    <!-- Layer boxes stacked -->
+    <rect x="0" y="0" width="120" height="28" rx="6" fill="rgba(90,155,212,0.12)" stroke="rgba(90,155,212,0.35)" stroke-width=".8"/>
+    <text x="60" y="17" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8" font-weight="700" fill="rgba(90,155,212,0.8)">APPLICATION</text>
+
+    <rect x="0" y="36" width="120" height="28" rx="6" fill="rgba(16,185,129,0.1)" stroke="rgba(16,185,129,0.3)" stroke-width=".8"/>
+    <text x="60" y="53" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8" font-weight="700" fill="rgba(16,185,129,0.8)">TRANSPORT</text>
+
+    <rect x="0" y="72" width="120" height="28" rx="6" fill="rgba(139,92,246,0.1)" stroke="rgba(139,92,246,0.3)" stroke-width=".8"/>
+    <text x="60" y="89" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8" font-weight="700" fill="rgba(139,92,246,0.8)">NETWORK</text>
+
+    <rect x="0" y="108" width="120" height="28" rx="6" fill="rgba(245,158,11,0.1)" stroke="rgba(245,158,11,0.3)" stroke-width=".8"/>
+    <text x="60" y="125" text-anchor="middle" font-family="ui-monospace,monospace" font-size="8" font-weight="700" fill="rgba(245,158,11,0.7)">PHYSICAL</text>
+
+    <!-- Protocol labels -->
+    <text x="60" y="156" text-anchor="middle" font-family="ui-monospace,monospace" font-size="6.5" fill="rgba(148,163,184,0.5)">Modbus · OPC-UA · MQTT</text>
+  </g>
+
+  <!-- Packet flow visualization (right side) -->
+  <g transform="translate(178,32)">
+    <rect width="156" height="176" rx="10" fill="rgba(15,23,42,0.6)" stroke="rgba(148,163,184,0.18)" stroke-width=".8"/>
+    <rect width="156" height="24" rx="10" fill="rgba(148,163,184,0.08)"/>
+    <rect y="14" width="156" height="10" fill="rgba(148,163,184,0.08)"/>
+    <circle cx="14" cy="12" r="3" fill="#5A9BD4" opacity=".8"/>
+    <text x="24" y="15.5" font-family="ui-monospace,monospace" font-size="8" font-weight="700" fill="#e2e8f0" opacity=".7">PACKET FLOW</text>
+
+    <!-- Packet rows with animated dots -->
+    <g font-family="ui-monospace,monospace" font-size="7" fill="rgba(226,232,240,0.6)">
+      <text x="10" y="42"><tspan fill="#5A9BD4">→</tspan> 10.0.1.4:502  <tspan fill="rgba(90,155,212,.7)">Modbus</tspan></text>
+      <text x="10" y="56"><tspan fill="#10B981">←</tspan> 10.0.1.4:502  <tspan fill="rgba(16,185,129,.7)">resp</tspan></text>
+      <text x="10" y="70"><tspan fill="#5A9BD4">→</tspan> 10.0.2.8:4840 <tspan fill="rgba(90,155,212,.7)">OPC-UA</tspan></text>
+      <text x="10" y="84"><tspan fill="#10B981">←</tspan> 10.0.2.8:4840 <tspan fill="rgba(16,185,129,.7)">resp</tspan></text>
+      <text x="10" y="98"><tspan fill="#F59E0B">!</tspan> 10.0.3.1:1883 <tspan fill="rgba(245,158,11,.7)">anomaly</tspan></text>
+      <text x="10" y="112"><tspan fill="#5A9BD4">→</tspan> 10.0.1.9:502  <tspan fill="rgba(90,155,212,.7)">Modbus</tspan></text>
+      <text x="10" y="126"><tspan fill="#10B981">←</tspan> 10.0.1.9:502  <tspan fill="rgba(16,185,129,.7)">resp</tspan></text>
+    </g>
+
+    <!-- Throughput visualization -->
+    <g transform="translate(0,140)">
+      <rect width="156" height="36" fill="rgba(148,163,184,0.04)"/>
+      <rect y="0" width="156" height="1" fill="rgba(148,163,184,0.12)"/>
+      <!-- Mini sparkline -->
+      <polyline points="10,28 22,22 34,24 46,18 58,20 70,14 82,16 94,12 106,10 118,14 130,8"
+                fill="none" stroke="rgba(90,155,212,0.5)" stroke-width="1.2"/>
+      <text x="10" y="16" font-family="ui-monospace,monospace" font-size="6.5" fill="rgba(226,232,240,0.5)">2.4 Gbps</text>
+      <text x="70" y="16" font-family="ui-monospace,monospace" font-size="6" fill="rgba(148,163,184,0.4)">throughput</text>
+    </g>
+  </g>
+
+  <!-- Animated packet flow between stacks -->
+  <circle cx="165" cy="48" r="2.5" fill="#5A9BD4" opacity=".6" filter="url(#nt-glow-sm)">
+    <animate attributeName="cx" values="155;175" dur="1.5s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.8;0.2;0.8" dur="1.5s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="165" cy="84" r="2.5" fill="#10B981" opacity=".6" filter="url(#nt-glow-sm)">
+    <animate attributeName="cx" values="175;155" dur="1.8s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.8;0.2;0.8" dur="1.8s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- Connection lines -->
+  <line x1="150" y1="48" x2="178" y2="56" stroke="rgba(90,155,212,0.2)" stroke-width=".8" stroke-dasharray="3,3"/>
+  <line x1="150" y1="84" x2="178" y2="84" stroke="rgba(90,155,212,0.2)" stroke-width=".8" stroke-dasharray="3,3"/>
+  <line x1="150" y1="118" x2="178" y2="112" stroke="rgba(90,155,212,0.2)" stroke-width=".8" stroke-dasharray="3,3"/>
+
+  <!-- Status -->
+  <g transform="translate(40,192)" font-family="ui-sans-serif,system-ui" font-size="7.5" font-weight="700">
+    <circle cx="6" cy="4" r="3.5" fill="#10B981" opacity=".7" filter="url(#nt-glow-sm)"/>
+    <text x="14" y="7" fill="rgba(226,232,240,0.65)">Deep inspection</text>
+    <circle cx="106" cy="4" r="3.5" fill="#5A9BD4" opacity=".7" filter="url(#nt-glow-sm)"/>
+    <text x="114" y="7" fill="rgba(226,232,240,0.65)">Session capture</text>
+  </g>
+</svg>

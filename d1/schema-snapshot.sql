@@ -80,6 +80,12 @@ Resource location: remote
       },
       {
         "sql": "CREATE TABLE welcome_emails (\n  user_login TEXT PRIMARY KEY,\n  entitlement_updated_at INTEGER,\n  sent_at TEXT NOT NULL,\n  message_id TEXT,\n  source TEXT,\n  request_id TEXT,\n  details_json TEXT\n)"
+      },
+      {
+        "sql": "CREATE TABLE cookie_consent (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  user_login TEXT,\n  session_id TEXT NOT NULL,\n  essential INTEGER NOT NULL DEFAULT 1,\n  analytics INTEGER NOT NULL DEFAULT 0,\n  marketing INTEGER NOT NULL DEFAULT 0,\n  ip_country TEXT,\n  created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),\n  updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))\n)"
+      },
+      {
+        "sql": "CREATE TABLE chatbot_interactions (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  user_login TEXT,\n  session_id TEXT NOT NULL,\n  prompt_text TEXT NOT NULL,\n  target_section TEXT,\n  target_element TEXT,\n  created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))\n)"
       }
     ],
     "success": true,

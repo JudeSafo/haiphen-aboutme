@@ -1,0 +1,225 @@
+.hp-chatbot {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 8000;
+}
+
+.hp-chatbot__fab {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: none;
+  background: #5A9BD4;
+  color: #fff;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.hp-chatbot__fab:hover {
+  background: #3a7ab8;
+  transform: scale(1.05);
+}
+
+/* ---- Panel: hidden by default, class-driven visibility ---- */
+.hp-chatbot__panel {
+  position: absolute;
+  bottom: 68px;
+  right: 0;
+  width: 320px;
+  max-height: 480px;
+  background: rgba(255,255,255,0.97);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(15,23,42,0.12);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+  flex-direction: column;
+  overflow: hidden;
+
+  /* hidden by default — NO display:flex here */
+  display: none;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.hp-chatbot__panel.is-open {
+  display: flex;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ---- Peek state: compact initial greeting, auto-dismisses ---- */
+.hp-chatbot__panel.is-peek {
+  display: flex;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.hp-chatbot__panel.is-peek .hp-chatbot__search,
+.hp-chatbot__panel.is-peek .hp-chatbot__results {
+  display: none;
+}
+
+/* ---- Hover bar: just the search input, shown on FAB hover ---- */
+.hp-chatbot__hover-bar {
+  position: absolute;
+  bottom: 68px;
+  right: 0;
+  width: 260px;
+  background: rgba(255,255,255,0.97);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(15,23,42,0.12);
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+  padding: 8px 10px;
+
+  display: none;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.hp-chatbot__hover-bar.is-visible {
+  display: block;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.hp-chatbot__hover-bar input {
+  width: 100%;
+  border: 1px solid rgba(15,23,42,0.1);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  background: rgba(255,255,255,0.8);
+  outline: none;
+}
+
+.hp-chatbot__hover-bar input:focus {
+  border-color: rgba(90,155,212,0.4);
+}
+
+/* ---- Inner elements ---- */
+.hp-chatbot__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(15,23,42,0.08);
+}
+
+.hp-chatbot__header strong {
+  font-size: 13px;
+  font-weight: 950;
+}
+
+.hp-chatbot__close {
+  appearance: none;
+  border: none;
+  background: none;
+  font-size: 20px;
+  cursor: pointer;
+  opacity: 0.5;
+  padding: 0 4px;
+  line-height: 1;
+}
+
+.hp-chatbot__close:hover {
+  opacity: 1;
+}
+
+.hp-chatbot__prompts {
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  overflow-y: auto;
+  flex: 1;
+  max-height: 320px;
+}
+
+.hp-chatbot__prompt {
+  appearance: none;
+  border: 1px solid rgba(15,23,42,0.08);
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: rgba(255,255,255,0.6);
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  text-align: left;
+  color: var(--text, #1e293b);
+  transition: background 0.15s;
+}
+
+.hp-chatbot__prompt:hover {
+  background: rgba(90,155,212,0.08);
+  border-color: rgba(90,155,212,0.2);
+}
+
+.hp-chatbot__search {
+  padding: 8px 12px;
+  border-top: 1px solid rgba(15,23,42,0.08);
+}
+
+.hp-chatbot__input {
+  width: 100%;
+  border: 1px solid rgba(15,23,42,0.1);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  background: rgba(255,255,255,0.8);
+  outline: none;
+}
+
+.hp-chatbot__input:focus {
+  border-color: rgba(90,155,212,0.4);
+}
+
+.hp-chatbot__results {
+  padding: 6px 12px 10px;
+  max-height: 200px;
+  overflow-y: auto;
+  display: none;
+}
+
+.hp-chatbot__results.is-visible {
+  display: block;
+}
+
+.hp-chatbot__result {
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.hp-chatbot__result:hover {
+  background: rgba(90,155,212,0.08);
+}
+
+.hp-chatbot__result-meta {
+  font-size: 10px;
+  font-weight: 700;
+  opacity: 0.5;
+  margin-top: 2px;
+}
+
+@media (max-width: 400px) {
+  .hp-chatbot__panel {
+    width: calc(100vw - 40px);
+    right: -10px;
+  }
+  .hp-chatbot__hover-bar {
+    width: calc(100vw - 80px);
+  }
+}

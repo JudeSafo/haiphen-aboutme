@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 240" role="img" aria-label="Security scanning">
+  <defs>
+    <linearGradient id="sc-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0b1220"/>
+      <stop offset="100%" stop-color="#0f1b2e"/>
+    </linearGradient>
+    <linearGradient id="sc-shield" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#8B5CF6"/>
+      <stop offset="100%" stop-color="#6D28D9"/>
+    </linearGradient>
+    <filter id="sc-glow">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="sc-glow-sm">
+      <feGaussianBlur stdDeviation="1.5" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <pattern id="sc-dots" width="16" height="16" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r=".6" fill="rgba(148,163,184,0.12)"/>
+    </pattern>
+    <clipPath id="sc-clip"><rect x="14" y="14" width="332" height="212" rx="18"/></clipPath>
+  </defs>
+
+  <rect x="14" y="14" width="332" height="212" rx="18" fill="url(#sc-bg)" stroke="rgba(148,163,184,0.18)" stroke-width="1"/>
+  <rect x="14" y="14" width="332" height="212" rx="18" fill="url(#sc-dots)" clip-path="url(#sc-clip)"/>
+  <ellipse cx="180" cy="120" rx="120" ry="80" fill="rgba(139,92,246,0.05)"/>
+
+  <!-- Shield with scan lines -->
+  <g transform="translate(50,40)">
+    <path d="M55 8 L100 26 V68 C100 96 78 116 55 124 C32 116 10 96 10 68 V26 Z"
+          fill="none" stroke="rgba(139,92,246,0.3)" stroke-width="1.5"/>
+    <path d="M55 16 L92 30 V66 C92 90 74 108 55 116 C36 108 18 90 18 66 V30 Z"
+          fill="url(#sc-shield)" opacity="0.15" stroke="rgba(139,92,246,0.5)" stroke-width="1"/>
+    <!-- Scan lines across shield -->
+    <line x1="22" y1="48" x2="88" y2="48" stroke="rgba(139,92,246,0.3)" stroke-width=".6" stroke-dasharray="4,3">
+      <animate attributeName="y1" values="48;90;48" dur="3s" repeatCount="indefinite"/>
+      <animate attributeName="y2" values="48;90;48" dur="3s" repeatCount="indefinite"/>
+    </line>
+    <line x1="26" y1="55" x2="84" y2="55" stroke="rgba(16,185,129,0.25)" stroke-width=".5" stroke-dasharray="3,4">
+      <animate attributeName="y1" values="55;95;55" dur="3.5s" repeatCount="indefinite"/>
+      <animate attributeName="y2" values="55;95;55" dur="3.5s" repeatCount="indefinite"/>
+    </line>
+    <!-- Checkmark -->
+    <path d="M42 64 L50 72 L68 52" fill="none" stroke="#10B981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" filter="url(#sc-glow-sm)"/>
+  </g>
+
+  <!-- CVE scan panel (right side) -->
+  <g transform="translate(178,32)">
+    <rect width="156" height="176" rx="10" fill="rgba(15,23,42,0.6)" stroke="rgba(148,163,184,0.18)" stroke-width=".8"/>
+    <rect width="156" height="24" rx="10" fill="rgba(148,163,184,0.08)"/>
+    <rect y="14" width="156" height="10" fill="rgba(148,163,184,0.08)"/>
+    <circle cx="14" cy="12" r="3" fill="#8B5CF6" opacity=".8"/>
+    <text x="24" y="15.5" font-family="ui-monospace,monospace" font-size="8" font-weight="700" fill="#e2e8f0" opacity=".7">VULN SCAN</text>
+    <circle cx="130" cy="12" r="2" fill="#10B981" opacity=".6">
+      <animate attributeName="opacity" values=".6;1;.6" dur="2s" repeatCount="indefinite"/>
+    </circle>
+    <text x="136" y="15.5" font-family="ui-monospace,monospace" font-size="6.5" fill="rgba(148,163,184,0.5)">LIVE</text>
+
+    <g font-family="ui-monospace,monospace" font-size="7" fill="rgba(226,232,240,0.6)">
+      <text x="10" y="40"><tspan fill="#10B981">PASS</tspan> CVE-2025-3891  <tspan fill="rgba(90,155,212,.8)">low</tspan></text>
+      <text x="10" y="54"><tspan fill="#F59E0B">WARN</tspan> CVE-2025-4102  <tspan fill="rgba(245,158,11,.8)">med</tspan></text>
+      <text x="10" y="68"><tspan fill="#10B981">PASS</tspan> CVE-2025-2744  <tspan fill="rgba(90,155,212,.8)">low</tspan></text>
+      <text x="10" y="82"><tspan fill="#EF4444">FAIL</tspan> CVE-2025-5891  <tspan fill="rgba(239,68,68,.8)">crit</tspan></text>
+      <text x="10" y="96"><tspan fill="#10B981">PASS</tspan> CVE-2025-3012  <tspan fill="rgba(90,155,212,.8)">low</tspan></text>
+      <text x="10" y="110"><tspan fill="#10B981">PASS</tspan> CVE-2025-1488  <tspan fill="rgba(90,155,212,.8)">low</tspan></text>
+      <text x="10" y="124"><tspan fill="#F59E0B">WARN</tspan> CVE-2025-6201  <tspan fill="rgba(245,158,11,.8)">med</tspan></text>
+    </g>
+
+    <!-- Compliance bar -->
+    <g transform="translate(0,140)">
+      <rect width="156" height="36" fill="rgba(148,163,184,0.04)"/>
+      <rect y="0" width="156" height="1" fill="rgba(148,163,184,0.12)"/>
+      <text x="10" y="16" font-family="ui-monospace,monospace" font-size="7" fill="rgba(226,232,240,0.5)">Compliance</text>
+      <rect x="10" y="22" width="100" height="6" rx="3" fill="rgba(148,163,184,0.15)"/>
+      <rect x="10" y="22" width="87" height="6" rx="3" fill="rgba(16,185,129,0.5)"/>
+      <text x="116" y="27" font-family="ui-monospace,monospace" font-size="6.5" fill="rgba(226,232,240,0.5)">87%</text>
+    </g>
+  </g>
+
+  <!-- Status indicators -->
+  <g transform="translate(40,176)" font-family="ui-sans-serif,system-ui" font-size="7.5" font-weight="700">
+    <circle cx="6" cy="4" r="3.5" fill="#10B981" opacity=".7" filter="url(#sc-glow-sm)"/>
+    <text x="14" y="7" fill="rgba(226,232,240,0.65)">Policy enforced</text>
+    <circle cx="6" cy="20" r="3.5" fill="#8B5CF6" opacity=".7" filter="url(#sc-glow-sm)"/>
+    <text x="14" y="23" fill="rgba(226,232,240,0.65)">CVE correlation</text>
+    <circle cx="6" cy="36" r="3.5" fill="#F59E0B" opacity=".7" filter="url(#sc-glow-sm)"/>
+    <text x="14" y="39" fill="rgba(226,232,240,0.65)">Remediation active</text>
+  </g>
+
+  <!-- Connection lines -->
+  <line x1="150" y1="80" x2="178" y2="60" stroke="rgba(139,92,246,0.2)" stroke-width=".8" stroke-dasharray="3,3"/>
+  <line x1="150" y1="100" x2="178" y2="100" stroke="rgba(139,92,246,0.2)" stroke-width=".8" stroke-dasharray="3,3"/>
+  <line x1="150" y1="120" x2="178" y2="140" stroke="rgba(139,92,246,0.2)" stroke-width=".8" stroke-dasharray="3,3"/>
+</svg>

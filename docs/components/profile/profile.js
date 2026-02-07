@@ -412,6 +412,8 @@
 
     const plan = me?.plan || me?.entitlements?.plan || 'free';
     setText(qs('[data-profile-plan]', root), plan);
+    applyPlanBadge(root, plan);
+    updateStepStatuses(root, me);
 
     const k = me?.api_key || null;
     setText(qs('[data-profile-active-prefix]', root), k?.key_prefix || '—');
@@ -640,9 +642,60 @@
     return widget;
   }
 
+  function updateStepStatuses(root, me) {
+    const steps = qa('[data-step]', root);
+    for (const step of steps) {
+      const name = step.getAttribute('data-step');
+      const num = qs('.hp-step__num', step);
+      if (!num) continue;
+
+      let completed = false;
+      if (name === 'login') completed = !!me?.user_login;
+      if (name === 'subscribe') completed = me?.plan && me.plan !== 'free';
+      if (name === 'apikey') completed = !!me?.api_key?.key_id;
+
+      num.setAttribute('data-step-status', completed ? 'completed' : 'pending');
+      if (completed) num.textContent = '\u2713';
+    }
+  }
+
+  function applyPlanBadge(root, plan) {
+    const pillEl = qs('[data-profile-plan]', root);
+    if (!pillEl) return;
+
+    pillEl.classList.remove('hp-pill--free', 'hp-pill--pro', 'hp-pill--enterprise');
+    const p = String(plan || 'free').toLowerCase();
+    pillEl.classList.add(`hp-pill--${p}`);
+
+    // Add upgrade link for free users
+    const existing = qs('.hp-pill__upgrade', root);
+    if (existing) existing.remove();
+    if (p === 'free') {
+      const link = document.createElement('a');
+      link.className = 'hp-pill__upgrade';
+      link.href = '#subscribe';
+      link.textContent = 'Upgrade';
+      pillEl.parentElement.appendChild(link);
+    }
+  }
+
+  function wireServicesToggle(root) {
+    const btn = qs('[data-services-toggle]', root);
+    const grid = qs('[data-services-grid]', root);
+    if (!btn || !grid) return;
+
+    btn.addEventListener('click', () => {
+      const hidden = grid.hidden;
+      grid.hidden = !hidden;
+      btn.textContent = hidden ? 'Hide services' : 'Show services';
+    });
+  }
+
   function wire(root) {
     if (root.__haiphenProfileWired) return;
     root.__haiphenProfileWired = true;
+
+    wireServicesToggle(root);
 
     root.addEventListener('click', async (e) => {
       const t = e.target;

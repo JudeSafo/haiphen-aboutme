@@ -1,0 +1,135 @@
+.hp-consent__banner {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 9000;
+  background: rgba(255,255,255,0.97);
+  backdrop-filter: blur(16px);
+  border-top: 1px solid rgba(15,23,42,0.1);
+  box-shadow: 0 -4px 24px rgba(0,0,0,0.08);
+  transform: translateY(100%);
+  transition: transform 0.4s ease;
+}
+
+.hp-consent__banner.is-visible {
+  transform: translateY(0);
+}
+
+.hp-consent__inner {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.hp-consent__text {
+  flex: 1;
+  min-width: 200px;
+}
+
+.hp-consent__text strong {
+  display: block;
+  font-size: 14px;
+  font-weight: 900;
+  margin-bottom: 4px;
+}
+
+.hp-consent__text p {
+  font-size: 12px;
+  font-weight: 700;
+  opacity: 0.75;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.hp-consent__toggles {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.hp-consent__toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(15,23,42,0.08);
+  background: rgba(255,255,255,0.6);
+}
+
+.hp-consent__toggle input {
+  width: 14px;
+  height: 14px;
+}
+
+.hp-consent__toggle input:disabled {
+  opacity: 0.6;
+}
+
+.hp-consent__tag {
+  font-size: 10px;
+  font-weight: 900;
+  opacity: 0.5;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: rgba(15,23,42,0.06);
+}
+
+.hp-consent__actions {
+  display: flex;
+  gap: 8px;
+}
+
+.hp-consent__btn {
+  appearance: none;
+  border: 1px solid rgba(15,23,42,0.12);
+  border-radius: 10px;
+  padding: 9px 14px;
+  font-weight: 900;
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  color: var(--text, #1e293b);
+}
+
+.hp-consent__btn--primary {
+  background: rgba(31,111,235,0.12);
+  border-color: rgba(31,111,235,0.22);
+}
+
+.hp-consent__btn--primary:hover {
+  background: rgba(31,111,235,0.18);
+}
+
+.hp-consent__btn--ghost {
+  background: transparent;
+}
+
+.hp-consent__btn--ghost:hover {
+  background: rgba(15,23,42,0.04);
+}
+
+@media (max-width: 700px) {
+  .hp-consent__inner {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .hp-consent__actions {
+    justify-content: stretch;
+  }
+
+  .hp-consent__btn {
+    flex: 1;
+    text-align: center;
+  }
+}

@@ -53,6 +53,9 @@
       <script src="components/hero-device-launcher/hero-device-launcher.js"></script>
       <link rel="stylesheet" href="components/hero-device-launcher/hero-device-launcher.css" />
 	  <script defer src="components/profile/profile.js"></script>
+	  <script src="components/checkout-success/checkout-success.js"></script>
+	  <script src="components/cookie-consent/cookie-consent.js"></script>
+	  <script src="components/chatbot/chatbot.js"></script>
 
 	  <script>
 	    window.HAIPHEN = window.HAIPHEN || {};
@@ -2584,8 +2587,32 @@
 		  // NEW
 		  safe(H.loadHeroDeviceLauncher, 'hero-device-launcher');
 
+		  // Checkout success interstitial (query param detection)
+		  if (H.CheckoutSuccess?.detect?.()) {
+		    H.CheckoutSuccess.show('#checkout-success-mount').catch(e =>
+		      console.warn('[checkout-success] show failed', e)
+		    );
+		  }
+
+		  // Chatbot navigation assistant
+		  if (H.Chatbot?.init) {
+		    H.Chatbot.init('#chatbot-mount').catch(e =>
+		      console.warn('[chatbot] init failed', e)
+		    );
+		  }
+
+		  // Cookie consent banner
+		  if (H.CookieConsent?.init) {
+		    H.CookieConsent.init('#cookie-consent-mount').catch(e =>
+		      console.warn('[cookie-consent] init failed', e)
+		    );
+		  }
+
 		  updateSessionWidget();
 		});
 	  </script>
+	<div id="checkout-success-mount" style="display:none;"></div>
+	<div id="chatbot-mount"></div>
+	<div id="cookie-consent-mount"></div>
 	</body>
 	</html>

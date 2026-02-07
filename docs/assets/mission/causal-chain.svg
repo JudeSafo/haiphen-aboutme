@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 240" role="img" aria-label="Causal chain analysis">
+  <defs>
+    <linearGradient id="cc-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0b1220"/>
+      <stop offset="100%" stop-color="#0f1b2e"/>
+    </linearGradient>
+    <filter id="cc-glow-sm">
+      <feGaussianBlur stdDeviation="1.5" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <pattern id="cc-dots" width="16" height="16" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r=".6" fill="rgba(148,163,184,0.12)"/>
+    </pattern>
+    <clipPath id="cc-clip"><rect x="14" y="14" width="332" height="212" rx="18"/></clipPath>
+    <marker id="cc-arrow" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6" fill="rgba(90,155,212,0.4)"/>
+    </marker>
+    <marker id="cc-arrow-warn" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6" fill="rgba(245,158,11,0.5)"/>
+    </marker>
+  </defs>
+
+  <rect x="14" y="14" width="332" height="212" rx="18" fill="url(#cc-bg)" stroke="rgba(148,163,184,0.18)" stroke-width="1"/>
+  <rect x="14" y="14" width="332" height="212" rx="18" fill="url(#cc-dots)" clip-path="url(#cc-clip)"/>
+  <ellipse cx="180" cy="110" rx="130" ry="70" fill="rgba(245,158,11,0.03)"/>
+
+  <!-- Timeline axis -->
+  <line x1="30" y1="195" x2="330" y2="195" stroke="rgba(148,163,184,0.2)" stroke-width=".8"/>
+  <g font-family="ui-monospace,monospace" font-size="6" fill="rgba(148,163,184,0.4)">
+    <text x="55" y="207" text-anchor="middle">T-0</text>
+    <text x="130" y="207" text-anchor="middle">T-1</text>
+    <text x="205" y="207" text-anchor="middle">T-2</text>
+    <text x="280" y="207" text-anchor="middle">T-3</text>
+  </g>
+
+  <!-- Event nodes on timeline -->
+  <!-- Root cause (T-0) -->
+  <g transform="translate(55,50)">
+    <rect x="-32" y="-14" width="64" height="28" rx="6" fill="rgba(239,68,68,0.12)" stroke="#EF4444" stroke-width="1" opacity=".8"/>
+    <text x="0" y="-2" text-anchor="middle" font-family="ui-monospace,monospace" font-size="7" font-weight="700" fill="#EF4444">ROOT</text>
+    <text x="0" y="8" text-anchor="middle" font-family="ui-monospace,monospace" font-size="5.5" fill="rgba(239,68,68,0.6)">Config drift</text>
+  </g>
+  <line x1="55" y1="64" x2="55" y2="195" stroke="rgba(239,68,68,0.15)" stroke-width=".6" stroke-dasharray="3,4"/>
+
+  <!-- Propagation event (T-1) -->
+  <g transform="translate(130,80)">
+    <rect x="-32" y="-14" width="64" height="28" rx="6" fill="rgba(245,158,11,0.12)" stroke="#F59E0B" stroke-width="1" opacity=".8"/>
+    <text x="0" y="-2" text-anchor="middle" font-family="ui-monospace,monospace" font-size="7" font-weight="700" fill="#F59E0B">PROP</text>
+    <text x="0" y="8" text-anchor="middle" font-family="ui-monospace,monospace" font-size="5.5" fill="rgba(245,158,11,0.6)">Cache miss</text>
+  </g>
+  <line x1="130" y1="94" x2="130" y2="195" stroke="rgba(245,158,11,0.12)" stroke-width=".6" stroke-dasharray="3,4"/>
+
+  <!-- Cascade (T-2) -->
+  <g transform="translate(205,60)">
+    <rect x="-32" y="-14" width="64" height="28" rx="6" fill="rgba(245,158,11,0.12)" stroke="#F59E0B" stroke-width="1" opacity=".7"/>
+    <text x="0" y="-2" text-anchor="middle" font-family="ui-monospace,monospace" font-size="7" font-weight="700" fill="#F59E0B">CASCADE</text>
+    <text x="0" y="8" text-anchor="middle" font-family="ui-monospace,monospace" font-size="5.5" fill="rgba(245,158,11,0.5)">Timeout</text>
+  </g>
+  <line x1="205" y1="74" x2="205" y2="195" stroke="rgba(245,158,11,0.1)" stroke-width=".6" stroke-dasharray="3,4"/>
+
+  <!-- Impact (T-3) -->
+  <g transform="translate(280,90)">
+    <rect x="-32" y="-14" width="64" height="28" rx="6" fill="rgba(90,155,212,0.12)" stroke="#5A9BD4" stroke-width="1" opacity=".8"/>
+    <text x="0" y="-2" text-anchor="middle" font-family="ui-monospace,monospace" font-size="7" font-weight="700" fill="#5A9BD4">IMPACT</text>
+    <text x="0" y="8" text-anchor="middle" font-family="ui-monospace,monospace" font-size="5.5" fill="rgba(90,155,212,0.6)">SLA breach</text>
+  </g>
+  <line x1="280" y1="104" x2="280" y2="195" stroke="rgba(90,155,212,0.12)" stroke-width=".6" stroke-dasharray="3,4"/>
+
+  <!-- Causal arrows between events -->
+  <line x1="87" y1="50" x2="95" y2="73" stroke="rgba(245,158,11,0.35)" stroke-width="1.2" marker-end="url(#cc-arrow-warn)"/>
+  <line x1="162" y1="80" x2="170" y2="63" stroke="rgba(245,158,11,0.35)" stroke-width="1.2" marker-end="url(#cc-arrow-warn)"/>
+  <line x1="237" y1="60" x2="245" y2="83" stroke="rgba(90,155,212,0.35)" stroke-width="1.2" marker-end="url(#cc-arrow)"/>
+
+  <!-- Branching sub-event -->
+  <g transform="translate(130,145)">
+    <rect x="-28" y="-11" width="56" height="22" rx="5" fill="rgba(139,92,246,0.1)" stroke="rgba(139,92,246,0.4)" stroke-width=".8"/>
+    <text x="0" y="3" text-anchor="middle" font-family="ui-monospace,monospace" font-size="6" font-weight="600" fill="rgba(139,92,246,0.7)">Retry storm</text>
+  </g>
+  <line x1="130" y1="94" x2="130" y2="131" stroke="rgba(139,92,246,0.25)" stroke-width=".8" marker-end="url(#cc-arrow)"/>
+
+  <!-- Another branch -->
+  <g transform="translate(205,145)">
+    <rect x="-28" y="-11" width="56" height="22" rx="5" fill="rgba(139,92,246,0.1)" stroke="rgba(139,92,246,0.4)" stroke-width=".8"/>
+    <text x="0" y="3" text-anchor="middle" font-family="ui-monospace,monospace" font-size="6" font-weight="600" fill="rgba(139,92,246,0.7)">Queue backup</text>
+  </g>
+  <line x1="162" y1="145" x2="174" y2="145" stroke="rgba(139,92,246,0.25)" stroke-width=".8" marker-end="url(#cc-arrow)"/>
+
+  <!-- Counterfactual label -->
+  <text x="180" y="30" text-anchor="middle" font-family="ui-monospace,monospace" font-size="7" fill="rgba(148,163,184,0.35)">CAUSAL GRAPH — INCIDENT #4891</text>
+</svg>

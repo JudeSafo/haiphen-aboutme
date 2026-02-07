@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 240" role="img" aria-label="Risk analysis">
+  <defs>
+    <linearGradient id="ra-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0b1220"/>
+      <stop offset="100%" stop-color="#0f1b2e"/>
+    </linearGradient>
+    <linearGradient id="ra-curve" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#5A9BD4"/>
+      <stop offset="50%" stop-color="#10B981"/>
+      <stop offset="100%" stop-color="#F59E0B"/>
+    </linearGradient>
+    <filter id="ra-glow-sm">
+      <feGaussianBlur stdDeviation="1.5" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <pattern id="ra-dots" width="16" height="16" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r=".6" fill="rgba(148,163,184,0.12)"/>
+    </pattern>
+    <clipPath id="ra-clip"><rect x="14" y="14" width="332" height="212" rx="18"/></clipPath>
+  </defs>
+
+  <rect x="14" y="14" width="332" height="212" rx="18" fill="url(#ra-bg)" stroke="rgba(148,163,184,0.18)" stroke-width="1"/>
+  <rect x="14" y="14" width="332" height="212" rx="18" fill="url(#ra-dots)" clip-path="url(#ra-clip)"/>
+  <ellipse cx="160" cy="130" rx="120" ry="70" fill="rgba(245,158,11,0.04)"/>
+
+  <!-- Distribution curve (bell/skew) -->
+  <g transform="translate(30,30)">
+    <!-- Axes -->
+    <line x1="20" y1="130" x2="290" y2="130" stroke="rgba(148,163,184,0.25)" stroke-width=".8"/>
+    <line x1="20" y1="20" x2="20" y2="130" stroke="rgba(148,163,184,0.25)" stroke-width=".8"/>
+
+    <!-- Distribution curve -->
+    <path d="M 20,130 C 40,130 60,128 80,120 C 100,108 120,70 140,40 C 155,22 165,22 180,40 C 200,70 220,108 240,120 C 260,128 275,130 290,130"
+          fill="none" stroke="url(#ra-curve)" stroke-width="2" opacity=".8"/>
+
+    <!-- Fill area under curve -->
+    <path d="M 20,130 C 40,130 60,128 80,120 C 100,108 120,70 140,40 C 155,22 165,22 180,40 C 200,70 220,108 240,120 C 260,128 275,130 290,130 Z"
+          fill="rgba(90,155,212,0.06)"/>
+
+    <!-- VaR line -->
+    <line x1="230" y1="20" x2="230" y2="130" stroke="#F59E0B" stroke-width="1" stroke-dasharray="4,3" opacity=".6"/>
+    <text x="232" y="30" font-family="ui-monospace,monospace" font-size="7" fill="rgba(245,158,11,0.7)">VaR 95%</text>
+
+    <!-- CVaR line -->
+    <line x1="255" y1="20" x2="255" y2="130" stroke="#EF4444" stroke-width="1" stroke-dasharray="4,3" opacity=".5"/>
+    <text x="257" y="30" font-family="ui-monospace,monospace" font-size="7" fill="rgba(239,68,68,0.6)">CVaR</text>
+
+    <!-- Tail risk shading -->
+    <path d="M 230,120 C 240,124 250,127 260,128 C 270,129 280,130 290,130 L 290,130 L 230,130 Z"
+          fill="rgba(239,68,68,0.12)"/>
+
+    <!-- Mean line -->
+    <line x1="160" y1="20" x2="160" y2="130" stroke="rgba(16,185,129,0.4)" stroke-width="1" stroke-dasharray="2,4"/>
+    <text x="162" y="30" font-family="ui-monospace,monospace" font-size="6" fill="rgba(16,185,129,0.6)">mean</text>
+
+    <!-- Axis labels -->
+    <text x="155" y="145" text-anchor="middle" font-family="ui-monospace,monospace" font-size="6.5" fill="rgba(148,163,184,0.4)">Portfolio P&amp;L Distribution</text>
+  </g>
+
+  <!-- Scenario panel (right column) -->
+  <g transform="translate(260,40)">
+    <rect width="80" height="100" rx="8" fill="rgba(15,23,42,0.5)" stroke="rgba(148,163,184,0.15)" stroke-width=".6"/>
+    <text x="10" y="16" font-family="ui-monospace,monospace" font-size="7" font-weight="700" fill="rgba(226,232,240,0.6)">SCENARIOS</text>
+    <g font-family="ui-monospace,monospace" font-size="6.5" fill="rgba(226,232,240,0.5)">
+      <circle cx="10" cy="32" r="2.5" fill="#10B981" opacity=".6"/>
+      <text x="16" y="34">Base</text>
+      <circle cx="10" cy="48" r="2.5" fill="#F59E0B" opacity=".6"/>
+      <text x="16" y="50">Stress</text>
+      <circle cx="10" cy="64" r="2.5" fill="#EF4444" opacity=".6"/>
+      <text x="16" y="66">Tail risk</text>
+      <circle cx="10" cy="80" r="2.5" fill="#8B5CF6" opacity=".6"/>
+      <text x="16" y="82">Monte Carlo</text>
+    </g>
+  </g>
+
+  <!-- Status -->
+  <g transform="translate(40,198)" font-family="ui-sans-serif,system-ui" font-size="7.5" font-weight="700">
+    <circle cx="6" cy="4" r="3.5" fill="#10B981" opacity=".7" filter="url(#ra-glow-sm)"/>
+    <text x="14" y="7" fill="rgba(226,232,240,0.65)">10k simulations</text>
+    <circle cx="116" cy="4" r="3.5" fill="#F59E0B" opacity=".7" filter="url(#ra-glow-sm)"/>
+    <text x="124" y="7" fill="rgba(226,232,240,0.65)">95% confidence</text>
+    <circle cx="226" cy="4" r="3.5" fill="#8B5CF6" opacity=".7" filter="url(#ra-glow-sm)"/>
+    <text x="234" y="7" fill="rgba(226,232,240,0.65)">Correlation</text>
+  </g>
+</svg>

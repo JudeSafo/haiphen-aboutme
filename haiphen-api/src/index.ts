@@ -892,6 +892,96 @@ async function route(req: Request, env: Env): Promise<Response> {
     return okJson({ ok: true, event, date, deliveries }, requestId, corsHeaders(req, env));
   }
 
+  // ---- CONSENT: record cookie consent preference ----
+  // POST /v1/consent body: { session_id, essential?, analytics?, marketing? }
+  if (req.method === "POST" && url.pathname === "/v1/consent") {
+    const body = await req.json().catch(() => null) as null | {
+      session_id?: string; essential?: boolean; analytics?: boolean; marketing?: boolean;
+    };
+    if (!body?.session_id) return err("invalid_request", "session_id required", requestId, 400, corsHeaders(req, env));
+
+    let userLogin: string | null = null;
+    try {
+      const u = await authCookieUser(req, env, requestId);
+      userLogin = u.user_login;
+    } catch { /* anonymous is fine */ }
+
+    const ipCountry = req.headers.get("cf-ipcountry") || null;
+
+    await env.DB.prepare(`
+      INSERT INTO cookie_consent (user_login, session_id, essential, analytics, marketing, ip_country)
+      VALUES (?, ?, 1, ?, ?, ?)
+    `).bind(
+      userLogin,
+      body.session_id,
+      body.analytics ? 1 : 0,
+      body.marketing ? 1 : 0,
+      ipCountry
+    ).run();
+
+    return okJson({ ok: true }, requestId, corsHeaders(req, env));
+  }
+
+  // GET /v1/consent — retrieve consent preference for current user
+  if (req.method === "GET" && url.pathname === "/v1/consent") {
+    let userLogin: string | null = null;
+    try {
+      const u = await authCookieUser(req, env, requestId);
+      userLogin = u.user_login;
+    } catch { /* anonymous — need session_id from query */ }
+
+    const sessionId = url.searchParams.get("session_id") || null;
+    if (!userLogin && !sessionId) return err("invalid_request", "session_id or auth required", requestId, 400, corsHeaders(req, env));
+
+    const where = userLogin ? "user_login = ?" : "session_id = ?";
+    const bind = userLogin || sessionId;
+
+    const row = await env.DB.prepare(
+      `SELECT essential, analytics, marketing, updated_at FROM cookie_consent WHERE ${where} ORDER BY updated_at DESC LIMIT 1`
+    ).bind(bind).first<{ essential: number; analytics: number; marketing: number; updated_at: string }>();
+
+    if (!row) return okJson({ consent: null }, requestId, corsHeaders(req, env));
+
+    return okJson({
+      consent: {
+        essential: !!row.essential,
+        analytics: !!row.analytics,
+        marketing: !!row.marketing,
+        updated_at: row.updated_at,
+      }
+    }, requestId, corsHeaders(req, env));
+  }
+
+  // ---- CHATBOT: log interaction (analytics, optional) ----
+  // POST /v1/chatbot/interaction body: { session_id, prompt_text, target_section?, target_element? }
+  if (req.method === "POST" && url.pathname === "/v1/chatbot/interaction") {
+    const body = await req.json().catch(() => null) as null | {
+      session_id?: string; prompt_text?: string; target_section?: string; target_element?: string;
+    };
+    if (!body?.session_id || !body?.prompt_text) {
+      return err("invalid_request", "session_id and prompt_text required", requestId, 400, corsHeaders(req, env));
+    }
+
+    let userLogin: string | null = null;
+    try {
+      const u = await authCookieUser(req, env, requestId);
+      userLogin = u.user_login;
+    } catch { /* anonymous is fine */ }
+
+    await env.DB.prepare(`
+      INSERT INTO chatbot_interactions (user_login, session_id, prompt_text, target_section, target_element)
+      VALUES (?, ?, ?, ?, ?)
+    `).bind(
+      userLogin,
+      body.session_id,
+      body.prompt_text,
+      body.target_section || null,
+      body.target_element || null
+    ).run();
+
+    return okJson({ ok: true }, requestId, corsHeaders(req, env));
+  }
+
   return err("not_found", "Not found", requestId, 404, corsHeaders(req, env));
 }
 

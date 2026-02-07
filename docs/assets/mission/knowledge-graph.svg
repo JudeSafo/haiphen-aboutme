@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 240" role="img" aria-label="Knowledge graph">
+  <defs>
+    <linearGradient id="kg-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0b1220"/>
+      <stop offset="100%" stop-color="#0f1b2e"/>
+    </linearGradient>
+    <filter id="kg-glow">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="kg-glow-sm">
+      <feGaussianBlur stdDeviation="1.5" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <pattern id="kg-dots" width="16" height="16" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r=".6" fill="rgba(148,163,184,0.12)"/>
+    </pattern>
+    <clipPath id="kg-clip"><rect x="14" y="14" width="332" height="212" rx="18"/></clipPath>
+  </defs>
+
+  <rect x="14" y="14" width="332" height="212" rx="18" fill="url(#kg-bg)" stroke="rgba(148,163,184,0.18)" stroke-width="1"/>
+  <rect x="14" y="14" width="332" height="212" rx="18" fill="url(#kg-dots)" clip-path="url(#kg-clip)"/>
+  <ellipse cx="180" cy="120" rx="130" ry="85" fill="rgba(16,185,129,0.04)"/>
+
+  <!-- Entity graph nodes and edges -->
+  <g>
+    <!-- Edges (drawn first so nodes appear on top) -->
+    <line x1="90" y1="72" x2="180" y2="55" stroke="rgba(90,155,212,0.25)" stroke-width="1"/>
+    <line x1="90" y1="72" x2="70" y2="140" stroke="rgba(16,185,129,0.25)" stroke-width="1"/>
+    <line x1="180" y1="55" x2="270" y2="80" stroke="rgba(139,92,246,0.25)" stroke-width="1"/>
+    <line x1="180" y1="55" x2="180" y2="140" stroke="rgba(90,155,212,0.2)" stroke-width="1"/>
+    <line x1="270" y1="80" x2="280" y2="155" stroke="rgba(245,158,11,0.25)" stroke-width="1"/>
+    <line x1="180" y1="140" x2="70" y2="140" stroke="rgba(16,185,129,0.2)" stroke-width="1"/>
+    <line x1="180" y1="140" x2="280" y2="155" stroke="rgba(139,92,246,0.2)" stroke-width="1"/>
+    <line x1="70" y1="140" x2="140" y2="190" stroke="rgba(245,158,11,0.2)" stroke-width="1"/>
+    <line x1="180" y1="140" x2="140" y2="190" stroke="rgba(90,155,212,0.2)" stroke-width="1"/>
+
+    <!-- Entity: Organization (central hub) -->
+    <circle cx="180" cy="55" r="16" fill="rgba(90,155,212,0.15)" stroke="#5A9BD4" stroke-width="1.2" filter="url(#kg-glow-sm)"/>
+    <text x="180" y="58" text-anchor="middle" font-family="ui-monospace,monospace" font-size="7" font-weight="700" fill="#5A9BD4">ORG</text>
+
+    <!-- Entity: Person -->
+    <circle cx="90" cy="72" r="13" fill="rgba(16,185,129,0.12)" stroke="#10B981" stroke-width="1"/>
+    <text x="90" y="75" text-anchor="middle" font-family="ui-monospace,monospace" font-size="6.5" font-weight="700" fill="#10B981">PERSON</text>
+
+    <!-- Entity: System -->
+    <circle cx="270" cy="80" r="14" fill="rgba(139,92,246,0.12)" stroke="#8B5CF6" stroke-width="1"/>
+    <text x="270" y="83" text-anchor="middle" font-family="ui-monospace,monospace" font-size="6.5" font-weight="700" fill="#8B5CF6">SYSTEM</text>
+
+    <!-- Entity: Event -->
+    <circle cx="180" cy="140" r="14" fill="rgba(245,158,11,0.12)" stroke="#F59E0B" stroke-width="1"/>
+    <text x="180" y="143" text-anchor="middle" font-family="ui-monospace,monospace" font-size="6.5" font-weight="700" fill="#F59E0B">EVENT</text>
+
+    <!-- Entity: Location -->
+    <circle cx="70" cy="140" r="12" fill="rgba(90,155,212,0.1)" stroke="rgba(90,155,212,0.5)" stroke-width="1"/>
+    <text x="70" y="143" text-anchor="middle" font-family="ui-monospace,monospace" font-size="6" font-weight="700" fill="rgba(90,155,212,0.7)">LOC</text>
+
+    <!-- Entity: Asset -->
+    <circle cx="280" cy="155" r="12" fill="rgba(139,92,246,0.1)" stroke="rgba(139,92,246,0.5)" stroke-width="1"/>
+    <text x="280" y="158" text-anchor="middle" font-family="ui-monospace,monospace" font-size="6" font-weight="700" fill="rgba(139,92,246,0.7)">ASSET</text>
+
+    <!-- Entity: Risk -->
+    <circle cx="140" cy="190" r="11" fill="rgba(245,158,11,0.1)" stroke="rgba(245,158,11,0.4)" stroke-width="1"/>
+    <text x="140" y="193" text-anchor="middle" font-family="ui-monospace,monospace" font-size="6" font-weight="700" fill="rgba(245,158,11,0.6)">RISK</text>
+
+    <!-- Edge labels -->
+    <text x="130" y="58" text-anchor="middle" font-family="ui-monospace,monospace" font-size="5.5" fill="rgba(148,163,184,0.45)">employs</text>
+    <text x="228" y="62" text-anchor="middle" font-family="ui-monospace,monospace" font-size="5.5" fill="rgba(148,163,184,0.45)">operates</text>
+    <text x="182" y="100" text-anchor="start" font-family="ui-monospace,monospace" font-size="5.5" fill="rgba(148,163,184,0.45)">triggers</text>
+  </g>
+
+  <!-- Animated pulse on central node -->
+  <circle cx="180" cy="55" r="16" fill="none" stroke="#5A9BD4" stroke-width=".6" opacity="0">
+    <animate attributeName="r" values="16;28" dur="2.5s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.5;0" dur="2.5s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- Status -->
+  <g transform="translate(40,204)" font-family="ui-sans-serif,system-ui" font-size="7.5" font-weight="700">
+    <circle cx="6" cy="4" r="3.5" fill="#10B981" opacity=".7" filter="url(#kg-glow-sm)"/>
+    <text x="14" y="7" fill="rgba(226,232,240,0.65)">7 entities</text>
+    <circle cx="86" cy="4" r="3.5" fill="#5A9BD4" opacity=".7" filter="url(#kg-glow-sm)"/>
+    <text x="94" y="7" fill="rgba(226,232,240,0.65)">9 relationships</text>
+    <circle cx="186" cy="4" r="3.5" fill="#8B5CF6" opacity=".7" filter="url(#kg-glow-sm)"/>
+    <text x="194" y="7" fill="rgba(226,232,240,0.65)">GraphQL ready</text>
+  </g>
+</svg>
