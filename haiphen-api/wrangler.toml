@@ -18,12 +18,17 @@ database_id = "9a26fb67-b6e5-4d5f-8e62-3ecfde5ee8c2"
 
 [durable_objects]
 bindings = [
-  { name = "RATE_LIMITER", class_name = "RateLimiterDO" }
+  { name = "RATE_LIMITER", class_name = "RateLimiterDO" },
+  { name = "QUOTA_DO", class_name = "QuotaDO" }
 ]
 
 [[migrations]]
 tag = "v1"
 new_classes = ["RateLimiterDO"]
+
+[[migrations]]
+tag = "v2"
+new_classes = ["QuotaDO"]
 
 [[kv_namespaces]]
 binding = "REVOKE_KV"

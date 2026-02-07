@@ -3,6 +3,8 @@
 type Env = {
   JWT_SECRET: string;
   ALLOWED_ORIGINS?: string;
+  INTERNAL_TOKEN?: string;
+  QUOTA_API_URL?: string;
 };
 
 function uuid(): string { return crypto.randomUUID(); }
@@ -63,6 +65,27 @@ async function authUser(req: Request, env: Env, rid: string): Promise<{ user_log
   throw errJson("unauthorized", "Unauthorized", rid, 401);
 }
 
+// ---- Daily quota check ----
+
+async function checkQuota(env: Env, userId: string, plan: string, sessionHash?: string): Promise<{ allowed: boolean; reason?: string }> {
+  const apiUrl = env.QUOTA_API_URL || "https://api.haiphen.io";
+  const token = env.INTERNAL_TOKEN;
+  if (!token) return { allowed: true }; // fail-open if not configured
+
+  try {
+    const res = await fetch(`${apiUrl}/v1/internal/quota/consume`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Internal-Token": token },
+      body: JSON.stringify({ user_id: userId, plan, session_hash: sessionHash }),
+    });
+    if (!res.ok) return { allowed: true }; // fail-open on error
+    const data = await res.json() as { allowed: boolean; reason?: string };
+    return data;
+  } catch {
+    return { allowed: true }; // fail-open if unreachable
+  }
+}
+
 async function route(req: Request, env: Env): Promise<Response> {
   const rid = uuid();
   const url = new URL(req.url);
@@ -89,6 +112,8 @@ async function route(req: Request, env: Env): Promise<Response> {
   // POST /v1/risk/assess
   if (req.method === "POST" && url.pathname === "/v1/risk/assess") {
     const user = await authUser(req, env, rid);
+    const quota = await checkQuota(env, user.user_login, "free");
+    if (!quota.allowed) return errJson("quota_exceeded", quota.reason || "Daily quota exceeded", rid, 429, cors);
     const body = await req.json().catch(() => null) as null | { scenario: string; model?: string; parameters?: Record<string, any> };
     if (!body?.scenario) return errJson("invalid_request", "Missing scenario", rid, 400, cors);
 
@@ -124,7 +149,9 @@ async function route(req: Request, env: Env): Promise<Response> {
   // GET /v1/risk/assess/:id
   const assessMatch = url.pathname.match(/^\/v1\/risk\/assess\/([a-f0-9-]+)$/);
   if (req.method === "GET" && assessMatch) {
-    await authUser(req, env, rid);
+    const user = await authUser(req, env, rid);
+    const quota = await checkQuota(env, user.user_login, "free");
+    if (!quota.allowed) return errJson("quota_exceeded", quota.reason || "Daily quota exceeded", rid, 429, cors);
     return okJson({
       assess_id: assessMatch[1],
       scenario: "Portfolio stress test Q1 2026",
@@ -142,7 +169,9 @@ async function route(req: Request, env: Env): Promise<Response> {
 
   // GET /v1/risk/assessments
   if (req.method === "GET" && url.pathname === "/v1/risk/assessments") {
-    await authUser(req, env, rid);
+    const user = await authUser(req, env, rid);
+    const quota = await checkQuota(env, user.user_login, "free");
+    if (!quota.allowed) return errJson("quota_exceeded", quota.reason || "Daily quota exceeded", rid, 429, cors);
     return okJson({
       items: [
         { assess_id: "c3d4e5f6-0000-0000-0000-000000000001", scenario: "Portfolio stress test Q1 2026", model: "monte_carlo", risk_score: 0.73, status: "completed", created_at: "2026-02-07T08:00:00Z" },

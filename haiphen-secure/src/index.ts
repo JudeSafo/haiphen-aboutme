@@ -3,6 +3,8 @@
 type Env = {
   JWT_SECRET: string;
   ALLOWED_ORIGINS?: string;
+  INTERNAL_TOKEN?: string;
+  QUOTA_API_URL?: string;
 };
 
 // ---- Shared helpers (inline, no cross-worker imports) ----
@@ -88,6 +90,27 @@ async function authUser(req: Request, env: Env, requestId: string): Promise<{ us
   throw errJson("unauthorized", "Unauthorized", requestId, 401);
 }
 
+// ---- Daily quota check ----
+
+async function checkQuota(env: Env, userId: string, plan: string, sessionHash?: string): Promise<{ allowed: boolean; reason?: string }> {
+  const apiUrl = env.QUOTA_API_URL || "https://api.haiphen.io";
+  const token = env.INTERNAL_TOKEN;
+  if (!token) return { allowed: true }; // fail-open if not configured
+
+  try {
+    const res = await fetch(`${apiUrl}/v1/internal/quota/consume`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Internal-Token": token },
+      body: JSON.stringify({ user_id: userId, plan, session_hash: sessionHash }),
+    });
+    if (!res.ok) return { allowed: true }; // fail-open on error
+    const data = await res.json() as { allowed: boolean; reason?: string };
+    return data;
+  } catch {
+    return { allowed: true }; // fail-open if unreachable
+  }
+}
+
 // ---- Route handler ----
 
 async function route(req: Request, env: Env): Promise<Response> {
@@ -117,6 +140,8 @@ async function route(req: Request, env: Env): Promise<Response> {
   // POST /v1/secure/scan — initiate a security scan
   if (req.method === "POST" && url.pathname === "/v1/secure/scan") {
     const user = await authUser(req, env, requestId);
+    const quota = await checkQuota(env, user.user_login, "free");
+    if (!quota.allowed) return errJson("quota_exceeded", quota.reason || "Daily quota exceeded", requestId, 429, cors);
     const body = await req.json().catch(() => null) as null | { target: string; type?: string };
     if (!body?.target) return errJson("invalid_request", "Missing target", requestId, 400, cors);
 
@@ -140,7 +165,9 @@ async function route(req: Request, env: Env): Promise<Response> {
   // GET /v1/secure/scan/:id — get scan result
   const scanMatch = url.pathname.match(/^\/v1\/secure\/scan\/([a-f0-9-]+)$/);
   if (req.method === "GET" && scanMatch) {
-    await authUser(req, env, requestId);
+    const user = await authUser(req, env, requestId);
+    const quota = await checkQuota(env, user.user_login, "free");
+    if (!quota.allowed) return errJson("quota_exceeded", quota.reason || "Daily quota exceeded", requestId, 429, cors);
     const scanId = scanMatch[1];
     return okJson({
       scan_id: scanId,
@@ -160,7 +187,9 @@ async function route(req: Request, env: Env): Promise<Response> {
 
   // GET /v1/secure/scans — list scans
   if (req.method === "GET" && url.pathname === "/v1/secure/scans") {
-    await authUser(req, env, requestId);
+    const user = await authUser(req, env, requestId);
+    const quota = await checkQuota(env, user.user_login, "free");
+    if (!quota.allowed) return errJson("quota_exceeded", quota.reason || "Daily quota exceeded", requestId, 429, cors);
     return okJson({
       items: [
         { scan_id: "a1b2c3d4-0000-0000-0000-000000000001", target: "192.168.1.0/24", type: "vulnerability", status: "completed", created_at: "2026-02-07T10:00:00Z" },

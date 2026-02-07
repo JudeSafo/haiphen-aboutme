@@ -3,6 +3,8 @@
 type Env = {
   JWT_SECRET: string;
   ALLOWED_ORIGINS?: string;
+  INTERNAL_TOKEN?: string;
+  QUOTA_API_URL?: string;
 };
 
 function uuid(): string { return crypto.randomUUID(); }
@@ -63,6 +65,27 @@ async function authUser(req: Request, env: Env, rid: string): Promise<{ user_log
   throw errJson("unauthorized", "Unauthorized", rid, 401);
 }
 
+// ---- Daily quota check ----
+
+async function checkQuota(env: Env, userId: string, plan: string, sessionHash?: string): Promise<{ allowed: boolean; reason?: string }> {
+  const apiUrl = env.QUOTA_API_URL || "https://api.haiphen.io";
+  const token = env.INTERNAL_TOKEN;
+  if (!token) return { allowed: true }; // fail-open if not configured
+
+  try {
+    const res = await fetch(`${apiUrl}/v1/internal/quota/consume`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Internal-Token": token },
+      body: JSON.stringify({ user_id: userId, plan, session_hash: sessionHash }),
+    });
+    if (!res.ok) return { allowed: true }; // fail-open on error
+    const data = await res.json() as { allowed: boolean; reason?: string };
+    return data;
+  } catch {
+    return { allowed: true }; // fail-open if unreachable
+  }
+}
+
 async function route(req: Request, env: Env): Promise<Response> {
   const rid = uuid();
   const url = new URL(req.url);
@@ -86,6 +109,8 @@ async function route(req: Request, env: Env): Promise<Response> {
   // POST /v1/graph/query
   if (req.method === "POST" && url.pathname === "/v1/graph/query") {
     const user = await authUser(req, env, rid);
+    const quota = await checkQuota(env, user.user_login, "free");
+    if (!quota.allowed) return errJson("quota_exceeded", quota.reason || "Daily quota exceeded", rid, 429, cors);
     const body = await req.json().catch(() => null) as null | { q: string; depth?: number; limit?: number };
     if (!body?.q) return errJson("invalid_request", "Missing query (q)", rid, 400, cors);
 
@@ -113,6 +138,8 @@ async function route(req: Request, env: Env): Promise<Response> {
   // POST /v1/graph/entities — bulk ingest
   if (req.method === "POST" && url.pathname === "/v1/graph/entities") {
     const user = await authUser(req, env, rid);
+    const quota = await checkQuota(env, user.user_login, "free");
+    if (!quota.allowed) return errJson("quota_exceeded", quota.reason || "Daily quota exceeded", rid, 429, cors);
     const body = await req.json().catch(() => null) as null | { entities: any[] };
     if (!body?.entities || !Array.isArray(body.entities)) {
       return errJson("invalid_request", "Missing entities array", rid, 400, cors);
@@ -128,7 +155,9 @@ async function route(req: Request, env: Env): Promise<Response> {
 
   // GET /v1/graph/entities
   if (req.method === "GET" && url.pathname === "/v1/graph/entities") {
-    await authUser(req, env, rid);
+    const user = await authUser(req, env, rid);
+    const quota = await checkQuota(env, user.user_login, "free");
+    if (!quota.allowed) return errJson("quota_exceeded", quota.reason || "Daily quota exceeded", rid, 429, cors);
     const typeFilter = url.searchParams.get("type");
     const entities = [
       { id: "dev-001", type: "device", label: "PLC-Floor1", created_at: "2026-02-01T10:00:00Z" },

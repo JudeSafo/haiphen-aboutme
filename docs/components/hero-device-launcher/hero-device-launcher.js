@@ -3,11 +3,7 @@
   const NS = (window.HAIPHEN = window.HAIPHEN || {});
   const LOG = '[hero-device]';
 
-  // ✅ Align these with your docs install section.
   const INSTALL_HASH = '#docs:docs-install-brew';
-
-  // ✅ The Claude-like command shown + copied.
-  // Update to match whatever your docs recommend.
   const INSTALL_COMMAND = 'brew install haiphen';
 
   function routeToDocsInstall(source = 'hero_install_cta') {
@@ -58,11 +54,29 @@
   function isOpen(root) {
     return root?.classList?.contains('is-open');
   }
+  function lazyLoadDemo(root) {
+    if (!root) return;
+    const gif = root.querySelector('.hdl-demo-gif');
+    const demo = root.querySelector('.hdl-demo');
+    if (!gif || !demo || demo.classList.contains('is-loaded')) return;
+    const src = gif.getAttribute('data-hdl-demo-src');
+    if (!src) return;
+    gif.src = src;
+    gif.onload = () => demo.classList.add('is-loaded');
+  }
+
   function open(root) {
     if (!root) return;
     root.classList.add('is-open');
     const panel = root.querySelector('[data-hdl-panel]');
     if (panel) panel.setAttribute('aria-hidden', 'false');
+    lazyLoadDemo(root);
+
+    // Scroll so the GIF is centered in viewport
+    const hdl = root.closest('.hdl') || root;
+    try {
+      hdl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } catch {}
   }
   function close(root) {
     if (!root) return;
@@ -88,14 +102,35 @@
     const cmdEl = root.querySelector('[data-hdl-command]');
     if (cmdEl) cmdEl.textContent = INSTALL_COMMAND;
 
-    // Keep open when hovering the trigger region OR the panel itself
-    const hoverTargets = [trigger, root].filter(Boolean);
-    hoverTargets.forEach((el) => {
-      el.addEventListener('mouseenter', () => open(root));
-      el.addEventListener('mouseleave', () => close(root));
+    // --- Debounced hover on the entire .hero zone ---
+    let openTimer = null;
+    let closeTimer = null;
+    const isMobile = () => window.matchMedia('(hover: none)').matches;
+
+    function scheduleOpen() {
+      if (isMobile()) return;
+      clearTimeout(closeTimer);
+      closeTimer = null;
+      if (isOpen(root)) return;
+      openTimer = setTimeout(() => { open(root); openTimer = null; }, 200);
+    }
+
+    function scheduleClose() {
+      if (isMobile()) return;
+      clearTimeout(openTimer);
+      openTimer = null;
+      if (!isOpen(root)) return;
+      closeTimer = setTimeout(() => { close(root); closeTimer = null; }, 400);
+    }
+
+    // Hover zone: entire .hero section + the panel itself
+    const hoverZones = [hero, root].filter(Boolean);
+    hoverZones.forEach((el) => {
+      el.addEventListener('mouseenter', scheduleOpen);
+      el.addEventListener('mouseleave', scheduleClose);
     });
 
-    // Click/tap anywhere in the trigger region toggles (mobile + desktop)
+    // Click/tap on trigger toggles (mobile + desktop fallback)
     if (trigger) {
       trigger.style.cursor = 'pointer';
 
@@ -118,7 +153,10 @@
     window.addEventListener(
       'keydown',
       (e) => {
-        if (e.key === 'Escape') close(root);
+        if (e.key === 'Escape') {
+          clearTimeout(openTimer);
+          close(root);
+        }
       },
       { passive: true }
     );
@@ -130,6 +168,31 @@
       const clickedInPanel = !!(root && root.contains(t));
       if (!clickedInHero && !clickedInPanel) close(root);
     });
+
+    // Nav button dismissal: clicking section nav buttons closes the panel
+    document.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-section]');
+      if (btn && isOpen(root)) {
+        clearTimeout(openTimer);
+        close(root);
+      }
+    });
+
+    // IntersectionObserver: close when hero scrolls out of view
+    if (hero && typeof IntersectionObserver !== 'undefined') {
+      const obs = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (!entry.isIntersecting && isOpen(root)) {
+              clearTimeout(openTimer);
+              close(root);
+            }
+          }
+        },
+        { threshold: 0.3 }
+      );
+      obs.observe(hero);
+    }
 
     // CTA: copy
     const copyBtn = root.querySelector('[data-hdl-action="copy"]');

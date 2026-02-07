@@ -12,12 +12,12 @@ require() {
 # ---- config (override via env) ----
 MONOREPO_DIR="${MONOREPO_DIR:-/Users/jks142857/Desktop/haiphen-aboutme}"
 CLI_PREFIX="${CLI_PREFIX:-haiphen-cli}"                    # subtree prefix in monorepo
-CLI_REMOTE="${CLI_REMOTE:-haiphen-cli}"                    # git remote name in monorepo for JudeSafo/haiphen-cli
-CLI_REPO_SSH="${CLI_REPO_SSH:-git@github.com:JudeSafo/haiphen-cli.git}"
+CLI_REMOTE="${CLI_REMOTE:-haiphen-cli}"                    # git remote name in monorepo for haiphenAI/haiphen-cli
+CLI_REPO_SSH="${CLI_REPO_SSH:-git@github.com:haiphenAI/haiphen-cli.git}"
 CLI_DEFAULT_BRANCH="${CLI_DEFAULT_BRANCH:-main}"
 
 TAP_REPO_DIR="${TAP_REPO_DIR:-/tmp/homebrew-tap}"          # local clone path to tap repo
-TAP_REPO_SSH="${TAP_REPO_SSH:-git@github.com:JudeSafo/homebrew-tap.git}"
+TAP_REPO_SSH="${TAP_REPO_SSH:-git@github.com:haiphenAI/homebrew-tap.git}"
 TAP_FORMULA_PATH="${TAP_FORMULA_PATH:-Formula/haiphen.rb}"
 
 FORMULA_NAME="${FORMULA_NAME:-haiphen}"
@@ -45,7 +45,7 @@ VERSION="${1:-}"
 [[ -n "$VERSION" ]] || { usage; exit 2; }
 
 TAG="v$VERSION"
-SRC_URL="https://github.com/JudeSafo/haiphen-cli/archive/refs/tags/${TAG}.tar.gz"
+SRC_URL="https://github.com/haiphenAI/haiphen-cli/archive/refs/tags/${TAG}.tar.gz"
 
 # ---- preflight ----
 require git
@@ -152,17 +152,17 @@ if [[ "$PUBLISH_BINARIES" == "1" ]]; then
 
   say "Creating/Updating GitHub release $TAG"
   # create release (idempotent-ish: if exists, upload will fail unless --clobber; we use --clobber)
-  gh release view "$TAG" -R JudeSafo/haiphen-cli >/dev/null 2>&1 || \
-    gh release create "$TAG" -R JudeSafo/haiphen-cli --title "$TAG" --notes "Release $TAG" >/dev/null
+  gh release view "$TAG" -R haiphenAI/haiphen-cli >/dev/null 2>&1 || \
+    gh release create "$TAG" -R haiphenAI/haiphen-cli --title "$TAG" --notes "Release $TAG" >/dev/null
 
-  gh release upload "$TAG" -R JudeSafo/haiphen-cli --clobber \
+  gh release upload "$TAG" -R haiphenAI/haiphen-cli --clobber \
     "dist/haiphen_${VERSION}_darwin_arm64.tar.gz" \
     "dist/haiphen_${VERSION}_darwin_amd64.tar.gz" \
     "dist/haiphen_${VERSION}_linux_amd64.tar.gz" >/dev/null
 
-  RELEASE_URL_DARWIN_ARM64="https://github.com/JudeSafo/haiphen-cli/releases/download/${TAG}/haiphen_${VERSION}_darwin_arm64.tar.gz"
-  RELEASE_URL_DARWIN_AMD64="https://github.com/JudeSafo/haiphen-cli/releases/download/${TAG}/haiphen_${VERSION}_darwin_amd64.tar.gz"
-  RELEASE_URL_LINUX_AMD64="https://github.com/JudeSafo/haiphen-cli/releases/download/${TAG}/haiphen_${VERSION}_linux_amd64.tar.gz"
+  RELEASE_URL_DARWIN_ARM64="https://github.com/haiphenAI/haiphen-cli/releases/download/${TAG}/haiphen_${VERSION}_darwin_arm64.tar.gz"
+  RELEASE_URL_DARWIN_AMD64="https://github.com/haiphenAI/haiphen-cli/releases/download/${TAG}/haiphen_${VERSION}_darwin_amd64.tar.gz"
+  RELEASE_URL_LINUX_AMD64="https://github.com/haiphenAI/haiphen-cli/releases/download/${TAG}/haiphen_${VERSION}_linux_amd64.tar.gz"
 
   cd "$MONOREPO_DIR"
 else
@@ -192,7 +192,7 @@ if [[ "$PUBLISH_BINARIES" == "1" ]]; then
   cat > "$TAP_FORMULA_PATH" <<RUBY
 class Haiphen < Formula
   desc "Local gateway + CLI for Haiphen"
-  homepage "https://github.com/JudeSafo/haiphen-cli"
+  homepage "https://github.com/haiphenAI/haiphen-cli"
   version "${VERSION}"
   license "MIT"
 
@@ -236,7 +236,7 @@ git commit -m "${FORMULA_NAME}: ${TAG}" >/dev/null
 git push origin HEAD >/dev/null
 
 say "Running brew audit (strict/online) for the tap formula"
-brew audit --strict --online "JudeSafo/tap/${FORMULA_NAME}"
+brew audit --strict --online "haiphenAI/tap/${FORMULA_NAME}"
 
 say "Done."
 say "Next:"

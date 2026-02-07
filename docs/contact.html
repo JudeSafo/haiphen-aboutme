@@ -2,42 +2,105 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-  <title>Haiphen — Contact</title>
-  <link rel="icon" href="assets/favicon.ico">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contact — Haiphen Edge Protocol Intelligence</title>
+  <meta name="description" content="Contact Haiphen for edge protocol intelligence services, partnerships, and enterprise inquiries. Based in Manhattan, New York." />
+  <link rel="icon" href="assets/favicon.ico" />
+  <link rel="canonical" href="https://haiphen.io/contact.html" />
 
-  <!-- Keep your existing OG/Twitter/JSON-LD blocks here (copy from index.html) -->
+  <!-- Open Graph -->
+  <meta property="og:title" content="Contact Haiphen" />
+  <meta property="og:description" content="Get in touch with Haiphen for edge protocol intelligence services, partnerships, and enterprise inquiries." />
+  <meta property="og:image" content="https://haiphen.io/assets/robot_haiphen.png" />
+  <meta property="og:url" content="https://haiphen.io/contact.html" />
+  <meta property="og:type" content="website" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Contact Haiphen" />
+  <meta name="twitter:description" content="Get in touch for edge protocol intelligence services." />
+  <meta name="twitter:image" content="https://haiphen.io/assets/robot_haiphen.png" />
+
+  <!-- JSON-LD ContactPoint -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Haiphen",
+    "url": "https://haiphen.io",
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "telephone": "+1-512-910-4544",
+      "contactType": "Sales",
+      "email": "pi@haiphenai.com",
+      "areaServed": "US",
+      "availableLanguage": ["English"]
+    },
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": "Manhattan",
+      "addressRegion": "NY",
+      "addressCountry": "US"
+    }
+  }
+  </script>
 
   <link rel="stylesheet" href="assets/base.css" />
-
   <script src="components/headers/site-header.js"></script>
   <script src="components/sidebar/site-sidebar.js"></script>
   <script src="components/footers/site-footer.js"></script>
   <script src="assets/site.js"></script>
+
+  <style>
+    .contact-page { max-width: 640px; margin: 0 auto; text-align: left; }
+    .contact-page h2 { color: #2c3e50; margin: 1.5rem 0 0.75rem; }
+    .contact-page p { line-height: 1.7; color: #555; }
+    .contact-info { background: #fff; border: 1px solid #e6ecf3; border-radius: 12px; padding: 1.5rem; margin: 1.5rem 0; }
+    .contact-info p { margin-bottom: 0.5rem; }
+    .contact-info strong { color: #2c3e50; }
+    .contact-cta { text-align: center; margin: 2rem 0; }
+    .contact-cta a { display: inline-block; padding: 0.65rem 1.25rem; background: #5A9BD4; color: #fff; border-radius: 8px; text-decoration: none; font-weight: bold; margin: 0 0.5rem; }
+    .contact-cta a.ghost { background: transparent; color: #5A9BD4; border: 2px solid #5A9BD4; }
+  </style>
 </head>
 
 <body>
   <div id="header-mount"></div>
   <div id="sidebar-mount"></div>
 
-  <main class="main-container">
-    <h1>Contact</h1>
+  <main class="main-container" style="text-align: left;">
+    <div class="contact-page">
+      <h1>Contact</h1>
+      <p>
+        Reach out for enterprise inquiries, partnership opportunities, or to learn more about
+        Haiphen's edge protocol intelligence platform.
+      </p>
 
-    <section id="contact-us">
-      <p>Founder: <a href="https://linkedin.com/in/judesafo" target="_blank" rel="noopener noreferrer">Jude Safo</a></p>
-      <p>Email: <a href="mailto:pi@haiphenai.com">pi@haiphenai.com</a></p>
-      <p>Phone: (512) 910-4544</p>
-      <p>Address: Manhattan, New York, USA</p>
-
-      <div style="margin-top: 2rem; text-align:center;">
-        <a href="https://docs.google.com/forms/d/e/1FAIpQLSc8HhR9nIEE-DBgtKq2CQ-Y4PJ8Mr0pbE07fzGE15FhcfqG6g/viewform?usp=header"
-           target="_blank" rel="noopener noreferrer">
-          <img src="assets/nature.png" alt="Nature" style="max-width:80%; border-radius: 4px;">
-        </a>
+      <div class="contact-info">
+        <p><strong>Founder:</strong> <a href="https://linkedin.com/in/judesafo" target="_blank" rel="noopener noreferrer">Jude Safo</a></p>
+        <p><strong>Email:</strong> <a href="mailto:pi@haiphenai.com">pi@haiphenai.com</a></p>
+        <p><strong>Phone:</strong> (512) 910-4544</p>
+        <p><strong>Location:</strong> Manhattan, New York, USA</p>
       </div>
 
-      <p style="margin-top: 2rem;">"No man is a failure who has friends" - Angel Clarence</p>
-    </section>
+      <h2>Quick Links</h2>
+      <ul style="padding-left: 1.5rem; line-height: 2; color: #555;">
+        <li><a href="services.html">View all services</a></li>
+        <li><a href="docs.html">API documentation</a></li>
+        <li><a href="faq.html">Frequently asked questions</a></li>
+        <li><a href="about.html">About Haiphen</a></li>
+        <li><a href="terms.html">Legal terms</a></li>
+      </ul>
+
+      <div class="contact-cta">
+        <a href="/">Visit main site</a>
+        <a class="ghost" href="services.html">View services</a>
+      </div>
+
+      <p style="margin-top: 2rem; text-align: center; font-style: italic; color: #999;">
+        "No man is a failure who has friends" — Angel Clarence
+      </p>
+    </div>
   </main>
 
   <div id="footer-sentinel" aria-hidden="true" style="height:1px;"></div>

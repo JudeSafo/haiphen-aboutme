@@ -9,6 +9,8 @@ compatibility_date = "2025-07-16"
 
 [vars]
 ALLOWED_ORIGINS = "https://haiphen.io,https://www.haiphen.io,https://app.haiphen.io,https://auth.haiphen.io"
+QUOTA_API_URL = "https://api.haiphen.io"
 
 # Secrets (set via `wrangler secret put`):
 # - JWT_SECRET (shared across all Haiphen workers)
+# - INTERNAL_TOKEN (shared across all Haiphen workers for quota calls)

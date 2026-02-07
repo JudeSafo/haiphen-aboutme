@@ -258,6 +258,32 @@
         "After checkout, you'll see a confirmation with next steps: check email, generate API key in Profile, and explore Docs. Plan activates immediately.",
       tags: ["navigation", "services"],
     },
+    {
+      q: "What is Haiphen's deployment model?",
+      a:
+        "Haiphen is fully cloud-native, running on Cloudflare Workers across 200+ global Points of Presence. There are no VMs, containers, or servers to manage. Every request is handled at the nearest edge location with sub-millisecond cold starts.",
+      tags: ["cloud-native", "engineering", "general"],
+    },
+    {
+      q: "Can I self-host Haiphen?",
+      a:
+        "Haiphen is designed as a managed service on Cloudflare's edge network. Self-hosting is not currently supported. However, the CLI gateway (haiphen serve) runs locally and proxies to the edge APIs, giving you a local development experience without managing infrastructure.",
+      tags: ["cloud-native", "engineering"],
+    },
+    {
+      q: "What infrastructure do I need to use Haiphen?",
+      a:
+        "None. Haiphen requires zero customer infrastructure. Install the CLI via Homebrew (brew install haiphenAI/tap/haiphen), authenticate with your GitHub account, and start making API calls. All compute, storage, and coordination happens on the edge.",
+      tags: ["cloud-native", "services", "cli"],
+    },
+    {
+      q: "What are the benefits of Haiphen's cloud-native architecture?",
+      aHtml:
+        `Key benefits: (1) <strong>Zero ops</strong> — no servers, patches, or scaling to manage, (2) <strong>Global low latency</strong> — requests served from 200+ edge PoPs, (3) <strong>Built-in resilience</strong> — automatic failover and redundancy, (4) <strong>Pay-per-use efficiency</strong> — no idle compute costs, and (5) <strong>Instant deployment</strong> — updates propagate globally in seconds.`,
+      aText:
+        "Zero ops, global low latency from 200+ edge PoPs, built-in resilience, pay-per-use efficiency, and instant global deployment.",
+      tags: ["cloud-native", "engineering", "general"],
+    },
   ];
 
   function uniq(arr) {

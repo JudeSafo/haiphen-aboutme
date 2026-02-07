@@ -113,14 +113,14 @@
           </p>
 
           <h4 id="docs-install-brew">macOS (Homebrew)</h4>
-          <pre class="api-code"><code data-lang="bash">brew tap JudeSafo/tap
+          <pre class="api-code"><code data-lang="bash">brew tap haiphenAI/tap
         brew install haiphen
 
         # Verify
         haiphen --help</code></pre>
 
           <h4>From source (GitHub)</h4>
-          <pre class="api-code"><code data-lang="bash">git clone https://github.com/JudeSafo/haiphen-cli.git
+          <pre class="api-code"><code data-lang="bash">git clone https://github.com/haiphenAI/haiphen-cli.git
         cd haiphen-cli
 
         # Build (Go toolchain required)
@@ -135,13 +135,13 @@
           </p>
 
           <pre class="api-code"><code data-lang="bash"># Linux example (adjust artifact name to your release)
-        curl -fsSL -o haiphen.tar.gz "https://github.com/JudeSafo/haiphen-cli/releases/latest/download/&lt;artifact&gt;.tar.gz"
+        curl -fsSL -o haiphen.tar.gz "https://github.com/haiphenAI/haiphen-cli/releases/latest/download/&lt;artifact&gt;.tar.gz"
         tar -xzf haiphen.tar.gz
         sudo install -m 0755 haiphen /usr/local/bin/haiphen
         haiphen --help</code></pre>
 
           <pre class="api-code"><code data-lang="powershell"># Windows example (adjust artifact name to your release)
-        Invoke-WebRequest -Uri "https://github.com/JudeSafo/haiphen-cli/releases/latest/download/&lt;artifact&gt;.zip" -OutFile "haiphen.zip"
+        Invoke-WebRequest -Uri "https://github.com/haiphenAI/haiphen-cli/releases/latest/download/&lt;artifact&gt;.zip" -OutFile "haiphen.zip"
         Expand-Archive .\haiphen.zip -DestinationPath .\haiphen
         # Put haiphen.exe somewhere on PATH, then:
         haiphen.exe --help</code></pre>
@@ -510,6 +510,11 @@ haiphen secure scan --target "192.168.1.0/24" --type vulnerability</code></pre>
               <pre class="api-code"><code data-lang="bash">haiphen secure status</code></pre>
             </div>
           </div>
+
+          <details class="api-demo-block" open>
+            <summary>See demo</summary>
+            <img src="assets/demos/cli-secure.gif" alt="Haiphen Secure scan demo" loading="lazy" decoding="async" />
+          </details>
         </section>
 
         <!-- Network Trace -->
@@ -559,6 +564,11 @@ haiphen secure scan --target "192.168.1.0/24" --type vulnerability</code></pre>
               <pre class="api-code"><code data-lang="bash">haiphen network protocols --json</code></pre>
             </div>
           </div>
+
+          <details class="api-demo-block" open>
+            <summary>See demo</summary>
+            <img src="assets/demos/cli-network.gif" alt="Network trace demo" loading="lazy" decoding="async" />
+          </details>
         </section>
 
         <!-- Knowledge Graph -->
@@ -612,6 +622,11 @@ haiphen secure scan --target "192.168.1.0/24" --type vulnerability</code></pre>
               <pre class="api-code"><code data-lang="bash">haiphen graph schema --json</code></pre>
             </div>
           </div>
+
+          <details class="api-demo-block" open>
+            <summary>See demo</summary>
+            <img src="assets/demos/cli-graph.gif" alt="Knowledge graph query demo" loading="lazy" decoding="async" />
+          </details>
         </section>
 
         <!-- Risk Analysis -->
@@ -661,6 +676,11 @@ haiphen secure scan --target "192.168.1.0/24" --type vulnerability</code></pre>
               <pre class="api-code"><code data-lang="bash">haiphen risk assessments --json</code></pre>
             </div>
           </div>
+
+          <details class="api-demo-block" open>
+            <summary>See demo</summary>
+            <img src="assets/demos/cli-risk.gif" alt="Risk assessment demo" loading="lazy" decoding="async" />
+          </details>
         </section>
 
         <!-- Causal Chain -->
@@ -701,6 +721,11 @@ haiphen secure scan --target "192.168.1.0/24" --type vulnerability</code></pre>
               <pre class="api-code"><code data-lang="bash">haiphen causal analyses --json</code></pre>
             </div>
           </div>
+
+          <details class="api-demo-block" open>
+            <summary>See demo</summary>
+            <img src="assets/demos/cli-causal.gif" alt="Causal chain analysis demo" loading="lazy" decoding="async" />
+          </details>
         </section>
 
         <!-- Supply Chain Intel -->
@@ -750,6 +775,11 @@ haiphen secure scan --target "192.168.1.0/24" --type vulnerability</code></pre>
               <pre class="api-code"><code data-lang="bash">haiphen supply alerts --json</code></pre>
             </div>
           </div>
+
+          <details class="api-demo-block" open>
+            <summary>See demo</summary>
+            <img src="assets/demos/cli-supply.gif" alt="Supply chain assessment demo" loading="lazy" decoding="async" />
+          </details>
         </section>
 
         <!-- CLI Command Reference -->
@@ -811,6 +841,11 @@ curl http://localhost:8787/supply/v1/supply/alerts   # &rarr; supply.haiphen.io<
               Use <code>--help</code> on any command for full flag documentation.
             </p>
           </div>
+
+          <details class="api-demo-block" open>
+            <summary>See full workflow demo</summary>
+            <img src="assets/demos/cli-workflow.gif" alt="Haiphen CLI full workflow demo" loading="lazy" decoding="async" />
+          </details>
         </section>
 
         <!-- Errors -->

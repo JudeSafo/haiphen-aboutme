@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FAQ — Haiphen Edge Protocol Intelligence Platform</title>
+  <meta name="description" content="Frequently asked questions about Haiphen's edge protocol intelligence platform, services, deployment model, and cloud-native architecture." />
+  <link rel="icon" href="assets/favicon.ico" />
+  <link rel="canonical" href="https://haiphen.io/faq.html" />
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Haiphen FAQ — Frequently Asked Questions" />
+  <meta property="og:description" content="Common questions about Haiphen's services, deployment, architecture, and security practices." />
+  <meta property="og:image" content="https://haiphen.io/assets/robot_haiphen.png" />
+  <meta property="og:url" content="https://haiphen.io/faq.html" />
+  <meta property="og:type" content="website" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Haiphen FAQ" />
+  <meta name="twitter:description" content="Common questions about Haiphen's services, deployment, and architecture." />
+  <meta name="twitter:image" content="https://haiphen.io/assets/robot_haiphen.png" />
+
+  <!-- JSON-LD FAQPage -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is Haiphen in one sentence?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Haiphen is a signals-intelligence engineering studio: we build inspectable, production-grade pipelines for ML/NLP, security, and telemetry-heavy systems."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What deliverables do you actually ship?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Typically: (1) a working pipeline/service, (2) published artifacts (JSON, exports, screenshots), (3) observability (logs/metrics/traces) + runbooks, (4) reliability hardening (retries/idempotency/backfills), and (5) security boundaries (least privilege, key rotation posture)."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is Haiphen's deployment model?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Haiphen runs entirely on Cloudflare Workers — a serverless edge compute platform with 200+ global PoPs. There are no VMs, containers, or infrastructure to manage. Your requests are processed at the nearest edge location with sub-millisecond cold starts."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I self-host Haiphen?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Currently Haiphen is offered as a managed cloud service only. The CLI (haiphen serve) runs a local gateway on your machine that proxies authenticated requests to our edge infrastructure."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What infrastructure do I need to use Haiphen?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "None. Install the CLI via Homebrew (brew install haiphenAI/tap/haiphen), Docker, or call the API directly. Authentication is handled via GitHub OAuth. There are no databases, queues, or servers to provision on your end."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do you handle sensitive data?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "We design for least privilege and separation of concerns: scoped tokens, minimized retention, audit logs, and clear data boundaries. If needed we can keep raw data in your environment and only publish derived artifacts."
+        }
+      }
+    ]
+  }
+  </script>
+
+  <link rel="stylesheet" href="assets/base.css" />
+  <script src="components/headers/site-header.js"></script>
+  <script src="components/sidebar/site-sidebar.js"></script>
+  <script src="components/footers/site-footer.js"></script>
+  <script src="assets/site.js"></script>
+
+  <style>
+    .faq-container { max-width: 760px; margin: 0 auto; text-align: left; }
+    .faq-container details { border: 1px solid #e6ecf3; border-radius: 10px; margin-bottom: 0.75rem; background: #fff; }
+    .faq-container summary { padding: 1rem 1.25rem; cursor: pointer; font-weight: 600; color: #2c3e50; font-size: 1rem; list-style: none; }
+    .faq-container summary::-webkit-details-marker { display: none; }
+    .faq-container summary::before { content: "+"; display: inline-block; width: 1.2em; font-weight: 800; color: #5A9BD4; }
+    .faq-container details[open] summary::before { content: "\2212"; }
+    .faq-container .faq-answer { padding: 0 1.25rem 1rem 2.45rem; line-height: 1.7; color: #555; font-size: 0.95rem; }
+    .faq-tag { display: inline-block; font-size: 0.72rem; background: #eef3fa; color: #5A9BD4; padding: 2px 8px; border-radius: 4px; margin-left: 0.5rem; font-weight: 600; vertical-align: middle; }
+    .faq-cta { text-align: center; margin: 2.5rem 0; }
+    .faq-cta a { display: inline-block; padding: 0.65rem 1.25rem; background: #5A9BD4; color: #fff; border-radius: 8px; text-decoration: none; font-weight: bold; }
+  </style>
+</head>
+
+<body>
+  <div id="header-mount"></div>
+  <div id="sidebar-mount"></div>
+
+  <main class="main-container" style="text-align: left;">
+    <div class="faq-container">
+      <h1>Frequently Asked Questions</h1>
+      <p style="color: #555; margin-bottom: 2rem;">
+        Common questions about Haiphen's platform, services, and architecture.
+        <a href="/">View the interactive FAQ</a> for the full list with search.
+      </p>
+
+      <h2 style="font-size: 1.1rem; color: #5A9BD4; margin: 1.5rem 0 0.75rem;">General</h2>
+
+      <details>
+        <summary>What is Haiphen in one sentence? <span class="faq-tag">general</span></summary>
+        <div class="faq-answer">Haiphen is a signals-intelligence engineering studio: we build inspectable, production-grade pipelines for ML/NLP, security, and telemetry-heavy systems — including the trading telemetry you see on our platform.</div>
+      </details>
+
+      <details>
+        <summary>What does "API Everything" actually mean here? <span class="faq-tag">general</span></summary>
+        <div class="faq-answer">It means every meaningful output is <em>addressable</em>: metrics are published as JSON, screenshots are generated deterministically, and internal steps emit traceable intermediate state. The UI is basically a viewer for those artifacts.</div>
+      </details>
+
+      <h2 style="font-size: 1.1rem; color: #5A9BD4; margin: 1.5rem 0 0.75rem;">Services & Delivery</h2>
+
+      <details>
+        <summary>What deliverables do you actually ship? <span class="faq-tag">services</span></summary>
+        <div class="faq-answer">Typically: (1) a working pipeline/service, (2) published artifacts (JSON, exports, screenshots), (3) observability (logs/metrics/traces) + runbooks, (4) reliability hardening (retries/idempotency/backfills), and (5) security boundaries (least privilege, key rotation posture).</div>
+      </details>
+
+      <details>
+        <summary>What does a "thin vertical slice" mean in practice? <span class="faq-tag">engineering</span></summary>
+        <div class="faq-answer">One signal, one decision, one output. Example: ingest a single source, compute a KPI, publish JSON, render one UI widget, and add monitoring. Once it's reliable, scale horizontally (more signals).</div>
+      </details>
+
+      <details>
+        <summary>How do you define success for a project? <span class="faq-tag">services</span></summary>
+        <div class="faq-answer">Success is measurable: latency/throughput targets, error budgets, alert coverage, correctness checks, and the ability to explain any output (lineage). If you can't debug it, you don't own it.</div>
+      </details>
+
+      <details>
+        <summary>Can you integrate with our existing stack? <span class="faq-tag">services</span></summary>
+        <div class="faq-answer">Yes — we usually meet you where you are: your cloud, your CI, your observability, your auth. The goal is to reduce operational friction, not add another mystery system.</div>
+      </details>
+
+      <h2 style="font-size: 1.1rem; color: #5A9BD4; margin: 1.5rem 0 0.75rem;">Security & Data</h2>
+
+      <details>
+        <summary>How do you handle sensitive data? <span class="faq-tag">security</span></summary>
+        <div class="faq-answer">We design for least privilege and separation of concerns: scoped tokens, minimized retention, audit logs, and clear data boundaries. If needed we can keep raw data in your environment and only publish derived artifacts.</div>
+      </details>
+
+      <details>
+        <summary>Are the trading metrics investment advice? <span class="faq-tag">disclaimer</span></summary>
+        <div class="faq-answer">No. They're operational telemetry from an automated execution and risk system (volume, stability, daily outcomes). Nothing on this site is a recommendation to buy/sell any asset.</div>
+      </details>
+
+      <h2 style="font-size: 1.1rem; color: #5A9BD4; margin: 1.5rem 0 0.75rem;">Cloud-Native & Deployment</h2>
+
+      <details>
+        <summary>What is Haiphen's deployment model? <span class="faq-tag">cloud-native</span></summary>
+        <div class="faq-answer">Haiphen runs entirely on Cloudflare Workers — a serverless edge compute platform with 200+ global PoPs. There are no VMs, containers, or infrastructure to manage. Your requests are processed at the nearest edge location with sub-millisecond cold starts.</div>
+      </details>
+
+      <details>
+        <summary>Can I self-host Haiphen? <span class="faq-tag">cloud-native</span></summary>
+        <div class="faq-answer">Currently Haiphen is offered as a managed cloud service only. The CLI (<code>haiphen serve</code>) runs a local gateway on your machine that proxies authenticated requests to our edge infrastructure. This gives you a local endpoint while we handle reliability, scaling, and security.</div>
+      </details>
+
+      <details>
+        <summary>What infrastructure do I need to use Haiphen? <span class="faq-tag">cloud-native</span></summary>
+        <div class="faq-answer">None. Install the CLI via Homebrew (<code>brew install haiphenAI/tap/haiphen</code>), Docker, or call the API directly. Authentication is handled via GitHub OAuth. There are no databases, queues, or servers to provision on your end.</div>
+      </details>
+
+      <details>
+        <summary>What are the benefits of Haiphen's cloud-native architecture? <span class="faq-tag">cloud-native</span></summary>
+        <div class="faq-answer">
+          <ul style="padding-left: 1.25rem; margin: 0.5rem 0;">
+            <li><strong>Zero ops overhead</strong> — no servers, containers, or infrastructure to manage</li>
+            <li><strong>Global low-latency</strong> — requests served from 200+ Cloudflare edge PoPs</li>
+            <li><strong>Automatic scaling</strong> — no capacity planning or autoscaler tuning</li>
+            <li><strong>Built-in security</strong> — DDoS protection, TLS termination, and WAF included</li>
+            <li><strong>Cost efficiency</strong> — pay only for compute used, no idle resource costs</li>
+          </ul>
+        </div>
+      </details>
+
+      <div class="faq-cta">
+        <a href="/">View interactive FAQ on the main site</a>
+      </div>
+    </div>
+  </main>
+
+  <div id="footer-sentinel" aria-hidden="true" style="height:1px;"></div>
+  <div id="footer-mount"></div>
+</body>
+</html>

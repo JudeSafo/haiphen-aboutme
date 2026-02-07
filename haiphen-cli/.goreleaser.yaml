@@ -1,0 +1,54 @@
+version: 2
+
+project_name: haiphen
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - main: ./cmd/haiphen
+    binary: haiphen
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - darwin
+      - linux
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w
+      - -X main.version={{.Version}}
+      - -X main.commit={{.ShortCommit}}
+      - -X main.date={{.Date}}
+
+archives:
+  - format: tar.gz
+    name_template: >-
+      {{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}
+
+checksum:
+  name_template: checksums.txt
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
+
+brews:
+  - repository:
+      owner: haiphenAI
+      name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
+    directory: Formula
+    homepage: "https://haiphen.io"
+    description: "Haiphen CLI — local gateway and command center for edge protocol intelligence"
+    license: MIT
+    test: |
+      system "#{bin}/haiphen", "--help"
+    install: |
+      bin.install "haiphen"

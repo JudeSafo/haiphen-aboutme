@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Documentation — Haiphen API & CLI Reference</title>
+  <meta name="description" content="Haiphen API documentation, CLI quickstart guide, authentication flow, and service endpoint reference for edge protocol intelligence." />
+  <link rel="icon" href="assets/favicon.ico" />
+  <link rel="canonical" href="https://haiphen.io/docs.html" />
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Haiphen Documentation — API & CLI Reference" />
+  <meta property="og:description" content="API documentation, CLI quickstart, authentication guide, and endpoint reference for Haiphen's edge protocol intelligence platform." />
+  <meta property="og:image" content="https://haiphen.io/assets/robot_haiphen.png" />
+  <meta property="og:url" content="https://haiphen.io/docs.html" />
+  <meta property="og:type" content="article" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Haiphen Documentation" />
+  <meta name="twitter:description" content="API & CLI reference for Haiphen's edge protocol intelligence platform." />
+  <meta name="twitter:image" content="https://haiphen.io/assets/robot_haiphen.png" />
+
+  <!-- JSON-LD TechArticle -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "Haiphen API & CLI Documentation",
+    "description": "Complete reference for Haiphen's REST API, CLI tool, authentication flow, and service endpoints.",
+    "url": "https://haiphen.io/docs.html",
+    "author": {
+      "@type": "Organization",
+      "name": "Haiphen"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "Haiphen",
+      "logo": { "@type": "ImageObject", "url": "https://haiphen.io/assets/robot_haiphen.png" }
+    }
+  }
+  </script>
+
+  <link rel="stylesheet" href="assets/base.css" />
+  <script src="components/headers/site-header.js"></script>
+  <script src="components/sidebar/site-sidebar.js"></script>
+  <script src="components/footers/site-footer.js"></script>
+  <script src="assets/site.js"></script>
+
+  <style>
+    .docs-page { max-width: 780px; margin: 0 auto; text-align: left; }
+    .docs-page h2 { color: #2c3e50; border-bottom: 2px solid #e6ecf3; padding-bottom: 0.4rem; margin: 2rem 0 1rem; }
+    .docs-page h3 { color: #5A9BD4; margin: 1.5rem 0 0.5rem; }
+    .docs-page p, .docs-page li { line-height: 1.7; color: #555; }
+    .docs-page code { background: #f4f7fa; padding: 2px 6px; border-radius: 4px; font-size: 0.9em; }
+    .docs-page pre { background: #1e293b; color: #e2e8f0; padding: 1rem 1.25rem; border-radius: 10px; overflow-x: auto; font-size: 0.88rem; line-height: 1.6; margin: 1rem 0; }
+    .docs-page pre code { background: none; padding: 0; color: inherit; }
+    .docs-page table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.92rem; }
+    .docs-page th { background: #f4f7fa; padding: 0.6rem 0.75rem; text-align: left; border-bottom: 2px solid #e6ecf3; color: #2c3e50; }
+    .docs-page td { padding: 0.6rem 0.75rem; border-bottom: 1px solid #e6ecf3; color: #555; }
+    .docs-cta { text-align: center; margin: 2.5rem 0; }
+    .docs-cta a { display: inline-block; padding: 0.65rem 1.25rem; background: #5A9BD4; color: #fff; border-radius: 8px; text-decoration: none; font-weight: bold; }
+  </style>
+</head>
+
+<body>
+  <div id="header-mount"></div>
+  <div id="sidebar-mount"></div>
+
+  <main class="main-container" style="text-align: left;">
+    <div class="docs-page">
+      <h1>Documentation</h1>
+      <p>
+        API reference, CLI quickstart, and authentication guide for the Haiphen platform.
+        <a href="/">View the interactive docs</a> for live endpoint testing and full API explorer.
+      </p>
+
+      <h2 id="quickstart">CLI Quickstart</h2>
+
+      <h3>Install</h3>
+      <pre><code># macOS / Linux via Homebrew
+brew install haiphenAI/tap/haiphen
+
+# Or build from source
+git clone https://github.com/haiphenAI/haiphen-aboutme.git
+cd haiphen-cli
+go build -o haiphen ./cmd/haiphen
+./haiphen --help</code></pre>
+
+      <h3>Authenticate</h3>
+      <pre><code># Login via GitHub OAuth (opens browser)
+haiphen login
+
+# Check authentication and entitlement status
+haiphen status
+
+# Check all service health
+haiphen services</code></pre>
+
+      <h3>Local Gateway</h3>
+      <pre><code># Start local gateway on :8787
+haiphen serve
+
+# All API calls proxied through localhost
+curl http://localhost:8787/v1/metrics/kpis
+curl http://localhost:8787/secure/v1/secure/status</code></pre>
+
+      <h2 id="authentication">Authentication</h2>
+      <p>
+        Haiphen uses <strong>GitHub OAuth</strong> for authentication. The flow works as follows:
+      </p>
+      <ol style="padding-left: 1.5rem;">
+        <li><code>haiphen login</code> opens your browser to <code>auth.haiphen.io/login</code></li>
+        <li>You authorize with GitHub</li>
+        <li>A JWT is issued and stored locally at <code>~/.config/haiphen/session.default.json</code></li>
+        <li>All subsequent API calls include this JWT as a Bearer token</li>
+      </ol>
+      <p>
+        JWTs are verified across all workers using a shared secret. Revoked tokens are tracked in
+        distributed KV storage with fail-closed semantics.
+      </p>
+
+      <h2 id="api-overview">API Overview</h2>
+      <p>All Haiphen services expose REST APIs with JSON responses. Base URLs:</p>
+
+      <table>
+        <thead>
+          <tr><th>Service</th><th>Base URL</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>API</td><td><code>api.haiphen.io/v1</code></td><td>Metrics, API keys, webhooks, RSS</td></tr>
+          <tr><td>Secure</td><td><code>secure.haiphen.io/v1</code></td><td>Vulnerability scanning, compliance</td></tr>
+          <tr><td>Network</td><td><code>network.haiphen.io/v1</code></td><td>Protocol analysis, traffic inspection</td></tr>
+          <tr><td>Graph</td><td><code>graph.haiphen.io/v1</code></td><td>Knowledge graph queries, entity extraction</td></tr>
+          <tr><td>Risk</td><td><code>risk.haiphen.io/v1</code></td><td>Risk modeling, stress testing, VaR</td></tr>
+          <tr><td>Causal</td><td><code>causal.haiphen.io/v1</code></td><td>Root cause analysis, incident chains</td></tr>
+          <tr><td>Supply</td><td><code>supply.haiphen.io/v1</code></td><td>Supply chain intelligence, risk scoring</td></tr>
+        </tbody>
+      </table>
+
+      <h2 id="endpoints">Key Endpoints</h2>
+
+      <h3>Health Check (all services)</h3>
+      <pre><code>GET /v1/health → 200 {"status":"ok","service":"&lt;name&gt;","version":"1.0.0"}</code></pre>
+
+      <h3>Security Scanning</h3>
+      <pre><code># Run a vulnerability scan
+POST /v1/secure/scan
+Body: {"target": "edge-gw-prod", "type": "vulnerability"}
+
+# List recent scans
+GET /v1/secure/scans
+
+# Service status (public)
+GET /v1/secure/status</code></pre>
+
+      <h3>Network Trace</h3>
+      <pre><code># Trace protocol traffic
+POST /v1/network/trace
+Body: {"target": "plc-gateway-01", "protocol": "modbus"}
+
+# List recent traces
+GET /v1/network/traces
+
+# Supported protocols (public)
+GET /v1/network/protocols</code></pre>
+
+      <h3>Knowledge Graph</h3>
+      <pre><code># Query the graph
+POST /v1/graph/query
+Body: {"query": "semiconductor supply chain", "depth": 3}
+
+# List entities
+GET /v1/graph/entities
+
+# Graph schema (public)
+GET /v1/graph/schema</code></pre>
+
+      <h3>Risk Analysis</h3>
+      <pre><code># Run stress test
+POST /v1/risk/assess
+Body: {"scenario": "rate_hike_300bp"}
+
+# Available models (public)
+GET /v1/risk/models
+
+# Past assessments
+GET /v1/risk/assessments</code></pre>
+
+      <h3>Causal Chain</h3>
+      <pre><code># Analyze event chain
+POST /v1/causal/analyze
+Body: {"events": [{"ts":"...","type":"latency_spike","src":"edge-gw-03"}]}
+
+# Past analyses
+GET /v1/causal/analyses</code></pre>
+
+      <h3>Supply Chain</h3>
+      <pre><code># Assess supplier risk
+POST /v1/supply/assess
+Body: {"supplier": "Shenzhen MicroElectronics"}
+
+# Tracked suppliers
+GET /v1/supply/suppliers
+
+# Active alerts
+GET /v1/supply/alerts</code></pre>
+
+      <h2 id="rate-limits">Rate Limits</h2>
+      <table>
+        <thead>
+          <tr><th>Plan</th><th>Requests/min</th><th>Requests/day</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Free</td><td>60</td><td>200</td></tr>
+          <tr><td>Pro</td><td>600</td><td>10,000</td></tr>
+          <tr><td>Enterprise</td><td>6,000</td><td>50,000</td></tr>
+        </tbody>
+      </table>
+      <p>Rate limit headers: <code>X-RateLimit-Remaining</code>, <code>X-RateLimit-Reset</code>.</p>
+
+      <div class="docs-cta">
+        <a href="/">Open interactive API docs</a>
+      </div>
+    </div>
+  </main>
+
+  <div id="footer-sentinel" aria-hidden="true" style="height:1px;"></div>
+  <div id="footer-mount"></div>
+</body>
+</html>

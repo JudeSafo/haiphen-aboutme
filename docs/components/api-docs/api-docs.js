@@ -205,6 +205,28 @@
     });
   }
 
+  function wireCodeCopy(root) {
+    qsa(root, 'pre.api-code').forEach(function (pre) {
+      // Skip the try-it output block
+      if (pre.classList.contains('api-try-out')) return;
+      var btn = document.createElement('button');
+      btn.className = 'api-code-copy';
+      btn.type = 'button';
+      btn.textContent = 'Copy';
+      btn.addEventListener('click', async function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var code = pre.querySelector('code');
+        var text = code ? code.textContent : pre.textContent;
+        var ok = await copyText(text.trim());
+        setToast(root, ok ? 'Copied' : 'Copy failed');
+        btn.textContent = 'Copied';
+        setTimeout(function () { btn.textContent = 'Copy'; }, 1200);
+      });
+      pre.appendChild(btn);
+    });
+  }
+
   function wireFilter(root) {
     const input = qs(root, '[data-api-filter]');
     const nav = qs(root, '[data-api-nav]');
@@ -379,6 +401,7 @@
     buildNav(root);
     wireTabs(root);
     wireCopy(root);
+    wireCodeCopy(root);
     wireFilter(root);
     wireActions(root);
     wireTryIt(root);

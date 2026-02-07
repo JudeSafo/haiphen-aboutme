@@ -1,13 +1,14 @@
 import { buildRss } from "./rss";
 import { hmacSha256Hex, json, safeEqual, sha256Hex, uuid } from "./crypto";
 import { RateLimiterDO, RateLimitPlan } from "./rate_limit_do";
+import { QuotaDO } from "./quota_do";
 import { normalizeTradesJson, upsertMetricsDaily } from "./ingest";
 import { requireUserFromAuthCookie, verifyUserFromJwt } from "./auth";
 import { getExtremes, getKpis, getPortfolioAssets, getSeries } from "./metrics_queries";
 import { withCors, handleOptions as corsOptions } from "./cors";
 
-// Export DO class for Wrangler
-export { RateLimiterDO };
+// Export DO classes for Wrangler
+export { RateLimiterDO, QuotaDO };
 
 type TradesJson = {
   date: string;
@@ -32,6 +33,7 @@ type Env = {
   REVOKE_KV: KVNamespace;
   CACHE_KV: KVNamespace;
   RATE_LIMITER: DurableObjectNamespace;
+  QUOTA_DO: DurableObjectNamespace;
 
   // Shared with haiphen-auth so we can verify the same cookie JWT for key issuance.
   JWT_SECRET: string;
@@ -41,6 +43,9 @@ type Env = {
 
   // Admin token for privileged ops
   ADMIN_TOKEN: string;
+
+  // Internal token for cross-worker quota calls
+  INTERNAL_TOKEN: string;
 
   // Webhook signing: optional global secret salt (per-hook secret is stored anyway)
   WEBHOOK_SALT?: string;
@@ -65,6 +70,7 @@ type ErrorCode =
   | "forbidden"
   | "not_found"
   | "rate_limited"
+  | "quota_exceeded"
   | "invalid_request"
   | "internal";
 
@@ -980,6 +986,56 @@ async function route(req: Request, env: Env): Promise<Response> {
     ).run();
 
     return okJson({ ok: true }, requestId, corsHeaders(req, env));
+  }
+
+  // ---- INTERNAL: quota consume (called by other workers) ----
+  // POST /v1/internal/quota/consume
+  if (req.method === "POST" && url.pathname === "/v1/internal/quota/consume") {
+    const tok = req.headers.get("X-Internal-Token") || "";
+    if (!env.INTERNAL_TOKEN || !safeEqual(tok, env.INTERNAL_TOKEN)) {
+      return err("forbidden", "Forbidden", requestId, 403, corsHeaders(req, env));
+    }
+
+    const doId = env.QUOTA_DO.idFromName("global");
+    const stub = env.QUOTA_DO.get(doId);
+    const doRes = await stub.fetch(new Request("https://do/consume", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: await req.text(),
+    }));
+
+    const data = await doRes.json();
+    return okJson(data, requestId, corsHeaders(req, env));
+  }
+
+  // ---- quota status (authenticated user) ----
+  // GET /v1/quota/status
+  if (req.method === "GET" && url.pathname === "/v1/quota/status") {
+    const u = await authCookieUser(req, env, requestId);
+    const plan = await getPlan(env, u.user_login);
+
+    const doId = env.QUOTA_DO.idFromName("global");
+    const stub = env.QUOTA_DO.get(doId);
+    const doRes = await stub.fetch(new Request(`https://do/status?user_id=${encodeURIComponent(u.user_login)}&plan=${plan}`, {
+      method: "GET",
+    }));
+
+    const data = await doRes.json();
+    return okJson(data, requestId, corsHeaders(req, env));
+  }
+
+  // ---- ADMIN: traffic summary ----
+  // GET /v1/traffic/summary
+  if (req.method === "GET" && url.pathname === "/v1/traffic/summary") {
+    const tok = req.headers.get("X-Admin-Token") || "";
+    if (!safeEqual(tok, env.ADMIN_TOKEN)) return err("forbidden", "Forbidden", requestId, 403, corsHeaders(req, env));
+
+    const doId = env.QUOTA_DO.idFromName("global");
+    const stub = env.QUOTA_DO.get(doId);
+    const doRes = await stub.fetch(new Request("https://do/summary", { method: "GET" }));
+
+    const data = await doRes.json();
+    return okJson(data, requestId, corsHeaders(req, env));
   }
 
   return err("not_found", "Not found", requestId, 404, corsHeaders(req, env));

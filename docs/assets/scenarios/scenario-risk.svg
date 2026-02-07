@@ -1,0 +1,138 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0b1220"/>
+      <stop offset="100%" stop-color="#0f1b2e"/>
+    </linearGradient>
+    <pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse">
+      <circle cx="10" cy="10" r="0.8" fill="rgba(226,232,240,0.06)"/>
+    </pattern>
+    <linearGradient id="problemGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="rgba(245,158,11,0.12)"/>
+      <stop offset="100%" stop-color="rgba(239,68,68,0.08)"/>
+    </linearGradient>
+    <linearGradient id="toolGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="rgba(90,155,212,0.15)"/>
+      <stop offset="100%" stop-color="rgba(90,155,212,0.06)"/>
+    </linearGradient>
+    <linearGradient id="resolveGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="rgba(16,185,129,0.12)"/>
+      <stop offset="100%" stop-color="rgba(16,185,129,0.06)"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <rect width="960" height="540" fill="url(#bg)"/>
+  <rect width="960" height="540" fill="url(#dots)"/>
+
+  <text x="480" y="42" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,monospace" font-size="16" font-weight="800" fill="#e2e8f0">Scenario: Portfolio Risk Quantification</text>
+
+  <!-- Column 1: Problem -->
+  <rect x="40" y="70" width="260" height="420" rx="14" fill="url(#problemGrad)" stroke="rgba(245,158,11,0.25)" stroke-width="1"/>
+  <text x="170" y="100" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,monospace" font-size="13" font-weight="800" fill="#F59E0B">PROBLEM</text>
+
+  <!-- Risk gauge icon -->
+  <g transform="translate(170,170)" filter="url(#glow)">
+    <path d="M-30,10 A30,30 0 0,1 30,10" fill="none" stroke="rgba(245,158,11,0.5)" stroke-width="3"/>
+    <!-- Gauge needle pointing to danger -->
+    <line x1="0" y1="10" x2="22" y2="-15" stroke="#EF4444" stroke-width="2.5" stroke-linecap="round"/>
+    <circle cx="0" cy="10" r="4" fill="rgba(245,158,11,0.6)"/>
+    <!-- Tick marks -->
+    <line x1="-28" y1="4" x2="-24" y2="6" stroke="rgba(226,232,240,0.3)" stroke-width="1"/>
+    <line x1="28" y1="4" x2="24" y2="6" stroke="rgba(226,232,240,0.3)" stroke-width="1"/>
+    <line x1="0" y1="-20" x2="0" y2="-16" stroke="rgba(226,232,240,0.3)" stroke-width="1"/>
+    <text x="0" y="30" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="#EF4444">HIGH RISK</text>
+  </g>
+
+  <text x="170" y="240" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,monospace" font-size="11" fill="#e2e8f0" opacity="0.9">Unquantified portfolio</text>
+  <text x="170" y="260" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,monospace" font-size="11" fill="#e2e8f0" opacity="0.7">exposure</text>
+
+  <rect x="65" y="285" width="210" height="28" rx="6" fill="rgba(239,68,68,0.12)" stroke="rgba(239,68,68,0.3)" stroke-width="1"/>
+  <text x="170" y="304" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,monospace" font-size="10" fill="#EF4444">No VaR/CVaR metrics</text>
+
+  <rect x="65" y="323" width="210" height="28" rx="6" fill="rgba(245,158,11,0.12)" stroke="rgba(245,158,11,0.3)" stroke-width="1"/>
+  <text x="170" y="342" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,monospace" font-size="10" fill="#F59E0B">Untested stress scenarios</text>
+
+  <rect x="65" y="361" width="210" height="28" rx="6" fill="rgba(245,158,11,0.1)" stroke="rgba(245,158,11,0.2)" stroke-width="1"/>
+  <text x="170" y="380" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,monospace" font-size="10" fill="#F59E0B">Correlation risk unknown</text>
+
+  <text x="170" y="430" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,monospace" font-size="10" fill="rgba(226,232,240,0.5)">Gut-feel risk management</text>
+
+  <!-- Arrow 1 -->
+  <line x1="310" y1="280" x2="340" y2="280" stroke="rgba(226,232,240,0.3)" stroke-width="1.5" stroke-dasharray="4,3">
+    <animate attributeName="stroke-dashoffset" from="14" to="0" dur="1.5s" repeatCount="indefinite"/>
+  </line>
+  <polygon points="340,276 350,280 340,284" fill="rgba(226,232,240,0.4)"/>
+
+  <!-- Column 2: Tool -->
+  <rect x="350" y="70" width="260" height="420" rx="14" fill="url(#toolGrad)" stroke="rgba(90,155,212,0.25)" stroke-width="1"/>
+  <text x="480" y="100" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,monospace" font-size="13" font-weight="800" fill="#5A9BD4">HAIPHEN TOOL</text>
+
+  <!-- Terminal -->
+  <rect x="375" y="130" width="210" height="130" rx="8" fill="rgba(0,0,0,0.4)" stroke="rgba(90,155,212,0.3)" stroke-width="1"/>
+  <circle cx="390" cy="144" r="4" fill="#EF4444" opacity="0.7"/>
+  <circle cx="402" cy="144" r="4" fill="#F59E0B" opacity="0.7"/>
+  <circle cx="414" cy="144" r="4" fill="#10B981" opacity="0.7"/>
+
+  <text x="385" y="172" font-family="ui-monospace,SFMono-Regular,monospace" font-size="10" fill="#5A9BD4">$</text>
+  <text x="396" y="172" font-family="ui-monospace,SFMono-Regular,monospace" font-size="10" fill="#e2e8f0">haiphen risk assess \</text>
+  <text x="396" y="188" font-family="ui-monospace,SFMono-Regular,monospace" font-size="10" fill="#e2e8f0">  --scenario "Portfolio</text>
+  <text x="396" y="204" font-family="ui-monospace,SFMono-Regular,monospace" font-size="10" fill="#e2e8f0">  stress test Q1" --json</text>
+
+  <text x="385" y="230" font-family="ui-monospace,SFMono-Regular,monospace" font-size="9" fill="#10B981">Monte Carlo: 10k sims...</text>
+  <text x="385" y="246" font-family="ui-monospace,SFMono-Regular,monospace" font-size="9" fill="#10B981">VaR(95%): $42,300</text>
+
+  <text x="480" y="290" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,monospace" font-size="12" font-weight="800" fill="#5A9BD4">haiphen risk assess</text>
+  <text x="480" y="310" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,monospace" font-size="10" fill="rgba(226,232,240,0.7)">Monte Carlo simulation</text>
+  <text x="480" y="326" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,monospace" font-size="10" fill="rgba(226,232,240,0.7)">VaR/CVaR calculation</text>
+  <text x="480" y="342" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,monospace" font-size="10" fill="rgba(226,232,240,0.7)">Stress scenario testing</text>
+
+  <rect x="400" y="370" width="160" height="6" rx="3" fill="rgba(0,0,0,0.3)"/>
+  <rect x="400" y="370" width="160" height="6" rx="3" fill="rgba(90,155,212,0.6)">
+    <animate attributeName="width" from="0" to="160" dur="2s" fill="freeze"/>
+  </rect>
+  <text x="480" y="395" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,monospace" font-size="9" fill="rgba(226,232,240,0.5)">10,000 simulations in 6s</text>
+
+  <!-- Arrow 2 -->
+  <line x1="620" y1="280" x2="650" y2="280" stroke="rgba(226,232,240,0.3)" stroke-width="1.5" stroke-dasharray="4,3">
+    <animate attributeName="stroke-dashoffset" from="14" to="0" dur="1.5s" repeatCount="indefinite"/>
+  </line>
+  <polygon points="650,276 660,280 650,284" fill="rgba(226,232,240,0.4)"/>
+
+  <!-- Column 3: Resolution -->
+  <rect x="660" y="70" width="260" height="420" rx="14" fill="url(#resolveGrad)" stroke="rgba(16,185,129,0.25)" stroke-width="1"/>
+  <text x="790" y="100" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,monospace" font-size="13" font-weight="800" fill="#10B981">RESOLUTION</text>
+
+  <!-- Risk gauge resolved -->
+  <g transform="translate(790,170)" filter="url(#glow)">
+    <path d="M-30,10 A30,30 0 0,1 30,10" fill="none" stroke="rgba(16,185,129,0.5)" stroke-width="3"/>
+    <line x1="0" y1="10" x2="-15" y2="-12" stroke="#10B981" stroke-width="2.5" stroke-linecap="round"/>
+    <circle cx="0" cy="10" r="4" fill="rgba(16,185,129,0.6)"/>
+    <line x1="-28" y1="4" x2="-24" y2="6" stroke="rgba(226,232,240,0.3)" stroke-width="1"/>
+    <line x1="28" y1="4" x2="24" y2="6" stroke="rgba(226,232,240,0.3)" stroke-width="1"/>
+    <line x1="0" y1="-20" x2="0" y2="-16" stroke="rgba(226,232,240,0.3)" stroke-width="1"/>
+    <text x="0" y="30" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="#10B981">QUANTIFIED</text>
+  </g>
+
+  <text x="790" y="240" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,monospace" font-size="11" fill="#e2e8f0" opacity="0.9">VaR/CVaR metrics</text>
+  <text x="790" y="260" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,monospace" font-size="11" fill="#e2e8f0" opacity="0.7">Stress-tested portfolio</text>
+
+  <rect x="685" y="285" width="210" height="28" rx="6" fill="rgba(16,185,129,0.1)" stroke="rgba(16,185,129,0.3)" stroke-width="1"/>
+  <text x="790" y="304" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,monospace" font-size="10" fill="#10B981">VaR(95%): $42,300</text>
+
+  <rect x="685" y="323" width="210" height="28" rx="6" fill="rgba(16,185,129,0.08)" stroke="rgba(16,185,129,0.2)" stroke-width="1"/>
+  <text x="790" y="342" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,monospace" font-size="10" fill="#10B981">CVaR(95%): $58,100</text>
+
+  <rect x="685" y="361" width="210" height="28" rx="6" fill="rgba(16,185,129,0.06)" stroke="rgba(16,185,129,0.15)" stroke-width="1"/>
+  <text x="790" y="380" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,monospace" font-size="10" fill="#10B981">Max drawdown: -12.4%</text>
+
+  <rect x="685" y="399" width="210" height="28" rx="6" fill="rgba(16,185,129,0.04)" stroke="rgba(16,185,129,0.12)" stroke-width="1"/>
+  <text x="790" y="418" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,monospace" font-size="10" fill="#10B981">Hedge: reduce sector beta</text>
+
+  <text x="790" y="460" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,monospace" font-size="10" fill="rgba(226,232,240,0.5)">Data-driven risk limits set</text>
+
+  <text x="480" y="524" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,monospace" font-size="10" fill="rgba(226,232,240,0.3)">haiphen.io</text>
+</svg>

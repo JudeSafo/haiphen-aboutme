@@ -1,50 +1,244 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <!-- Basic SEO -->
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-  <title>Haiphen — Services</title>
-  <link rel="icon" href="assets/favicon.ico">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Services — Haiphen Edge Protocol Intelligence Platform</title>
+  <meta name="description" content="Haiphen's 12 edge protocol intelligence services: security scanning, network trace, knowledge graph, risk analysis, causal chain, supply chain, and more." />
+  <link rel="icon" href="assets/favicon.ico" />
+  <link rel="canonical" href="https://haiphen.io/services.html" />
 
-  <!-- Keep your existing OG/Twitter/JSON-LD blocks here (copy from index.html) -->
+  <!-- Open Graph -->
+  <meta property="og:title" content="Haiphen Services — Edge Protocol Intelligence" />
+  <meta property="og:description" content="12 edge-native services for security, signals, risk, and operational intelligence. Cloud-native on Cloudflare Workers." />
+  <meta property="og:image" content="https://haiphen.io/assets/robot_haiphen.png" />
+  <meta property="og:url" content="https://haiphen.io/services.html" />
+  <meta property="og:type" content="website" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Haiphen Services" />
+  <meta name="twitter:description" content="Edge protocol intelligence services for security, signals, risk, and operational intelligence." />
+  <meta name="twitter:image" content="https://haiphen.io/assets/robot_haiphen.png" />
+
+  <!-- JSON-LD SoftwareApplication -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Haiphen",
+    "applicationCategory": "SecurityApplication",
+    "operatingSystem": "Cloud (Cloudflare Workers)",
+    "url": "https://haiphen.io/services.html",
+    "description": "Edge protocol intelligence platform with 12 services for security, signals, risk, and operational intelligence.",
+    "offers": [
+      {
+        "@type": "Offer",
+        "name": "Free",
+        "price": "0",
+        "priceCurrency": "USD",
+        "description": "60 req/min, 200 req/day, health endpoints"
+      },
+      {
+        "@type": "Offer",
+        "name": "Pro",
+        "price": "99",
+        "priceCurrency": "USD",
+        "description": "600 req/min, 10,000 req/day, all services"
+      },
+      {
+        "@type": "Offer",
+        "name": "Enterprise",
+        "price": "499",
+        "priceCurrency": "USD",
+        "description": "6,000 req/min, 50,000 req/day, priority support"
+      }
+    ],
+    "author": {
+      "@type": "Organization",
+      "name": "Haiphen"
+    }
+  }
+  </script>
 
   <link rel="stylesheet" href="assets/base.css" />
-
-  <!-- Component loaders -->
   <script src="components/headers/site-header.js"></script>
   <script src="components/sidebar/site-sidebar.js"></script>
   <script src="components/footers/site-footer.js"></script>
-  <script src="components/services-plans/services-plans.js"></script>
-
-  <!-- Shared bootloader -->
   <script src="assets/site.js"></script>
+
+  <style>
+    .svc-page { max-width: 820px; margin: 0 auto; text-align: left; }
+    .svc-page h2 { color: #2c3e50; margin: 2rem 0 1rem; }
+    .svc-page p { line-height: 1.7; color: #555; margin-bottom: 1rem; }
+    .svc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1.25rem; margin: 1.5rem 0; }
+    .svc-card { background: #fff; border: 1px solid #e6ecf3; border-radius: 12px; padding: 1.25rem; box-shadow: 0 2px 8px rgba(0,0,0,0.04); transition: transform 0.15s ease, box-shadow 0.15s ease; }
+    .svc-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.08); }
+    .svc-card .svc-eyebrow { font-size: 0.72rem; font-weight: 700; color: #5A9BD4; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.4rem; }
+    .svc-card h3 { color: #2c3e50; font-size: 1.05rem; margin-bottom: 0.5rem; }
+    .svc-card p { font-size: 0.9rem; color: #666; margin: 0 0 0.75rem; }
+    .svc-card .svc-endpoint { font-size: 0.8rem; color: #888; font-family: monospace; }
+    .svc-pricing { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; margin: 1.5rem 0; }
+    .svc-plan { background: #fff; border: 1px solid #e6ecf3; border-radius: 12px; padding: 1.5rem; text-align: center; }
+    .svc-plan h3 { color: #5A9BD4; margin-bottom: 0.5rem; }
+    .svc-plan .price { font-size: 1.8rem; font-weight: 800; color: #2c3e50; margin: 0.5rem 0; }
+    .svc-plan .price span { font-size: 0.9rem; font-weight: 400; color: #888; }
+    .svc-plan ul { text-align: left; padding-left: 1.25rem; font-size: 0.88rem; color: #555; line-height: 1.8; }
+    .svc-cta { text-align: center; margin: 2.5rem 0; }
+    .svc-cta a { display: inline-block; padding: 0.65rem 1.25rem; background: #5A9BD4; color: #fff; border-radius: 8px; text-decoration: none; font-weight: bold; margin: 0 0.5rem; }
+    .svc-cta a.ghost { background: transparent; color: #5A9BD4; border: 2px solid #5A9BD4; }
+    @media (max-width: 640px) { .svc-pricing { grid-template-columns: 1fr; } }
+  </style>
 </head>
 
 <body>
   <div id="header-mount"></div>
   <div id="sidebar-mount"></div>
 
-  <main class="main-container">
-    <h1>Services</h1>
+  <main class="main-container" style="text-align: left;">
+    <div class="svc-page">
+      <h1>Services</h1>
+      <p>
+        Haiphen provides 12 edge-native services for operational intelligence across security,
+        signals, risk, and infrastructure. All services run on Cloudflare Workers with zero
+        infrastructure for customers.
+        <a href="/">View the interactive services catalogue</a>.
+      </p>
 
-    <section>
-      <div id="services-plans-mount"></div>
-    </section>
+      <h2>Core Services</h2>
+      <div class="svc-grid">
+        <div class="svc-card">
+          <div class="svc-eyebrow">OpSec</div>
+          <h3>Operational Security</h3>
+          <p>Zero-trust posture, threat-aware pipelines, and auditable workflows for regulated environments.</p>
+          <div class="svc-endpoint">api.haiphen.io/v1/*</div>
+        </div>
+
+        <div class="svc-card">
+          <div class="svc-eyebrow">Signals</div>
+          <h3>Signal Delivery</h3>
+          <p>Normalized, latency-aware signal delivery for trading and analytics with multi-source ingestion and dedupe.</p>
+          <div class="svc-endpoint">api.haiphen.io/v1/metrics/*</div>
+        </div>
+
+        <div class="svc-card">
+          <div class="svc-eyebrow">Encryption</div>
+          <h3>Secure Transport</h3>
+          <p>Tokenized access, secret rotation, HMAC-signed endpoints, and JWT authentication across all services.</p>
+          <div class="svc-endpoint">auth.haiphen.io/*</div>
+        </div>
+
+        <div class="svc-card">
+          <div class="svc-eyebrow">Cloud-Native</div>
+          <h3>Edge Deployment</h3>
+          <p>Zero-infrastructure deployment across 200+ Cloudflare edge locations with sub-millisecond cold starts.</p>
+          <div class="svc-endpoint">*.haiphen.io</div>
+        </div>
+
+        <div class="svc-card">
+          <div class="svc-eyebrow">Robotics</div>
+          <h3>Hardware Telemetry</h3>
+          <p>Hardware telemetry ingestion, monitoring, and closed-loop automation for physical workflows.</p>
+          <div class="svc-endpoint">api.haiphen.io/v1/*</div>
+        </div>
+
+        <div class="svc-card">
+          <div class="svc-eyebrow">Edge</div>
+          <h3>Distributed Delivery</h3>
+          <p>Edge-native signal distribution with durable coordination and resilient compute across regions.</p>
+          <div class="svc-endpoint">*.haiphen.io</div>
+        </div>
+      </div>
+
+      <h2>Intelligence Services</h2>
+      <div class="svc-grid">
+        <div class="svc-card">
+          <div class="svc-eyebrow">Security</div>
+          <h3>Vulnerability Scanning</h3>
+          <p>CVE correlation, compliance enforcement, drift detection, and automated remediation playbook generation.</p>
+          <div class="svc-endpoint">secure.haiphen.io/v1/*</div>
+        </div>
+
+        <div class="svc-card">
+          <div class="svc-eyebrow">Network</div>
+          <h3>Protocol Analysis</h3>
+          <p>Multi-protocol packet decoding for Modbus, OPC-UA, MQTT with anomaly detection and session reconstruction.</p>
+          <div class="svc-endpoint">network.haiphen.io/v1/*</div>
+        </div>
+
+        <div class="svc-card">
+          <div class="svc-eyebrow">Knowledge</div>
+          <h3>Knowledge Graph</h3>
+          <p>Entity extraction, relationship inference, and GraphQL query interface with cross-source deduplication.</p>
+          <div class="svc-endpoint">graph.haiphen.io/v1/*</div>
+        </div>
+
+        <div class="svc-card">
+          <div class="svc-eyebrow">Risk</div>
+          <h3>Risk Analysis</h3>
+          <p>Monte Carlo simulation, VaR/CVaR computation, and portfolio correlation analysis under stress scenarios.</p>
+          <div class="svc-endpoint">risk.haiphen.io/v1/*</div>
+        </div>
+
+        <div class="svc-card">
+          <div class="svc-eyebrow">Causality</div>
+          <h3>Causal Chain</h3>
+          <p>Causal graph construction, incident timeline reconstruction, and counterfactual reasoning for complex failures.</p>
+          <div class="svc-endpoint">causal.haiphen.io/v1/*</div>
+        </div>
+
+        <div class="svc-card">
+          <div class="svc-eyebrow">Supply Chain</div>
+          <h3>Supply Intelligence</h3>
+          <p>Multi-tier supplier mapping, disruption probability scoring, and geopolitical risk overlay in real time.</p>
+          <div class="svc-endpoint">supply.haiphen.io/v1/*</div>
+        </div>
+      </div>
+
+      <h2>Pricing</h2>
+      <div class="svc-pricing">
+        <div class="svc-plan">
+          <h3>Free</h3>
+          <div class="price">$0<span>/mo</span></div>
+          <ul>
+            <li>60 requests/min</li>
+            <li>200 requests/day</li>
+            <li>Health + status endpoints</li>
+            <li>CLI gateway access</li>
+          </ul>
+        </div>
+        <div class="svc-plan" style="border-color: #5A9BD4; border-width: 2px;">
+          <h3>Pro</h3>
+          <div class="price">$99<span>/mo</span></div>
+          <ul>
+            <li>600 requests/min</li>
+            <li>10,000 requests/day</li>
+            <li>All 12 services</li>
+            <li>API key access</li>
+            <li>Webhook notifications</li>
+          </ul>
+        </div>
+        <div class="svc-plan">
+          <h3>Enterprise</h3>
+          <div class="price">$499<span>/mo</span></div>
+          <ul>
+            <li>6,000 requests/min</li>
+            <li>50,000 requests/day</li>
+            <li>Priority support</li>
+            <li>Custom integrations</li>
+            <li>SLA guarantee</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="svc-cta">
+        <a href="/">Get started</a>
+        <a class="ghost" href="docs.html">View API docs</a>
+      </div>
+    </div>
   </main>
 
   <div id="footer-sentinel" aria-hidden="true" style="height:1px;"></div>
   <div id="footer-mount"></div>
-
-  <script>
-    // If your services components provide a loader, call it here:
-    document.addEventListener('DOMContentLoaded', async () => {
-      try { await window.HAIPHEN?.loadServicesPlans?.(); }
-      catch (e) { console.warn('[Services] loadServicesPlans failed', e); }
-
-      // Re-init snap stacks after async mount changes height
-      window.HAIPHEN?.initSnapStacks?.(document);
-    });
-  </script>
 </body>
 </html>

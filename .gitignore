@@ -3,6 +3,7 @@
 # --- secrets ---
 .env
 .env.*
+.dev.vars
 *.pem
 *.key
 
