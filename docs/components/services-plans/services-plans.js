@@ -227,7 +227,14 @@
     const entitled = hasServicesEntitlement(me.entitlements);
 
     if (entitled) {
-      routeEntitledUser();
+      // Route through checkout start even for entitled users so backend can
+      // apply a single canonical redirect path + onboarding confirm side effects.
+      navigateToCheckoutStart({
+        priceId,
+        planKey,
+        tosVersion,
+        checkoutOrigin,
+      });
       return;
     }
 
