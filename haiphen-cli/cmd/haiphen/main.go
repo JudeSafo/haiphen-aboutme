@@ -2,10 +2,15 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"io"
 	"log"
+	"net/http"
 	"os"
 	"os/signal"
+	"sort"
+	"strings"
 	"syscall"
 	"time"
 
@@ -15,6 +20,7 @@ import (
 	"github.com/haiphen/haiphen-cli/internal/config"
 	"github.com/haiphen/haiphen-cli/internal/server"
 	"github.com/haiphen/haiphen-cli/internal/store"
+	"github.com/haiphen/haiphen-cli/internal/util"
 )
 
 func main() {
@@ -25,6 +31,15 @@ func main() {
 	root := &cobra.Command{
 		Use:   "haiphen",
 		Short: "Haiphen local gateway + CLI",
+	}
+
+	// ✅ Print banner only when user runs plain `haiphen` (no subcommand/flags).
+	// This keeps `haiphen serve`, `haiphen status`, etc. clean.
+	if len(os.Args) == 1 {
+		util.PrintBanner(os.Stdout, util.BannerSizeWide)
+		fmt.Println()
+		fmt.Println("Haiphen local gateway + CLI")
+		fmt.Println()
 	}
 
 	root.PersistentFlags().StringVar(&cfg.AuthOrigin, "auth-origin", cfg.AuthOrigin, "Auth origin (e.g. https://auth.haiphen.io)")
@@ -41,10 +56,136 @@ func main() {
 	root.AddCommand(cmdLogin(cfg, st))
 	root.AddCommand(cmdLogout(cfg, st))
 	root.AddCommand(cmdStatus(cfg, st))
+	root.AddCommand(cmdOnboarding(cfg, st))
 
 	if err := root.Execute(); err != nil {
 		os.Exit(1)
 	}
+}
+
+type onboardingResources struct {
+	OK           bool   `json:"ok"`
+	UserLogin    string `json:"user_login"`
+	Plan         string `json:"plan"`
+	Entitlements struct {
+		Active   bool            `json:"active"`
+		Plan     string          `json:"plan"`
+		Features map[string]bool `json:"features"`
+	} `json:"entitlements"`
+	Links map[string]string `json:"links"`
+}
+
+func cmdOnboarding(cfg *config.Config, st store.Store) *cobra.Command {
+	var asJSON bool
+
+	cmd := &cobra.Command{
+		Use:   "onboarding",
+		Short: "Show onboarding links and activation resources",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			tok, err := st.LoadToken()
+			if err != nil {
+				return err
+			}
+			if tok == nil || strings.TrimSpace(tok.AccessToken) == "" {
+				return fmt.Errorf("not logged in; run `haiphen login`")
+			}
+
+			endpoint := strings.TrimRight(cfg.APIOrigin, "/") + "/v1/onboarding/resources"
+			req, err := http.NewRequestWithContext(cmd.Context(), http.MethodGet, endpoint, nil)
+			if err != nil {
+				return err
+			}
+			req.Header.Set("Authorization", "Bearer "+tok.AccessToken)
+			req.Header.Set("Accept", "application/json")
+			req.Header.Set("Cache-Control", "no-store")
+
+			hc := &http.Client{Timeout: 12 * time.Second}
+			resp, err := hc.Do(req)
+			if err != nil {
+				return err
+			}
+			defer resp.Body.Close()
+
+			body, err := io.ReadAll(resp.Body)
+			if err != nil {
+				return err
+			}
+
+			if resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusForbidden {
+				return fmt.Errorf("session unauthorized; run `haiphen login --force`")
+			}
+			if resp.StatusCode != http.StatusOK {
+				return fmt.Errorf("api error (%d): %s", resp.StatusCode, strings.TrimSpace(string(body)))
+			}
+
+			if asJSON {
+				var outBuf strings.Builder
+				var pretty any
+				if err := json.Unmarshal(body, &pretty); err != nil {
+					return fmt.Errorf("decode onboarding json: %w", err)
+				}
+				enc := json.NewEncoder(&outBuf)
+				enc.SetIndent("", "  ")
+				if err := enc.Encode(pretty); err != nil {
+					return err
+				}
+				fmt.Print(outBuf.String())
+				return nil
+			}
+
+			var out onboardingResources
+			if err := json.Unmarshal(body, &out); err != nil {
+				return fmt.Errorf("decode onboarding response: %w", err)
+			}
+
+			fmt.Printf("User: %s\n", out.UserLogin)
+			fmt.Printf("Plan: %s\n", out.Plan)
+			fmt.Printf("Entitled: %v\n", out.Entitlements.Active)
+			fmt.Println()
+			fmt.Println("Resources:")
+
+			keys := make([]string, 0, len(out.Links))
+			for k, v := range out.Links {
+				if strings.TrimSpace(v) == "" {
+					continue
+				}
+				keys = append(keys, k)
+			}
+			sort.Strings(keys)
+
+			for _, k := range keys {
+				fmt.Printf("- %s: %s\n", prettyLinkKey(k), strings.TrimSpace(out.Links[k]))
+			}
+
+			return nil
+		},
+	}
+
+	cmd.Flags().BoolVar(&asJSON, "json", false, "Print raw onboarding payload as JSON")
+	return cmd
+}
+
+func prettyLinkKey(k string) string {
+	s := strings.ReplaceAll(strings.TrimSpace(k), "_", " ")
+	parts := strings.Fields(s)
+	for i, p := range parts {
+		lp := strings.ToLower(p)
+		switch lp {
+		case "api":
+			parts[i] = "API"
+		case "cli":
+			parts[i] = "CLI"
+		case "url":
+			parts[i] = "URL"
+		default:
+			if len(p) > 1 {
+				parts[i] = strings.ToUpper(p[:1]) + strings.ToLower(p[1:])
+			} else {
+				parts[i] = strings.ToUpper(p)
+			}
+		}
+	}
+	return strings.Join(parts, " ")
 }
 
 func cmdServe(cfg *config.Config, st store.Store) *cobra.Command {

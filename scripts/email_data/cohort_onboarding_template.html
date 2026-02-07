@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="x-apple-disable-message-reformatting" />
+    <title>Haiphen Onboarding Access</title>
+  </head>
+  <body style="margin:0;padding:0;background:#f3f5f8;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#f3f5f8;">
+      <tr>
+        <td align="center" style="padding:24px 12px;">
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width:620px;">
+            <tr>
+              <td style="padding:0 0 12px 0;font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#5f6c7a;">
+                Haiphen onboarding notice
+              </td>
+            </tr>
+            <tr>
+              <td style="background:#ffffff;border:1px solid #dfe5ec;border-radius:10px;padding:24px;">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                  <tr>
+                    <td style="font-family:Arial,Helvetica,sans-serif;color:#243447;">
+                      <div style="font-size:21px;line-height:1.3;font-weight:700;">
+                        Your Haiphen cohort access is active
+                      </div>
+                      <div style="margin-top:14px;font-size:14px;line-height:1.65;color:#3c4b5b;">
+                        Hi {{name}},
+                        <br /><br />
+                        Your account has been provisioned for the <strong>{{plan}}</strong> cohort plan.
+                        This email contains your starting links and connection details.
+                      </div>
+
+                      <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin-top:18px;">
+                        <tr>
+                          <td style="border-radius:8px;background:#1f6feb;">
+                            <a
+                              href="{{onboarding_url}}"
+                              target="_blank"
+                              style="display:inline-block;padding:12px 18px;font-size:14px;font-weight:700;color:#ffffff;text-decoration:none;font-family:Arial,Helvetica,sans-serif;"
+                            >
+                              Open Onboarding Hub
+                            </a>
+                          </td>
+                        </tr>
+                      </table>
+
+                      <div style="margin-top:18px;font-size:14px;line-height:1.6;color:#3c4b5b;">
+                        <strong>Start here</strong>
+                      </div>
+                      <ul style="margin:8px 0 0 18px;padding:0;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.7;color:#3c4b5b;">
+                        <li>Profile and API keys: <a href="{{profile_url}}" target="_blank" style="color:#1f6feb;text-decoration:none;">{{profile_url}}</a></li>
+                        <li>API and CLI docs: <a href="{{docs_url}}" target="_blank" style="color:#1f6feb;text-decoration:none;">{{docs_url}}</a></li>
+                        <li>Cohort guide: <a href="{{cohort_url}}" target="_blank" style="color:#1f6feb;text-decoration:none;">{{cohort_url}}</a></li>
+                        <li>Onboarding call: <a href="{{calendar_url}}" target="_blank" style="color:#1f6feb;text-decoration:none;">{{calendar_url}}</a></li>
+                      </ul>
+
+                      <div style="margin-top:18px;font-size:14px;line-height:1.6;color:#3c4b5b;">
+                        <strong>Connection details</strong><br />
+                        API base URL: <span style="font-family:Courier,monospace;color:#1d2a38;">{{api_base_url}}</span><br />
+                        WebSocket URL: <span style="font-family:Courier,monospace;color:#1d2a38;">{{websocket_url}}</span><br />
+                        Account login: <span style="font-family:Courier,monospace;color:#1d2a38;">{{user_login}}</span>
+                      </div>
+
+                      <div style="margin-top:18px;font-size:14px;line-height:1.65;color:#3c4b5b;">
+                        If you need setup support, reply to this email or contact
+                        <a href="mailto:{{support_email}}" style="color:#1f6feb;text-decoration:none;">{{support_email}}</a>.
+                      </div>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:12px 4px 0 4px;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.55;color:#6f7d8b;">
+                You are receiving this transactional email because cohort onboarding access was activated for your account.
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:8px 4px 0 4px;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.55;color:#6f7d8b;">
+                Haiphen • Manhattan, NY •
+                <a href="https://haiphen.io" target="_blank" style="color:#1f6feb;text-decoration:none;">haiphen.io</a>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div
+                  data-role="module-unsubscribe"
+                  style="color:#777;font-size:12px;line-height:18px;padding:14px 8px 0 8px;text-align:center;font-family:Arial,Helvetica,sans-serif;"
+                >
+                  <p style="margin:0;">
+                    <a href="{{{unsubscribe}}}" target="_blank" style="text-decoration:none;color:#777;">Unsubscribe</a>
+                    &nbsp;•&nbsp;
+                    <a href="{{{unsubscribe_preferences}}}" target="_blank" style="text-decoration:none;color:#777;">Preferences</a>
+                  </p>
+                </div>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

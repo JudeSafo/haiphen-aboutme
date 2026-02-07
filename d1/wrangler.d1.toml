@@ -1,0 +1,9 @@
+name = "haiphen-d1-admin"
+compatibility_date = "2025-07-16"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "haiphen_api"
+database_id = "9a26fb67-b6e5-4d5f-8e62-3ecfde5ee8c2"
+
+migrations_dir = "./migrations"

@@ -15,7 +15,8 @@
   ],
 
   "kv_namespaces": [
-    { "binding": "REVOKE_KV", "id": "7ef6277bfea34ec18fb4b52ceb79aba3" }
+    { "binding": "REVOKE_KV", "id": "7ef6277bfea34ec18fb4b52ceb79aba3" },
+    { "binding": "ENTITLE_KV", "id": "d95e38a186a642ff9858f086936f8335" }
   ],
 
   "durable_objects": {
@@ -23,5 +24,14 @@
   },
   "migrations": [{ "tag": "v1", "new_classes": ["StatusDO"] }],
 
-  "routes": ["checkout.haiphen.io/*"]
+  "routes": ["checkout.haiphen.io/*"],
+
+  "vars": {
+    "PUBLIC_SITE_ORIGIN": "https://haiphen.io",
+    "CONTACT_ORIGIN": "https://haiphen-contact.pi-307.workers.dev",
+    "CHECKOUT_SUCCESS_URL": "https://app.haiphen.io/#docs/?checkout=success",
+    "CHECKOUT_CANCEL_URL": "https://haiphen.io/#docs/?checkout=cancel",
+    "STRIPE_PROMO_CODE_ID": "promo_1SwwX7JRL3AYFpZZN1xpLCzH",
+    "ONBOARDING_REDIRECT_URL": "https://haiphen.io/#onboarding"
+  }  
 }

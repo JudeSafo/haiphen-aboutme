@@ -2,8 +2,9 @@ import { buildRss } from "./rss";
 import { hmacSha256Hex, json, safeEqual, sha256Hex, uuid } from "./crypto";
 import { RateLimiterDO, RateLimitPlan } from "./rate_limit_do";
 import { normalizeTradesJson, upsertMetricsDaily } from "./ingest";
-import { requireUserFromAuthCookie } from "./auth";
+import { requireUserFromAuthCookie, verifyUserFromJwt } from "./auth";
 import { getExtremes, getKpis, getPortfolioAssets, getSeries } from "./metrics_queries";
+import { withCors, handleOptions as corsOptions } from "./cors";
 
 // Export DO class for Wrangler
 export { RateLimiterDO };
@@ -46,6 +47,17 @@ type Env = {
 
   // Optional: for CORS allowlist
   ALLOWED_ORIGINS?: string;
+
+  // Optional: onboarding resource links for profile + CLI.
+  ONBOARDING_APP_URL?: string;
+  ONBOARDING_DOCS_URL?: string;
+  ONBOARDING_PROFILE_URL?: string;
+  ONBOARDING_COHORT_URL?: string;
+  ONBOARDING_CALENDAR_URL?: string;
+  ONBOARDING_SUPPORT_EMAIL?: string;
+  ONBOARDING_CLI_DOCS_URL?: string;
+  ONBOARDING_API_BASE_URL?: string;
+  ONBOARDING_WEBSOCKET_URL?: string;
 };
 
 type ErrorCode =
@@ -236,6 +248,40 @@ async function authCookieUser(req: Request, env: Env, requestId: string): Promis
   }
 }
 
+async function authSessionUser(req: Request, env: Env, requestId: string): Promise<{ user_login: string }> {
+  // 1) Browser dashboard path: signed auth cookie
+  try {
+    return await authCookieUser(req, env, requestId);
+  } catch {
+    // Fall through to bearer JWT for CLI/native clients.
+  }
+
+  // 2) CLI/native path: bearer session JWT issued by haiphen-auth
+  const token = bearer(req);
+  if (!token) throw err("unauthorized", "Unauthorized", requestId, 401);
+
+  try {
+    const user = await verifyUserFromJwt(token, env.JWT_SECRET);
+    return { user_login: user.login };
+  } catch {
+    throw err("unauthorized", "Unauthorized", requestId, 401);
+  }
+}
+
+function onboardingLinks(env: Env) {
+  return {
+    app_url: String(env.ONBOARDING_APP_URL ?? "https://app.haiphen.io/").trim(),
+    docs_url: String(env.ONBOARDING_DOCS_URL ?? "https://haiphen.io/#docs").trim(),
+    profile_url: String(env.ONBOARDING_PROFILE_URL ?? "https://haiphen.io/#profile").trim(),
+    cohort_url: String(env.ONBOARDING_COHORT_URL ?? "https://haiphen.io/#cohort").trim(),
+    calendar_url: String(env.ONBOARDING_CALENDAR_URL ?? "https://calendar.app.google/jQzWz98eCC5jMLrQA").trim(),
+    support_email: String(env.ONBOARDING_SUPPORT_EMAIL ?? "pi@haiphenai.com").trim(),
+    cli_docs_url: String(env.ONBOARDING_CLI_DOCS_URL ?? "https://haiphen.io/#docs").trim(),
+    api_base_url: String(env.ONBOARDING_API_BASE_URL ?? "https://api.haiphen.io").trim(),
+    websocket_url: String(env.ONBOARDING_WEBSOCKET_URL ?? "wss://api.haiphen.io/v1/telemetry/stream").trim(),
+  };
+}
+
 function parseDateParam(s: string | null): string | null {
   if (!s) return null;
   if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return null;
@@ -274,11 +320,42 @@ async function handleOptions(req: Request, env: Env) {
   return new Response(null, { status: 204, headers: corsHeaders(req, env) as any });
 }
 
+async function revokeAllActiveKeysForUser(env: Env, userLogin: string): Promise<number> {
+  // Grab active keys (we need hashes for REVOKE_KV)
+  const active = await env.DB.prepare(`
+    SELECT key_id, key_hash
+    FROM api_keys
+    WHERE user_login = ? AND status = 'active'
+    ORDER BY created_at DESC
+  `).bind(userLogin).all<{ key_id: string; key_hash: string }>();
+
+  const items = active.results ?? [];
+  if (!items.length) return 0;
+
+  // Revoke in DB first (DB is source of truth; KV is an optimization)
+  await env.DB.prepare(`
+    UPDATE api_keys
+    SET status='revoked',
+        revoked_at=strftime('%Y-%m-%dT%H:%M:%fZ','now')
+    WHERE user_login = ? AND status = 'active'
+  `).bind(userLogin).run();
+
+  // Best-effort KV writes so auth rejects without DB hit
+  await Promise.all(
+    items.map((k) =>
+      env.REVOKE_KV.put(`revoked:${k.key_hash}`, "1", { expirationTtl: 60 * 60 * 24 * 365 })
+        .catch(() => {})
+    )
+  );
+
+  return items.length;
+}
+
 async function route(req: Request, env: Env): Promise<Response> {
   const requestId = uuid();
   const url = new URL(req.url);
 
-  if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: corsHeaders(req, env) as any });
+  if (req.method === "OPTIONS") return corsOptions(req, env.ALLOWED_ORIGINS);
 
   // normalize: everything is under /v1
   if (!url.pathname.startsWith("/v1/")) {
@@ -333,31 +410,62 @@ async function route(req: Request, env: Env): Promise<Response> {
     }, requestId, corsHeaders(req, env));
   }
 
-  if (req.method === "POST" && url.pathname === "/v1/admin/metrics/upsert") {
-    const tok = req.headers.get("X-Admin-Token") || "";
-    if (!safeEqual(tok, env.ADMIN_TOKEN)) return err("forbidden", "Forbidden", requestId, 403, corsHeaders(req, env));
+  // ---- onboarding resources (cookie OR bearer JWT auth) ----
+  // GET /v1/onboarding/resources
+  if (req.method === "GET" && url.pathname === "/v1/onboarding/resources") {
+    const u = await authSessionUser(req, env, requestId);
+    await ensureUser(env, u.user_login);
 
-    const body = await req.json().catch(() => null) as any;
-    if (!body) return err("invalid_request", "Invalid JSON body", requestId, 400, corsHeaders(req, env));
+    const plan = await getPlan(env, u.user_login);
+    const entitlements = planToEntitlements(plan);
 
-    try {
-      let payload: unknown = body;
+    return okJson(
+      {
+        ok: true,
+        user_login: u.user_login,
+        plan,
+        entitlements,
+        links: onboardingLinks(env),
+      },
+      requestId,
+      corsHeaders(req, env),
+    );
+  }
 
-      if (typeof body?.url === "string") {
-        const r = await fetch(body.url, { headers: { "Accept": "application/json" } });
-        if (!r.ok) return err("invalid_request", `Failed to fetch url (status ${r.status})`, requestId, 400, corsHeaders(req, env));
-        payload = await r.json();
-      }
+  // ---- keys list (cookie-auth): list ALL keys (metadata only) ----
+  // GET /v1/keys/list
+  if (req.method === "GET" && url.pathname === "/v1/keys/list") {
+    const u = await authCookieUser(req, env, requestId);
+    await ensureUser(env, u.user_login);
 
-      const normalized = normalizeTradesJson(payload);
-      await upsertMetricsDaily(env, normalized);
-      await env.CACHE_KV.delete("metrics:latest").catch(() => {});
+    const keys = await env.DB.prepare(`
+      SELECT
+        key_id, key_prefix, scopes, status,
+        created_at, last_used_at, revoked_at
+      FROM api_keys
+      WHERE user_login = ?
+      ORDER BY created_at DESC
+    `).bind(u.user_login).all<{
+      key_id: string;
+      key_prefix: string;
+      scopes: string;
+      status: "active" | "revoked";
+      created_at: string;
+      last_used_at: string | null;
+      revoked_at: string | null;
+    }>();
 
-      return okJson({ ok: true, date: normalized.date, updated_at: normalized.updated_at }, requestId, corsHeaders(req, env));
-    } catch (e: any) {
-      console.error("❌ admin/metrics/upsert failed:", e);
-      return err("invalid_request", `Upsert failed: ${String(e?.message ?? e)}`, requestId, 400, corsHeaders(req, env));
-    }
+    const items = (keys.results ?? []).map(k => ({
+      key_id: k.key_id,
+      key_prefix: k.key_prefix,
+      scopes: (() => { try { return JSON.parse(k.scopes) } catch { return [] } })(),
+      status: k.status,
+      created_at: k.created_at,
+      last_used_at: k.last_used_at,
+      revoked_at: k.revoked_at
+    }));
+
+    return okJson({ items }, requestId, corsHeaders(req, env));
   }
 
   // ---- ADMIN: debug auth cookie verification ----
@@ -434,6 +542,7 @@ async function route(req: Request, env: Env): Promise<Response> {
 
     const kpi = String(url.searchParams.get("kpi") ?? "").trim();
     if (!kpi) return err("invalid_request", "Missing kpi", requestId, 400, corsHeaders(req, env));
+    if (!/^[\w\s.:/%()+-]{1,100}$/.test(kpi)) return err("invalid_request", "Invalid kpi format", requestId, 400, corsHeaders(req, env));
 
     const dateParam = parseDateParam(url.searchParams.get("date"));
     const date = dateParam ?? (await latestDate(env));
@@ -454,6 +563,7 @@ async function route(req: Request, env: Env): Promise<Response> {
 
     const kpi = String(url.searchParams.get("kpi") ?? "").trim();
     if (!kpi) return err("invalid_request", "Missing kpi", requestId, 400, corsHeaders(req, env));
+    if (!/^[\w\s.:/%()+-]{1,100}$/.test(kpi)) return err("invalid_request", "Invalid kpi format", requestId, 400, corsHeaders(req, env));
 
     const sideRaw = String(url.searchParams.get("side") ?? "hi").trim().toLowerCase();
     const side = (sideRaw === "lo" ? "lo" : "hi") as "hi" | "lo";
@@ -538,10 +648,19 @@ async function route(req: Request, env: Env): Promise<Response> {
 
     let payload: unknown = body;
 
-    // Optional fetch mode
+    // Optional fetch mode — restricted to trusted domains to prevent SSRF
     if (typeof body?.url === "string") {
       const u = body.url as string;
       if (!/^https:\/\/.+/i.test(u)) return err("invalid_request", "url must be https://", requestId, 400, corsHeaders(req, env));
+
+      const ALLOWED_FETCH_HOSTS = ["haiphen.io", "www.haiphen.io", "api.haiphen.io", "raw.githubusercontent.com"];
+      let fetchHost: string;
+      try { fetchHost = new URL(u).hostname.toLowerCase(); } catch {
+        return err("invalid_request", "Invalid URL", requestId, 400, corsHeaders(req, env));
+      }
+      if (!ALLOWED_FETCH_HOSTS.includes(fetchHost)) {
+        return err("invalid_request", `Fetch domain not allowed: ${fetchHost}`, requestId, 400, corsHeaders(req, env));
+      }
 
       const r = await fetch(u, { headers: { "Accept": "application/json" } });
       if (!r.ok) return err("invalid_request", `Failed to fetch url (status ${r.status})`, requestId, 400, corsHeaders(req, env));
@@ -590,8 +709,6 @@ async function route(req: Request, env: Env): Promise<Response> {
     await ensureUser(env, u.user_login);
 
     const plan = await getPlan(env, u.user_login);
-    // Gate: only allow issuance if they’re “paid” for Pro scope sets, etc.
-    // Start simple: everyone can get a Free key. Pro features are enforced by plan at request-time.
 
     const body = await req.json().catch(() => ({})) as { scopes?: string[] };
     const scopes = Array.isArray(body.scopes) && body.scopes.length > 0
@@ -606,6 +723,9 @@ async function route(req: Request, env: Env): Promise<Response> {
         return err("forbidden", "webhooks:write requires Pro or Enterprise", requestId, 403, corsHeaders(req, env));
       }
     }
+
+    // ✅ Enforce "one active key per user" server-side
+    await revokeAllActiveKeysForUser(env, u.user_login);
 
     const key_id = uuid();
     const raw = `hp_live_${uuid().replaceAll("-", "")}${uuid().replaceAll("-", "")}`; // long enough
@@ -766,14 +886,18 @@ async function route(req: Request, env: Env): Promise<Response> {
 export default {
   async fetch(req: Request, env: Env): Promise<Response> {
     try {
-      return await route(req, env);
+      const res = await route(req, env);
+      // ✅ ALWAYS attach CORS (covers 200/401/403/404/etc)
+      return withCors(req, res, env.ALLOWED_ORIGINS);
     } catch (e: any) {
-      // ✅ If inner code threw a Response, return it as-is.
-      if (e instanceof Response) return e;
+      // ✅ If inner code threw a Response, still attach CORS
+      if (e instanceof Response) return withCors(req, e, env.ALLOWED_ORIGINS);
 
       const requestId = uuid();
       console.error("❌ Unhandled error:", e);
-      return err("internal", "Internal error", requestId, 500, corsHeaders(req, env));
+
+      const res = err("internal", "Internal error", requestId, 500);
+      return withCors(req, res, env.ALLOWED_ORIGINS);
     }
   }
 };

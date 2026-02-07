@@ -1,0 +1,14 @@
+{
+  "name": "haiphen-api",
+  "private": true,
+  "type": "module",
+  "devDependencies": {
+    "wrangler": "^4.54.0"
+  },
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "d1:tables:local": "wrangler d1 execute DB --command \"SELECT name FROM sqlite_master WHERE type='table' ORDER BY name;\"",
+    "d1:tables:remote": "wrangler d1 execute DB --remote --command \"SELECT name FROM sqlite_master WHERE type='table' ORDER BY name;\"",
+    "d1:count:remote": "wrangler d1 execute DB --remote --command \"SELECT COUNT(*) AS n FROM metrics_daily;\""
+  }
+}

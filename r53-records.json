@@ -1,0 +1,143 @@
+{
+    "ResourceRecordSets": [
+        {
+            "Name": "haiphen.io.",
+            "Type": "A",
+            "AliasTarget": {
+                "HostedZoneId": "Z2FDTNDATAQYW2",
+                "DNSName": "d26cro7adehkyd.cloudfront.net.",
+                "EvaluateTargetHealth": false
+            }
+        },
+        {
+            "Name": "haiphen.io.",
+            "Type": "MX",
+            "TTL": 300,
+            "ResourceRecords": [
+                {
+                    "Value": "1 ASPMX.L.GOOGLE.COM."
+                },
+                {
+                    "Value": "5 ALT1.ASPMX.L.GOOGLE.COM."
+                },
+                {
+                    "Value": "5 ALT2.ASPMX.L.GOOGLE.COM."
+                },
+                {
+                    "Value": "10 ALT3.ASPMX.L.GOOGLE.COM."
+                },
+                {
+                    "Value": "10 ALT4.ASPMX.L.GOOGLE.COM."
+                }
+            ]
+        },
+        {
+            "Name": "haiphen.io.",
+            "Type": "NS",
+            "TTL": 172800,
+            "ResourceRecords": [
+                {
+                    "Value": "ns-660.awsdns-18.net."
+                },
+                {
+                    "Value": "ns-1276.awsdns-31.org."
+                },
+                {
+                    "Value": "ns-201.awsdns-25.com."
+                },
+                {
+                    "Value": "ns-1582.awsdns-05.co.uk."
+                }
+            ]
+        },
+        {
+            "Name": "haiphen.io.",
+            "Type": "SOA",
+            "TTL": 900,
+            "ResourceRecords": [
+                {
+                    "Value": "ns-660.awsdns-18.net. awsdns-hostmaster.amazon.com. 1 7200 900 1209600 86400"
+                }
+            ]
+        },
+        {
+            "Name": "_3fe71ff30a0969f6d4c104afb95cb20e.haiphen.io.",
+            "Type": "CNAME",
+            "TTL": 300,
+            "ResourceRecords": [
+                {
+                    "Value": "_6b082f682f16ecea544a69152b24ccfd.mqzgcdqkwq.acm-validations.aws."
+                }
+            ]
+        },
+        {
+            "Name": "api-uat.haiphen.io.",
+            "Type": "A",
+            "TTL": 300,
+            "ResourceRecords": [
+                {
+                    "Value": "100.26.224.181"
+                }
+            ]
+        },
+        {
+            "Name": "api.haiphen.io.",
+            "Type": "A",
+            "TTL": 300,
+            "ResourceRecords": [
+                {
+                    "Value": "3.237.201.194"
+                }
+            ]
+        },
+        {
+            "Name": "_2ef7e69fbc815e8736f1a5ddf46e2f1b.api.haiphen.io.",
+            "Type": "CNAME",
+            "TTL": 300,
+            "ResourceRecords": [
+                {
+                    "Value": "7BB978D17F2CBD9353F9C2BE80B37889.AB4FB9C05E4004C831329A7E8FD8C18F.62f72ee3839f1.comodoca.com"
+                }
+            ]
+        },
+        {
+            "Name": "www.api.haiphen.io.",
+            "Type": "A",
+            "TTL": 300,
+            "ResourceRecords": [
+                {
+                    "Value": "3.237.201.194"
+                }
+            ]
+        },
+        {
+            "Name": "mailer.haiphen.io.",
+            "Type": "A",
+            "TTL": 300,
+            "ResourceRecords": [
+                {
+                    "Value": "54.174.3.92"
+                }
+            ]
+        },
+        {
+            "Name": "ml-api.haiphen.io.",
+            "Type": "A",
+            "TTL": 300,
+            "ResourceRecords": [
+                {
+                    "Value": "54.144.91.230"
+                }
+            ]
+        },
+        {
+            "Name": "www.haiphen.io.",
+            "Type": "A",
+            "AliasTarget": {
+                "HostedZoneId": "Z2FDTNDATAQYW2",
+                "DNSName": "dy9yywf321eav.cloudfront.net.",
+                "EvaluateTargetHealth": false
+            }
+        }
+    ]
+}
