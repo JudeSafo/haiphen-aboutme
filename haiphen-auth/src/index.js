@@ -34,6 +34,10 @@ function corsHeaders(origin) {
     'https://auth.haiphen.io',
     'https://contact.haiphen.io',
   ];
+  // Allow localhost origins for local development
+  if (origin && /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
+    allowedOrigins.push(origin);
+  }
   const o = allowedOrigins.includes(origin) ? origin : 'https://haiphen.io';
   return {
     'Access-Control-Allow-Origin': o,

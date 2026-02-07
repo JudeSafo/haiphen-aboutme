@@ -426,16 +426,22 @@ function buildLoginUrl(env: Env, req: Request): string {
 function corsHeaders(env: Env, req: Request): HeadersInit {
   const origin = req.headers.get("origin") ?? "";
 
-  // If you expect cookies/credentials, you MUST echo an explicit origin.
-  // Never return "*" with allow-credentials true.
-  const allowOrigin = (() => {
-    if (!origin) return env.PUBLIC_SITE_ORIGIN ?? "https://haiphen.io"; // non-browser or same-origin
-    if (env.PUBLIC_SITE_ORIGIN && origin === env.PUBLIC_SITE_ORIGIN) return origin;
+  const allowedOrigins = [
+    env.PUBLIC_SITE_ORIGIN ?? "https://haiphen.io",
+    "https://haiphen.io",
+    "https://www.haiphen.io",
+    "https://app.haiphen.io",
+    "https://auth.haiphen.io",
+  ];
 
-    // If you want to allow multiple origins, implement an allowlist here.
-    // For now, deny unknown origins by not setting ACAO to them.
-    return env.PUBLIC_SITE_ORIGIN ?? "https://haiphen.io";
-  })();
+  // Allow localhost origins for local development
+  if (origin && /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
+    allowedOrigins.push(origin);
+  }
+
+  const allowOrigin = origin && allowedOrigins.includes(origin)
+    ? origin
+    : "https://haiphen.io";
 
   return {
     "access-control-allow-origin": allowOrigin,
