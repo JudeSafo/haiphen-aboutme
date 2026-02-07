@@ -1,0 +1,246 @@
+{
+  "services": [
+    {
+      "id": "haiphen_cli",
+      "name": "Haiphen CLI",
+      "tagline": "Command Center for Edge Intelligence",
+      "description": "Telemetry, data ingestion, manipulation, and command/control hub for all Haiphen services.",
+      "category": "featured",
+      "status": "available",
+      "pricing": {
+        "free": { "label": "Free", "requests": 100 },
+        "pro": { "price": 29, "label": "Pro", "lookup_key": "haiphen_cli_pro" },
+        "enterprise": { "price": 99, "label": "Enterprise", "lookup_key": "haiphen_cli_enterprise" }
+      },
+      "trial": { "type": "requests", "limit": 100 },
+      "features": [
+        "Real-time telemetry dashboard",
+        "Data ingestion & transformation",
+        "Multi-service command & control",
+        "Background cloud sync"
+      ],
+      "cta": { "primary": "Get Started", "secondary": "View Pricing" },
+      "icon": "device/terminal"
+    },
+    {
+      "id": "haiphen_webapp",
+      "name": "Haiphen WebApp",
+      "tagline": "Browser-Based Trading Dashboard",
+      "description": "Real-time data visualization, portfolio management, and signal monitoring from any browser.",
+      "category": "fintech",
+      "status": "available",
+      "pricing": {
+        "standard": { "price": 19, "label": "Standard", "lookup_key": "haiphen_webapp_standard" }
+      },
+      "trial": { "type": "days", "limit": 7 },
+      "features": [
+        "Live market data visualization",
+        "Portfolio tracking & analytics",
+        "Custom signal configuration",
+        "Exportable reports"
+      ],
+      "cta": { "primary": "Start Free Trial", "secondary": "Learn More" },
+      "icon": "chart"
+    },
+    {
+      "id": "daily_newsletter",
+      "name": "Daily Newsletter",
+      "tagline": "Curated Market Intelligence",
+      "description": "Daily digest of market signals, anomaly detections, and curated analysis delivered to your inbox.",
+      "category": "fintech",
+      "status": "available",
+      "pricing": {
+        "free": { "label": "Free" }
+      },
+      "trial": null,
+      "features": [
+        "Pre-market signal summary",
+        "Anomaly & trend detection",
+        "Sector rotation insights",
+        "Customizable delivery schedule"
+      ],
+      "cta": { "primary": "Subscribe Free", "secondary": "View Sample" },
+      "icon": "menu/email"
+    },
+    {
+      "id": "haiphen_mobile",
+      "name": "Haiphen Mobile",
+      "tagline": "Portfolio Intelligence On-the-Go",
+      "description": "iOS and Android app for real-time portfolio monitoring, push alerts, and quick trade execution.",
+      "category": "fintech",
+      "status": "coming_soon",
+      "pricing": {
+        "standard": { "price": 9.99, "label": "Standard", "lookup_key": "haiphen_mobile_standard" }
+      },
+      "trial": { "type": "days", "limit": 14 },
+      "features": [
+        "Push notification alerts",
+        "Biometric-secured access",
+        "Offline portfolio snapshots",
+        "Quick-action trade widgets"
+      ],
+      "cta": { "primary": "Notify Me", "secondary": null },
+      "icon": "device/ios"
+    },
+    {
+      "id": "haiphen_desktop",
+      "name": "Haiphen Desktop",
+      "tagline": "Professional Trading Workstation",
+      "description": "Cross-platform desktop application with advanced charting, local data processing, and multi-monitor support.",
+      "category": "fintech",
+      "status": "available",
+      "pricing": {
+        "standard": { "price": 14.99, "label": "Standard", "lookup_key": "haiphen_desktop_standard" }
+      },
+      "trial": { "type": "days", "limit": 30 },
+      "features": [
+        "Advanced multi-chart layouts",
+        "Local data caching & processing",
+        "Multi-monitor workspace",
+        "Keyboard-driven workflow"
+      ],
+      "cta": { "primary": "Start Free Trial", "secondary": "Download" },
+      "icon": "device/macos"
+    },
+    {
+      "id": "slackbot_discord",
+      "name": "Slack / Discord",
+      "tagline": "Team Alerts & Commands",
+      "description": "Real-time signal alerts and Haiphen commands directly in your team's Slack or Discord workspace.",
+      "category": "fintech",
+      "status": "coming_soon",
+      "pricing": {
+        "bundled": { "label": "Bundled with Pro" }
+      },
+      "trial": null,
+      "features": [
+        "Configurable alert channels",
+        "Slash-command queries",
+        "Portfolio summary on demand",
+        "Team-wide signal sharing"
+      ],
+      "cta": { "primary": "Notify Me", "secondary": null },
+      "icon": "social/slack"
+    },
+    {
+      "id": "haiphen_secure",
+      "name": "Haiphen Secure",
+      "tagline": "Edge Security Scanning",
+      "description": "Automated vulnerability assessment and security posture monitoring for edge and industrial infrastructure.",
+      "category": "tech",
+      "status": "coming_soon",
+      "pricing": {
+        "standard": { "price": 39, "label": "Standard", "lookup_key": "haiphen_secure_standard" }
+      },
+      "trial": { "type": "requests", "limit": 50, "unit": "scans" },
+      "features": [
+        "Continuous vulnerability scanning",
+        "CVE correlation & prioritization",
+        "Compliance policy checks",
+        "Automated remediation playbooks"
+      ],
+      "cta": { "primary": "Notify Me", "secondary": null },
+      "icon": "menu/shield"
+    },
+    {
+      "id": "network_trace",
+      "name": "Network Trace",
+      "tagline": "Deep Protocol Analysis",
+      "description": "Packet-level inspection and protocol decoding for Modbus, OPC-UA, MQTT, and industrial networks.",
+      "category": "tech",
+      "status": "coming_soon",
+      "pricing": {
+        "standard": { "price": 9.99, "label": "Standard", "lookup_key": "network_trace_standard" }
+      },
+      "trial": { "type": "requests", "limit": 10, "unit": "scans" },
+      "features": [
+        "Multi-protocol packet decoding",
+        "Traffic anomaly detection",
+        "Session reconstruction",
+        "Exportable PCAP analysis"
+      ],
+      "cta": { "primary": "Notify Me", "secondary": null },
+      "icon": "cpu"
+    },
+    {
+      "id": "knowledge_graph",
+      "name": "Knowledge Graph",
+      "tagline": "Semantic Entity Intelligence",
+      "description": "Entity extraction, relationship mapping, and queryable knowledge base built from your data streams.",
+      "category": "tech",
+      "status": "coming_soon",
+      "pricing": {
+        "standard": { "price": 99, "label": "Standard", "lookup_key": "knowledge_graph_standard" }
+      },
+      "trial": { "type": "requests", "limit": 1000, "unit": "entities" },
+      "features": [
+        "Automated entity extraction",
+        "Relationship inference engine",
+        "GraphQL query interface",
+        "Cross-source deduplication"
+      ],
+      "cta": { "primary": "Notify Me", "secondary": null },
+      "icon": "menu/link"
+    },
+    {
+      "id": "risk_analysis",
+      "name": "Risk Analysis",
+      "tagline": "Quantitative Risk Modeling",
+      "description": "Scenario modeling, stress testing, and risk quantification for portfolios and infrastructure assets.",
+      "category": "tech",
+      "status": "coming_soon",
+      "pricing": {
+        "standard": { "price": 49, "label": "Standard", "lookup_key": "risk_analysis_standard" }
+      },
+      "trial": { "type": "requests", "limit": 25, "unit": "assessments" },
+      "features": [
+        "Monte Carlo simulation",
+        "Value-at-Risk computation",
+        "Scenario stress testing",
+        "Portfolio correlation analysis"
+      ],
+      "cta": { "primary": "Notify Me", "secondary": null },
+      "icon": "menu/trade-engine"
+    },
+    {
+      "id": "causal_chain",
+      "name": "Causal Chain",
+      "tagline": "Root Cause Intelligence",
+      "description": "Causal inference and root cause analysis engine for complex event chains and system failures.",
+      "category": "tech",
+      "status": "coming_soon",
+      "pricing": {
+        "standard": { "price": 29, "label": "Standard", "lookup_key": "causal_chain_standard" }
+      },
+      "trial": { "type": "requests", "limit": 10, "unit": "analyses" },
+      "features": [
+        "Automated causal graph construction",
+        "Counterfactual reasoning",
+        "Incident timeline reconstruction",
+        "Anomaly propagation tracking"
+      ],
+      "cta": { "primary": "Notify Me", "secondary": null },
+      "icon": "menu/rss"
+    },
+    {
+      "id": "supply_chain",
+      "name": "Supply Chain Intel",
+      "tagline": "Disruption Intelligence",
+      "description": "Real-time supply chain visibility, risk scoring, and disruption forecasting across global networks.",
+      "category": "tech",
+      "status": "coming_soon",
+      "pricing": {
+        "standard": { "price": 79, "label": "Standard", "lookup_key": "supply_chain_standard" }
+      },
+      "trial": { "type": "requests", "limit": 5, "unit": "analyses" },
+      "features": [
+        "Multi-tier supplier mapping",
+        "Disruption probability scoring",
+        "Alternative sourcing suggestions",
+        "Geopolitical risk overlay"
+      ],
+      "cta": { "primary": "Notify Me", "secondary": null },
+      "icon": "menu/infra"
+    }
+  ]
+}

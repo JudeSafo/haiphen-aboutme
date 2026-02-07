@@ -1,31 +1,16 @@
 /* docs/components/services-plans/services-plans.js
- * Services pricing/subscription UI.
+ * Services catalogue: data-driven grid with checkout + waitlist.
  *
- * Behavior:
- * - If NOT logged in: redirect to auth login.
- * - If logged in AND entitled for services: do NOT send to checkout; route to onboarding hub.
- * - If logged in AND NOT entitled: route to Stripe checkout.
- *
- * Notes:
- * - Square has been removed entirely.
- * - Entitlement is checked via https://api.haiphen.io/v1/me (cookie-auth).
+ * Loads services from assets/services.json, renders cards into category grids,
+ * handles: (1) checkout buttons, (2) waitlist email submission, (3) subscribe banner.
  */
 (function () {
   'use strict';
 
   const LOG = '[services-plans]';
-
-  const API_ORIGIN = 'https://api.haiphen.io';
   const AUTH_ORIGIN = 'https://auth.haiphen.io';
-
-  // Where to send entitled users when they click "Subscribe".
-  // This now lands in the profile onboarding hub.
-  const SERVICES_DESTINATION_HASH = '#onboarding';
-
-  const STORAGE = {
-    selectedPlan: 'haiphen.checkout.selected_plan',
-    returnTo: 'haiphen.checkout.return_to',
-  };
+  const CHECKOUT_ORIGIN = 'https://checkout.haiphen.io';
+  const TOS_VERSION = 'sla_v0.2_2026-01-22';
 
   const SUBSCRIBE_HASH = 'subscribe';
   let subscribeFocus = false;
@@ -38,23 +23,17 @@
     return String(raw.split(':')[0] || '').split('?')[0].toLowerCase();
   }
 
+  // ── Subscribe banner focus (preserved from original) ────────────────────
+
   function applySubscribeFocus() {
-    const plansMount = qs('services-plans-mount');
-    const hardtechMount = qs('services-hardtech-mount');
+    const mount = qs('services-plans-mount');
+    const banner = mount?.querySelector('#services-subscribe-banner') || null;
+    const sections = mount?.querySelectorAll('.hp-catalogue__section') || [];
 
-    const plansSection = plansMount?.querySelector('.services-plans') || null;
-    const banner = plansMount?.querySelector('#services-subscribe-banner') || null;
-
-    if (plansSection) {
-      plansSection.classList.toggle('services-plans--subscribe-focus', subscribeFocus);
-    }
-    if (banner) {
-      banner.hidden = !subscribeFocus;
-    }
-    if (hardtechMount) {
-      hardtechMount.hidden = subscribeFocus;
-      hardtechMount.setAttribute('aria-hidden', subscribeFocus ? 'true' : 'false');
-    }
+    if (banner) banner.hidden = !subscribeFocus;
+    sections.forEach(function(s) {
+      s.style.display = subscribeFocus ? 'none' : '';
+    });
   }
 
   function setServicesSubscribeFocus(enabled) {
@@ -62,280 +41,364 @@
     applySubscribeFocus();
   }
 
-  function syncFocusFromHash() {
-    if (currentHashSlug() !== SUBSCRIBE_HASH) return;
-    setServicesSubscribeFocus(true);
+  // ── Helpers ──────────────────────────────────────────────────────────────
+
+  async function fetchJson(url) {
+    var resp = await fetch(url, { cache: 'no-store' });
+    if (!resp.ok) throw new Error('HTTP ' + resp.status + ' for ' + url);
+    return resp.json();
   }
 
   async function fetchText(url) {
-    const resp = await fetch(url, { cache: 'no-store' });
-    if (!resp.ok) throw new Error(`HTTP ${resp.status} for ${url}`);
-    return await resp.text();
+    var resp = await fetch(url, { cache: 'no-store' });
+    if (!resp.ok) throw new Error('HTTP ' + resp.status + ' for ' + url);
+    return resp.text();
   }
 
-  async function injectCssOnce(href) {
-    const already = document.querySelector(`link[rel="stylesheet"][href="${href}"]`);
-    if (already) return;
-    const link = document.createElement('link');
+  function injectCssOnce(href) {
+    if (document.querySelector('link[rel="stylesheet"][href="' + href + '"]')) return;
+    var link = document.createElement('link');
     link.rel = 'stylesheet';
     link.href = href;
     document.head.appendChild(link);
   }
 
-  function buildCheckoutStartUrl({ checkoutOrigin, priceId, planKey, tosVersion }) {
-    const origin = String(checkoutOrigin || 'https://checkout.haiphen.io').trim();
-    const u = new URL('/v1/checkout/start', origin);
-    u.searchParams.set('price_id', String(priceId || '').trim());
-    if (planKey) u.searchParams.set('plan', String(planKey || '').trim());
-    if (tosVersion) u.searchParams.set('tos_version', String(tosVersion || '').trim());
+  function escHtml(s) {
+    var d = document.createElement('div');
+    d.textContent = s;
+    return d.innerHTML;
+  }
+
+  // ── Checkout flow (preserved logic) ─────────────────────────────────────
+
+  function buildCheckoutStartUrl(opts) {
+    var origin = String(opts.checkoutOrigin || CHECKOUT_ORIGIN).trim();
+    var u = new URL('/v1/checkout/start', origin);
+    u.searchParams.set('price_id', String(opts.priceId || '').trim());
+    if (opts.plan) u.searchParams.set('plan', String(opts.plan).trim());
+    if (opts.tosVersion) u.searchParams.set('tos_version', String(opts.tosVersion).trim());
     return u.toString();
   }
 
-  function navigateToCheckoutStart(opts) {
-    const url = buildCheckoutStartUrl(opts);
-    // Full-page navigation so auth cookies + redirects behave reliably.
-    window.location.assign(url);
-  }
-
   function redirectToLogin(returnToUrl) {
-    const to = encodeURIComponent(String(returnToUrl || window.location.href));
-    window.location.assign(`${AUTH_ORIGIN}/login?to=${to}`);
+    var to = encodeURIComponent(String(returnToUrl || window.location.href));
+    window.location.assign(AUTH_ORIGIN + '/login?to=' + to);
   }
 
-  async function goToCanonicalCheckout({ planKey, priceId, tosVersion, checkoutOrigin }) {
-    // Fallback mapping only when priceId isn't provided by the HTML.
-    const PRICE_BY_PLAN = {
-      signals_starter: 'price_1SmGzEJRL3AYFpZZIjsqhB1T',
-      fintech_pro: 'price_1SmGzEJRL3AYFpZZIjsqhB1T',
-      enterprise_custom: 'price_1SmGzEJRL3AYFpZZIjsqhB1T',
-      hardtech_starter: 'price_1SmGzEJRL3AYFpZZIjsqhB1T',
-      hardtech_pro: 'price_1SmGzEJRL3AYFpZZIjsqhB1T',
-      hardtech_enterprise: 'price_1SmGzEJRL3AYFpZZIjsqhB1T',
-    };
+  async function getEntitlements() {
+    var resp = await fetch('https://api.haiphen.io/v1/me', {
+      method: 'GET', credentials: 'include', cache: 'no-store',
+      headers: { Accept: 'application/json' },
+    });
+    if (!resp.ok) return { ok: false, status: resp.status };
+    var data = await resp.json().catch(function() { return null; });
+    return { ok: true, status: 200, entitlements: data?.entitlements ?? null };
+  }
 
-    const resolvedPlanKey = String(planKey || '').trim();
-    const resolvedPriceId = String(priceId || '').trim() || PRICE_BY_PLAN[resolvedPlanKey];
+  async function handleCheckout(opts) {
+    var me = await getEntitlements();
 
-    if (!resolvedPlanKey) {
-      alert('Missing plan key for checkout.');
+    if (!me.ok && (me.status === 401 || me.status === 403)) {
+      redirectToLogin(window.location.href);
       return;
     }
-    if (!resolvedPriceId) {
-      alert('Missing Stripe priceId (no data-checkout-price-id and no local mapping).');
-      return;
-    }
-
-    const resolvedTosVersion = String(tosVersion || 'sla_v0.2_2026-01-22').trim();
-    const resolvedCheckoutOrigin = String(checkoutOrigin || 'https://checkout.haiphen.io').trim();
-
-    // Prefer the official API exposed by checkout-router.js
-    const start = window?.HAIPHEN?.startCheckout;
-    if (typeof start === 'function') {
-      await start({
-        priceId: resolvedPriceId,
-        plan: resolvedPlanKey,
-        tosVersion: resolvedTosVersion,
-        checkoutOrigin: resolvedCheckoutOrigin,
-      });
+    if (!me.ok) {
+      alert('Unable to verify your account. Please refresh and try again.');
       return;
     }
 
-    // Fallback: if terms gate exists but router API not loaded
+    // Use checkout-router if available
+    if (typeof window?.HAIPHEN?.startCheckout === 'function') {
+      await window.HAIPHEN.startCheckout(opts);
+      return;
+    }
+
+    // Terms gate fallback
     if (window.HaiphenTermsGate?.open) {
       await window.HaiphenTermsGate.open({
-        priceId: resolvedPriceId,
-        plan: resolvedPlanKey,
-        tosVersion: resolvedTosVersion,
-        checkoutOrigin: resolvedCheckoutOrigin,
+        priceId: opts.priceId, plan: opts.plan,
+        tosVersion: opts.tosVersion, checkoutOrigin: opts.checkoutOrigin,
         contentUrl: 'components/terms-gate/terms-content.html',
       });
       return;
     }
 
-    // Last resort: hard navigate to checkout start (server will handle auth + ToS redirect).
-    navigateToCheckoutStart({
-      priceId: resolvedPriceId,
-      planKey: resolvedPlanKey,
-      tosVersion: resolvedTosVersion,
-      checkoutOrigin: resolvedCheckoutOrigin,
-    });
+    // Hard navigate fallback
+    window.location.assign(buildCheckoutStartUrl(opts));
   }
 
-  function routeEntitledUser() {
-    const cur = String(window.location.hash || '').toLowerCase();
-    if (cur === SERVICES_DESTINATION_HASH && typeof window.HAIPHEN?.showProfile === 'function') {
-      window.HAIPHEN.showProfile({ preserveHash: true, subId: 'profile-onboarding' });
-      return;
+  // ── Card rendering ──────────────────────────────────────────────────────
+
+  function getMainPrice(pricing) {
+    if (!pricing) return null;
+    // Find the first price entry that has a numeric price
+    var keys = Object.keys(pricing);
+    for (var i = 0; i < keys.length; i++) {
+      var p = pricing[keys[i]];
+      if (typeof p.price === 'number') return p;
     }
-    window.location.hash = SERVICES_DESTINATION_HASH;
+    return null;
   }
 
-  async function getEntitlements() {
-    // Cookie-auth to API
-    const url = `${API_ORIGIN}/v1/me`;
-    const resp = await fetch(url, {
-      method: 'GET',
-      credentials: 'include',
-      cache: 'no-store',
-      headers: { 'Accept': 'application/json' },
-    });
-
-    if (!resp.ok) {
-      return { ok: false, status: resp.status, entitlements: null };
-    }
-
-    const data = await resp.json().catch(() => null);
-    return { ok: true, status: 200, entitlements: data?.entitlements ?? null };
+  function getMainLookupKey(pricing) {
+    var p = getMainPrice(pricing);
+    return p?.lookup_key || null;
   }
 
-  function hasServicesEntitlement(entitlements) {
-    // Expected shape:
-    // entitlements: { active: boolean, features: { services: boolean, ... } }
-    return Boolean(entitlements?.active && entitlements?.features?.services);
+  function isFree(pricing) {
+    if (!pricing) return false;
+    var keys = Object.keys(pricing);
+    return keys.length === 1 && (pricing[keys[0]].label === 'Free' || pricing[keys[0]].label === 'Bundled with Pro');
   }
 
-  async function handleSubscribe(optsOrPlanKey) {
-    // Support both:
-    //   handleSubscribe("fintech_pro")                      (legacy)
-    //   handleSubscribe({ planKey, priceId, tosVersion, checkoutOrigin }) (new)
-    const opts =
-      typeof optsOrPlanKey === 'string'
-        ? { planKey: optsOrPlanKey }
-        : (optsOrPlanKey || {});
+  function formatPrice(pricing) {
+    var p = getMainPrice(pricing);
+    if (!p) {
+      // Check for free or bundled
+      var keys = Object.keys(pricing);
+      if (keys.length > 0) return pricing[keys[0]].label || 'Free';
+      return 'Free';
+    }
+    return '$' + p.price + '/mo';
+  }
 
-    const planKey = String(opts.planKey || '').trim();
-    const priceId = String(opts.priceId || '').trim();
-    const tosVersion = String(opts.tosVersion || 'sla_v0.2_2026-01-22').trim();
-    const checkoutOrigin = String(opts.checkoutOrigin || 'https://checkout.haiphen.io').trim();
+  function renderTrialBadge(trial) {
+    if (!trial) return '';
+    var unit = trial.unit || (trial.type === 'days' ? 'days' : 'requests');
+    return '<div class="hp-card__trial">' +
+      escHtml(trial.limit + ' ' + unit + ' free trial') +
+    '</div>';
+  }
 
-    // Canonical check via API
-    const me = await getEntitlements();
+  function renderFeatures(features) {
+    if (!features || !features.length) return '';
+    var items = features.map(function(f) { return '<li>' + escHtml(f) + '</li>'; }).join('');
+    return '<ul class="hp-card__features">' + items + '</ul>';
+  }
 
-    // Not logged in (401/403): send to auth login directly.
-    if (!me.ok && (me.status === 401 || me.status === 403)) {
-      redirectToLogin(window.location.href);
-      return;
+  function renderAvailableCard(svc) {
+    var price = formatPrice(svc.pricing);
+    var free = isFree(svc.pricing);
+    var statusClass = free ? 'hp-card__status--free' : 'hp-card__status--available';
+    var statusLabel = free ? price : 'Available';
+    var lookupKey = getMainLookupKey(svc.pricing);
+
+    var priceHtml = free ? '' :
+      '<div class="hp-card__price">' +
+        '<span class="hp-card__amt">' + escHtml(price.split('/')[0]) + '</span>' +
+        '<span class="hp-card__per">/mo</span>' +
+      '</div>';
+
+    var actionsHtml = '';
+    if (lookupKey) {
+      actionsHtml = '<div class="hp-card__actions">' +
+        '<button class="hp-card__cta hp-card__cta--primary" ' +
+          'data-checkout-price-id="' + escHtml(lookupKey) + '" ' +
+          'data-service-id="' + escHtml(svc.id) + '" ' +
+          'data-plan="' + escHtml(svc.id) + '" ' +
+          'data-tos-version="' + TOS_VERSION + '" ' +
+          'data-checkout-origin="' + CHECKOUT_ORIGIN + '">' +
+          escHtml(svc.cta?.primary || 'Get Started') +
+        '</button>' +
+      '</div>';
+    } else if (svc.cta?.primary) {
+      actionsHtml = '<div class="hp-card__actions">' +
+        '<button class="hp-card__cta hp-card__cta--primary" data-action="contact">' +
+          escHtml(svc.cta.primary) +
+        '</button>' +
+      '</div>';
     }
 
-    // Logged in but some other failure: be conservative
-    if (!me.ok) {
-      console.warn(`${LOG} /v1/me failed`, me.status);
-      alert('Unable to verify your subscription right now. Please refresh and try again.');
-      return;
-    }
+    return '<article class="hp-card" data-service-id="' + escHtml(svc.id) + '">' +
+      '<span class="hp-card__status ' + statusClass + '">' + escHtml(statusLabel) + '</span>' +
+      '<div class="hp-card__top">' +
+        '<div class="hp-card__icon"><img src="assets/icons/' + escHtml(svc.icon) + '.svg" alt="" /></div>' +
+        '<div class="hp-card__meta">' +
+          '<div class="hp-card__name">' + escHtml(svc.name) + '</div>' +
+          priceHtml +
+        '</div>' +
+      '</div>' +
+      '<div class="hp-card__tagline">' + escHtml(svc.tagline) + '</div>' +
+      '<p class="hp-card__desc">' + escHtml(svc.description) + '</p>' +
+      renderFeatures(svc.features) +
+      renderTrialBadge(svc.trial) +
+      actionsHtml +
+    '</article>';
+  }
 
-    const entitled = hasServicesEntitlement(me.entitlements);
+  function renderComingSoonCard(svc) {
+    var price = formatPrice(svc.pricing);
+    var priceHtml = '<div class="hp-card__price">' +
+      '<span class="hp-card__amt">' + escHtml(price.split('/')[0]) + '</span>' +
+      (price.includes('/') ? '<span class="hp-card__per">/mo</span>' : '') +
+    '</div>';
 
-    if (entitled) {
-      // Route through checkout start even for entitled users so backend can
-      // apply a single canonical redirect path + onboarding confirm side effects.
-      navigateToCheckoutStart({
-        priceId,
-        planKey,
-        tosVersion,
-        checkoutOrigin,
+    return '<article class="hp-card hp-card--coming-soon" data-service-id="' + escHtml(svc.id) + '">' +
+      '<span class="hp-card__status hp-card__status--coming_soon">Coming Soon</span>' +
+      '<div class="hp-card__top">' +
+        '<div class="hp-card__icon"><img src="assets/icons/' + escHtml(svc.icon) + '.svg" alt="" /></div>' +
+        '<div class="hp-card__meta">' +
+          '<div class="hp-card__name">' + escHtml(svc.name) + '</div>' +
+          priceHtml +
+        '</div>' +
+      '</div>' +
+      '<div class="hp-card__tagline">' + escHtml(svc.tagline) + '</div>' +
+      '<p class="hp-card__desc">' + escHtml(svc.description) + '</p>' +
+      renderFeatures(svc.features) +
+      renderTrialBadge(svc.trial) +
+      '<div class="hp-card__waitlist" data-waitlist-service="' + escHtml(svc.id) + '">' +
+        '<div class="hp-card__waitlist-label">Get notified when available</div>' +
+        '<div class="hp-card__waitlist-row">' +
+          '<input class="hp-card__waitlist-input" type="email" placeholder="you@email.com" autocomplete="email" />' +
+          '<button class="hp-card__waitlist-btn" type="button">Notify Me</button>' +
+        '</div>' +
+        '<div class="hp-card__waitlist-msg" aria-live="polite"></div>' +
+      '</div>' +
+    '</article>';
+  }
+
+  function renderCard(svc) {
+    if (svc.status === 'coming_soon') return renderComingSoonCard(svc);
+    return renderAvailableCard(svc);
+  }
+
+  // ── Waitlist handler ────────────────────────────────────────────────────
+
+  async function submitWaitlist(serviceId, email, msgEl, btnEl) {
+    btnEl.disabled = true;
+    msgEl.textContent = '';
+    msgEl.className = 'hp-card__waitlist-msg';
+
+    try {
+      var resp = await fetch(CHECKOUT_ORIGIN + '/v1/waitlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email, service_id: serviceId }),
       });
-      return;
+
+      var data = await resp.json().catch(function() { return {}; });
+
+      if (resp.ok) {
+        msgEl.textContent = data.message || "You're on the list!";
+        msgEl.classList.add('hp-card__waitlist-msg--ok');
+      } else {
+        msgEl.textContent = data.error || 'Something went wrong.';
+        msgEl.classList.add('hp-card__waitlist-msg--err');
+        btnEl.disabled = false;
+      }
+    } catch (err) {
+      msgEl.textContent = 'Network error. Try again.';
+      msgEl.classList.add('hp-card__waitlist-msg--err');
+      btnEl.disabled = false;
     }
-
-    // Not entitled → route to checkout.
-    // ✅ Delegate ALL checkout logic to goToCanonicalCheckout().
-    await goToCanonicalCheckout({
-      planKey,
-      priceId,
-      tosVersion,
-      checkoutOrigin,
-    });
   }
 
-  function handleContact() {
-    if (typeof window.showSection === 'function') window.showSection('Contact');
-    else window.location.hash = '#contact';
-  }
+  // ── Event delegation ────────────────────────────────────────────────────
 
   function wire(root) {
-    root.addEventListener('click', async (e) => {
-      // Prefer explicit checkout buttons (new style)
-      const checkoutBtn = e.target.closest('[data-checkout-price-id]');
+    root.addEventListener('click', async function(e) {
+      // Checkout button (has price lookup key)
+      var checkoutBtn = e.target.closest('[data-checkout-price-id]');
       if (checkoutBtn) {
-        const priceId = (checkoutBtn.getAttribute('data-checkout-price-id') || '').trim();
+        var priceId = (checkoutBtn.getAttribute('data-checkout-price-id') || '').trim();
         if (!priceId) return;
+        var plan = (checkoutBtn.getAttribute('data-plan') || '').trim();
+        var tosVersion = (checkoutBtn.getAttribute('data-tos-version') || TOS_VERSION).trim();
+        var checkoutOrigin = (checkoutBtn.getAttribute('data-checkout-origin') || CHECKOUT_ORIGIN).trim();
 
-        const plan =
-          (checkoutBtn.getAttribute('data-plan') || '').trim() ||
-          (checkoutBtn.closest('.plan')?.getAttribute('data-plan') || '').trim();
-
-        const tosVersion = (checkoutBtn.getAttribute('data-tos-version') || 'sla_v0.2_2026-01-22').trim();
-        const checkoutOrigin = (checkoutBtn.getAttribute('data-checkout-origin') || 'https://checkout.haiphen.io').trim();
-
-        await handleSubscribe({
-          planKey: plan || '',
-          priceId,
-          tosVersion,
-          checkoutOrigin,
-        });
+        await handleCheckout({ priceId: priceId, plan: plan, tosVersion: tosVersion, checkoutOrigin: checkoutOrigin });
         return;
       }
 
-      // Legacy handler (old style)
-      const btn = e.target.closest('[data-action]');
-      if (!btn) return;
-
-      const action = (btn.getAttribute('data-action') || '').trim();
-
-      if (action === 'contact') {
-        handleContact();
+      // Contact button
+      var contactBtn = e.target.closest('[data-action="contact"]');
+      if (contactBtn) {
+        if (typeof window.showSection === 'function') window.showSection('Contact');
+        else window.location.hash = '#contact';
         return;
       }
 
-      const card = btn.closest('.plan');
-      const planKey = (card?.getAttribute('data-plan') || '').trim();
+      // Waitlist button
+      var waitlistBtn = e.target.closest('.hp-card__waitlist-btn');
+      if (waitlistBtn) {
+        var waitlistEl = waitlistBtn.closest('[data-waitlist-service]');
+        if (!waitlistEl) return;
+        var serviceId = waitlistEl.getAttribute('data-waitlist-service');
+        var input = waitlistEl.querySelector('.hp-card__waitlist-input');
+        var msg = waitlistEl.querySelector('.hp-card__waitlist-msg');
+        var emailVal = (input?.value || '').trim();
 
-      if (action === 'subscribe') {
-        await handleSubscribe({
-          planKey,
-          // legacy buttons don't carry these, so we default:
-          tosVersion: 'sla_v0.2_2026-01-22',
-          checkoutOrigin: 'https://checkout.haiphen.io',
-        });
+        if (!emailVal || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal)) {
+          msg.textContent = 'Please enter a valid email.';
+          msg.className = 'hp-card__waitlist-msg hp-card__waitlist-msg--err';
+          return;
+        }
+
+        await submitWaitlist(serviceId, emailVal, msg, waitlistBtn);
         return;
       }
     });
+
+    // Waitlist enter key
+    root.addEventListener('keydown', function(e) {
+      if (e.key !== 'Enter') return;
+      var input = e.target.closest('.hp-card__waitlist-input');
+      if (!input) return;
+      var btn = input.closest('.hp-card__waitlist-row')?.querySelector('.hp-card__waitlist-btn');
+      if (btn && !btn.disabled) btn.click();
+    });
   }
 
-  async function mountBlock({ mountId, htmlUrl }) {
-    const mount = qs(mountId);
-    if (!mount) return;
-
-    if (mount.querySelector('.services-plans')) return;
-
-    const html = await fetchText(htmlUrl);
-    mount.innerHTML = html;
-    wire(mount);
-  }
+  // ── Main load ───────────────────────────────────────────────────────────
 
   async function loadServicesPlans() {
-    await injectCssOnce('components/services-plans/services-plans.css');
+    injectCssOnce('components/services-plans/services-plans.css');
 
-    await mountBlock({
-      mountId: 'services-plans-mount',
-      htmlUrl: 'components/services-plans/services-plans.html',
+    var mount = qs('services-plans-mount');
+    if (!mount) return;
+
+    // Don't re-render if already populated
+    if (mount.querySelector('.hp-catalogue')) return;
+
+    // Load HTML shell
+    var html = await fetchText('components/services-plans/services-plans.html');
+    mount.innerHTML = html;
+
+    // Load services data
+    var data;
+    try {
+      data = await fetchJson('assets/services.json');
+    } catch (err) {
+      console.error(LOG, 'Failed to load services.json', err);
+      return;
+    }
+
+    var services = data.services || [];
+
+    // Render cards into category grids
+    var categories = ['featured', 'fintech', 'tech'];
+    categories.forEach(function(cat) {
+      var grid = mount.querySelector('[data-grid="' + cat + '"]');
+      if (!grid) return;
+      var catServices = services.filter(function(s) { return s.category === cat; });
+      grid.innerHTML = catServices.map(renderCard).join('');
     });
 
-    await mountBlock({
-      mountId: 'services-hardtech-mount',
-      htmlUrl: 'components/services-plans/services-hardtech.html',
-    });
-
+    wire(mount);
     applySubscribeFocus();
-    syncFocusFromHash();
+
+    if (currentHashSlug() === SUBSCRIBE_HASH) {
+      setServicesSubscribeFocus(true);
+    }
   }
+
+  // ── Exports ─────────────────────────────────────────────────────────────
 
   window.HAIPHEN = window.HAIPHEN || {};
   window.HAIPHEN.loadServicesPlans = loadServicesPlans;
   window.HAIPHEN.setServicesSubscribeFocus = setServicesSubscribeFocus;
 
-  window.addEventListener('hashchange', () => {
+  window.addEventListener('hashchange', function() {
     if (currentHashSlug() === SUBSCRIBE_HASH) setServicesSubscribeFocus(true);
   });
 })();
