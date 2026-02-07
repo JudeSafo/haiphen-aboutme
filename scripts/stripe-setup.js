@@ -185,11 +185,16 @@ async function findExistingProduct(serviceId) {
 }
 
 async function findExistingPrice(lookupKey) {
-  const list = await stripeGet("/v1/prices", {
-    lookup_keys: lookupKey,
-    limit: "1",
+  // lookup_keys must be passed as an array param: lookup_keys[]=...
+  const qs = new URLSearchParams();
+  qs.set("lookup_keys[]", lookupKey);
+  qs.set("limit", "1");
+  const url = `${STRIPE_API}/v1/prices?${qs.toString()}`;
+  const res = await fetch(url, {
+    headers: { Authorization: `Bearer ${STRIPE_KEY}` },
   });
-  return list.data.length > 0 ? list.data[0] : null;
+  const list = await res.json();
+  return (list.data && list.data.length > 0) ? list.data[0] : null;
 }
 
 async function main() {
