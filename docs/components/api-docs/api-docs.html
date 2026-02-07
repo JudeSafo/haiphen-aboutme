@@ -2,11 +2,11 @@
   <header class="api-hero">
     <div class="api-hero-top">
       <div class="api-hero-title">
-        <div class="api-pill">Docs / Lineage</div>
-        <h2>Haiphen Trading Metrics API</h2>
+        <div class="api-pill">Docs / Platform</div>
+        <h2>Haiphen Platform API</h2>
         <p class="api-subtitle">
-          Daily high-frequency execution telemetry, delivered as <strong>REST</strong> and <strong>RSS</strong>.
-          Built for transparency, auditability, and automation.
+          Metrics, security scanning, network analysis, knowledge graphs, risk modeling, causal intelligence, and supply chain monitoring &mdash;
+          delivered as <strong>REST</strong> endpoints with <strong>CLI</strong> access.
         </p>
       </div>
 
@@ -450,6 +450,366 @@ curl -sS "https://api.haiphen.io/v1/onboarding/resources" \
 
               <pre class="api-code"><code data-lang="bash">curl -sS "https://api.haiphen.io/v1/health" | jq .</code></pre>
             </div>
+          </div>
+        </section>
+
+        <!-- Haiphen Secure -->
+        <section class="api-section" id="docs-secure" data-api-section>
+          <h3>Haiphen Secure</h3>
+          <p>Automated vulnerability assessment and security posture monitoring for edge and industrial infrastructure.</p>
+          <p class="api-muted">Base URL: <code>https://secure.haiphen.io/v1</code></p>
+
+          <div class="api-endpoints">
+            <div class="api-endpoint">
+              <div class="api-endpoint-top">
+                <span class="api-method api-method--post">POST</span>
+                <code class="api-path">/secure/scan</code>
+              </div>
+              <div class="api-endpoint-desc">Initiate a vulnerability, compliance, or full security scan.</div>
+              <div class="api-endpoint-meta">
+                <div><strong>Auth:</strong> Session JWT (cookie or bearer)</div>
+                <div><strong>Body:</strong> <code>{ "target": "192.168.1.0/24", "type": "vulnerability" }</code></div>
+                <div><strong>Returns:</strong> <code>{ scan_id, target, type, status, estimated_duration_seconds }</code></div>
+              </div>
+              <pre class="api-code"><code data-lang="bash">curl -sS -X POST "https://secure.haiphen.io/v1/secure/scan" \
+  -H "Authorization: Bearer $JWT" \
+  -H "Content-Type: application/json" \
+  --data '{"target":"192.168.1.0/24","type":"vulnerability"}' | jq .
+
+# CLI equivalent:
+haiphen secure scan --target "192.168.1.0/24" --type vulnerability</code></pre>
+            </div>
+
+            <div class="api-endpoint">
+              <div class="api-endpoint-top">
+                <span class="api-method">GET</span>
+                <code class="api-path">/secure/scan/:id</code>
+              </div>
+              <div class="api-endpoint-desc">Get scan results including findings, severity breakdown, and remediation guidance.</div>
+              <div class="api-endpoint-meta">
+                <div><strong>Auth:</strong> Session JWT</div>
+                <div><strong>Returns:</strong> <code>{ scan_id, findings[], summary }</code></div>
+              </div>
+            </div>
+
+            <div class="api-endpoint">
+              <div class="api-endpoint-top">
+                <span class="api-method">GET</span>
+                <code class="api-path">/secure/scans</code>
+              </div>
+              <div class="api-endpoint-desc">List all scans for the authenticated user.</div>
+              <pre class="api-code"><code data-lang="bash">haiphen secure scans --json</code></pre>
+            </div>
+
+            <div class="api-endpoint">
+              <div class="api-endpoint-top">
+                <span class="api-method">GET</span>
+                <code class="api-path">/secure/status</code>
+              </div>
+              <div class="api-endpoint-desc">Service status and supported scan types (public).</div>
+              <pre class="api-code"><code data-lang="bash">haiphen secure status</code></pre>
+            </div>
+          </div>
+        </section>
+
+        <!-- Network Trace -->
+        <section class="api-section" id="docs-network" data-api-section>
+          <h3>Network Trace</h3>
+          <p>Packet-level inspection and protocol decoding for Modbus, OPC-UA, MQTT, and industrial networks.</p>
+          <p class="api-muted">Base URL: <code>https://network.haiphen.io/v1</code></p>
+
+          <div class="api-endpoints">
+            <div class="api-endpoint">
+              <div class="api-endpoint-top">
+                <span class="api-method api-method--post">POST</span>
+                <code class="api-path">/network/trace</code>
+              </div>
+              <div class="api-endpoint-desc">Start a network trace capture on a target with protocol filtering.</div>
+              <div class="api-endpoint-meta">
+                <div><strong>Auth:</strong> Session JWT</div>
+                <div><strong>Body:</strong> <code>{ "target": "plc-floor1.local:502", "protocol": "modbus" }</code></div>
+                <div><strong>Returns:</strong> <code>{ trace_id, status, duration_seconds }</code></div>
+              </div>
+              <pre class="api-code"><code data-lang="bash">haiphen network trace --target "plc-floor1.local:502" --protocol modbus</code></pre>
+            </div>
+
+            <div class="api-endpoint">
+              <div class="api-endpoint-top">
+                <span class="api-method">GET</span>
+                <code class="api-path">/network/trace/:id</code>
+              </div>
+              <div class="api-endpoint-desc">Get trace results: sessions, packets captured, and anomalies detected.</div>
+            </div>
+
+            <div class="api-endpoint">
+              <div class="api-endpoint-top">
+                <span class="api-method">GET</span>
+                <code class="api-path">/network/traces</code>
+              </div>
+              <div class="api-endpoint-desc">List recent traces.</div>
+              <pre class="api-code"><code data-lang="bash">haiphen network traces --json</code></pre>
+            </div>
+
+            <div class="api-endpoint">
+              <div class="api-endpoint-top">
+                <span class="api-method">GET</span>
+                <code class="api-path">/network/protocols</code>
+              </div>
+              <div class="api-endpoint-desc">List supported industrial protocols and their ports (public).</div>
+              <pre class="api-code"><code data-lang="bash">haiphen network protocols --json</code></pre>
+            </div>
+          </div>
+        </section>
+
+        <!-- Knowledge Graph -->
+        <section class="api-section" id="docs-graph" data-api-section>
+          <h3>Knowledge Graph</h3>
+          <p>Entity extraction, relationship mapping, and queryable knowledge base built from your data streams.</p>
+          <p class="api-muted">Base URL: <code>https://graph.haiphen.io/v1</code></p>
+
+          <div class="api-endpoints">
+            <div class="api-endpoint">
+              <div class="api-endpoint-top">
+                <span class="api-method api-method--post">POST</span>
+                <code class="api-path">/graph/query</code>
+              </div>
+              <div class="api-endpoint-desc">Query the knowledge graph. Returns matching nodes and edges.</div>
+              <div class="api-endpoint-meta">
+                <div><strong>Auth:</strong> Session JWT</div>
+                <div><strong>Body:</strong> <code>{ "q": "devices on OT-Segment-A", "depth": 2 }</code></div>
+                <div><strong>Returns:</strong> <code>{ nodes[], edges[], total_nodes, total_edges }</code></div>
+              </div>
+              <pre class="api-code"><code data-lang="bash">haiphen graph query --q "devices on OT-Segment-A" --depth 2 --json</code></pre>
+            </div>
+
+            <div class="api-endpoint">
+              <div class="api-endpoint-top">
+                <span class="api-method api-method--post">POST</span>
+                <code class="api-path">/graph/entities</code>
+              </div>
+              <div class="api-endpoint-desc">Bulk ingest entities into the knowledge graph.</div>
+              <div class="api-endpoint-meta">
+                <div><strong>Body:</strong> <code>{ "entities": [{ "type": "device", "label": "PLC-01", ... }] }</code></div>
+                <div><strong>Returns:</strong> <code>{ ingested, created, updated }</code></div>
+              </div>
+            </div>
+
+            <div class="api-endpoint">
+              <div class="api-endpoint-top">
+                <span class="api-method">GET</span>
+                <code class="api-path">/graph/entities</code>
+              </div>
+              <div class="api-endpoint-desc">List entities. Filter with <code>?type=device</code>.</div>
+              <pre class="api-code"><code data-lang="bash">haiphen graph entities --json</code></pre>
+            </div>
+
+            <div class="api-endpoint">
+              <div class="api-endpoint-top">
+                <span class="api-method">GET</span>
+                <code class="api-path">/graph/schema</code>
+              </div>
+              <div class="api-endpoint-desc">Graph schema: entity types and relationship types (public).</div>
+              <pre class="api-code"><code data-lang="bash">haiphen graph schema --json</code></pre>
+            </div>
+          </div>
+        </section>
+
+        <!-- Risk Analysis -->
+        <section class="api-section" id="docs-risk" data-api-section>
+          <h3>Risk Analysis</h3>
+          <p>Scenario modeling, stress testing, and risk quantification for portfolios and infrastructure assets.</p>
+          <p class="api-muted">Base URL: <code>https://risk.haiphen.io/v1</code></p>
+
+          <div class="api-endpoints">
+            <div class="api-endpoint">
+              <div class="api-endpoint-top">
+                <span class="api-method api-method--post">POST</span>
+                <code class="api-path">/risk/assess</code>
+              </div>
+              <div class="api-endpoint-desc">Run a risk assessment with a specified model and scenario.</div>
+              <div class="api-endpoint-meta">
+                <div><strong>Auth:</strong> Session JWT</div>
+                <div><strong>Body:</strong> <code>{ "scenario": "Portfolio stress test Q1", "model": "monte_carlo" }</code></div>
+                <div><strong>Returns:</strong> <code>{ assess_id, results: { risk_score, value_at_risk, recommendations[] } }</code></div>
+              </div>
+              <pre class="api-code"><code data-lang="bash">haiphen risk assess --scenario "Portfolio stress test Q1" --json</code></pre>
+            </div>
+
+            <div class="api-endpoint">
+              <div class="api-endpoint-top">
+                <span class="api-method">GET</span>
+                <code class="api-path">/risk/assess/:id</code>
+              </div>
+              <div class="api-endpoint-desc">Retrieve a specific assessment result.</div>
+            </div>
+
+            <div class="api-endpoint">
+              <div class="api-endpoint-top">
+                <span class="api-method">GET</span>
+                <code class="api-path">/risk/models</code>
+              </div>
+              <div class="api-endpoint-desc">List available risk models: Monte Carlo, VaR, Stress Test, Correlation (public).</div>
+              <pre class="api-code"><code data-lang="bash">haiphen risk models --json</code></pre>
+            </div>
+
+            <div class="api-endpoint">
+              <div class="api-endpoint-top">
+                <span class="api-method">GET</span>
+                <code class="api-path">/risk/assessments</code>
+              </div>
+              <div class="api-endpoint-desc">List past assessments.</div>
+              <pre class="api-code"><code data-lang="bash">haiphen risk assessments --json</code></pre>
+            </div>
+          </div>
+        </section>
+
+        <!-- Causal Chain -->
+        <section class="api-section" id="docs-causal" data-api-section>
+          <h3>Causal Chain</h3>
+          <p>Causal inference and root cause analysis engine for complex event chains and system failures.</p>
+          <p class="api-muted">Base URL: <code>https://causal.haiphen.io/v1</code></p>
+
+          <div class="api-endpoints">
+            <div class="api-endpoint">
+              <div class="api-endpoint-top">
+                <span class="api-method api-method--post">POST</span>
+                <code class="api-path">/causal/analyze</code>
+              </div>
+              <div class="api-endpoint-desc">Submit events for causal analysis. Returns root causes, propagation chain, and counterfactuals.</div>
+              <div class="api-endpoint-meta">
+                <div><strong>Auth:</strong> Session JWT</div>
+                <div><strong>Body:</strong> <code>{ "events": [...], "window_hours": 24 }</code></div>
+                <div><strong>Returns:</strong> <code>{ analysis_id, causal_graph, counterfactuals[] }</code></div>
+              </div>
+              <pre class="api-code"><code data-lang="bash">haiphen causal analyze --events '[{"type":"alert","ts":"..."}]' --json</code></pre>
+            </div>
+
+            <div class="api-endpoint">
+              <div class="api-endpoint-top">
+                <span class="api-method">GET</span>
+                <code class="api-path">/causal/analyze/:id</code>
+              </div>
+              <div class="api-endpoint-desc">Retrieve a specific analysis result.</div>
+            </div>
+
+            <div class="api-endpoint">
+              <div class="api-endpoint-top">
+                <span class="api-method">GET</span>
+                <code class="api-path">/causal/analyses</code>
+              </div>
+              <div class="api-endpoint-desc">List past analyses.</div>
+              <pre class="api-code"><code data-lang="bash">haiphen causal analyses --json</code></pre>
+            </div>
+          </div>
+        </section>
+
+        <!-- Supply Chain Intel -->
+        <section class="api-section" id="docs-supply" data-api-section>
+          <h3>Supply Chain Intel</h3>
+          <p>Real-time supply chain visibility, risk scoring, and disruption forecasting across global networks.</p>
+          <p class="api-muted">Base URL: <code>https://supply.haiphen.io/v1</code></p>
+
+          <div class="api-endpoints">
+            <div class="api-endpoint">
+              <div class="api-endpoint-top">
+                <span class="api-method api-method--post">POST</span>
+                <code class="api-path">/supply/assess</code>
+              </div>
+              <div class="api-endpoint-desc">Assess a supplier's risk profile including multi-tier analysis and alternatives.</div>
+              <div class="api-endpoint-meta">
+                <div><strong>Auth:</strong> Session JWT</div>
+                <div><strong>Body:</strong> <code>{ "supplier": "Acme Components Ltd" }</code></div>
+                <div><strong>Returns:</strong> <code>{ assess_id, risk_profile, tiers[], alerts[], alternatives[] }</code></div>
+              </div>
+              <pre class="api-code"><code data-lang="bash">haiphen supply assess --supplier "Acme Components Ltd" --json</code></pre>
+            </div>
+
+            <div class="api-endpoint">
+              <div class="api-endpoint-top">
+                <span class="api-method">GET</span>
+                <code class="api-path">/supply/assess/:id</code>
+              </div>
+              <div class="api-endpoint-desc">Retrieve a specific supplier assessment.</div>
+            </div>
+
+            <div class="api-endpoint">
+              <div class="api-endpoint-top">
+                <span class="api-method">GET</span>
+                <code class="api-path">/supply/suppliers</code>
+              </div>
+              <div class="api-endpoint-desc">List tracked suppliers with risk scores and locations.</div>
+              <pre class="api-code"><code data-lang="bash">haiphen supply suppliers --json</code></pre>
+            </div>
+
+            <div class="api-endpoint">
+              <div class="api-endpoint-top">
+                <span class="api-method">GET</span>
+                <code class="api-path">/supply/alerts</code>
+              </div>
+              <div class="api-endpoint-desc">List active supply chain alerts (geopolitical, logistics, financial).</div>
+              <pre class="api-code"><code data-lang="bash">haiphen supply alerts --json</code></pre>
+            </div>
+          </div>
+        </section>
+
+        <!-- CLI Command Reference -->
+        <section class="api-section" id="docs-cli-commands" data-api-section>
+          <h3>CLI Command Center</h3>
+          <p>
+            The Haiphen CLI serves as a unified command center for all platform services. It also runs a local gateway
+            that proxies authenticated requests to each service.
+          </p>
+
+          <h4>Global commands</h4>
+          <div class="api-table" role="table" aria-label="CLI global commands">
+            <div class="api-row api-head" role="row">
+              <div role="columnheader">Command</div>
+              <div role="columnheader">Description</div>
+            </div>
+            <div class="api-row" role="row"><div role="cell"><code>haiphen login</code></div><div role="cell">Authenticate via GitHub OAuth</div></div>
+            <div class="api-row" role="row"><div role="cell"><code>haiphen logout</code></div><div role="cell">Clear local session</div></div>
+            <div class="api-row" role="row"><div role="cell"><code>haiphen status</code></div><div role="cell">Show auth + entitlement status</div></div>
+            <div class="api-row" role="row"><div role="cell"><code>haiphen serve</code></div><div role="cell">Run local gateway on :8787</div></div>
+            <div class="api-row" role="row"><div role="cell"><code>haiphen services</code></div><div role="cell">Aggregate health check across all services</div></div>
+            <div class="api-row" role="row"><div role="cell"><code>haiphen onboarding</code></div><div role="cell">Show onboarding links and resources</div></div>
+          </div>
+
+          <h4>Service commands</h4>
+          <div class="api-table" role="table" aria-label="CLI service commands">
+            <div class="api-row api-head" role="row">
+              <div role="columnheader">Command</div>
+              <div role="columnheader">Description</div>
+            </div>
+            <div class="api-row" role="row"><div role="cell"><code>haiphen metrics kpis</code></div><div role="cell">List daily KPI values</div></div>
+            <div class="api-row" role="row"><div role="cell"><code>haiphen metrics series --kpi &lt;name&gt;</code></div><div role="cell">Get time series for a KPI</div></div>
+            <div class="api-row" role="row"><div role="cell"><code>haiphen metrics assets</code></div><div role="cell">List portfolio assets</div></div>
+            <div class="api-row" role="row"><div role="cell"><code>haiphen secure scan --target &lt;t&gt;</code></div><div role="cell">Initiate a security scan</div></div>
+            <div class="api-row" role="row"><div role="cell"><code>haiphen network trace --target &lt;t&gt;</code></div><div role="cell">Start a network trace</div></div>
+            <div class="api-row" role="row"><div role="cell"><code>haiphen graph query --q &lt;query&gt;</code></div><div role="cell">Query the knowledge graph</div></div>
+            <div class="api-row" role="row"><div role="cell"><code>haiphen risk assess --scenario &lt;s&gt;</code></div><div role="cell">Run a risk assessment</div></div>
+            <div class="api-row" role="row"><div role="cell"><code>haiphen causal analyze --events &lt;json&gt;</code></div><div role="cell">Analyze causal chain</div></div>
+            <div class="api-row" role="row"><div role="cell"><code>haiphen supply assess --supplier &lt;name&gt;</code></div><div role="cell">Assess supplier risk</div></div>
+          </div>
+
+          <h4>Local gateway proxy</h4>
+          <p class="api-muted">
+            When <code>haiphen serve</code> is running, the gateway proxies requests to all services via path prefix:
+          </p>
+          <pre class="api-code"><code data-lang="bash"># All service proxies on localhost:8787
+curl http://localhost:8787/v1/metrics/kpis          # &rarr; api.haiphen.io
+curl http://localhost:8787/secure/v1/secure/scans   # &rarr; secure.haiphen.io
+curl http://localhost:8787/network/v1/network/traces # &rarr; network.haiphen.io
+curl http://localhost:8787/graph/v1/graph/entities   # &rarr; graph.haiphen.io
+curl http://localhost:8787/risk/v1/risk/models       # &rarr; risk.haiphen.io
+curl http://localhost:8787/causal/v1/causal/analyses # &rarr; causal.haiphen.io
+curl http://localhost:8787/supply/v1/supply/alerts   # &rarr; supply.haiphen.io</code></pre>
+
+          <div class="api-callout">
+            <div class="api-callout-title">Tip</div>
+            <p class="api-muted">
+              All service commands accept a <code>--json</code> flag for machine-readable output.
+              Use <code>--help</code> on any command for full flag documentation.
+            </p>
           </div>
         </section>
 

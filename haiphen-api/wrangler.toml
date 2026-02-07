@@ -1,0 +1,45 @@
+name = "haiphen-api"
+main = "src/index.ts"
+compatibility_date = "2025-07-16"
+
+# You will attach this worker to api.haiphen.io via route below.
+routes = [
+  { pattern = "api.haiphen.io/*", zone_name = "haiphen.io" }
+]
+
+[observability]
+enabled = true
+
+[[d1_databases]]
+binding = "DB"
+database_name = "haiphen_api"
+database_id = "9a26fb67-b6e5-4d5f-8e62-3ecfde5ee8c2"
+
+
+[durable_objects]
+bindings = [
+  { name = "RATE_LIMITER", class_name = "RateLimiterDO" }
+]
+
+[[migrations]]
+tag = "v1"
+new_classes = ["RateLimiterDO"]
+
+[[kv_namespaces]]
+binding = "REVOKE_KV"
+id = "7ef6277bfea34ec18fb4b52ceb79aba3"
+
+[[kv_namespaces]]
+binding = "CACHE_KV"
+id = "173c29cd36d0429fa9f7556c5cba334b"
+
+[vars]
+ONBOARDING_APP_URL = "https://app.haiphen.io/"
+ONBOARDING_DOCS_URL = "https://haiphen.io/#docs"
+ONBOARDING_PROFILE_URL = "https://haiphen.io/#profile"
+ONBOARDING_COHORT_URL = "https://haiphen.io/#cohort"
+ONBOARDING_CALENDAR_URL = "https://calendar.app.google/jQzWz98eCC5jMLrQA"
+ONBOARDING_SUPPORT_EMAIL = "pi@haiphenai.com"
+ONBOARDING_CLI_DOCS_URL = "https://haiphen.io/#docs"
+ONBOARDING_API_BASE_URL = "https://api.haiphen.io"
+ONBOARDING_WEBSOCKET_URL = "wss://api.haiphen.io/v1/telemetry/stream"

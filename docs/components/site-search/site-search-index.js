@@ -48,6 +48,38 @@
       { label: "Cohort Briefing Video", section: "Trades", elementId: "cohort-video", keywords: ["cohort", "video", "briefing"] },
       { label: "Profile", section: "Profile", elementId: "profile", keywords: ["profile", "account", "keys"] },
       { label: "Onboarding Hub", section: "Onboarding", elementId: "profile-onboarding", keywords: ["onboarding", "setup", "welcome", "assets"] },
+
+      // --- Docs sections
+      { label: "Docs • Overview", section: "Docs", elementId: "docs-overview", keywords: ["docs", "api", "overview", "reference"] },
+      { label: "Docs • Authentication", section: "Docs", elementId: "docs-auth", keywords: ["docs", "auth", "jwt", "token", "bearer"] },
+      { label: "Docs • Endpoints", section: "Docs", elementId: "docs-endpoints", keywords: ["docs", "endpoints", "routes", "api"] },
+      { label: "Docs • Haiphen Secure", section: "Docs", elementId: "docs-secure", keywords: ["docs", "secure", "vulnerability", "scanning", "cve"] },
+      { label: "Docs • Network Trace", section: "Docs", elementId: "docs-network", keywords: ["docs", "network", "trace", "protocol", "packet"] },
+      { label: "Docs • Knowledge Graph", section: "Docs", elementId: "docs-graph", keywords: ["docs", "knowledge", "graph", "entity", "relationship"] },
+      { label: "Docs • Risk Analysis", section: "Docs", elementId: "docs-risk", keywords: ["docs", "risk", "analysis", "var", "monte carlo"] },
+      { label: "Docs • Causal Chain", section: "Docs", elementId: "docs-causal", keywords: ["docs", "causal", "chain", "root cause", "incident"] },
+      { label: "Docs • Supply Chain", section: "Docs", elementId: "docs-supply", keywords: ["docs", "supply", "chain", "disruption", "supplier"] },
+      { label: "Docs • CLI Commands", section: "Docs", elementId: "docs-cli-commands", keywords: ["docs", "cli", "commands", "haiphen", "terminal"] },
+
+      // --- Tech services
+      { label: "Haiphen Secure", section: "Services", elementId: "services-plans-mount", keywords: ["secure", "security", "vulnerability", "scanning", "compliance"] },
+      { label: "Network Trace", section: "Services", elementId: "services-plans-mount", keywords: ["network", "trace", "protocol", "modbus", "opc-ua", "mqtt"] },
+      { label: "Knowledge Graph", section: "Services", elementId: "services-plans-mount", keywords: ["knowledge", "graph", "entity", "extraction", "semantic"] },
+      { label: "Risk Analysis", section: "Services", elementId: "services-plans-mount", keywords: ["risk", "analysis", "modeling", "stress test", "var"] },
+      { label: "Causal Chain", section: "Services", elementId: "services-plans-mount", keywords: ["causal", "chain", "root cause", "inference", "incident"] },
+      { label: "Supply Chain Intel", section: "Services", elementId: "services-plans-mount", keywords: ["supply", "chain", "disruption", "supplier", "geopolitical"] },
+
+      // --- Profile subsections
+      { label: "Profile • API Keys", section: "Profile", elementId: "profile", keywords: ["api", "keys", "rotate", "revoke", "bearer"] },
+      { label: "Profile • Email Preferences", section: "Profile", elementId: "profile", keywords: ["email", "preferences", "digest", "newsletter"] },
+      { label: "Profile • Service Quick Start", section: "Onboarding", elementId: "profile-onboarding", keywords: ["service", "quick start", "getting started", "cli"] },
+
+      // --- Cohort
+      { label: "Cohort • Program Details", section: "Trades", elementId: "cohort", keywords: ["cohort", "program", "details", "timeline"] },
+      { label: "Cohort • Apply / Survey", section: "Trades", hash: "cohort:survey", keywords: ["cohort", "apply", "survey", "join"] },
+
+      // --- Subscribe / Checkout
+      { label: "Subscribe", section: "Services", elementId: "services-subscribe-banner", keywords: ["subscribe", "checkout", "payment", "plan", "pricing"] },
     ]);
   });
 })();

@@ -163,10 +163,18 @@
 
     root.innerHTML = results
       .map((it, i) => {
+        const SECTION_LABELS = {
+          Trades: "Trades", OnePager: "Mission", Services: "Services",
+          FAQ: "FAQ", Contact: "Contact", Profile: "Profile",
+          Onboarding: "Onboarding", Docs: "Docs"
+        };
+        const friendlySection = it.section ? (SECTION_LABELS[it.section] || it.section) : "";
+        const friendlyId = (it.elementId || "").replace(/^#/, "").replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase());
         const meta =
-          it.section ? `Section: ${it.section}${it.elementId ? ` • #${it.elementId}` : ""}` :
-          it.hash ? `#${it.hash}` :
-          it.elementId ? `#${it.elementId}` :
+          friendlySection && friendlyId ? `${friendlySection} › ${friendlyId}` :
+          friendlySection ? friendlySection :
+          friendlyId ? friendlyId :
+          it.hash ? it.hash.replace(/-/g, " ") :
           "";
 
         const cls = i === state.activePos ? "site-search__item is-active" : "site-search__item";
@@ -236,43 +244,6 @@
     }
     state.open = false;
     state.activePos = 0;
-  }
-
-  function navigateTo(entry) {
-    closeOverlay();
-
-    // Preferred: use your hash router (shareable + consistent)
-    if (entry.section && typeof window.setHashForSection === "function") {
-      const sub = entry.elementId || entry.hash || "";
-      window.setHashForSection(entry.section, sub);
-      return;
-    }
-
-    // inside navigateTo(entry), in the "Fallback: direct section + scroll" branch:
-    if (entry.section && typeof window.showSection === "function") {
-      window.showSection(entry.section);
-
-      // Wait for the element to exist (in injected content), then scroll
-      if (entry.elementId && typeof window.scrollToIdWhenReady === 'function') {
-        window.scrollToIdWhenReady(entry.elementId, { maxAttempts: 80, delayMs: 50, extra: 12 });
-        return;
-      }
-
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          if (entry.elementId && scrollToIdWithHeaderOffset(entry.elementId)) return;
-          if (entry.hash) window.location.hash = `#${entry.hash}`;
-        });
-      });
-      return;
-    }
-
-    // Last resort: hash/scroll only
-    if (entry.hash) {
-      window.location.hash = `#${entry.hash}`;
-      return;
-    }
-    if (entry.elementId) scrollToIdWithHeaderOffset(entry.elementId);
   }
 
   function navigateTo(entry) {

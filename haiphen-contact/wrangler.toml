@@ -3,13 +3,53 @@ main = "src/worker.ts"
 compatibility_date = "2025-12-01"
 workers_dev = true
 
+# Optional but helpful
+# logpush = true
+
 [vars]
 ALLOWED_ORIGINS = "https://haiphen.io,https://www.haiphen.io,http://localhost:5713"
 FROM_EMAIL = "jude@haiphen.io"
-OWNER_EMAIL = "pi@haiphenai.com"
+FROM_NAME = "Haiphen"
+OWNER_EMAIL = "jude@haiphen.io"
 TICKET_PREFIX = "H"
-SENDGRID_TEMPLATE_ID_CONFIRM = "d-8bedbceb69da4a7cbe0e0aebb0315e43"
+SENDGRID_TEMPLATE_ID_CONFIRM = "d-deb377928a1541ba8c3c403f63fdf93e"
 TURNSTILE_VERIFY_URL = "https://challenges.cloudflare.com/turnstile/v0/siteverify"
+TURNSTILE_REQUIRED = "false"
+PUBLIC_SITE_ORIGIN = "https://haiphen.io"
+WELCOME_TEMPLATE_ID = "d-c5ff6c715c544bd096f84272bdfa4be2"
+WELCOME_REQUIRED_ENTITLEMENT = "true"
+WELCOME_FROM_NAME = "Haiphen"
+WELCOME_PORTAL_URL = "https://app.haiphen.io/#docs"
+WELCOME_CALENDAR_URL = "https://calendar.app.google/jQzWz98eCC5jMLrQA"
+WELCOME_SURVEY_URL = "https://haiphen.io/#survey"
+WELCOME_SUPPORT_EMAIL = "pi@haiphenai.com"
+WELCOME_TOS_PDF_URL = "https://haiphen.io/assets/legal/Haiphen_Service_Agreement_sla_v0.2_2026-01-22.pdf"
+WELCOME_TOS_VERSION = "sla_v0.2_2026-01-22"
+WELCOME_TOS_EFFECTIVE = "2026-01-22"
+WELCOME_LEGAL_TERMS_URL = "https://haiphen.io/terms.html"
+ONBOARDING_TEMPLATE_ID = "d-2e68baf8efac47a0a3a619d94243cf6f"
+ONBOARDING_APP_URL = "https://app.haiphen.io/"
+ONBOARDING_URL = "https://haiphen.io/#onboarding"
+ONBOARDING_DOCS_URL = "https://haiphen.io/#docs"
+ONBOARDING_PROFILE_URL = "https://haiphen.io/#profile"
+ONBOARDING_COHORT_URL = "https://haiphen.io/#cohort"
+ONBOARDING_CALENDAR_URL = "https://calendar.app.google/jQzWz98eCC5jMLrQA"
+ONBOARDING_SUPPORT_EMAIL = "pi@haiphenai.com"
+ONBOARDING_API_BASE_URL = "https://api.haiphen.io"
+ONBOARDING_CLI_DOCS_URL = "https://haiphen.io/#docs"
+ONBOARDING_WEBSOCKET_URL = "wss://api.haiphen.io/v1/telemetry/stream"
+COHORT_TEMPLATE_ID_CONFIRM = "d-08307192cb804678bcb46283ee2649fd"
+SENDGRID_TEMPLATE_ID_DAILY = "d-efaaa1771c9d477c850cb67db2753d47"
+DAILY_FROM_NAME = "Haiphen"
+DAILY_SUBJECT_PREFIX = "Haiphen Daily"
+PUBLIC_APP_PROFILE_URL = "https://haiphen.io/#profile"
+TRADES_JSON_URL = "https://haiphen.io/assets/trades/trades.json"
+
+# If you add the D1 idempotency table for email events
+[[d1_databases]]
+binding = "DB"
+database_name = "haiphen_api"
+database_id = "9a26fb67-b6e5-4d5f-8e62-3ecfde5ee8c2"
 
 [[durable_objects.bindings]]
 name = "TICKETS"
@@ -18,3 +58,11 @@ class_name = "TicketQueue"
 [[migrations]]
 tag = "v1"
 new_classes = ["TicketQueue"]
+
+[[kv_namespaces]]
+binding = "REVOKE_KV"
+id = "7ef6277bfea34ec18fb4b52ceb79aba3"
+
+[triggers]
+# 13:00 UTC = 7am Chicago (CST). Adjust later if you want DST-perfect behavior.
+crons = ["0 13 * * 1-5"]

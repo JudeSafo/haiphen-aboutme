@@ -223,13 +223,6 @@ export default {
         return json({ ok: true, enqueued: 1, stats });
       }
 
-      // Inside `async fetch(req, env)` before your existing routes:
-
-      if (url.pathname === "/vpn/discover" && method === "GET") {
-        const urls = (env.HEADSCALE_URLS || "").split(",").map((u) => u.trim()).filter(Boolean);
-        return json({ ok: true, urls, ts: new Date().toISOString() });
-      }
-
       // -- Open-source control-plane: Headscale preauth key (alias /subnet/create)
       if (url.pathname === "/subnet/create" && method === "POST") {
         const { valid, body } = await verifyAndRead(req, env.INGEST_HMAC_SECRET);
@@ -505,6 +498,16 @@ export class WorkQueueDO {
         this.leases.delete(leaseId);
       }
     }
+
+    // Prune completed/dead-letter tasks older than 24 hours to prevent unbounded growth
+    const RETENTION_MS = 24 * 60 * 60 * 1000;
+    const cutoff = now - RETENTION_MS;
+    this.queue = this.queue.filter(t => {
+      if (t.state === "succeeded" || t.state === "dead-letter") {
+        return (t.finishedAt || t.createdAt) > cutoff;
+      }
+      return true;
+    });
   }
 
   async persist() {

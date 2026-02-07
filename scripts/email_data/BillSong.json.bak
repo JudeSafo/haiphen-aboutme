@@ -1,0 +1,30 @@
+{
+  "to": { "email": "Williamsong2012@gmail.com", "name": "Bill" },  
+  "from": { "email": "jude@haiphen.io", "name": "Haiphen" },
+  "subject": "Onboarding + Demo Discussion",  
+  "name": "Bill",
+  "cohort": {
+    "name": "Haiphen Cohort — Q1 2026",
+    "community_label": "2-minute Alignment Questionare",
+    "community_url": "https://haiphen.io/#cohort"
+  },
+  "meeting": {
+    "when_human": "Fri, Jan 30, 2026 · 5:00 PM (America/New_York)",
+    "duration_minutes": 30,
+    "timezone": "America/New_York",
+    "location_label": "Google Meet",
+    "join_url": "https://meet.google.com/drt-awkj-qvq",
+    "calendar_url": "https://calendar.google.com/calendar/render?action=TEMPLATE&text=Haiphen%20Cohort%20Kickoff&dates=20260125T140000/20260125T143000&details=Join%3A%20https%3A%2F%2Fmeet.google.com%2Fmjn-dpth-ezr&location=https%3A%2F%2Fmeet.google.com%2Fmjn-dpth-ezr&ctz=America%2FPacific",
+    "reschedule_url": "https://calendar.google.com/calendar/u/0/appointments/schedules/AcZssZ1blWi1yUPRxh8jkZM4VAntYq7sGC8m978Ad9kJ1YGL8uAu_zjyGHNF4rLzc_QSNH95v-GU6uPQ"
+  },
+  "links": {
+    "terms_url": "https://haiphen.io/terms.html",
+    "docs_url": "https://haiphen.io/#docs"
+  },
+  "sender": {
+    "org": "Haiphen",
+    "city": "Manhattan, NY",
+    "email": "pi@haiphenai.com",
+    "phone": "(512) 910-4544"
+  }
+}

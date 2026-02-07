@@ -23,16 +23,80 @@
     <div id="profile-onboarding" class="hp-card hp-card--full hp-onboarding">
       <div class="hp-card__hd">
         <div>
-          <div class="hp-card__title">Onboarding Hub</div>
-          <div class="hp-card__sub">Start here after payment. These links cover setup, access, and operating steps.</div>
+          <div class="hp-card__title hp-card__title--lg">Onboarding Hub</div>
+          <div class="hp-card__sub">Complete these steps to get fully set up with Haiphen.</div>
         </div>
       </div>
       <div class="hp-card__bd">
-        <div class="hp-onboarding__intro">
-          <p class="hp-onboarding__lead">
-            Access is now centralized under your account. Begin with API key setup, then use docs/CLI for integration.
-          </p>
-          <a class="hp-profile__btn hp-profile__btn--primary" href="#profile">Open API key controls</a>
+        <!-- CLI quickstart block -->
+        <div class="hp-quickstart">
+          <div class="hp-quickstart__hd">
+            <strong>Quick Start</strong>
+            <span>Copy and run these commands to get started immediately.</span>
+          </div>
+          <div class="hp-quickstart__code">
+            <code>haiphen login</code>
+            <code>haiphen status</code>
+            <code>haiphen services</code>
+          </div>
+        </div>
+
+        <!-- Numbered onboarding steps -->
+        <div class="hp-steps" data-profile-steps>
+          <div class="hp-step" data-step="login">
+            <span class="hp-step__num" data-step-status="pending">1</span>
+            <div class="hp-step__body">
+              <a class="hp-step__link" href="https://auth.haiphen.io/login" data-onboarding-link="login_url">
+                <strong>Login via GitHub</strong>
+              </a>
+              <span>Authenticate to access your account and API.</span>
+            </div>
+          </div>
+          <div class="hp-step" data-step="subscribe">
+            <span class="hp-step__num" data-step-status="pending">2</span>
+            <div class="hp-step__body">
+              <a class="hp-step__link" href="#subscribe">
+                <strong>Subscribe to a plan</strong>
+              </a>
+              <span>Choose Pro or Enterprise for full access.</span>
+            </div>
+          </div>
+          <div class="hp-step" data-step="apikey">
+            <span class="hp-step__num" data-step-status="pending">3</span>
+            <div class="hp-step__body">
+              <a class="hp-step__link" href="#profile">
+                <strong>Generate API key</strong>
+              </a>
+              <span>Create a Bearer token for programmatic access.</span>
+            </div>
+          </div>
+          <div class="hp-step" data-step="cli">
+            <span class="hp-step__num" data-step-status="pending">4</span>
+            <div class="hp-step__body">
+              <a class="hp-step__link" href="#docs:docs-cli-commands">
+                <strong>Install CLI</strong>
+              </a>
+              <span>Set up the local gateway and command center.</span>
+            </div>
+          </div>
+          <div class="hp-step" data-step="docs">
+            <span class="hp-step__num" data-step-status="pending">5</span>
+            <div class="hp-step__body">
+              <a class="hp-step__link" href="#docs">
+                <strong>Explore docs</strong>
+              </a>
+              <span>Review API endpoints, CLI commands, and guides.</span>
+            </div>
+          </div>
+          <div class="hp-step" data-step="cohort">
+            <span class="hp-step__num" data-step-status="pending">6</span>
+            <div class="hp-step__body">
+              <a class="hp-step__link" href="#cohort">
+                <strong>Join the Cohort</strong>
+              </a>
+              <span>Access program resources and onboarding support.</span>
+            </div>
+          </div>
         </div>
 
         <div class="hp-onboarding__video">
@@ -43,6 +107,8 @@
             allow="autoplay"
           ></iframe>
         </div>
+
+        <div class="hp-divider"></div>
 
         <div class="hp-onboarding__grid">
           <a class="hp-onboarding__item" href="https://app.haiphen.io/" target="_blank" rel="noopener" data-onboarding-link="app_url">
@@ -68,6 +134,57 @@
           <a class="hp-onboarding__item" href="mailto:pi@haiphenai.com" data-onboarding-link="support_email">
             <strong>Support Channel</strong>
             <span>Contact support for blockers and production issues.</span>
+          </a>
+        </div>
+
+        <div class="hp-onboarding__services-head">
+          <div class="hp-card__title">Service Quick Start</div>
+          <div class="hp-card__sub">Access each Haiphen service via docs or CLI.</div>
+          <button class="hp-profile__btn hp-profile__btn--ghost hp-services-toggle" type="button" data-services-toggle>
+            Show services
+          </button>
+        </div>
+
+        <div class="hp-onboarding__grid hp-onboarding__grid--services hp-onboarding__grid--collapsible" data-services-grid hidden>
+          <a class="hp-onboarding__item hp-onboarding__item--service" href="#docs:docs-cli-commands" data-onboarding-link="cli_docs_url">
+            <strong>Haiphen CLI <span class="hp-svc-badge hp-svc-badge--available">Available</span></strong>
+            <span>Local gateway and command center.</span>
+            <code class="hp-onboarding__cmd">haiphen serve</code>
+          </a>
+          <a class="hp-onboarding__item hp-onboarding__item--service" href="#docs:docs-endpoints" data-onboarding-link="metrics_docs_url">
+            <strong>Trading Metrics <span class="hp-svc-badge hp-svc-badge--available">Available</span></strong>
+            <span>KPIs, time-series, and portfolio assets.</span>
+            <code class="hp-onboarding__cmd">haiphen metrics kpis</code>
+          </a>
+          <a class="hp-onboarding__item hp-onboarding__item--service" href="#docs:docs-secure" data-onboarding-link="secure_docs_url">
+            <strong>Haiphen Secure <span class="hp-svc-badge hp-svc-badge--soon">Coming Soon</span></strong>
+            <span>Vulnerability and compliance scanning.</span>
+            <code class="hp-onboarding__cmd">haiphen secure scan --target &lt;t&gt;</code>
+          </a>
+          <a class="hp-onboarding__item hp-onboarding__item--service" href="#docs:docs-network" data-onboarding-link="network_docs_url">
+            <strong>Network Trace <span class="hp-svc-badge hp-svc-badge--soon">Coming Soon</span></strong>
+            <span>Protocol-level traffic analysis.</span>
+            <code class="hp-onboarding__cmd">haiphen network trace --target &lt;t&gt;</code>
+          </a>
+          <a class="hp-onboarding__item hp-onboarding__item--service" href="#docs:docs-graph" data-onboarding-link="graph_docs_url">
+            <strong>Knowledge Graph <span class="hp-svc-badge hp-svc-badge--soon">Coming Soon</span></strong>
+            <span>Entity relationships and topology queries.</span>
+            <code class="hp-onboarding__cmd">haiphen graph query --q &lt;query&gt;</code>
+          </a>
+          <a class="hp-onboarding__item hp-onboarding__item--service" href="#docs:docs-risk" data-onboarding-link="risk_docs_url">
+            <strong>Risk Analysis <span class="hp-svc-badge hp-svc-badge--soon">Coming Soon</span></strong>
+            <span>Scenario modeling and risk assessments.</span>
+            <code class="hp-onboarding__cmd">haiphen risk assess --scenario &lt;s&gt;</code>
+          </a>
+          <a class="hp-onboarding__item hp-onboarding__item--service" href="#docs:docs-causal" data-onboarding-link="causal_docs_url">
+            <strong>Causal Chain <span class="hp-svc-badge hp-svc-badge--soon">Coming Soon</span></strong>
+            <span>Root-cause and event chain analysis.</span>
+            <code class="hp-onboarding__cmd">haiphen causal analyze --events &lt;file&gt;</code>
+          </a>
+          <a class="hp-onboarding__item hp-onboarding__item--service" href="#docs:docs-supply" data-onboarding-link="supply_docs_url">
+            <strong>Supply Chain Intel <span class="hp-svc-badge hp-svc-badge--soon">Coming Soon</span></strong>
+            <span>Supplier risk scoring and alerts.</span>
+            <code class="hp-onboarding__cmd">haiphen supply assess --supplier &lt;name&gt;</code>
           </a>
         </div>
       </div>

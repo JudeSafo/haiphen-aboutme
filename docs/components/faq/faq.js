@@ -171,11 +171,91 @@
       tags: ["engineering", "collaboration"],
     },
     {
-      q: "Where’s the gallery of hardware / field work?",
+      q: "Where's the gallery of hardware / field work?",
       aHtml:
         `The gallery lives in OnePager. Jump to <a href="#collaborate">OnePager</a> and scroll to <a data-faq-go="OnePager:services-gallery" href="#services-gallery">Gallery</a>.`,
       aText:
         "The gallery lives in OnePager. Jump to OnePager and scroll to Gallery.",
+      tags: ["navigation", "services"],
+    },
+    {
+      q: "What is Haiphen Secure?",
+      aHtml:
+        `Haiphen Secure provides automated vulnerability assessment and security posture monitoring for edge and industrial infrastructure. It correlates CVEs, enforces compliance policies, and generates remediation playbooks. See <a href="#docs:docs-secure">Secure docs</a>.`,
+      aText:
+        "Haiphen Secure provides automated vulnerability assessment and security posture monitoring. It correlates CVEs, enforces compliance, and generates remediation playbooks.",
+      tags: ["services", "security"],
+    },
+    {
+      q: "How does Network Trace work?",
+      aHtml:
+        `Network Trace performs packet-level inspection and protocol decoding for Modbus, OPC-UA, MQTT, and other industrial protocols. It detects traffic anomalies and reconstructs sessions for forensic analysis. See <a href="#docs:docs-network">Network Trace docs</a>.`,
+      aText:
+        "Network Trace performs packet-level inspection and protocol decoding for industrial protocols. It detects anomalies and reconstructs sessions.",
+      tags: ["services", "engineering"],
+    },
+    {
+      q: "What can I do with Knowledge Graph?",
+      aHtml:
+        `Knowledge Graph extracts entities from your data streams, infers relationships, and builds a queryable knowledge base via GraphQL. It deduplicates across sources and supports topology queries. See <a href="#docs:docs-graph">Knowledge Graph docs</a>.`,
+      aText:
+        "Knowledge Graph extracts entities, infers relationships, and builds a queryable knowledge base via GraphQL with cross-source deduplication.",
+      tags: ["services", "engineering"],
+    },
+    {
+      q: "How does Risk Analysis differ from standard VaR tools?",
+      aHtml:
+        `Risk Analysis goes beyond basic Value-at-Risk by combining Monte Carlo simulation, scenario stress testing, and portfolio correlation analysis. It computes both VaR and CVaR under configurable tail-risk scenarios. See <a href="#docs:docs-risk">Risk Analysis docs</a>.`,
+      aText:
+        "Risk Analysis combines Monte Carlo simulation, scenario stress testing, and portfolio correlation analysis beyond basic VaR computation.",
+      tags: ["services", "trading"],
+    },
+    {
+      q: "What is Causal Chain analysis?",
+      aHtml:
+        `Causal Chain builds causal graphs from event data, reconstructs incident timelines, and enables counterfactual reasoning — answering "what would have happened if X didn't occur?" for complex system failures. See <a href="#docs:docs-causal">Causal Chain docs</a>.`,
+      aText:
+        "Causal Chain builds causal graphs from event data, reconstructs incident timelines, and enables counterfactual reasoning for system failures.",
+      tags: ["services", "engineering"],
+    },
+    {
+      q: "How does Supply Chain Intel work?",
+      aHtml:
+        `Supply Chain Intel maps multi-tier supplier networks, scores disruption probability, suggests alternative sourcing, and overlays geopolitical risk data for real-time supply chain visibility. See <a href="#docs:docs-supply">Supply Chain docs</a>.`,
+      aText:
+        "Supply Chain Intel maps supplier networks, scores disruption probability, suggests alternative sourcing, and overlays geopolitical risk.",
+      tags: ["services"],
+    },
+    {
+      q: "How do I use the CLI to access services?",
+      aHtml:
+        `Install the CLI, then run <code>haiphen login</code> to authenticate, <code>haiphen services</code> to list available services, and service-specific commands like <code>haiphen secure scan</code> or <code>haiphen risk assess</code>. See <a href="#docs:docs-cli-commands">CLI docs</a>.`,
+      aText:
+        "Install the CLI, run haiphen login, haiphen services, and service-specific commands like haiphen secure scan or haiphen risk assess.",
+      tags: ["services", "navigation", "cli"],
+    },
+    {
+      q: "What subscription plans are available?",
+      aHtml:
+        `Haiphen offers Free, Pro, and Enterprise tiers. Free includes limited API requests. Pro unlocks higher rate limits and premium services. Enterprise adds custom SLAs and dedicated support. See <a href="#subscribe">Subscribe</a> for details.`,
+      aText:
+        "Haiphen offers Free, Pro, and Enterprise tiers with increasing rate limits, service access, and support levels.",
+      tags: ["services", "pricing"],
+    },
+    {
+      q: "How do I manage my API keys?",
+      aHtml:
+        `Navigate to <a href="#profile">Profile</a> to rotate, copy, and revoke API keys. Keys use Bearer token authentication and have scoped permissions (metrics:read, rss:read, webhooks:write). Raw tokens are shown only once at creation.`,
+      aText:
+        "Navigate to Profile to rotate, copy, and revoke API keys. Keys use Bearer token auth with scoped permissions and are shown only once.",
+      tags: ["navigation", "security"],
+    },
+    {
+      q: "What happens after I subscribe?",
+      aHtml:
+        `After checkout, you'll see a confirmation page with next steps: check your email for receipt, generate an API key in <a href="#profile">Profile</a>, and explore the <a href="#docs">Docs</a>. Your plan activates immediately.`,
+      aText:
+        "After checkout, you'll see a confirmation with next steps: check email, generate API key in Profile, and explore Docs. Plan activates immediately.",
       tags: ["navigation", "services"],
     },
   ];

@@ -1,0 +1,26 @@
+Subject: Your Haiphen onboarding access is active
+
+Hi {{name}},
+
+Your account has been provisioned for the {{plan}} cohort plan.
+Use this message to complete setup.
+
+Open onboarding hub:
+{{onboarding_url}}
+
+Start here:
+- Profile and API keys: {{profile_url}}
+- API and CLI docs: {{docs_url}}
+- Cohort guide: {{cohort_url}}
+- Onboarding call: {{calendar_url}}
+
+Connection details:
+- API base URL: {{api_base_url}}
+- WebSocket URL: {{websocket_url}}
+- Account login: {{user_login}}
+
+Support:
+{{support_email}}
+
+You are receiving this transactional email because cohort onboarding access was activated for your account.
+Haiphen - https://haiphen.io

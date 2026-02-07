@@ -65,6 +65,29 @@ func New(cfg *config.Config, st store.Store) (*Server, error) {
 	protected := s.withGates(proxy)
 	mux.Handle("/v1/", protected)
 
+	// Service proxies (protected, strip prefix to forward as /v1/...)
+	serviceRoutes := []struct {
+		prefix string
+		origin string
+	}{
+		{"/secure/", cfg.SecureOrigin},
+		{"/network/", cfg.NetworkOrigin},
+		{"/graph/", cfg.GraphOrigin},
+		{"/risk/", cfg.RiskOrigin},
+		{"/causal/", cfg.CausalOrigin},
+		{"/supply/", cfg.SupplyOrigin},
+	}
+	for _, sr := range serviceRoutes {
+		svcProxy, err := newAPIProxy(sr.origin, st)
+		if err != nil {
+			return nil, err
+		}
+		mux.Handle(sr.prefix, s.withGates(http.StripPrefix(strings.TrimSuffix(sr.prefix, "/"), svcProxy)))
+	}
+
+	// Aggregate health handler (public)
+	mux.HandleFunc("/services", s.handleServicesHealth)
+
 	s.httpSrv.Handler = mux
 	return s, nil
 }
@@ -118,6 +141,35 @@ func (s *Server) handleLogout(w http.ResponseWriter, r *http.Request) {
 	}
 	_ = s.st.ClearToken()
 	writeJSON(w, map[string]any{"ok": true}, http.StatusOK)
+}
+
+func (s *Server) handleServicesHealth(w http.ResponseWriter, r *http.Request) {
+	type svcResult struct {
+		Name   string `json:"name"`
+		Origin string `json:"origin"`
+		OK     bool   `json:"ok"`
+	}
+
+	services := []struct {
+		name   string
+		origin string
+	}{
+		{"api", s.cfg.APIOrigin},
+		{"secure", s.cfg.SecureOrigin},
+		{"network", s.cfg.NetworkOrigin},
+		{"graph", s.cfg.GraphOrigin},
+		{"risk", s.cfg.RiskOrigin},
+		{"causal", s.cfg.CausalOrigin},
+		{"supply", s.cfg.SupplyOrigin},
+	}
+
+	results := make([]svcResult, len(services))
+	for i, svc := range services {
+		_, err := util.ServiceGet(r.Context(), svc.origin, "/v1/health", "")
+		results[i] = svcResult{Name: svc.name, Origin: svc.origin, OK: err == nil}
+	}
+
+	writeJSON(w, results, http.StatusOK)
 }
 
 // serve-mode native callback endpoint.

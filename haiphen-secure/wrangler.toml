@@ -1,0 +1,14 @@
+name = "haiphen-secure"
+main = "src/index.ts"
+compatibility_date = "2025-07-16"
+
+# Routes (requires DNS CNAME for secure.haiphen.io)
+# [[routes]]
+# pattern = "secure.haiphen.io/*"
+# zone_name = "haiphen.io"
+
+[vars]
+ALLOWED_ORIGINS = "https://haiphen.io,https://www.haiphen.io,https://app.haiphen.io,https://auth.haiphen.io"
+
+# Secrets (set via `wrangler secret put`):
+# - JWT_SECRET (shared across all Haiphen workers)

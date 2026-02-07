@@ -426,6 +426,39 @@
   background: rgba(15,23,42,.05);
 }
 
+.hp-onboarding__services-head{
+  margin-top: 16px;
+  margin-bottom: 10px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(15,23,42,.08);
+}
+
+.hp-onboarding__grid--services{
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.hp-onboarding__item--service{
+  gap: 5px;
+}
+
+.hp-onboarding__cmd{
+  display: block;
+  margin-top: 2px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(31,111,235,.85);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 1100px){
+  .hp-onboarding__grid--services{
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 980px){
   .hp-onboarding__intro{
     align-items: flex-start;
@@ -434,7 +467,186 @@
   .hp-onboarding__grid{
     grid-template-columns: 1fr;
   }
+  .hp-onboarding__grid--services{
+    grid-template-columns: 1fr;
+  }
   .hp-onboarding__video iframe{
     height: 220px;
+  }
+}
+
+/* === Larger title variant === */
+.hp-card__title--lg{
+  font-size: 16px;
+  letter-spacing: -0.1px;
+}
+
+/* === Plan badge colors === */
+.hp-pill--free{ background: rgba(148,163,184,0.12); border-color: rgba(148,163,184,0.2); }
+.hp-pill--pro{ background: rgba(90,155,212,0.12); border-color: rgba(90,155,212,0.25); color: #1d6fb5; }
+.hp-pill--enterprise{ background: rgba(139,92,246,0.12); border-color: rgba(139,92,246,0.25); color: #6D28D9; }
+
+.hp-pill__upgrade{
+  margin-left: 6px;
+  font-size: 10px;
+  font-weight: 900;
+  color: #5A9BD4;
+  text-decoration: none;
+}
+.hp-pill__upgrade:hover{ text-decoration: underline; }
+
+/* === CLI quickstart block === */
+.hp-quickstart{
+  margin-bottom: 14px;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(31,111,235,0.15);
+  background: rgba(31,111,235,0.04);
+}
+
+.hp-quickstart__hd{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.hp-quickstart__hd strong{
+  font-size: 13px;
+  font-weight: 950;
+}
+
+.hp-quickstart__hd span{
+  font-size: 12px;
+  font-weight: 700;
+  opacity: 0.7;
+}
+
+.hp-quickstart__code{
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.hp-quickstart__code code{
+  display: block;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 7px 10px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.7);
+  border: 1px solid rgba(15,23,42,0.08);
+  color: rgba(31,111,235,0.85);
+}
+
+/* === Numbered onboarding steps === */
+.hp-steps{
+  display: grid;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.hp-step{
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(15,23,42,0.08);
+  background: rgba(255,255,255,0.55);
+  transition: background 0.2s;
+}
+
+.hp-step:hover{
+  background: rgba(15,23,42,0.03);
+}
+
+.hp-step__num{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  min-width: 26px;
+  border-radius: 50%;
+  background: rgba(148,163,184,0.12);
+  border: 1.5px solid rgba(148,163,184,0.25);
+  font-size: 12px;
+  font-weight: 900;
+  color: rgba(15,23,42,0.5);
+}
+
+.hp-step__num[data-step-status="completed"]{
+  background: rgba(16,185,129,0.12);
+  border-color: rgba(16,185,129,0.3);
+  color: #10B981;
+}
+
+.hp-step__body{
+  flex: 1;
+}
+
+.hp-step__link{
+  text-decoration: none;
+  color: var(--text, #1e293b);
+}
+
+.hp-step__link:hover strong{
+  text-decoration: underline;
+}
+
+.hp-step__body strong{
+  display: block;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.hp-step__body span{
+  font-size: 12px;
+  font-weight: 700;
+  opacity: 0.7;
+  line-height: 1.4;
+}
+
+/* === Service status badges === */
+.hp-svc-badge{
+  display: inline-block;
+  font-size: 9px;
+  font-weight: 900;
+  padding: 1px 5px;
+  border-radius: 4px;
+  vertical-align: middle;
+  margin-left: 4px;
+  letter-spacing: 0.2px;
+}
+
+.hp-svc-badge--available{
+  background: rgba(16,185,129,0.12);
+  color: #047857;
+}
+
+.hp-svc-badge--soon{
+  background: rgba(245,158,11,0.12);
+  color: #92400e;
+}
+
+/* === Collapsible services toggle === */
+.hp-services-toggle{
+  margin-top: 8px;
+  font-size: 11px;
+}
+
+.hp-onboarding__grid--collapsible{
+  transition: max-height 0.3s ease, opacity 0.3s ease;
+}
+
+/* Desktop: expanded by default */
+@media (min-width: 981px){
+  .hp-onboarding__grid--collapsible{
+    display: grid !important;
+  }
+  .hp-services-toggle{
+    display: none;
   }
 }

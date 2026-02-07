@@ -35,6 +35,21 @@
     </div>
   </section>
 
+  <section class="mission-grid mission-reveal">
+    <div class="mission-card">
+      <h3>Network</h3>
+      <p>Deep protocol analysis and traffic inspection for industrial networks.</p>
+    </div>
+    <div class="mission-card">
+      <h3>Risk</h3>
+      <p>Quantitative modeling, stress testing, and portfolio risk quantification.</p>
+    </div>
+    <div class="mission-card">
+      <h3>Supply Chain</h3>
+      <p>Multi-tier supplier mapping, disruption scoring, and sourcing intelligence.</p>
+    </div>
+  </section>
+
   <section class="mission-block mission-reveal" id="mission-opsec" data-mission-section>
     <div class="mission-block__copy">
       <span class="mission-eyebrow">OpSec</span>
@@ -166,6 +181,138 @@
     </div>
     <div class="mission-block__figure" aria-hidden="true">
       <img class="mission-figure" data-lightbox src="assets/mission/edge.svg" alt="Edge network" loading="lazy" decoding="async" />
+    </div>
+  </section>
+
+  <section class="mission-block mission-reveal" id="mission-secure" data-mission-section>
+    <div class="mission-block__copy">
+      <span class="mission-eyebrow">Security</span>
+      <h3>Continuous vulnerability scanning and compliance enforcement.</h3>
+      <p>
+        Automated security posture monitoring that correlates CVEs, enforces policies,
+        and generates remediation playbooks for edge and industrial infrastructure.
+      </p>
+      <ul class="mission-list">
+        <li>CVE correlation and severity prioritization</li>
+        <li>Compliance policy enforcement and drift detection</li>
+        <li>Automated remediation playbook generation</li>
+      </ul>
+      <div class="mission-links">
+        <a href="#docs:docs-secure">Secure docs</a>
+      </div>
+    </div>
+    <div class="mission-block__figure" aria-hidden="true">
+      <img class="mission-figure" data-lightbox src="assets/mission/secure.svg" alt="Security scanning" loading="lazy" decoding="async" />
+    </div>
+  </section>
+
+  <section class="mission-block mission-block--reverse mission-reveal" id="mission-network" data-mission-section>
+    <div class="mission-block__copy">
+      <span class="mission-eyebrow">Network</span>
+      <h3>Deep protocol analysis and traffic inspection at scale.</h3>
+      <p>
+        Packet-level decoding for Modbus, OPC-UA, MQTT, and industrial protocols with
+        anomaly detection and session reconstruction.
+      </p>
+      <ul class="mission-list">
+        <li>Multi-protocol packet decoding and inspection</li>
+        <li>Traffic anomaly detection and alerting</li>
+        <li>Session reconstruction and PCAP export</li>
+      </ul>
+      <div class="mission-links">
+        <a href="#docs:docs-network">Network Trace docs</a>
+      </div>
+    </div>
+    <div class="mission-block__figure" aria-hidden="true">
+      <img class="mission-figure" data-lightbox src="assets/mission/network-trace.svg" alt="Network protocol analysis" loading="lazy" decoding="async" />
+    </div>
+  </section>
+
+  <section class="mission-block mission-reveal" id="mission-graph" data-mission-section>
+    <div class="mission-block__copy">
+      <span class="mission-eyebrow">Knowledge</span>
+      <h3>Entity extraction and relationship mapping from your data.</h3>
+      <p>
+        Build queryable knowledge bases from streaming data with automated entity
+        extraction, relationship inference, and cross-source deduplication.
+      </p>
+      <ul class="mission-list">
+        <li>Automated entity extraction from unstructured sources</li>
+        <li>Relationship inference and graph construction</li>
+        <li>GraphQL query interface with deduplication</li>
+      </ul>
+      <div class="mission-links">
+        <a href="#docs:docs-graph">Knowledge Graph docs</a>
+      </div>
+    </div>
+    <div class="mission-block__figure" aria-hidden="true">
+      <img class="mission-figure" data-lightbox src="assets/mission/knowledge-graph.svg" alt="Knowledge graph" loading="lazy" decoding="async" />
+    </div>
+  </section>
+
+  <section class="mission-block mission-block--reverse mission-reveal" id="mission-risk" data-mission-section>
+    <div class="mission-block__copy">
+      <span class="mission-eyebrow">Risk</span>
+      <h3>Quantitative risk modeling and scenario stress testing.</h3>
+      <p>
+        Monte Carlo simulation, Value-at-Risk computation, and correlation analysis
+        for portfolios and infrastructure assets under stress scenarios.
+      </p>
+      <ul class="mission-list">
+        <li>Monte Carlo simulation with configurable scenarios</li>
+        <li>Value-at-Risk and CVaR computation</li>
+        <li>Portfolio correlation and tail risk analysis</li>
+      </ul>
+      <div class="mission-links">
+        <a href="#docs:docs-risk">Risk Analysis docs</a>
+      </div>
+    </div>
+    <div class="mission-block__figure" aria-hidden="true">
+      <img class="mission-figure" data-lightbox src="assets/mission/risk-analysis.svg" alt="Risk analysis" loading="lazy" decoding="async" />
+    </div>
+  </section>
+
+  <section class="mission-block mission-reveal" id="mission-causal" data-mission-section>
+    <div class="mission-block__copy">
+      <span class="mission-eyebrow">Causality</span>
+      <h3>Root cause analysis and incident chain reconstruction.</h3>
+      <p>
+        Causal inference engine that constructs event graphs, traces propagation paths,
+        and enables counterfactual reasoning for complex system failures.
+      </p>
+      <ul class="mission-list">
+        <li>Automated causal graph construction from event data</li>
+        <li>Incident timeline reconstruction and visualization</li>
+        <li>Counterfactual reasoning and anomaly propagation tracking</li>
+      </ul>
+      <div class="mission-links">
+        <a href="#docs:docs-causal">Causal Chain docs</a>
+      </div>
+    </div>
+    <div class="mission-block__figure" aria-hidden="true">
+      <img class="mission-figure" data-lightbox src="assets/mission/causal-chain.svg" alt="Causal chain analysis" loading="lazy" decoding="async" />
+    </div>
+  </section>
+
+  <section class="mission-block mission-block--reverse mission-reveal" id="mission-supply" data-mission-section>
+    <div class="mission-block__copy">
+      <span class="mission-eyebrow">Supply Chain</span>
+      <h3>Disruption intelligence and supplier risk mapping.</h3>
+      <p>
+        Real-time supply chain visibility across tiers with disruption probability scoring,
+        alternative sourcing suggestions, and geopolitical risk overlays.
+      </p>
+      <ul class="mission-list">
+        <li>Multi-tier supplier network mapping</li>
+        <li>Disruption probability scoring and alerting</li>
+        <li>Alternative sourcing and geopolitical risk overlay</li>
+      </ul>
+      <div class="mission-links">
+        <a href="#docs:docs-supply">Supply Chain docs</a>
+      </div>
+    </div>
+    <div class="mission-block__figure" aria-hidden="true">
+      <img class="mission-figure" data-lightbox src="assets/mission/supply-chain.svg" alt="Supply chain intelligence" loading="lazy" decoding="async" />
     </div>
   </section>
 </section>

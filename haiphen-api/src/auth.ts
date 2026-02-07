@@ -52,6 +52,43 @@ export type JwtClaims = {
   jti?: string;
 };
 
+export type VerifiedJwt = AuthedUser & { jti?: string | null };
+
+export async function verifyUserFromJwt(token: string, jwtSecret: string): Promise<VerifiedJwt> {
+  if (!token) throw Object.assign(new Error("Missing token"), { status: 401 });
+
+  const parts = token.split(".");
+  if (parts.length !== 3) throw Object.assign(new Error("Malformed JWT"), { status: 401 });
+
+  const [hB64, pB64, sB64] = parts;
+  const signed = `${hB64}.${pB64}`;
+
+  const ok = await hmacSha256Verify(jwtSecret, signed, sB64);
+  if (!ok) throw Object.assign(new Error("Invalid JWT signature"), { status: 401 });
+
+  const payloadJson = new TextDecoder().decode(base64UrlToBytes(pB64));
+  const claims = JSON.parse(payloadJson) as JwtClaims;
+
+  if (claims.aud && claims.aud !== "haiphen-auth") {
+    throw Object.assign(new Error("Invalid JWT audience"), { status: 401 });
+  }
+
+  const now = Math.floor(Date.now() / 1000);
+  if (typeof claims.exp === "number" && claims.exp < now) {
+    throw Object.assign(new Error("Expired session"), { status: 401 });
+  }
+
+  if (!claims.sub) throw Object.assign(new Error("JWT missing sub"), { status: 401 });
+
+  return {
+    login: claims.sub,
+    name: claims.name ?? null,
+    avatar: claims.avatar ?? null,
+    email: claims.email ?? null,
+    jti: claims.jti ?? null,
+  };
+}
+
 export async function requireUserFromAuthCookie(req: Request, jwtSecret: string): Promise<AuthedUser> {
   const token = parseCookie(req, "auth");
   if (!token) throw Object.assign(new Error("Missing auth cookie"), { status: 401 });
