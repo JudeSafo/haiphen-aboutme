@@ -130,17 +130,9 @@
   border-color: rgba(90,155,212,0.4);
 }
 
-/* ---- Intro tagline block ---- */
+/* ---- Intro block ---- */
 .hp-chatbot__intro {
   padding: 10px 14px 4px;
-}
-
-.hp-chatbot__tagline {
-  font-size: 12px;
-  font-weight: 900;
-  color: #5A9BD4;
-  letter-spacing: 0.02em;
-  line-height: 1.4;
 }
 
 .hp-chatbot__subtitle {
@@ -165,8 +157,10 @@
 }
 
 .hp-chatbot__header strong {
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 950;
+  white-space: nowrap;
+  color: #7a9bb8;
 }
 
 .hp-chatbot__close {

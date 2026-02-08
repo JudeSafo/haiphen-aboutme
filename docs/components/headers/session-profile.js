@@ -151,6 +151,21 @@
         const page = nav.getAttribute('data-session-nav');
         const mapping = NAV_MAP[page];
 
+        // Dismiss dropdown immediately (override CSS :hover/:focus-within)
+        const dropdown = menu.querySelector('.session-dropdown');
+        if (dropdown) {
+          dropdown.style.opacity = '0';
+          dropdown.style.visibility = 'hidden';
+          dropdown.style.pointerEvents = 'none';
+          menu.addEventListener('mouseleave', function handler() {
+            dropdown.style.removeProperty('opacity');
+            dropdown.style.removeProperty('visibility');
+            dropdown.style.removeProperty('pointer-events');
+            menu.removeEventListener('mouseleave', handler);
+          }, { once: true });
+        }
+        pill.setAttribute('aria-expanded', 'false');
+
         window.dispatchEvent(new CustomEvent('haiphen:session:navigate', {
           detail: { page, tab: mapping?.tab || null },
         }));

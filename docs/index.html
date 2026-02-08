@@ -1980,6 +1980,15 @@
 		  // Collapse sidebar when viewing API docs to give docs full width
 		  document.body.classList.toggle('sidebar-collapsed', resolved === 'Docs');
 
+		  // Dismiss all header dropdowns (prevents them staying visible after nav click)
+		  document.querySelectorAll('.site-header__item').forEach(function(item) {
+		    item.classList.add('is-dismissed');
+		    item.addEventListener('mouseenter', function handler() {
+		      item.classList.remove('is-dismissed');
+		      item.removeEventListener('mouseenter', handler);
+		    }, { once: true });
+		  });
+
 		  initSnapStacks(contentWidget);
 
 		  // Section-specific bootstrapping
@@ -2106,6 +2115,18 @@
 		      requestAnimationFrame(() => {
 		        scrollToWithHeaderOffset(contentWidget, 12);
 		      });
+		    })();
+		    return;
+		  }
+		  if (resolved === "Profile" || resolved === "Onboarding") {
+		    (async () => {
+		      try {
+		        if (typeof window.HAIPHEN?.showProfile === 'function') {
+		          await window.HAIPHEN.showProfile({ preserveHash: true });
+		        }
+		      } catch (e) {
+		        console.warn("[Profile] showProfile failed", e);
+		      }
 		    })();
 		    return;
 		  }

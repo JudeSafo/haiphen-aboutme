@@ -107,15 +107,22 @@
   min-width: 220px;
   padding: 8px;
   border-radius: 14px;
-  background: var(--surface-2);
+  background: rgba(255,255,255,0.96);
   border: 1px solid rgba(15,23,42,.10);
   box-shadow: var(--menu-shadow);
   opacity: 0;
   visibility: hidden;
-  pointer-events: none; /* prevents “dead hover zones” when hidden */
+  pointer-events: none; /* prevents "dead hover zones" when hidden */
   transition: opacity .14s ease, transform .14s ease, visibility .14s ease;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
+}
+
+/* Force-close dropdown after a nav click (overrides :hover/:focus-within) */
+.site-header__item.is-dismissed .site-header__dropdown {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
 }
 
 .site-header__item:hover .site-header__dropdown,

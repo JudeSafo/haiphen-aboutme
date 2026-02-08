@@ -191,8 +191,13 @@
       el.addEventListener("mouseenter", () => {
         const idx = Number(el.getAttribute("data-idx") || "0");
         state.activePos = Number.isFinite(idx) ? idx : 0;
-        const input = byId("site-search-input");
-        updateFromQuery(input ? input.value : "");
+        // Update active classes in-place (avoid innerHTML re-render which
+        // would destroy the element under the cursor and break click events)
+        root.querySelectorAll(".site-search__item").forEach((item) => {
+          const itemIdx = Number(item.getAttribute("data-idx") || "0");
+          item.classList.toggle("is-active", itemIdx === state.activePos);
+          item.setAttribute("aria-selected", itemIdx === state.activePos ? "true" : "false");
+        });
       });
 
       el.addEventListener("click", () => {

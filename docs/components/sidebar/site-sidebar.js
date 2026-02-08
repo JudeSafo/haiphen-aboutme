@@ -200,6 +200,20 @@
           const page = nav.getAttribute('data-session-nav');
           const mapping = NAV_MAP[page];
 
+          // Dismiss dropdown immediately (override CSS :hover/:focus-within)
+          const dropdown = menu.querySelector('.sidebar-session-dropdown');
+          if (dropdown) {
+            dropdown.style.opacity = '0';
+            dropdown.style.visibility = 'hidden';
+            dropdown.style.pointerEvents = 'none';
+            menu.addEventListener('mouseleave', function handler() {
+              dropdown.style.removeProperty('opacity');
+              dropdown.style.removeProperty('visibility');
+              dropdown.style.removeProperty('pointer-events');
+              menu.removeEventListener('mouseleave', handler);
+            }, { once: true });
+          }
+
           window.dispatchEvent(new CustomEvent('haiphen:session:navigate', {
             detail: { page, tab: mapping?.tab || null },
           }));
