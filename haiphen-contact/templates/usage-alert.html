@@ -15,183 +15,153 @@
   </noscript>
   <![endif]-->
 </head>
-<body style="margin:0;padding:0;background-color:#f4f6f9;font-family:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;">
+<body style="margin:0;padding:0;background-color:#f6f8fb;font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;">
 
   <!-- Preheader -->
-  <div style="display:none;font-size:1px;color:#f4f6f9;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;">
+  <div style="display:none;font-size:1px;color:#f6f8fb;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;">
     Your {{service_name}} usage has reached {{usage_pct}}% of your daily quota. Review your usage and consider upgrading.
   </div>
 
   <!-- Outer wrapper -->
-  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#f4f6f9;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#f6f8fb;">
     <tr>
-      <td align="center" style="padding:24px 16px;">
+      <td align="center" style="padding:32px 16px;">
 
-        <!-- Container -->
-        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" style="max-width:600px;width:100%;background-color:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.08);">
+        <!-- Card -->
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" style="max-width:600px;width:100%;background-color:#ffffff;border:1px solid #e6ecf3;border-radius:16px;overflow:hidden;">
 
           <!-- Header -->
           <tr>
-            <td style="background-color:#0b1220;padding:32px 40px;text-align:center;">
+            <td style="padding:22px 28px 14px;">
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
                 <tr>
-                  <td align="center">
-                    <img src="https://haiphen.io/assets/robot_haiphen.png" alt="Haiphen" width="48" height="48" style="display:block;border:0;outline:none;margin-bottom:12px;">
-                    <h1 style="margin:0;font-size:22px;font-weight:700;color:#ffffff;letter-spacing:-0.3px;">Usage Alert</h1>
+                  <td align="left" style="vertical-align:middle;">
+                    <div style="font-weight:900;font-size:18px;color:#2c3e50;line-height:1.3;">Haiphen</div>
+                    <div style="font-size:12px;color:#667;line-height:1.4;margin-top:2px;">Signals intelligence &bull; automated trading telemetry &bull; API Everything &hearts;</div>
+                  </td>
+                  <td align="right" style="vertical-align:middle;">
+                    <a href="https://haiphen.io" style="font-size:12px;color:#5A9BD4;font-weight:700;text-decoration:none;">haiphen.io</a>
                   </td>
                 </tr>
               </table>
+            </td>
+          </tr>
+
+          <!-- Divider -->
+          <tr>
+            <td style="padding:0 28px;">
+              <div style="height:1px;background:#e6ecf3;"></div>
             </td>
           </tr>
 
           <!-- Alert banner -->
           <tr>
-            <td style="background-color:#fffbeb;padding:16px 40px;border-bottom:1px solid #fde68a;">
-              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
-                <tr>
-                  <td style="vertical-align:middle;width:24px;padding-right:12px;">
-                    <div style="width:24px;height:24px;border-radius:50%;background-color:#F59E0B;text-align:center;line-height:24px;font-size:14px;color:#ffffff;">!</div>
-                  </td>
-                  <td style="vertical-align:middle;">
-                    <p style="margin:0;font-size:14px;font-weight:600;color:#92400e;">{{service_name}} is at {{usage_pct}}% of your daily quota</p>
-                  </td>
-                </tr>
-              </table>
+            <td style="padding:14px 28px;">
+              <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:12px;padding:12px 14px;">
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                  <tr>
+                    <td style="vertical-align:middle;width:24px;padding-right:10px;">
+                      <div style="width:22px;height:22px;border-radius:50%;background-color:#F59E0B;text-align:center;line-height:22px;font-size:13px;color:#ffffff;">!</div>
+                    </td>
+                    <td style="vertical-align:middle;">
+                      <div style="font-size:13px;font-weight:800;color:#92400e;">{{service_name}} is at {{usage_pct}}% of your daily quota</div>
+                    </td>
+                  </tr>
+                </table>
+              </div>
             </td>
           </tr>
 
           <!-- Body -->
           <tr>
-            <td style="padding:40px;">
+            <td style="padding:10px 28px 22px;">
 
-              <!-- Greeting -->
-              <p style="margin:0 0 20px;font-size:16px;line-height:1.6;color:#1a1a2e;">
+              <p style="margin:0 0 14px;font-size:15px;line-height:1.6;color:#2c3e50;font-weight:700;">
                 Hi {{name}},
               </p>
-              <p style="margin:0 0 28px;font-size:16px;line-height:1.6;color:#1a1a2e;">
-                Your <strong>{{service_name}}</strong> service on the <strong style="color:#5A9BD4;">{{current_plan}}</strong> plan has used <strong>{{usage_pct}}%</strong> of its daily request quota.
+              <p style="margin:0 0 20px;font-size:14px;line-height:1.6;color:#556;">
+                Your <strong style="color:#2c3e50;">{{service_name}}</strong> service on the <strong style="color:#5A9BD4;">{{current_plan}}</strong> plan has used <strong style="color:#2c3e50;">{{usage_pct}}%</strong> of its daily request quota.
               </p>
 
               <!-- Usage visualization -->
-              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;margin-bottom:28px;">
-                <tr>
-                  <td style="padding:24px;">
-                    <!-- Usage numbers -->
-                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom:16px;">
-                      <tr>
-                        <td style="font-size:14px;color:#64748b;">Used</td>
-                        <td style="font-size:14px;color:#64748b;text-align:right;">Limit</td>
-                      </tr>
-                      <tr>
-                        <td style="font-size:24px;font-weight:700;color:#F59E0B;">{{used_count}}</td>
-                        <td style="font-size:24px;font-weight:700;color:#1a1a2e;text-align:right;">{{limit_count}}</td>
-                      </tr>
-                    </table>
+              <div style="background:#fbfcfe;border:1px solid #e6ecf3;border-radius:12px;padding:14px;margin-bottom:20px;">
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom:12px;">
+                  <tr>
+                    <td style="font-size:12px;color:#667;font-weight:700;">Used</td>
+                    <td style="font-size:12px;color:#667;font-weight:700;text-align:right;">Limit</td>
+                  </tr>
+                  <tr>
+                    <td style="font-size:22px;font-weight:900;color:#F59E0B;padding-top:2px;">{{used_count}}</td>
+                    <td style="font-size:22px;font-weight:900;color:#2c3e50;text-align:right;padding-top:2px;">{{limit_count}}</td>
+                  </tr>
+                </table>
 
-                    <!-- Progress bar background -->
-                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom:12px;">
-                      <tr>
-                        <td style="background-color:#e2e8f0;border-radius:4px;height:12px;padding:0;">
-                          <!-- Progress bar fill -->
-                          <!--[if mso]>
-                          <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" style="height:12px;width:{{usage_pct}}%;" arcsize="50%" fillcolor="#F59E0B" strokecolor="#F59E0B" stroke="false">
-                            <v:fill type="solid" color="#F59E0B"/>
-                          </v:roundrect>
-                          <![endif]-->
-                          <!--[if !mso]><!-->
-                          <div style="background-color:#F59E0B;border-radius:4px;height:12px;width:{{usage_pct}}%;max-width:100%;"></div>
-                          <!--<![endif]-->
-                        </td>
-                      </tr>
-                    </table>
+                <!-- Progress bar -->
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom:10px;">
+                  <tr>
+                    <td style="background-color:#e6ecf3;border-radius:4px;height:10px;padding:0;">
+                      <div style="background-color:#F59E0B;border-radius:4px;height:10px;width:{{usage_pct}}%;max-width:100%;"></div>
+                    </td>
+                  </tr>
+                </table>
 
-                    <!-- Percentage label -->
-                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
-                      <tr>
-                        <td style="font-size:13px;color:#64748b;">
-                          <strong style="color:#F59E0B;">{{usage_pct}}%</strong> of daily quota used
-                        </td>
-                        <td style="font-size:13px;color:#64748b;text-align:right;">
-                          Resets {{reset_date}}
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-              </table>
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                  <tr>
+                    <td style="font-size:12px;color:#667;">
+                      <strong style="color:#F59E0B;">{{usage_pct}}%</strong> of daily quota used
+                    </td>
+                    <td style="font-size:12px;color:#667;text-align:right;">
+                      Resets {{reset_date}}
+                    </td>
+                  </tr>
+                </table>
+              </div>
 
               <!-- What happens at 100% -->
-              <h2 style="margin:0 0 16px;font-size:18px;font-weight:600;color:#1a1a2e;">What happens at 100%?</h2>
-              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#fef2f2;border-left:4px solid #ef4444;border-radius:4px;margin-bottom:28px;">
-                <tr>
-                  <td style="padding:16px 20px;">
-                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
-                      <tr>
-                        <td style="padding:4px 0;">
-                          <p style="margin:0;font-size:14px;line-height:1.5;color:#991b1b;">
-                            Once you reach your daily quota limit, additional API requests will receive a <strong>429 Too Many Requests</strong> response until your quota resets at midnight UTC.
-                          </p>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td style="padding:4px 0;">
-                          <p style="margin:0;font-size:14px;line-height:1.5;color:#991b1b;">
-                            Existing connections and in-flight requests will not be affected.
-                          </p>
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-              </table>
+              <div style="font-size:14px;font-weight:900;color:#2c3e50;margin-bottom:10px;">What happens at 100%?</div>
+              <div style="background:#fbfcfe;border:1px solid #e6ecf3;border-left:3px solid #ef4444;border-radius:12px;padding:14px;margin-bottom:20px;">
+                <div style="font-size:13px;line-height:1.55;color:#556;margin-bottom:8px;">
+                  Once you reach your daily quota limit, additional API requests will receive a <strong style="color:#2c3e50;">429 Too Many Requests</strong> response until your quota resets at midnight UTC.
+                </div>
+                <div style="font-size:13px;line-height:1.55;color:#556;">
+                  Existing connections and in-flight requests will not be affected.
+                </div>
+              </div>
 
-              <!-- Usage summary card -->
-              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;margin-bottom:28px;">
-                <tr>
-                  <td style="padding:20px 24px;">
-                    <h3 style="margin:0 0 12px;font-size:14px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;">Current Plan Limits</h3>
-                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
-                      <tr>
-                        <td style="padding:6px 0;font-size:14px;color:#64748b;">Plan</td>
-                        <td style="padding:6px 0;font-size:14px;color:#5A9BD4;font-weight:600;text-align:right;">{{current_plan}}</td>
-                      </tr>
-                      <tr>
-                        <td style="padding:6px 0;font-size:14px;color:#64748b;border-top:1px solid #e2e8f0;">Daily Quota</td>
-                        <td style="padding:6px 0;font-size:14px;color:#1a1a2e;font-weight:500;text-align:right;">{{limit_count}} requests</td>
-                      </tr>
-                      <tr>
-                        <td style="padding:6px 0;font-size:14px;color:#64748b;border-top:1px solid #e2e8f0;">Quota Reset</td>
-                        <td style="padding:6px 0;font-size:14px;color:#1a1a2e;font-weight:500;text-align:right;">{{reset_date}}</td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-              </table>
+              <!-- Current plan limits -->
+              <div style="background:#fbfcfe;border:1px solid #e6ecf3;border-radius:12px;padding:14px;margin-bottom:20px;">
+                <div style="font-size:13px;font-weight:900;color:#2c3e50;margin-bottom:10px;">Current plan limits</div>
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;">
+                  <tr>
+                    <td style="padding:7px 0;font-size:13px;color:#667;">Plan</td>
+                    <td style="padding:7px 0;font-size:13px;color:#5A9BD4;font-weight:800;text-align:right;">{{current_plan}}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:7px 0;font-size:13px;color:#667;border-top:1px solid #eef2f7;">Daily quota</td>
+                    <td style="padding:7px 0;font-size:13px;color:#2c3e50;font-weight:700;text-align:right;border-top:1px solid #eef2f7;">{{limit_count}} requests</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:7px 0;font-size:13px;color:#667;border-top:1px solid #eef2f7;">Quota reset</td>
+                    <td style="padding:7px 0;font-size:13px;color:#2c3e50;font-weight:700;text-align:right;border-top:1px solid #eef2f7;">{{reset_date}}</td>
+                  </tr>
+                </table>
+              </div>
 
-              <!-- Upgrade CTA -->
-              <p style="margin:0 0 20px;font-size:16px;line-height:1.6;color:#1a1a2e;">
+              <p style="margin:0 0 16px;font-size:14px;line-height:1.6;color:#556;">
                 Need higher limits? Upgrade your plan for increased daily quotas and rate limits.
               </p>
 
+              <!-- CTA -->
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
                 <tr>
-                  <td align="center" style="padding:4px 0 0;">
-                    <!--[if mso]>
-                    <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="{{upgrade_url}}" style="height:48px;v-text-anchor:middle;width:220px;" arcsize="10%" strokecolor="#5A9BD4" fillcolor="#5A9BD4">
-                      <w:anchorlock/>
-                      <center style="color:#ffffff;font-family:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:15px;font-weight:600;">Upgrade Plan</center>
-                    </v:roundrect>
-                    <![endif]-->
-                    <!--[if !mso]><!-->
-                    <a href="{{upgrade_url}}" style="display:inline-block;background-color:#5A9BD4;color:#ffffff;font-size:15px;font-weight:600;text-decoration:none;padding:14px 40px;border-radius:6px;text-align:center;min-width:160px;">Upgrade Plan</a>
-                    <!--<![endif]-->
+                  <td align="center">
+                    <a href="{{upgrade_url}}" style="display:inline-block;background-color:#5A9BD4;color:#ffffff;font-size:14px;font-weight:900;text-decoration:none;padding:12px 28px;border-radius:12px;text-align:center;">Upgrade Plan</a>
                   </td>
                 </tr>
               </table>
 
-              <!-- Support -->
-              <p style="margin:28px 0 0;font-size:14px;line-height:1.6;color:#64748b;">
-                Questions about usage or limits? Contact us at <a href="mailto:{{support_email}}" style="color:#5A9BD4;text-decoration:none;">{{support_email}}</a>.
+              <p style="margin:20px 0 0;font-size:13px;line-height:1.6;color:#667;">
+                Questions about usage or limits? Contact us at <a href="mailto:{{support_email}}" style="color:#5A9BD4;text-decoration:none;font-weight:700;">{{support_email}}</a>.
               </p>
 
             </td>
@@ -199,22 +169,23 @@
 
           <!-- Footer -->
           <tr>
-            <td style="background-color:#f8fafc;border-top:1px solid #e2e8f0;padding:28px 40px;">
+            <td style="padding:0 28px;">
+              <div style="height:1px;background:#e6ecf3;"></div>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:18px 28px 22px;">
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
                 <tr>
                   <td align="center">
-                    <p style="margin:0 0 8px;font-size:13px;color:#94a3b8;line-height:1.5;">
-                      Haiphen &mdash; Semantic Edge Protocol Intelligence
+                    <p style="margin:0 0 6px;font-size:11px;color:#778;line-height:1.5;">
+                      Haiphen &bull; Manhattan, NY &bull; <a href="mailto:pi@haiphenai.com" style="color:#778;text-decoration:none;">pi@haiphenai.com</a> &bull; (512) 910-4544
                     </p>
-                    <p style="margin:0 0 8px;font-size:12px;color:#94a3b8;line-height:1.5;">
-                      You received this alert because your usage exceeded 80% on <a href="https://haiphen.io" style="color:#5A9BD4;text-decoration:none;">haiphen.io</a>.
+                    <p style="margin:0 0 6px;font-size:11px;color:#778;line-height:1.5;">
+                      You received this alert because your usage exceeded 80% on <a href="https://haiphen.io" style="color:#5A9BD4;text-decoration:none;font-weight:700;">haiphen.io</a>.
                     </p>
-                    <p style="margin:0;font-size:12px;color:#94a3b8;line-height:1.5;">
-                      <a href="{{{unsubscribe}}}" style="color:#94a3b8;text-decoration:underline;">Unsubscribe</a>
-                      &nbsp;&bull;&nbsp;
-                      <a href="https://haiphen.io/about.html" style="color:#94a3b8;text-decoration:underline;">About</a>
-                      &nbsp;&bull;&nbsp;
-                      <a href="mailto:{{support_email}}" style="color:#94a3b8;text-decoration:underline;">Support</a>
+                    <p style="margin:0;font-size:11px;color:#778;line-height:1.5;">
+                      <a href="{{{unsubscribe}}}" style="color:#778;text-decoration:underline;">Unsubscribe</a>
                     </p>
                   </td>
                 </tr>
@@ -223,12 +194,9 @@
           </tr>
 
         </table>
-        <!-- /Container -->
-
       </td>
     </tr>
   </table>
-  <!-- /Outer wrapper -->
 
 </body>
 </html>

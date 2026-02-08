@@ -15,147 +15,135 @@
   </noscript>
   <![endif]-->
 </head>
-<body style="margin:0;padding:0;background-color:#f4f6f9;font-family:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;">
+<body style="margin:0;padding:0;background-color:#f6f8fb;font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;">
 
   <!-- Preheader -->
-  <div style="display:none;font-size:1px;color:#f4f6f9;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;">
+  <div style="display:none;font-size:1px;color:#f6f8fb;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;">
     Your {{service_name}} trial ends in {{days_remaining}} days. Upgrade now to keep full access.
   </div>
 
   <!-- Outer wrapper -->
-  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#f4f6f9;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#f6f8fb;">
     <tr>
-      <td align="center" style="padding:24px 16px;">
+      <td align="center" style="padding:32px 16px;">
 
-        <!-- Container -->
-        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" style="max-width:600px;width:100%;background-color:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.08);">
+        <!-- Card -->
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" style="max-width:600px;width:100%;background-color:#ffffff;border:1px solid #e6ecf3;border-radius:16px;overflow:hidden;">
 
           <!-- Header -->
           <tr>
-            <td style="background-color:#0b1220;padding:32px 40px;text-align:center;">
+            <td style="padding:22px 28px 14px;">
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
                 <tr>
-                  <td align="center">
-                    <img src="https://haiphen.io/assets/robot_haiphen.png" alt="Haiphen" width="48" height="48" style="display:block;border:0;outline:none;margin-bottom:12px;">
-                    <h1 style="margin:0;font-size:22px;font-weight:700;color:#ffffff;letter-spacing:-0.3px;">Trial Ending Soon</h1>
+                  <td align="left" style="vertical-align:middle;">
+                    <div style="font-weight:900;font-size:18px;color:#2c3e50;line-height:1.3;">Haiphen</div>
+                    <div style="font-size:12px;color:#667;line-height:1.4;margin-top:2px;">Signals intelligence &bull; automated trading telemetry &bull; API Everything &hearts;</div>
+                  </td>
+                  <td align="right" style="vertical-align:middle;">
+                    <a href="https://haiphen.io" style="font-size:12px;color:#5A9BD4;font-weight:700;text-decoration:none;">haiphen.io</a>
                   </td>
                 </tr>
               </table>
+            </td>
+          </tr>
+
+          <!-- Divider -->
+          <tr>
+            <td style="padding:0 28px;">
+              <div style="height:1px;background:#e6ecf3;"></div>
             </td>
           </tr>
 
           <!-- Warning banner -->
           <tr>
-            <td style="background-color:#fffbeb;padding:16px 40px;border-bottom:1px solid #fde68a;">
-              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
-                <tr>
-                  <td style="vertical-align:middle;width:24px;padding-right:12px;">
-                    <div style="width:24px;height:24px;border-radius:50%;background-color:#F59E0B;text-align:center;line-height:24px;font-size:14px;color:#ffffff;">!</div>
-                  </td>
-                  <td style="vertical-align:middle;">
-                    <p style="margin:0;font-size:14px;font-weight:600;color:#92400e;">{{days_remaining}} days remaining on your {{service_name}} trial</p>
-                  </td>
-                </tr>
-              </table>
+            <td style="padding:14px 28px;">
+              <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:12px;padding:12px 14px;">
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                  <tr>
+                    <td style="vertical-align:middle;width:24px;padding-right:10px;">
+                      <div style="width:22px;height:22px;border-radius:50%;background-color:#F59E0B;text-align:center;line-height:22px;font-size:13px;color:#ffffff;">!</div>
+                    </td>
+                    <td style="vertical-align:middle;">
+                      <div style="font-size:13px;font-weight:800;color:#92400e;">{{days_remaining}} days remaining on your {{service_name}} trial</div>
+                    </td>
+                  </tr>
+                </table>
+              </div>
             </td>
           </tr>
 
           <!-- Body -->
           <tr>
-            <td style="padding:40px;">
+            <td style="padding:10px 28px 22px;">
 
-              <!-- Greeting -->
-              <p style="margin:0 0 20px;font-size:16px;line-height:1.6;color:#1a1a2e;">
+              <p style="margin:0 0 14px;font-size:15px;line-height:1.6;color:#2c3e50;font-weight:700;">
                 Hi {{name}},
               </p>
-              <p style="margin:0 0 28px;font-size:16px;line-height:1.6;color:#1a1a2e;">
-                Your <strong>{{current_plan}}</strong> trial for <strong>{{service_name}}</strong> ends on <strong>{{trial_end_date}}</strong>. That is {{days_remaining}} days from now.
+              <p style="margin:0 0 20px;font-size:14px;line-height:1.6;color:#556;">
+                Your <strong style="color:#2c3e50;">{{current_plan}}</strong> trial for <strong style="color:#2c3e50;">{{service_name}}</strong> ends on <strong style="color:#2c3e50;">{{trial_end_date}}</strong>. That is {{days_remaining}} days from now.
               </p>
 
-              <!-- Countdown card -->
-              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom:28px;">
-                <tr>
-                  <td align="center">
-                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="background-color:#0b1220;border-radius:8px;">
-                      <tr>
-                        <td style="padding:28px 48px;text-align:center;">
-                          <p style="margin:0 0 4px;font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;">Days Remaining</p>
-                          <p style="margin:0 0 4px;font-size:48px;font-weight:700;color:#F59E0B;line-height:1;">{{days_remaining}}</p>
-                          <p style="margin:0;font-size:13px;color:#94a3b8;">Ends {{trial_end_date}}</p>
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-              </table>
+              <!-- Countdown -->
+              <div style="background:#fbfcfe;border:1px solid #e6ecf3;border-radius:12px;padding:20px;margin-bottom:20px;text-align:center;">
+                <div style="font-size:11px;font-weight:900;color:#778;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Days Remaining</div>
+                <div style="font-size:42px;font-weight:900;color:#F59E0B;line-height:1;">{{days_remaining}}</div>
+                <div style="font-size:12px;color:#778;margin-top:6px;">Ends {{trial_end_date}}</div>
+              </div>
 
               <!-- What happens next -->
-              <h2 style="margin:0 0 16px;font-size:18px;font-weight:600;color:#1a1a2e;">What happens when the trial ends?</h2>
-              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;margin-bottom:28px;">
-                <tr>
-                  <td style="padding:24px;">
-                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
-                      <tr>
-                        <td style="padding:6px 0;vertical-align:top;width:24px;">
-                          <div style="width:6px;height:6px;border-radius:50%;background-color:#F59E0B;margin-top:7px;"></div>
-                        </td>
-                        <td style="padding:6px 0 6px 8px;">
-                          <p style="margin:0;font-size:14px;line-height:1.5;color:#1a1a2e;">Your account will be downgraded to the <strong>free tier</strong>.</p>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td style="padding:6px 0;vertical-align:top;width:24px;">
-                          <div style="width:6px;height:6px;border-radius:50%;background-color:#F59E0B;margin-top:7px;"></div>
-                        </td>
-                        <td style="padding:6px 0 6px 8px;">
-                          <p style="margin:0;font-size:14px;line-height:1.5;color:#1a1a2e;">API rate limits will be reduced to free-tier levels (60 requests/min).</p>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td style="padding:6px 0;vertical-align:top;width:24px;">
-                          <div style="width:6px;height:6px;border-radius:50%;background-color:#F59E0B;margin-top:7px;"></div>
-                        </td>
-                        <td style="padding:6px 0 6px 8px;">
-                          <p style="margin:0;font-size:14px;line-height:1.5;color:#1a1a2e;">Daily quota will drop to 200 requests per day.</p>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td style="padding:6px 0;vertical-align:top;width:24px;">
-                          <div style="width:6px;height:6px;border-radius:50%;background-color:#F59E0B;margin-top:7px;"></div>
-                        </td>
-                        <td style="padding:6px 0 6px 8px;">
-                          <p style="margin:0;font-size:14px;line-height:1.5;color:#1a1a2e;">Your data and configuration will be preserved. You can upgrade at any time.</p>
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-              </table>
+              <div style="font-size:14px;font-weight:900;color:#2c3e50;margin-bottom:10px;">What happens when the trial ends?</div>
+              <div style="background:#fbfcfe;border:1px solid #e6ecf3;border-radius:12px;padding:14px;margin-bottom:20px;">
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                  <tr>
+                    <td style="padding:5px 0;vertical-align:top;width:18px;">
+                      <div style="width:6px;height:6px;border-radius:50%;background-color:#F59E0B;margin-top:6px;"></div>
+                    </td>
+                    <td style="padding:5px 0 5px 8px;">
+                      <div style="font-size:13px;line-height:1.5;color:#556;">Your account will be downgraded to the <strong style="color:#2c3e50;">free tier</strong>.</div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding:5px 0;vertical-align:top;width:18px;">
+                      <div style="width:6px;height:6px;border-radius:50%;background-color:#F59E0B;margin-top:6px;"></div>
+                    </td>
+                    <td style="padding:5px 0 5px 8px;">
+                      <div style="font-size:13px;line-height:1.5;color:#556;">API rate limits will be reduced to free-tier levels (60 requests/min).</div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding:5px 0;vertical-align:top;width:18px;">
+                      <div style="width:6px;height:6px;border-radius:50%;background-color:#F59E0B;margin-top:6px;"></div>
+                    </td>
+                    <td style="padding:5px 0 5px 8px;">
+                      <div style="font-size:13px;line-height:1.5;color:#556;">Daily quota will drop to 200 requests per day.</div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding:5px 0;vertical-align:top;width:18px;">
+                      <div style="width:6px;height:6px;border-radius:50%;background-color:#10B981;margin-top:6px;"></div>
+                    </td>
+                    <td style="padding:5px 0 5px 8px;">
+                      <div style="font-size:13px;line-height:1.5;color:#556;">Your data and configuration will be preserved. You can upgrade at any time.</div>
+                    </td>
+                  </tr>
+                </table>
+              </div>
 
-              <!-- Upgrade CTA -->
-              <p style="margin:0 0 20px;font-size:16px;line-height:1.6;color:#1a1a2e;">
+              <p style="margin:0 0 16px;font-size:14px;line-height:1.6;color:#556;">
                 Upgrade now to keep your current access and avoid any service interruption.
               </p>
 
+              <!-- CTA -->
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
                 <tr>
-                  <td align="center" style="padding:4px 0 0;">
-                    <!--[if mso]>
-                    <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="{{upgrade_url}}" style="height:48px;v-text-anchor:middle;width:220px;" arcsize="10%" strokecolor="#10B981" fillcolor="#10B981">
-                      <w:anchorlock/>
-                      <center style="color:#ffffff;font-family:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:15px;font-weight:600;">Upgrade Now</center>
-                    </v:roundrect>
-                    <![endif]-->
-                    <!--[if !mso]><!-->
-                    <a href="{{upgrade_url}}" style="display:inline-block;background-color:#10B981;color:#ffffff;font-size:15px;font-weight:600;text-decoration:none;padding:14px 40px;border-radius:6px;text-align:center;min-width:160px;">Upgrade Now</a>
-                    <!--<![endif]-->
+                  <td align="center">
+                    <a href="{{upgrade_url}}" style="display:inline-block;background-color:#10B981;color:#ffffff;font-size:14px;font-weight:900;text-decoration:none;padding:12px 32px;border-radius:12px;text-align:center;">Upgrade Now</a>
                   </td>
                 </tr>
               </table>
 
-              <!-- Support -->
-              <p style="margin:28px 0 0;font-size:14px;line-height:1.6;color:#64748b;">
-                Have questions about plans or pricing? Contact us at <a href="mailto:{{support_email}}" style="color:#5A9BD4;text-decoration:none;">{{support_email}}</a>.
+              <p style="margin:20px 0 0;font-size:13px;line-height:1.6;color:#667;">
+                Have questions about plans or pricing? Contact us at <a href="mailto:{{support_email}}" style="color:#5A9BD4;text-decoration:none;font-weight:700;">{{support_email}}</a>.
               </p>
 
             </td>
@@ -163,22 +151,23 @@
 
           <!-- Footer -->
           <tr>
-            <td style="background-color:#f8fafc;border-top:1px solid #e2e8f0;padding:28px 40px;">
+            <td style="padding:0 28px;">
+              <div style="height:1px;background:#e6ecf3;"></div>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:18px 28px 22px;">
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
                 <tr>
                   <td align="center">
-                    <p style="margin:0 0 8px;font-size:13px;color:#94a3b8;line-height:1.5;">
-                      Haiphen &mdash; Semantic Edge Protocol Intelligence
+                    <p style="margin:0 0 6px;font-size:11px;color:#778;line-height:1.5;">
+                      Haiphen &bull; Manhattan, NY &bull; <a href="mailto:pi@haiphenai.com" style="color:#778;text-decoration:none;">pi@haiphenai.com</a> &bull; (512) 910-4544
                     </p>
-                    <p style="margin:0 0 8px;font-size:12px;color:#94a3b8;line-height:1.5;">
-                      You received this email because you have an active trial on <a href="https://haiphen.io" style="color:#5A9BD4;text-decoration:none;">haiphen.io</a>.
+                    <p style="margin:0 0 6px;font-size:11px;color:#778;line-height:1.5;">
+                      You received this because you have an active trial on <a href="https://haiphen.io" style="color:#5A9BD4;text-decoration:none;font-weight:700;">haiphen.io</a>.
                     </p>
-                    <p style="margin:0;font-size:12px;color:#94a3b8;line-height:1.5;">
-                      <a href="{{{unsubscribe}}}" style="color:#94a3b8;text-decoration:underline;">Unsubscribe</a>
-                      &nbsp;&bull;&nbsp;
-                      <a href="https://haiphen.io/about.html" style="color:#94a3b8;text-decoration:underline;">About</a>
-                      &nbsp;&bull;&nbsp;
-                      <a href="mailto:{{support_email}}" style="color:#94a3b8;text-decoration:underline;">Support</a>
+                    <p style="margin:0;font-size:11px;color:#778;line-height:1.5;">
+                      <a href="{{{unsubscribe}}}" style="color:#778;text-decoration:underline;">Unsubscribe</a>
                     </p>
                   </td>
                 </tr>
@@ -187,12 +176,9 @@
           </tr>
 
         </table>
-        <!-- /Container -->
-
       </td>
     </tr>
   </table>
-  <!-- /Outer wrapper -->
 
 </body>
 </html>

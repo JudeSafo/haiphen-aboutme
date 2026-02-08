@@ -1,0 +1,47 @@
+{
+  "headline": "Haiphen day trading snapshot ($29,615.00 on 2026-02-06)",
+  "date_label": "2026-02-06 (Thu)",
+  "name": "Jude",
+  "summary": "197,663 signals scanned \u2022 25,192 opportunities flagged \u2022 3,728 entries opened \u2022 165 exits closed \u2022 $29,615.00 pnl.",
+  "manage_url": "https://haiphen.io/#profile",
+  "list_id": "daily_digest",
+  "kpis": [
+    { "kpi": "Signals scanned", "value": "197,663" },
+    { "kpi": "Opportunities flagged", "value": "25,192" },
+    { "kpi": "Entries opened", "value": "3,728" },
+    { "kpi": "Exits closed", "value": "165" },
+    { "kpi": "Daily PnL", "value": "$29,615.00" },
+    { "kpi": "Win rate", "value": "70.27%" },
+    { "kpi": "Max drawdown", "value": "7.39%" },
+    { "kpi": "Sharpe ratio", "value": "1.22" }
+  ],
+  "entities": [
+    { "symbol": "ASTS", "contract_name": "ASTS270115P00090000", "trade_id": 840799, "contract_qs": "ASTS270115P00090000" },
+    { "symbol": "DKNG", "contract_name": "DKNG260220P00029500", "trade_id": 840830, "contract_qs": "DKNG260220P00029500" },
+    { "symbol": "HII", "contract_name": "HII260618C00390000", "trade_id": 840186, "contract_qs": "HII260618C00390000" },
+    { "symbol": "MRVL", "contract_name": "MRVL260220C00095000", "trade_id": 797864, "contract_qs": "MRVL260220C00095000" },
+    { "symbol": "MP", "contract_name": "MP260515C00065000", "trade_id": 840139, "contract_qs": "MP260515C00065000" }
+  ],
+  "subscriptions": [
+    { "list_id": "daily_digest", "label": "Daily Market Digest", "active": true },
+    { "list_id": "weekly_summary", "label": "Weekly Performance Summary", "active": true },
+    { "list_id": "product_updates", "label": "Product Updates & Announcements", "active": false },
+    { "list_id": "cohort_comms", "label": "Cohort Program Communications", "active": true }
+  ],
+  "sections": [
+    {
+      "title": "Haiphen day trading snapshot ($29,615.00 on 2026-02-06)",
+      "bullets": [
+        "197,663 signals scanned \u2022 25,192 opportunities flagged \u2022 3,728 entries opened \u2022 165 exits closed \u2022 $29,615.00 pnl.",
+        "Signals scanned: 197,663",
+        "Opportunities flagged: 25,192",
+        "Entries opened: 3,728",
+        "Exits closed: 165",
+        "Daily PnL: $29,615.00",
+        "Win rate: 70.27%"
+      ]
+    }
+  ],
+  "source": "trades.json",
+  "updated_at": "2026-02-06T21:30:00Z"
+}

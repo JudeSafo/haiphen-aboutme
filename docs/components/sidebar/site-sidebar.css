@@ -49,9 +49,44 @@
   border-color: rgba(90,155,212,0.35);
 }
 
-/* Collapse on small screens (keeps the layout clean) */
+/* Mobile: sidebar becomes a slide-in overlay */
 @media (max-width: 920px) {
-  .site-sidebar { display: none; }
+  .site-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 260px;
+    border-radius: 0;
+    border-right: 1px solid rgba(15,23,42,.12);
+    z-index: 2500;
+    padding-top: 72px; /* clear the header */
+    transform: translateX(-100%);
+    transition: transform .25s ease;
+    overflow-y: auto;
+  }
+  body.sidebar-mobile-open .site-sidebar {
+    transform: translateX(0);
+  }
+}
+
+/* Backdrop overlay */
+.sidebar-mobile-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.35);
+  z-index: 2400;
+}
+body.sidebar-mobile-open .sidebar-mobile-backdrop {
+  display: block;
+}
+
+/* Override sidebar-collapsed width on mobile */
+@media (max-width: 920px) {
+  body.sidebar-collapsed .site-sidebar {
+    width: 260px;
+  }
 }
 
 /* ── Icon sprites (CSS-only, avoids innerHTML SVG parsing issues) ── */

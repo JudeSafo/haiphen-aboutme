@@ -168,6 +168,13 @@ type CohortPayload = {
 const SUBSCRIPTION_LISTS = ["daily_digest", "weekly_summary", "product_updates", "cohort_comms"] as const;
 type SubscriptionListId = typeof SUBSCRIPTION_LISTS[number];
 
+const SUBSCRIPTION_LABELS: Record<SubscriptionListId, string> = {
+  daily_digest: "Daily Market Digest",
+  weekly_summary: "Weekly Performance Summary",
+  product_updates: "Product Updates & Announcements",
+  cohort_comms: "Cohort Program Communications",
+};
+
 type SubscriptionPreferences = {
   daily_digest: boolean;
   weekly_summary: boolean;
@@ -1853,7 +1860,14 @@ type TradesJson = {
   summary?: string;
   source?: string;
   rows?: Array<{ kpi: string; value: string }>;
-  overlay?: unknown;
+  overlay?: {
+    portfolioAssets?: Array<{
+      trade_id: number;
+      symbol: string;
+      contract_name: string;
+    }>;
+    [key: string]: unknown;
+  };
 };
 
 type AuthedDigestPayload = {
@@ -1890,6 +1904,28 @@ function pickTopRows(rows: TradesJson["rows"], max = 10): Array<{ kpi: string; v
     value: String(r.value ?? "").trim(),
   })).filter(r => r.kpi && r.value);
 }
+
+function buildEntities(trades: TradesJson): Array<{
+  symbol: string;
+  contract_name: string;
+  trade_id: number;
+  contract_qs: string;
+}> {
+  const assets = trades.overlay?.portfolioAssets;
+  if (!Array.isArray(assets) || !assets.length) return [];
+  return assets.map(a => ({
+    symbol: String(a.symbol ?? ""),
+    contract_name: String(a.contract_name ?? ""),
+    trade_id: Number(a.trade_id ?? 0),
+    contract_qs: encodeURIComponent(String(a.contract_name ?? "")),
+  })).filter(a => a.symbol && a.contract_name);
+}
+
+const ENTITIES_FALLBACK = [
+  { symbol: "SPY", contract_name: "SPY260320C00600000", trade_id: 0, contract_qs: "SPY260320C00600000" },
+  { symbol: "QQQ", contract_name: "QQQ260320P00500000", trade_id: 0, contract_qs: "QQQ260320P00500000" },
+  { symbol: "AAPL", contract_name: "AAPL260618C00250000", trade_id: 0, contract_qs: "AAPL260618C00250000" },
+];
 
 function safeParseJson<T>(s: string | null): T | null {
   if (!s) return null;
@@ -1986,7 +2022,9 @@ async function runDailyDigest(env: Env, when: Date): Promise<{
   let skipped = 0;
   let failed = 0;
 
-  // Shape digest sections from trades.json + prefs_json (future extension)
+  // Build shared template data from trades.json
+  const entities = buildEntities(trades);
+  const kpis = pickTopRows(trades.rows, 8);
   const top = pickTopRows(trades.rows, 12);
   const sections = [
     {
@@ -2048,20 +2086,30 @@ async function runDailyDigest(env: Env, when: Date): Promise<{
       continue;
     }
 
-    // Optional: prefs parsing hook (you’ll use this later)
-    const prefs = safeParseJson<Record<string, unknown>>(r.prefs_json);
+    // Fetch all 4 subscription preferences for this user
+    const allPrefs = await getSubscriptionPreferences(env, userLogin);
+    const subscriptions = SUBSCRIPTION_LISTS.map(id => ({
+      list_id: id,
+      label: SUBSCRIPTION_LABELS[id],
+      active: allPrefs[id],
+    }));
 
     const subject = `${subjPrefix} — ${sendDate}`;
     const dynamicData = {
       name: r.name ?? userLogin,
       user_login: userLogin,
+      headline: trades.headline ?? `Daily snapshot — ${sendDate}`,
       date_label: formatDateLabel(when),
       summary: trades.summary ?? "",
+      kpis,
+      entities: entities.length ? entities : undefined,
+      entities_fallback: entities.length ? undefined : ENTITIES_FALLBACK,
+      list_id: "daily_digest",
       sections,
+      subscriptions,
       manage_url: manageUrl,
       source: trades.source ?? "",
       updated_at: trades.updated_at ?? "",
-      prefs: prefs ?? undefined, // harmless, template can ignore
     };
 
     const sg = await sendSendGrid(env.SENDGRID_API_KEY, {

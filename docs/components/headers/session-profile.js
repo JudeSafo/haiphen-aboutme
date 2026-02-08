@@ -123,10 +123,10 @@
   // Map nav items to profile sub-sections or SPA sections
   const NAV_MAP = {
     profile:           { section: 'Profile', tab: 'overview', hash: '#profile' },
-    settings:          { section: 'Profile', tab: 'settings', hash: '#profile:settings' },
-    billing:           { section: 'Profile', tab: 'billing', hash: '#profile:billing' },
-    quota:             { section: 'Profile', tab: 'billing', hash: '#profile:billing' },
-    apikeys:           { section: 'Profile', tab: 'apikeys', hash: '#profile:apikeys' },
+    settings:          { section: 'Profile', tab: 'settings', hash: '#profile/settings' },
+    billing:           { section: 'Profile', tab: 'billing', hash: '#profile/billing' },
+    quota:             { section: 'Profile', tab: 'billing', hash: '#profile/billing' },
+    apikeys:           { section: 'Profile', tab: 'apikeys', hash: '#profile/apikeys' },
     'getting-started': { section: 'GettingStarted', hash: '#getting-started' },
   };
 

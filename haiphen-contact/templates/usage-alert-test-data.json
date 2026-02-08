@@ -1,0 +1,12 @@
+{
+  "name": "Jude",
+  "user_login": "jks142857",
+  "service_name": "Haiphen Risk",
+  "current_plan": "Pro",
+  "usage_pct": 87,
+  "used_count": "8,700",
+  "limit_count": "10,000",
+  "reset_date": "2026-02-09 00:00 UTC",
+  "upgrade_url": "https://haiphen.io/#subscribe",
+  "support_email": "pi@haiphenai.com"
+}

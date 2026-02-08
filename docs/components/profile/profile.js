@@ -101,13 +101,14 @@
 
   function shouldAutoOpenProfile() {
     const h = String(window.location.hash || '').toLowerCase();
-    return h === '#profile' || h.startsWith('#profile:');
+    return h === '#profile' || h.startsWith('#profile/') || h.startsWith('#profile:');
   }
 
   function hashSubId() {
     try {
       const raw = String(window.location.hash || '');
-      const m = raw.match(/^#profile:(.+)$/i);
+      // Support both slash (new) and colon (legacy) separators
+      const m = raw.match(/^#profile[/:](.+)$/i);
       return (m?.[1] || '').trim();
     } catch {
       return '';
@@ -117,7 +118,7 @@
   function setProfileHash(subId = '') {
     try {
       const h = String(window.location.hash || '').toLowerCase();
-      const target = subId ? `#profile:${subId}` : '#profile';
+      const target = subId ? `#profile/${subId}` : '#profile';
       if (h !== String(target).toLowerCase()) window.location.hash = target;
     } catch {
       /* noop */
@@ -722,7 +723,7 @@
       if (!tab) return;
       const name = tab.getAttribute('data-profile-tab');
       switchTab(root, name);
-      const hash = name === 'overview' ? '#profile' : '#profile:' + name;
+      const hash = name === 'overview' ? '#profile' : '#profile/' + name;
       history.replaceState(null, '', hash);
     });
   }

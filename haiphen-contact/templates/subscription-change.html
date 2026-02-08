@@ -15,49 +15,61 @@
   </noscript>
   <![endif]-->
 </head>
-<body style="margin:0;padding:0;background-color:#f4f6f9;font-family:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;">
+<body style="margin:0;padding:0;background-color:#f6f8fb;font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;">
 
   <!-- Preheader -->
-  <div style="display:none;font-size:1px;color:#f4f6f9;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;">
+  <div style="display:none;font-size:1px;color:#f6f8fb;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;">
     {{#if (eq change_type "upgrade")}}Your plan has been upgraded from {{old_plan}} to {{new_plan}}.{{/if}}{{#if (eq change_type "downgrade")}}Your plan has been changed from {{old_plan}} to {{new_plan}}.{{/if}}{{#if (eq change_type "cancel")}}Your {{old_plan}} subscription has been cancelled.{{/if}}
   </div>
 
   <!-- Outer wrapper -->
-  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#f4f6f9;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#f6f8fb;">
     <tr>
-      <td align="center" style="padding:24px 16px;">
+      <td align="center" style="padding:32px 16px;">
 
-        <!-- Container -->
-        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" style="max-width:600px;width:100%;background-color:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.08);">
+        <!-- Card -->
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" style="max-width:600px;width:100%;background-color:#ffffff;border:1px solid #e6ecf3;border-radius:16px;overflow:hidden;">
 
           <!-- Header -->
           <tr>
-            <td style="background-color:#0b1220;padding:32px 40px;text-align:center;">
+            <td style="padding:22px 28px 14px;">
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
                 <tr>
-                  <td align="center">
-                    <img src="https://haiphen.io/assets/robot_haiphen.png" alt="Haiphen" width="48" height="48" style="display:block;border:0;outline:none;margin-bottom:12px;">
-                    <h1 style="margin:0;font-size:22px;font-weight:700;color:#ffffff;letter-spacing:-0.3px;">Subscription Updated</h1>
+                  <td align="left" style="vertical-align:middle;">
+                    <div style="font-weight:900;font-size:18px;color:#2c3e50;line-height:1.3;">Haiphen</div>
+                    <div style="font-size:12px;color:#667;line-height:1.4;margin-top:2px;">Signals intelligence &bull; automated trading telemetry &bull; API Everything &hearts;</div>
+                  </td>
+                  <td align="right" style="vertical-align:middle;">
+                    <a href="https://haiphen.io" style="font-size:12px;color:#5A9BD4;font-weight:700;text-decoration:none;">haiphen.io</a>
                   </td>
                 </tr>
               </table>
             </td>
           </tr>
 
+          <!-- Divider -->
+          <tr>
+            <td style="padding:0 28px;">
+              <div style="height:1px;background:#e6ecf3;"></div>
+            </td>
+          </tr>
+
           <!-- Status banner: upgrade -->
           {{#if (eq change_type "upgrade")}}
           <tr>
-            <td style="background-color:#ecfdf5;padding:16px 40px;border-bottom:1px solid #d1fae5;">
-              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
-                <tr>
-                  <td style="vertical-align:middle;width:24px;padding-right:12px;">
-                    <div style="width:24px;height:24px;border-radius:50%;background-color:#10B981;text-align:center;line-height:24px;font-size:14px;color:#ffffff;">&#8593;</div>
-                  </td>
-                  <td style="vertical-align:middle;">
-                    <p style="margin:0;font-size:14px;font-weight:600;color:#065f46;">Plan upgraded to {{new_plan}}</p>
-                  </td>
-                </tr>
-              </table>
+            <td style="padding:14px 28px;">
+              <div style="background:#fbfcfe;border:1px solid #d1fae5;border-radius:12px;padding:12px 14px;">
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                  <tr>
+                    <td style="vertical-align:middle;width:24px;padding-right:10px;">
+                      <div style="width:22px;height:22px;border-radius:50%;background-color:#10B981;text-align:center;line-height:22px;font-size:13px;color:#ffffff;">&#8593;</div>
+                    </td>
+                    <td style="vertical-align:middle;">
+                      <div style="font-size:13px;font-weight:800;color:#065f46;">Plan upgraded to {{new_plan}}</div>
+                    </td>
+                  </tr>
+                </table>
+              </div>
             </td>
           </tr>
           {{/if}}
@@ -65,17 +77,19 @@
           <!-- Status banner: downgrade -->
           {{#if (eq change_type "downgrade")}}
           <tr>
-            <td style="background-color:#fffbeb;padding:16px 40px;border-bottom:1px solid #fde68a;">
-              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
-                <tr>
-                  <td style="vertical-align:middle;width:24px;padding-right:12px;">
-                    <div style="width:24px;height:24px;border-radius:50%;background-color:#F59E0B;text-align:center;line-height:24px;font-size:14px;color:#ffffff;">&#8595;</div>
-                  </td>
-                  <td style="vertical-align:middle;">
-                    <p style="margin:0;font-size:14px;font-weight:600;color:#92400e;">Plan changed to {{new_plan}}</p>
-                  </td>
-                </tr>
-              </table>
+            <td style="padding:14px 28px;">
+              <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:12px;padding:12px 14px;">
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                  <tr>
+                    <td style="vertical-align:middle;width:24px;padding-right:10px;">
+                      <div style="width:22px;height:22px;border-radius:50%;background-color:#F59E0B;text-align:center;line-height:22px;font-size:13px;color:#ffffff;">&#8595;</div>
+                    </td>
+                    <td style="vertical-align:middle;">
+                      <div style="font-size:13px;font-weight:800;color:#92400e;">Plan changed to {{new_plan}}</div>
+                    </td>
+                  </tr>
+                </table>
+              </div>
             </td>
           </tr>
           {{/if}}
@@ -83,230 +97,188 @@
           <!-- Status banner: cancel -->
           {{#if (eq change_type "cancel")}}
           <tr>
-            <td style="background-color:#fef2f2;padding:16px 40px;border-bottom:1px solid #fecaca;">
-              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
-                <tr>
-                  <td style="vertical-align:middle;width:24px;padding-right:12px;">
-                    <div style="width:24px;height:24px;border-radius:50%;background-color:#ef4444;text-align:center;line-height:24px;font-size:14px;color:#ffffff;">&times;</div>
-                  </td>
-                  <td style="vertical-align:middle;">
-                    <p style="margin:0;font-size:14px;font-weight:600;color:#991b1b;">Subscription cancelled</p>
-                  </td>
-                </tr>
-              </table>
+            <td style="padding:14px 28px;">
+              <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:12px;padding:12px 14px;">
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                  <tr>
+                    <td style="vertical-align:middle;width:24px;padding-right:10px;">
+                      <div style="width:22px;height:22px;border-radius:50%;background-color:#ef4444;text-align:center;line-height:22px;font-size:13px;color:#ffffff;">&times;</div>
+                    </td>
+                    <td style="vertical-align:middle;">
+                      <div style="font-size:13px;font-weight:800;color:#991b1b;">Subscription cancelled</div>
+                    </td>
+                  </tr>
+                </table>
+              </div>
             </td>
           </tr>
           {{/if}}
 
           <!-- Body -->
           <tr>
-            <td style="padding:40px;">
+            <td style="padding:10px 28px 22px;">
 
-              <!-- Greeting -->
-              <p style="margin:0 0 20px;font-size:16px;line-height:1.6;color:#1a1a2e;">
+              <p style="margin:0 0 14px;font-size:15px;line-height:1.6;color:#2c3e50;font-weight:700;">
                 Hi {{name}},
               </p>
 
-              <!-- Upgrade message -->
               {{#if (eq change_type "upgrade")}}
-              <p style="margin:0 0 28px;font-size:16px;line-height:1.6;color:#1a1a2e;">
-                Great news! Your subscription has been upgraded from <strong>{{old_plan}}</strong> to <strong style="color:#10B981;">{{new_plan}}</strong>. Your new features and limits are available immediately.
+              <p style="margin:0 0 20px;font-size:14px;line-height:1.6;color:#556;">
+                Great news! Your subscription has been upgraded from <strong style="color:#2c3e50;">{{old_plan}}</strong> to <strong style="color:#10B981;">{{new_plan}}</strong>. Your new features and limits are available immediately.
               </p>
               {{/if}}
 
-              <!-- Downgrade message -->
               {{#if (eq change_type "downgrade")}}
-              <p style="margin:0 0 28px;font-size:16px;line-height:1.6;color:#1a1a2e;">
-                Your subscription has been changed from <strong>{{old_plan}}</strong> to <strong>{{new_plan}}</strong>. The change will take effect on <strong>{{effective_date}}</strong>.
+              <p style="margin:0 0 20px;font-size:14px;line-height:1.6;color:#556;">
+                Your subscription has been changed from <strong style="color:#2c3e50;">{{old_plan}}</strong> to <strong style="color:#2c3e50;">{{new_plan}}</strong>. The change will take effect on <strong style="color:#2c3e50;">{{effective_date}}</strong>.
               </p>
               {{/if}}
 
-              <!-- Cancel message -->
               {{#if (eq change_type "cancel")}}
-              <p style="margin:0 0 28px;font-size:16px;line-height:1.6;color:#1a1a2e;">
-                Your <strong>{{old_plan}}</strong> subscription has been cancelled. You will continue to have access to your current plan until <strong>{{effective_date}}</strong>, after which your account will revert to the free tier.
+              <p style="margin:0 0 20px;font-size:14px;line-height:1.6;color:#556;">
+                Your <strong style="color:#2c3e50;">{{old_plan}}</strong> subscription has been cancelled. You will continue to have access to your current plan until <strong style="color:#2c3e50;">{{effective_date}}</strong>, after which your account will revert to the free tier.
               </p>
               {{/if}}
 
-              <!-- Change details card -->
-              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;margin-bottom:28px;">
-                <tr>
-                  <td style="padding:24px;">
-                    <h2 style="margin:0 0 16px;font-size:14px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;">Change Details</h2>
-                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
-                      <tr>
-                        <td style="padding:6px 0;font-size:14px;color:#64748b;width:40%;">Change Type</td>
-                        <td style="padding:6px 0;font-size:14px;font-weight:500;text-align:right;">
-                          {{#if (eq change_type "upgrade")}}<span style="color:#10B981;font-weight:600;">Upgrade</span>{{/if}}
-                          {{#if (eq change_type "downgrade")}}<span style="color:#F59E0B;font-weight:600;">Downgrade</span>{{/if}}
-                          {{#if (eq change_type "cancel")}}<span style="color:#ef4444;font-weight:600;">Cancellation</span>{{/if}}
-                        </td>
-                      </tr>
-                      <tr>
-                        <td style="padding:6px 0;font-size:14px;color:#64748b;border-top:1px solid #e2e8f0;">Previous Plan</td>
-                        <td style="padding:6px 0;font-size:14px;color:#1a1a2e;font-weight:500;text-align:right;">{{old_plan}}</td>
-                      </tr>
-                      {{#if (eq change_type "cancel")}}
-                      <tr>
-                        <td style="padding:6px 0;font-size:14px;color:#64748b;border-top:1px solid #e2e8f0;">New Plan</td>
-                        <td style="padding:6px 0;font-size:14px;color:#64748b;font-weight:500;text-align:right;">Free (after {{effective_date}})</td>
-                      </tr>
-                      {{else}}
-                      <tr>
-                        <td style="padding:6px 0;font-size:14px;color:#64748b;border-top:1px solid #e2e8f0;">New Plan</td>
-                        <td style="padding:6px 0;font-size:14px;color:#5A9BD4;font-weight:600;text-align:right;">{{new_plan}}</td>
-                      </tr>
-                      {{/if}}
-                      <tr>
-                        <td style="padding:6px 0;font-size:14px;color:#64748b;border-top:1px solid #e2e8f0;">Effective Date</td>
-                        <td style="padding:6px 0;font-size:14px;color:#1a1a2e;font-weight:500;text-align:right;">{{effective_date}}</td>
-                      </tr>
-                      {{#if price_change}}
-                      <tr>
-                        <td style="padding:6px 0;font-size:14px;color:#64748b;border-top:1px solid #e2e8f0;">Price Change</td>
-                        <td style="padding:6px 0;font-size:14px;font-weight:600;text-align:right;">
-                          {{#if (eq change_type "upgrade")}}<span style="color:#1a1a2e;">{{price_change}}</span>{{/if}}
-                          {{#if (eq change_type "downgrade")}}<span style="color:#10B981;">{{price_change}}</span>{{/if}}
-                        </td>
-                      </tr>
-                      {{/if}}
-                    </table>
-                  </td>
-                </tr>
-              </table>
+              <!-- Change details -->
+              <div style="background:#fbfcfe;border:1px solid #e6ecf3;border-radius:12px;padding:14px;margin-bottom:20px;">
+                <div style="font-size:13px;font-weight:900;color:#2c3e50;margin-bottom:10px;">Change details</div>
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;">
+                  <tr>
+                    <td style="padding:7px 0;font-size:13px;color:#667;">Change type</td>
+                    <td style="padding:7px 0;font-size:13px;font-weight:800;text-align:right;">
+                      {{#if (eq change_type "upgrade")}}<span style="color:#10B981;">Upgrade</span>{{/if}}
+                      {{#if (eq change_type "downgrade")}}<span style="color:#F59E0B;">Downgrade</span>{{/if}}
+                      {{#if (eq change_type "cancel")}}<span style="color:#ef4444;">Cancellation</span>{{/if}}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding:7px 0;font-size:13px;color:#667;border-top:1px solid #eef2f7;">Previous plan</td>
+                    <td style="padding:7px 0;font-size:13px;color:#2c3e50;font-weight:700;text-align:right;border-top:1px solid #eef2f7;">{{old_plan}}</td>
+                  </tr>
+                  {{#if (eq change_type "cancel")}}
+                  <tr>
+                    <td style="padding:7px 0;font-size:13px;color:#667;border-top:1px solid #eef2f7;">New plan</td>
+                    <td style="padding:7px 0;font-size:13px;color:#667;font-weight:700;text-align:right;border-top:1px solid #eef2f7;">Free (after {{effective_date}})</td>
+                  </tr>
+                  {{else}}
+                  <tr>
+                    <td style="padding:7px 0;font-size:13px;color:#667;border-top:1px solid #eef2f7;">New plan</td>
+                    <td style="padding:7px 0;font-size:13px;color:#5A9BD4;font-weight:800;text-align:right;border-top:1px solid #eef2f7;">{{new_plan}}</td>
+                  </tr>
+                  {{/if}}
+                  <tr>
+                    <td style="padding:7px 0;font-size:13px;color:#667;border-top:1px solid #eef2f7;">Effective date</td>
+                    <td style="padding:7px 0;font-size:13px;color:#2c3e50;font-weight:700;text-align:right;border-top:1px solid #eef2f7;">{{effective_date}}</td>
+                  </tr>
+                  {{#if price_change}}
+                  <tr>
+                    <td style="padding:7px 0;font-size:13px;color:#667;border-top:1px solid #eef2f7;">Price change</td>
+                    <td style="padding:7px 0;font-size:13px;font-weight:800;text-align:right;border-top:1px solid #eef2f7;">
+                      {{#if (eq change_type "upgrade")}}<span style="color:#2c3e50;">{{price_change}}</span>{{/if}}
+                      {{#if (eq change_type "downgrade")}}<span style="color:#10B981;">{{price_change}}</span>{{/if}}
+                    </td>
+                  </tr>
+                  {{/if}}
+                </table>
+              </div>
 
               <!-- What's different: upgrade -->
               {{#if (eq change_type "upgrade")}}
-              <h2 style="margin:0 0 16px;font-size:18px;font-weight:600;color:#1a1a2e;">What's New on {{new_plan}}</h2>
-              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#ecfdf5;border:1px solid #d1fae5;border-radius:6px;margin-bottom:28px;">
-                <tr>
-                  <td style="padding:20px 24px;">
-                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
-                      <tr>
-                        <td style="padding:4px 0;vertical-align:top;width:20px;">
-                          <div style="color:#10B981;font-size:14px;font-weight:700;">+</div>
-                        </td>
-                        <td style="padding:4px 0 4px 8px;">
-                          <p style="margin:0;font-size:14px;line-height:1.5;color:#065f46;">Higher API rate limits and daily quotas</p>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td style="padding:4px 0;vertical-align:top;width:20px;">
-                          <div style="color:#10B981;font-size:14px;font-weight:700;">+</div>
-                        </td>
-                        <td style="padding:4px 0 4px 8px;">
-                          <p style="margin:0;font-size:14px;line-height:1.5;color:#065f46;">Priority support and SLA guarantees</p>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td style="padding:4px 0;vertical-align:top;width:20px;">
-                          <div style="color:#10B981;font-size:14px;font-weight:700;">+</div>
-                        </td>
-                        <td style="padding:4px 0 4px 8px;">
-                          <p style="margin:0;font-size:14px;line-height:1.5;color:#065f46;">Access to advanced analytics and webhook integrations</p>
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-              </table>
+              <div style="font-size:14px;font-weight:900;color:#2c3e50;margin-bottom:10px;">What's new on {{new_plan}}</div>
+              <div style="background:#fbfcfe;border:1px solid #d1fae5;border-radius:12px;padding:14px;margin-bottom:20px;">
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                  <tr>
+                    <td style="padding:4px 0;vertical-align:top;width:18px;">
+                      <div style="color:#10B981;font-size:13px;font-weight:900;">+</div>
+                    </td>
+                    <td style="padding:4px 0 4px 8px;">
+                      <div style="font-size:13px;line-height:1.5;color:#065f46;">Higher API rate limits and daily quotas</div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding:4px 0;vertical-align:top;width:18px;">
+                      <div style="color:#10B981;font-size:13px;font-weight:900;">+</div>
+                    </td>
+                    <td style="padding:4px 0 4px 8px;">
+                      <div style="font-size:13px;line-height:1.5;color:#065f46;">Priority support and SLA guarantees</div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding:4px 0;vertical-align:top;width:18px;">
+                      <div style="color:#10B981;font-size:13px;font-weight:900;">+</div>
+                    </td>
+                    <td style="padding:4px 0 4px 8px;">
+                      <div style="font-size:13px;line-height:1.5;color:#065f46;">Access to advanced analytics and webhook integrations</div>
+                    </td>
+                  </tr>
+                </table>
+              </div>
               {{/if}}
 
               <!-- What's different: downgrade -->
               {{#if (eq change_type "downgrade")}}
-              <h2 style="margin:0 0 16px;font-size:18px;font-weight:600;color:#1a1a2e;">What Changes</h2>
-              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#fffbeb;border:1px solid #fde68a;border-radius:6px;margin-bottom:28px;">
-                <tr>
-                  <td style="padding:20px 24px;">
-                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
-                      <tr>
-                        <td style="padding:4px 0;vertical-align:top;width:20px;">
-                          <div style="color:#F59E0B;font-size:14px;font-weight:700;">&darr;</div>
-                        </td>
-                        <td style="padding:4px 0 4px 8px;">
-                          <p style="margin:0;font-size:14px;line-height:1.5;color:#92400e;">API rate limits and daily quotas will be reduced to {{new_plan}} levels.</p>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td style="padding:4px 0;vertical-align:top;width:20px;">
-                          <div style="color:#F59E0B;font-size:14px;font-weight:700;">&darr;</div>
-                        </td>
-                        <td style="padding:4px 0 4px 8px;">
-                          <p style="margin:0;font-size:14px;line-height:1.5;color:#92400e;">Some advanced features may no longer be available.</p>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td style="padding:4px 0;vertical-align:top;width:20px;">
-                          <div style="color:#10B981;font-size:14px;font-weight:700;">&#10003;</div>
-                        </td>
-                        <td style="padding:4px 0 4px 8px;">
-                          <p style="margin:0;font-size:14px;line-height:1.5;color:#065f46;">Your data and configuration will be fully preserved.</p>
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-              </table>
+              <div style="font-size:14px;font-weight:900;color:#2c3e50;margin-bottom:10px;">What changes</div>
+              <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:12px;padding:14px;margin-bottom:20px;">
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                  <tr>
+                    <td style="padding:4px 0;vertical-align:top;width:18px;">
+                      <div style="color:#F59E0B;font-size:13px;font-weight:900;">&darr;</div>
+                    </td>
+                    <td style="padding:4px 0 4px 8px;">
+                      <div style="font-size:13px;line-height:1.5;color:#92400e;">API rate limits and daily quotas will be reduced to {{new_plan}} levels.</div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding:4px 0;vertical-align:top;width:18px;">
+                      <div style="color:#F59E0B;font-size:13px;font-weight:900;">&darr;</div>
+                    </td>
+                    <td style="padding:4px 0 4px 8px;">
+                      <div style="font-size:13px;line-height:1.5;color:#92400e;">Some advanced features may no longer be available.</div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding:4px 0;vertical-align:top;width:18px;">
+                      <div style="color:#10B981;font-size:13px;font-weight:900;">&#10003;</div>
+                    </td>
+                    <td style="padding:4px 0 4px 8px;">
+                      <div style="font-size:13px;line-height:1.5;color:#065f46;">Your data and configuration will be fully preserved.</div>
+                    </td>
+                  </tr>
+                </table>
+              </div>
               {{/if}}
 
               <!-- What's different: cancel -->
               {{#if (eq change_type "cancel")}}
-              <h2 style="margin:0 0 16px;font-size:18px;font-weight:600;color:#1a1a2e;">What Happens Next</h2>
-              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#fef2f2;border:1px solid #fecaca;border-radius:6px;margin-bottom:28px;">
-                <tr>
-                  <td style="padding:20px 24px;">
-                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
-                      <tr>
-                        <td style="padding:4px 0;">
-                          <p style="margin:0;font-size:14px;line-height:1.5;color:#991b1b;">
-                            <strong>Until {{effective_date}}:</strong> Your {{old_plan}} plan features remain active. No changes to your service.
-                          </p>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td style="padding:12px 0 4px;">
-                          <p style="margin:0;font-size:14px;line-height:1.5;color:#991b1b;">
-                            <strong>After {{effective_date}}:</strong> Your account will revert to the free tier (60 req/min, 200 req/day). Your data and configuration will be preserved, and you can resubscribe at any time.
-                          </p>
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-              </table>
+              <div style="font-size:14px;font-weight:900;color:#2c3e50;margin-bottom:10px;">What happens next</div>
+              <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:12px;padding:14px;margin-bottom:20px;">
+                <div style="font-size:13px;line-height:1.55;color:#991b1b;margin-bottom:8px;">
+                  <strong>Until {{effective_date}}:</strong> Your {{old_plan}} plan features remain active. No changes to your service.
+                </div>
+                <div style="font-size:13px;line-height:1.55;color:#991b1b;">
+                  <strong>After {{effective_date}}:</strong> Your account will revert to the free tier (60 req/min, 200 req/day). Your data and configuration will be preserved, and you can resubscribe at any time.
+                </div>
+              </div>
 
-              <!-- Resubscribe note -->
-              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;margin-bottom:28px;">
-                <tr>
-                  <td style="padding:16px 20px;">
-                    <p style="margin:0;font-size:14px;line-height:1.5;color:#1a1a2e;">
-                      Changed your mind? You can resubscribe at any time from your dashboard, and your previous configuration will be restored instantly.
-                    </p>
-                  </td>
-                </tr>
-              </table>
+              <div style="background:#fbfcfe;border:1px solid #e6ecf3;border-radius:12px;padding:14px;margin-bottom:20px;">
+                <div style="font-size:13px;line-height:1.55;color:#556;">
+                  Changed your mind? You can resubscribe at any time from your dashboard, and your previous configuration will be restored instantly.
+                </div>
+              </div>
               {{/if}}
 
               <!-- CTA -->
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
                 <tr>
-                  <td align="center" style="padding:4px 0 0;">
-                    <!--[if mso]>
-                    <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="https://haiphen.io" style="height:48px;v-text-anchor:middle;width:220px;" arcsize="10%" strokecolor="#5A9BD4" fillcolor="#5A9BD4">
-                      <w:anchorlock/>
-                      <center style="color:#ffffff;font-family:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:15px;font-weight:600;">Go to Dashboard</center>
-                    </v:roundrect>
-                    <![endif]-->
-                    <!--[if !mso]><!-->
-                    <a href="https://haiphen.io" style="display:inline-block;background-color:#5A9BD4;color:#ffffff;font-size:15px;font-weight:600;text-decoration:none;padding:14px 32px;border-radius:6px;text-align:center;min-width:160px;">Go to Dashboard</a>
-                    <!--<![endif]-->
+                  <td align="center">
+                    <a href="https://haiphen.io" style="display:inline-block;background-color:#5A9BD4;color:#ffffff;font-size:14px;font-weight:900;text-decoration:none;padding:12px 28px;border-radius:12px;text-align:center;">Go to Dashboard</a>
                   </td>
                 </tr>
               </table>
 
-              <!-- Support -->
-              <p style="margin:28px 0 0;font-size:14px;line-height:1.6;color:#64748b;">
-                Have questions about this change? Contact us at <a href="mailto:{{support_email}}" style="color:#5A9BD4;text-decoration:none;">{{support_email}}</a>.
+              <p style="margin:20px 0 0;font-size:13px;line-height:1.6;color:#667;">
+                Have questions about this change? Contact us at <a href="mailto:{{support_email}}" style="color:#5A9BD4;text-decoration:none;font-weight:700;">{{support_email}}</a>.
               </p>
 
             </td>
@@ -314,22 +286,23 @@
 
           <!-- Footer -->
           <tr>
-            <td style="background-color:#f8fafc;border-top:1px solid #e2e8f0;padding:28px 40px;">
+            <td style="padding:0 28px;">
+              <div style="height:1px;background:#e6ecf3;"></div>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:18px 28px 22px;">
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
                 <tr>
                   <td align="center">
-                    <p style="margin:0 0 8px;font-size:13px;color:#94a3b8;line-height:1.5;">
-                      Haiphen &mdash; Semantic Edge Protocol Intelligence
+                    <p style="margin:0 0 6px;font-size:11px;color:#778;line-height:1.5;">
+                      Haiphen &bull; Manhattan, NY &bull; <a href="mailto:pi@haiphenai.com" style="color:#778;text-decoration:none;">pi@haiphenai.com</a> &bull; (512) 910-4544
                     </p>
-                    <p style="margin:0 0 8px;font-size:12px;color:#94a3b8;line-height:1.5;">
-                      You received this email because your subscription was modified on <a href="https://haiphen.io" style="color:#5A9BD4;text-decoration:none;">haiphen.io</a>.
+                    <p style="margin:0 0 6px;font-size:11px;color:#778;line-height:1.5;">
+                      You received this because your subscription was modified on <a href="https://haiphen.io" style="color:#5A9BD4;text-decoration:none;font-weight:700;">haiphen.io</a>.
                     </p>
-                    <p style="margin:0;font-size:12px;color:#94a3b8;line-height:1.5;">
-                      <a href="{{{unsubscribe}}}" style="color:#94a3b8;text-decoration:underline;">Unsubscribe</a>
-                      &nbsp;&bull;&nbsp;
-                      <a href="https://haiphen.io/about.html" style="color:#94a3b8;text-decoration:underline;">About</a>
-                      &nbsp;&bull;&nbsp;
-                      <a href="mailto:{{support_email}}" style="color:#94a3b8;text-decoration:underline;">Support</a>
+                    <p style="margin:0;font-size:11px;color:#778;line-height:1.5;">
+                      <a href="{{{unsubscribe}}}" style="color:#778;text-decoration:underline;">Unsubscribe</a>
                     </p>
                   </td>
                 </tr>
@@ -338,12 +311,9 @@
           </tr>
 
         </table>
-        <!-- /Container -->
-
       </td>
     </tr>
   </table>
-  <!-- /Outer wrapper -->
 
 </body>
 </html>

@@ -120,10 +120,10 @@
     // Map nav items to profile sub-sections or SPA sections
     const NAV_MAP = {
       profile:           { section: 'Profile', tab: 'overview', hash: '#profile' },
-      settings:          { section: 'Profile', tab: 'settings', hash: '#profile:settings' },
-      billing:           { section: 'Profile', tab: 'billing', hash: '#profile:billing' },
-      quota:             { section: 'Profile', tab: 'billing', hash: '#profile:billing' },
-      apikeys:           { section: 'Profile', tab: 'apikeys', hash: '#profile:apikeys' },
+      settings:          { section: 'Profile', tab: 'settings', hash: '#profile/settings' },
+      billing:           { section: 'Profile', tab: 'billing', hash: '#profile/billing' },
+      quota:             { section: 'Profile', tab: 'billing', hash: '#profile/billing' },
+      apikeys:           { section: 'Profile', tab: 'apikeys', hash: '#profile/apikeys' },
       'getting-started': { section: 'GettingStarted', hash: '#getting-started' },
     };
 
@@ -294,6 +294,51 @@
     }, 3000);
   }
 
+  function wireHamburger(mount) {
+    function attach() {
+      const btn = document.getElementById('sidebar-hamburger');
+      if (!btn || btn.__sidebarWired) return;
+      btn.__sidebarWired = true;
+
+      // Create backdrop element if not present
+      if (!document.querySelector('.sidebar-mobile-backdrop')) {
+        const bd = document.createElement('div');
+        bd.className = 'sidebar-mobile-backdrop';
+        document.body.appendChild(bd);
+        bd.addEventListener('click', closeMobileSidebar);
+      }
+
+      btn.addEventListener('click', () => {
+        const open = document.body.classList.toggle('sidebar-mobile-open');
+        btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+        btn.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+      });
+
+      // Close sidebar when a navigation link inside it is clicked
+      mount.addEventListener('click', (e) => {
+        if (e.target.closest('a[data-section]') || e.target.closest('[data-session-nav]')) {
+          closeMobileSidebar();
+        }
+      });
+    }
+
+    // Try immediately, or wait for header injection
+    if (document.getElementById('sidebar-hamburger')) {
+      attach();
+    } else {
+      window.addEventListener('haiphen:header:ready', () => attach(), { once: true });
+    }
+  }
+
+  function closeMobileSidebar() {
+    document.body.classList.remove('sidebar-mobile-open');
+    const btn = document.getElementById('sidebar-hamburger');
+    if (btn) {
+      btn.setAttribute('aria-expanded', 'false');
+      btn.setAttribute('aria-label', 'Open menu');
+    }
+  }
+
   async function loadSidebar() {
     const mount = qs(MOUNT_ID);
     if (!mount) {
@@ -310,6 +355,7 @@
     mount.innerHTML = `<div id="${SIDEBAR_ID}">${html}</div>`;
 
     wire(mount);
+    wireHamburger(mount);
 
     insertSidebarSessionCard(mount);
   }

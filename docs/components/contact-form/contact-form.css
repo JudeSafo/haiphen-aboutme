@@ -237,6 +237,11 @@
   border: 0;
 }
 
+.hp-contact-header{
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
 /* Fade-into-focus reveal */
 .hp-contact-reveal{
   opacity: 0;

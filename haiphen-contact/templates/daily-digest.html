@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Daily Digest - Haiphen</title>
+  <!--[if mso]>
+  <noscript>
+    <xml>
+      <o:OfficeDocumentSettings>
+        <o:PixelsPerInch>96</o:PixelsPerInch>
+      </o:OfficeDocumentSettings>
+    </xml>
+  </noscript>
+  <![endif]-->
+</head>
+<body style="margin:0;padding:0;background-color:#f6f8fb;font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;">
+
+  <!-- Preheader (hidden preview text) -->
+  <div style="display:none;font-size:1px;color:#f6f8fb;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;">
+    {{headline}} — {{date_label}}
+  </div>
+
+  <!-- Outer wrapper -->
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#f6f8fb;">
+    <tr>
+      <td align="center" style="padding:32px 16px;">
+
+        <!-- Card -->
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" style="max-width:600px;width:100%;background-color:#ffffff;border:1px solid #e6ecf3;border-radius:16px;overflow:hidden;">
+
+          <!-- Header -->
+          <tr>
+            <td style="padding:22px 28px 14px;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                <tr>
+                  <td align="left" style="vertical-align:middle;">
+                    <div style="font-weight:900;font-size:18px;color:#2c3e50;line-height:1.3;">Haiphen</div>
+                    <div style="font-size:12px;color:#667;line-height:1.4;margin-top:2px;">Signals intelligence &bull; automated trading telemetry &bull; API Everything &hearts;</div>
+                  </td>
+                  <td align="right" style="vertical-align:middle;">
+                    <a href="https://haiphen.io" style="font-size:12px;color:#5A9BD4;font-weight:700;text-decoration:none;">haiphen.io</a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Divider -->
+          <tr>
+            <td style="padding:0 28px;">
+              <div style="height:1px;background:#e6ecf3;"></div>
+            </td>
+          </tr>
+
+          <!-- Body -->
+          <tr>
+            <td style="padding:22px 28px;">
+
+              <!-- Greeting -->
+              <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#2c3e50;font-weight:700;">
+                Hi {{name}},
+              </p>
+
+              {{#if summary}}
+              <p style="margin:0 0 20px;font-size:13px;line-height:1.6;color:#556;">
+                {{summary}}
+              </p>
+              {{/if}}
+
+              <!-- KPIs table -->
+              {{#if kpis}}
+              <div style="background:#fbfcfe;border:1px solid #e6ecf3;border-radius:12px;padding:14px;margin-bottom:20px;">
+                <div style="font-size:13px;font-weight:900;color:#2c3e50;margin-bottom:10px;">Key Metrics</div>
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;">
+                  {{#each kpis}}
+                  <tr>
+                    <td style="padding:7px 0;font-size:13px;color:#667;{{#unless @first}}border-top:1px solid #eef2f7;{{/unless}}">{{this.kpi}}</td>
+                    <td style="padding:7px 0;font-size:13px;color:#2c3e50;font-weight:800;text-align:right;{{#unless @first}}border-top:1px solid #eef2f7;{{/unless}}">{{this.value}}</td>
+                  </tr>
+                  {{/each}}
+                </table>
+              </div>
+              {{/if}}
+
+              <!-- Portfolio watchlist -->
+              {{#if entities}}
+              <div style="background:#fbfcfe;border:1px solid #e6ecf3;border-radius:12px;padding:14px;margin-bottom:20px;">
+                <div style="font-size:13px;font-weight:900;color:#2c3e50;margin-bottom:10px;">Portfolio watchlist</div>
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;">
+                  {{#each entities}}
+                  <tr>
+                    <td style="padding:7px 0;font-size:13px;color:#2c3e50;font-weight:800;width:20%;{{#unless @first}}border-top:1px solid #eef2f7;{{/unless}}">{{this.symbol}}</td>
+                    <td style="padding:7px 0;font-size:12px;color:#667;{{#unless @first}}border-top:1px solid #eef2f7;{{/unless}}">
+                      <a href="{{../manage_url}}?contract={{this.contract_qs}}" style="color:#5A9BD4;text-decoration:none;font-weight:700;">{{this.contract_name}}</a>
+                    </td>
+                  </tr>
+                  {{/each}}
+                </table>
+              </div>
+              {{/if}}
+
+              {{#if entities_fallback}}
+              <div style="background:#fbfcfe;border:1px solid #e6ecf3;border-radius:12px;padding:14px;margin-bottom:20px;">
+                <div style="font-size:13px;font-weight:900;color:#2c3e50;margin-bottom:6px;">Portfolio watchlist</div>
+                <div style="font-size:12px;color:#778;line-height:1.4;margin-bottom:10px;">
+                  No active positions found. Here are some popular contracts to watch:
+                </div>
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;">
+                  {{#each entities_fallback}}
+                  <tr>
+                    <td style="padding:7px 0;font-size:13px;color:#2c3e50;font-weight:800;width:20%;{{#unless @first}}border-top:1px solid #eef2f7;{{/unless}}">{{this.symbol}}</td>
+                    <td style="padding:7px 0;font-size:12px;color:#667;{{#unless @first}}border-top:1px solid #eef2f7;{{/unless}}">{{this.contract_name}}</td>
+                  </tr>
+                  {{/each}}
+                </table>
+              </div>
+              {{/if}}
+
+              <!-- Your email subscriptions -->
+              {{#if subscriptions}}
+              <div style="background:#fbfcfe;border:1px solid #e6ecf3;border-radius:12px;padding:14px;margin-bottom:20px;">
+                <div style="font-size:13px;font-weight:900;color:#2c3e50;margin-bottom:6px;">
+                  Your email subscriptions
+                </div>
+                <div style="font-size:12px;color:#778;line-height:1.55;margin-bottom:10px;">
+                  Manage these from your <a href="{{manage_url}}#profile/settings" style="color:#5A9BD4;text-decoration:none;font-weight:700;">profile settings</a>.
+                </div>
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;">
+                  {{#each subscriptions}}
+                  <tr>
+                    <td style="padding:7px 8px;border-top:1px solid #eef2f7;font-size:13px;color:#2c3e50;font-weight:700;">
+                      {{this.label}}
+                    </td>
+                    <td align="right" style="padding:7px 8px;border-top:1px solid #eef2f7;font-size:12px;font-weight:900;">
+                      {{#if this.active}}
+                        <span style="color:#10B981;">Subscribed</span>
+                      {{else}}
+                        <span style="color:#94a3b8;">Unsubscribed</span>
+                      {{/if}}
+                    </td>
+                  </tr>
+                  {{/each}}
+                </table>
+              </div>
+              {{/if}}
+
+              <!-- Digest sections -->
+              {{#if sections}}
+              {{#each sections}}
+              <div style="margin-bottom:16px;">
+                <div style="font-size:14px;font-weight:900;color:#2c3e50;margin-bottom:8px;">{{this.title}}</div>
+                {{#each this.bullets}}
+                <p style="margin:0 0 5px;font-size:12px;line-height:1.55;color:#556;padding-left:10px;border-left:2px solid #e6ecf3;">
+                  {{this}}
+                </p>
+                {{/each}}
+              </div>
+              {{/each}}
+              {{/if}}
+
+              <!-- Source & updated at -->
+              {{#if source}}
+              <p style="margin:18px 0 4px;font-size:11px;color:#778;line-height:1.4;">
+                Source: {{source}}
+              </p>
+              {{/if}}
+              {{#if updated_at}}
+              <p style="margin:0;font-size:11px;color:#778;line-height:1.4;">
+                Data as of {{updated_at}}
+              </p>
+              {{/if}}
+
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="padding:0 28px;">
+              <div style="height:1px;background:#e6ecf3;"></div>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:18px 28px 22px;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                <tr>
+                  <td align="center">
+                    <p style="margin:0 0 6px;font-size:11px;color:#778;line-height:1.5;">
+                      Haiphen &bull; Manhattan, NY &bull; <a href="mailto:pi@haiphenai.com" style="color:#778;text-decoration:none;">pi@haiphenai.com</a> &bull; (512) 910-4544
+                    </p>
+                    <p style="margin:0 0 6px;font-size:11px;color:#778;line-height:1.5;">
+                      You received this because you're subscribed to the Daily Market Digest.
+                      <a href="{{manage_url}}#profile/settings" style="color:#5A9BD4;text-decoration:none;font-weight:700;">Manage preferences</a>
+                    </p>
+                    <p style="margin:0;font-size:11px;color:#778;line-height:1.5;">
+                      <a href="{{{unsubscribe}}}" style="color:#778;text-decoration:underline;">Unsubscribe</a>
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+        </table>
+        <!-- /Card -->
+
+      </td>
+    </tr>
+  </table>
+  <!-- /Outer wrapper -->
+
+</body>
+</html>

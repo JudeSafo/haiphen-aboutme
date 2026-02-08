@@ -194,9 +194,58 @@
   box-shadow: 0 14px 28px rgba(37,99,235,.28);
 }
 
+/* Hamburger button (hidden on desktop) */
+.site-header__hamburger{
+  display: none;
+  appearance: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 8px;
+  flex: 0 0 auto;
+  width: 32px;
+  height: 32px;
+  position: relative;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.site-header__hamburger span{
+  display: block;
+  width: 18px;
+  height: 2px;
+  background: var(--hdr-text);
+  border-radius: 2px;
+  transition: transform .2s ease, opacity .2s ease;
+}
+
+.site-header__hamburger:hover{
+  background: rgba(15,23,42,.06);
+}
+
+/* X state when sidebar is open */
+.site-header__hamburger[aria-expanded="true"] span:nth-child(1){
+  transform: translateY(6px) rotate(45deg);
+}
+.site-header__hamburger[aria-expanded="true"] span:nth-child(2){
+  opacity: 0;
+}
+.site-header__hamburger[aria-expanded="true"] span:nth-child(3){
+  transform: translateY(-6px) rotate(-45deg);
+}
+
 /* Mobile */
+@media (max-width: 920px){
+  .site-header__hamburger{
+    display: inline-flex;
+  }
+}
+
 @media (max-width: 860px){
-  .site-header__menu{ display:none; } /* keep it simple for now */
+  .site-header__menu{ display:none; }
   .site-header__inner{ justify-content: space-between; }
 }
 

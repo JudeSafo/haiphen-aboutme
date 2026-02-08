@@ -15,146 +15,142 @@
   </noscript>
   <![endif]-->
 </head>
-<body style="margin:0;padding:0;background-color:#f4f6f9;font-family:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;">
+<body style="margin:0;padding:0;background-color:#f6f8fb;font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;">
 
-  <!-- Preheader (hidden preview text) -->
-  <div style="display:none;font-size:1px;color:#f4f6f9;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;">
+  <!-- Preheader -->
+  <div style="display:none;font-size:1px;color:#f6f8fb;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;">
     Your Haiphen purchase is confirmed. Welcome to {{plan}} plan for {{service_name}}.
   </div>
 
   <!-- Outer wrapper -->
-  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#f4f6f9;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#f6f8fb;">
     <tr>
-      <td align="center" style="padding:24px 16px;">
+      <td align="center" style="padding:32px 16px;">
 
-        <!-- Container -->
-        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" style="max-width:600px;width:100%;background-color:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.08);">
+        <!-- Card -->
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" style="max-width:600px;width:100%;background-color:#ffffff;border:1px solid #e6ecf3;border-radius:16px;overflow:hidden;">
 
           <!-- Header -->
           <tr>
-            <td style="background-color:#0b1220;padding:32px 40px;text-align:center;">
+            <td style="padding:22px 28px 14px;">
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
                 <tr>
-                  <td align="center">
-                    <img src="https://haiphen.io/assets/robot_haiphen.png" alt="Haiphen" width="48" height="48" style="display:block;border:0;outline:none;margin-bottom:12px;">
-                    <h1 style="margin:0;font-size:22px;font-weight:700;color:#ffffff;letter-spacing:-0.3px;">Purchase Confirmed</h1>
+                  <td align="left" style="vertical-align:middle;">
+                    <div style="font-weight:900;font-size:18px;color:#2c3e50;line-height:1.3;">Haiphen</div>
+                    <div style="font-size:12px;color:#667;line-height:1.4;margin-top:2px;">Signals intelligence &bull; automated trading telemetry &bull; API Everything &hearts;</div>
+                  </td>
+                  <td align="right" style="vertical-align:middle;">
+                    <a href="https://haiphen.io" style="font-size:12px;color:#5A9BD4;font-weight:700;text-decoration:none;">haiphen.io</a>
                   </td>
                 </tr>
               </table>
             </td>
           </tr>
 
+          <!-- Divider -->
+          <tr>
+            <td style="padding:0 28px;">
+              <div style="height:1px;background:#e6ecf3;"></div>
+            </td>
+          </tr>
+
           <!-- Body -->
           <tr>
-            <td style="padding:40px;">
+            <td style="padding:22px 28px;">
 
-              <!-- Greeting -->
-              <p style="margin:0 0 20px;font-size:16px;line-height:1.6;color:#1a1a2e;">
+              <p style="margin:0 0 14px;font-size:15px;line-height:1.6;color:#2c3e50;font-weight:700;">
                 Hi {{name}},
               </p>
-              <p style="margin:0 0 24px;font-size:16px;line-height:1.6;color:#1a1a2e;">
-                Thank you for your purchase. Your <strong>{{service_name}}</strong> subscription on the <strong style="color:#5A9BD4;">{{plan}}</strong> plan is now active.
+              <p style="margin:0 0 20px;font-size:14px;line-height:1.6;color:#556;">
+                Thank you for your purchase. Your <strong style="color:#2c3e50;">{{service_name}}</strong> subscription on the <strong style="color:#5A9BD4;">{{plan}}</strong> plan is now active.
               </p>
 
-              <!-- Order summary card -->
-              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;margin-bottom:28px;">
-                <tr>
-                  <td style="padding:24px;">
-                    <h2 style="margin:0 0 16px;font-size:14px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;">Order Summary</h2>
-                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
-                      <tr>
-                        <td style="padding:6px 0;font-size:14px;color:#64748b;width:40%;">Account</td>
-                        <td style="padding:6px 0;font-size:14px;color:#1a1a2e;font-weight:500;">{{user_login}}</td>
-                      </tr>
-                      <tr>
-                        <td style="padding:6px 0;font-size:14px;color:#64748b;border-top:1px solid #e2e8f0;">Service</td>
-                        <td style="padding:6px 0;font-size:14px;color:#1a1a2e;font-weight:500;border-top:1px solid #e2e8f0;">{{service_name}}</td>
-                      </tr>
-                      <tr>
-                        <td style="padding:6px 0;font-size:14px;color:#64748b;border-top:1px solid #e2e8f0;">Plan</td>
-                        <td style="padding:6px 0;font-size:14px;color:#5A9BD4;font-weight:600;border-top:1px solid #e2e8f0;">{{plan}}</td>
-                      </tr>
-                      <tr>
-                        <td style="padding:6px 0;font-size:14px;color:#64748b;border-top:1px solid #e2e8f0;">Price</td>
-                        <td style="padding:6px 0;font-size:14px;color:#1a1a2e;font-weight:500;border-top:1px solid #e2e8f0;">{{price}}</td>
-                      </tr>
-                      {{#if trial_days}}
-                      <tr>
-                        <td style="padding:6px 0;font-size:14px;color:#64748b;border-top:1px solid #e2e8f0;">Trial Period</td>
-                        <td style="padding:6px 0;font-size:14px;color:#10B981;font-weight:600;border-top:1px solid #e2e8f0;">{{trial_days}} days free</td>
-                      </tr>
-                      {{/if}}
-                    </table>
-                  </td>
-                </tr>
-              </table>
+              <!-- Order summary -->
+              <div style="background:#fbfcfe;border:1px solid #e6ecf3;border-radius:12px;padding:14px;margin-bottom:20px;">
+                <div style="font-size:13px;font-weight:900;color:#2c3e50;margin-bottom:10px;">Order summary</div>
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;">
+                  <tr>
+                    <td style="padding:7px 0;font-size:13px;color:#667;">Account</td>
+                    <td style="padding:7px 0;font-size:13px;color:#2c3e50;font-weight:700;text-align:right;">{{user_login}}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:7px 0;font-size:13px;color:#667;border-top:1px solid #eef2f7;">Service</td>
+                    <td style="padding:7px 0;font-size:13px;color:#2c3e50;font-weight:700;text-align:right;border-top:1px solid #eef2f7;">{{service_name}}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:7px 0;font-size:13px;color:#667;border-top:1px solid #eef2f7;">Plan</td>
+                    <td style="padding:7px 0;font-size:13px;color:#5A9BD4;font-weight:800;text-align:right;border-top:1px solid #eef2f7;">{{plan}}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:7px 0;font-size:13px;color:#667;border-top:1px solid #eef2f7;">Price</td>
+                    <td style="padding:7px 0;font-size:13px;color:#2c3e50;font-weight:700;text-align:right;border-top:1px solid #eef2f7;">{{price}}</td>
+                  </tr>
+                  {{#if trial_days}}
+                  <tr>
+                    <td style="padding:7px 0;font-size:13px;color:#667;border-top:1px solid #eef2f7;">Trial period</td>
+                    <td style="padding:7px 0;font-size:13px;color:#10B981;font-weight:800;text-align:right;border-top:1px solid #eef2f7;">{{trial_days}} days free</td>
+                  </tr>
+                  {{/if}}
+                </table>
+              </div>
 
               {{#if trial_days}}
               <!-- Trial notice -->
-              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#ecfdf5;border-left:4px solid #10B981;border-radius:4px;margin-bottom:28px;">
-                <tr>
-                  <td style="padding:16px 20px;">
-                    <p style="margin:0;font-size:14px;line-height:1.5;color:#065f46;">
-                      <strong>Your trial is active.</strong> You have full access to all {{plan}} features for {{trial_days}} days. You will not be charged until your trial ends.
-                    </p>
-                  </td>
-                </tr>
-              </table>
+              <div style="background:#fbfcfe;border:1px solid #e6ecf3;border-radius:12px;padding:14px;margin-bottom:20px;">
+                <div style="font-size:13px;font-weight:900;color:#10B981;margin-bottom:4px;">Trial active</div>
+                <div style="font-size:12px;color:#556;line-height:1.55;">
+                  You have full access to all {{plan}} features for {{trial_days}} days. You will not be charged until your trial ends.
+                </div>
+              </div>
               {{/if}}
 
-              <!-- Receipt link -->
               {{#if receipt_url}}
-              <p style="margin:0 0 28px;font-size:14px;line-height:1.6;color:#64748b;">
+              <p style="margin:0 0 20px;font-size:13px;line-height:1.6;color:#556;">
                 View your full receipt and invoice details:
-                <a href="{{receipt_url}}" style="color:#5A9BD4;text-decoration:underline;font-weight:500;">Download Receipt</a>
+                <a href="{{receipt_url}}" style="color:#5A9BD4;text-decoration:none;font-weight:700;">Download receipt</a>
               </p>
               {{/if}}
 
               <!-- Next steps -->
-              <h2 style="margin:0 0 16px;font-size:18px;font-weight:600;color:#1a1a2e;">Next Steps</h2>
-              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom:28px;">
-                <tr>
-                  <td style="padding:8px 0;vertical-align:top;width:32px;">
-                    <div style="width:24px;height:24px;border-radius:50%;background-color:#5A9BD4;color:#ffffff;font-size:12px;font-weight:700;text-align:center;line-height:24px;">1</div>
-                  </td>
-                  <td style="padding:8px 0 8px 12px;vertical-align:top;">
-                    <p style="margin:0;font-size:14px;line-height:1.5;color:#1a1a2e;font-weight:500;">Sign in to your dashboard</p>
-                    <p style="margin:4px 0 0;font-size:13px;line-height:1.4;color:#64748b;">Log in at <a href="https://haiphen.io" style="color:#5A9BD4;text-decoration:none;">haiphen.io</a> to access your service controls.</p>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding:8px 0;vertical-align:top;width:32px;">
-                    <div style="width:24px;height:24px;border-radius:50%;background-color:#5A9BD4;color:#ffffff;font-size:12px;font-weight:700;text-align:center;line-height:24px;">2</div>
-                  </td>
-                  <td style="padding:8px 0 8px 12px;vertical-align:top;">
-                    <p style="margin:0;font-size:14px;line-height:1.5;color:#1a1a2e;font-weight:500;">Read the documentation</p>
-                    <p style="margin:4px 0 0;font-size:13px;line-height:1.4;color:#64748b;">Get started quickly with our <a href="https://haiphen.io/docs.html" style="color:#5A9BD4;text-decoration:none;">API docs and guides</a>.</p>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding:8px 0;vertical-align:top;width:32px;">
-                    <div style="width:24px;height:24px;border-radius:50%;background-color:#5A9BD4;color:#ffffff;font-size:12px;font-weight:700;text-align:center;line-height:24px;">3</div>
-                  </td>
-                  <td style="padding:8px 0 8px 12px;vertical-align:top;">
-                    <p style="margin:0;font-size:14px;line-height:1.5;color:#1a1a2e;font-weight:500;">Need help?</p>
-                    <p style="margin:4px 0 0;font-size:13px;line-height:1.4;color:#64748b;">Our support team is here for you at <a href="mailto:{{support_email}}" style="color:#5A9BD4;text-decoration:none;">{{support_email}}</a>.</p>
-                  </td>
-                </tr>
-              </table>
+              <div style="font-size:14px;font-weight:900;color:#2c3e50;margin-bottom:14px;">Next steps</div>
 
-              <!-- CTA button -->
+              <div style="background:#fbfcfe;border:1px solid #e6ecf3;border-radius:12px;padding:14px;margin-bottom:20px;">
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                  <tr>
+                    <td style="vertical-align:top;width:28px;padding:4px 0;">
+                      <div style="width:22px;height:22px;border-radius:50%;background-color:#5A9BD4;color:#ffffff;font-size:11px;font-weight:900;text-align:center;line-height:22px;">1</div>
+                    </td>
+                    <td style="vertical-align:top;padding:4px 0 4px 10px;">
+                      <div style="font-size:13px;color:#2c3e50;font-weight:800;">Sign in to your dashboard</div>
+                      <div style="font-size:12px;color:#667;margin-top:2px;">Log in at <a href="https://haiphen.io" style="color:#5A9BD4;text-decoration:none;font-weight:700;">haiphen.io</a> to access your service controls.</div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="vertical-align:top;width:28px;padding:10px 0 4px;">
+                      <div style="width:22px;height:22px;border-radius:50%;background-color:#5A9BD4;color:#ffffff;font-size:11px;font-weight:900;text-align:center;line-height:22px;">2</div>
+                    </td>
+                    <td style="vertical-align:top;padding:10px 0 4px 10px;">
+                      <div style="font-size:13px;color:#2c3e50;font-weight:800;">Read the documentation</div>
+                      <div style="font-size:12px;color:#667;margin-top:2px;">Get started quickly with our <a href="https://haiphen.io/docs.html" style="color:#5A9BD4;text-decoration:none;font-weight:700;">API docs and guides</a>.</div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="vertical-align:top;width:28px;padding:10px 0 4px;">
+                      <div style="width:22px;height:22px;border-radius:50%;background-color:#5A9BD4;color:#ffffff;font-size:11px;font-weight:900;text-align:center;line-height:22px;">3</div>
+                    </td>
+                    <td style="vertical-align:top;padding:10px 0 4px 10px;">
+                      <div style="font-size:13px;color:#2c3e50;font-weight:800;">Need help?</div>
+                      <div style="font-size:12px;color:#667;margin-top:2px;">Our support team is here for you at <a href="mailto:{{support_email}}" style="color:#5A9BD4;text-decoration:none;font-weight:700;">{{support_email}}</a>.</div>
+                    </td>
+                  </tr>
+                </table>
+              </div>
+
+              <!-- CTA -->
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
                 <tr>
-                  <td align="center" style="padding:4px 0 0;">
-                    <!--[if mso]>
-                    <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="https://haiphen.io" style="height:48px;v-text-anchor:middle;width:220px;" arcsize="10%" strokecolor="#5A9BD4" fillcolor="#5A9BD4">
-                      <w:anchorlock/>
-                      <center style="color:#ffffff;font-family:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:15px;font-weight:600;">Go to Dashboard</center>
-                    </v:roundrect>
-                    <![endif]-->
-                    <!--[if !mso]><!-->
-                    <a href="https://haiphen.io" style="display:inline-block;background-color:#5A9BD4;color:#ffffff;font-size:15px;font-weight:600;text-decoration:none;padding:14px 32px;border-radius:6px;text-align:center;min-width:160px;">Go to Dashboard</a>
-                    <!--<![endif]-->
+                  <td align="center">
+                    <a href="https://haiphen.io" style="display:inline-block;background-color:#5A9BD4;color:#ffffff;font-size:14px;font-weight:900;text-decoration:none;padding:12px 28px;border-radius:12px;text-align:center;">Go to Dashboard</a>
                   </td>
                 </tr>
               </table>
@@ -164,22 +160,23 @@
 
           <!-- Footer -->
           <tr>
-            <td style="background-color:#f8fafc;border-top:1px solid #e2e8f0;padding:28px 40px;">
+            <td style="padding:0 28px;">
+              <div style="height:1px;background:#e6ecf3;"></div>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:18px 28px 22px;">
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
                 <tr>
                   <td align="center">
-                    <p style="margin:0 0 8px;font-size:13px;color:#94a3b8;line-height:1.5;">
-                      Haiphen &mdash; Semantic Edge Protocol Intelligence
+                    <p style="margin:0 0 6px;font-size:11px;color:#778;line-height:1.5;">
+                      Haiphen &bull; Manhattan, NY &bull; <a href="mailto:pi@haiphenai.com" style="color:#778;text-decoration:none;">pi@haiphenai.com</a> &bull; (512) 910-4544
                     </p>
-                    <p style="margin:0 0 8px;font-size:12px;color:#94a3b8;line-height:1.5;">
-                      You received this email because you completed a purchase on <a href="https://haiphen.io" style="color:#5A9BD4;text-decoration:none;">haiphen.io</a>.
+                    <p style="margin:0 0 6px;font-size:11px;color:#778;line-height:1.5;">
+                      You received this because you completed a purchase on <a href="https://haiphen.io" style="color:#5A9BD4;text-decoration:none;font-weight:700;">haiphen.io</a>.
                     </p>
-                    <p style="margin:0;font-size:12px;color:#94a3b8;line-height:1.5;">
-                      <a href="{{{unsubscribe}}}" style="color:#94a3b8;text-decoration:underline;">Unsubscribe</a>
-                      &nbsp;&bull;&nbsp;
-                      <a href="https://haiphen.io/about.html" style="color:#94a3b8;text-decoration:underline;">About</a>
-                      &nbsp;&bull;&nbsp;
-                      <a href="mailto:{{support_email}}" style="color:#94a3b8;text-decoration:underline;">Support</a>
+                    <p style="margin:0;font-size:11px;color:#778;line-height:1.5;">
+                      <a href="{{{unsubscribe}}}" style="color:#778;text-decoration:underline;">Unsubscribe</a>
                     </p>
                   </td>
                 </tr>
@@ -188,12 +185,9 @@
           </tr>
 
         </table>
-        <!-- /Container -->
-
       </td>
     </tr>
   </table>
-  <!-- /Outer wrapper -->
 
 </body>
 </html>

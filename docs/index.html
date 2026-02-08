@@ -1592,7 +1592,7 @@
 	    ------------------------------------------------------------ */
 	    const sectionContent = {
 	        "Trades": `
-	          <section id="trades-top" class="trades-wrap trades-pro">
+	          <section id="trades-top" class="trades-wrap trades-pro hp-section-reveal">
 
 	            <!-- Header -->
 	            <header class="trades-header">
@@ -1804,17 +1804,17 @@
 	          </section>
 	        `,
 			"Services": `
-			  <section>
+			  <section class="hp-section-reveal">
 			    <div id="services-plans-mount"></div>
 			  </section>
 			`,
 	      "OnePager": `
-    <section id="mission-section">
+    <section id="mission-section" class="hp-section-reveal">
       <div id="mission-mount"></div>
     </section>
   `,
       "FAQ": `
-		    <section id="faq">
+		    <section id="faq" class="hp-section-reveal">
 		      <div id="faq-mount"></div>
 		    </section>
 		  `,
@@ -1875,7 +1875,7 @@
 	        </style>
 	      `,
 		  "Contact": `
-		    <section id="contact-us">
+		    <section id="contact-us" class="hp-section-reveal">
 		      <div id="contact-form-mount"></div>
 		    </section>
 		  `,
@@ -1962,6 +1962,17 @@
 		  });
 		}
 
+		function wireRevealElements(root) {
+		  var els = (root || document).querySelectorAll('.hp-section-reveal:not(.is-visible)');
+		  if (!els.length) return;
+		  var io = new IntersectionObserver(function(entries) {
+		    entries.forEach(function(e) {
+		      if (e.isIntersecting) { e.target.classList.add('is-visible'); io.unobserve(e.target); }
+		    });
+		  }, { threshold: 0.1 });
+		  els.forEach(function(el) { io.observe(el); });
+		}
+
 		function showSection(sectionName) {
 		  const contentWidget = document.getElementById("content-widget");
 		  if (!contentWidget) return;
@@ -1985,6 +1996,9 @@
 		  const html = sectionContent[resolved];
 		  contentWidget.innerHTML = html || `<p>No content available.</p>`;
 		  contentWidget.classList.add("active");
+
+		  // Wire fade-in reveal for section elements
+		  wireRevealElements(contentWidget);
 
 		  // Collapse sidebar when viewing API docs to give docs full width
 		  document.body.classList.toggle('sidebar-collapsed', resolved === 'Docs');
@@ -2182,10 +2196,20 @@
 		}
 
 		function parseHash() {
-		  // supports: #faq or #faq:faq-some-id
+		  // supports: #faq, #faq:faq-some-id, #profile/settings
 		  const raw = String(window.location.hash || "").replace(/^#/, "").trim();
 		  if (!raw) return { slug: "", subId: "" };
 
+		  // Profile uses slash separator: #profile/settings
+		  if (/^profile\//i.test(raw)) {
+		    const parts = raw.split("/");
+		    return {
+		      slug: "profile",
+		      subId: (parts[1] || "").split("?")[0].trim(),
+		    };
+		  }
+
+		  // Everything else uses colon separator: #faq:some-id
 		  const [slugPart, subPart] = raw.split(":");
 		  const cleanSlug = String(slugPart || "").split("?")[0];
 		  return {
@@ -2198,7 +2222,9 @@
 		  const slug = SECTION_HASH[sectionName];
 		  if (!slug) return;
 
-		  const next = subId ? `#${slug}:${subId}` : `#${slug}`;
+		  // Profile uses slash separator; everything else uses colon
+		  const sep = slug === 'profile' ? '/' : ':';
+		  const next = subId ? `#${slug}${sep}${subId}` : `#${slug}`;
 		  if (window.location.hash === next) return;
 
 		  if (replace) {

@@ -91,6 +91,17 @@ body.sidebar-collapsed .main-container {
   padding-left: 16px;
 }
 
+/* Fade-into-focus reveal (global, reusable) */
+.hp-section-reveal {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity .6s ease, transform .6s ease;
+}
+.hp-section-reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 /* General mobile overflow prevention */
 .main-container {
   min-width: 0;

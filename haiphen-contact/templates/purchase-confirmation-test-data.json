@@ -1,0 +1,10 @@
+{
+  "name": "Jude",
+  "user_login": "jks142857",
+  "service_name": "Haiphen Secure",
+  "plan": "Pro",
+  "price": "$49/mo",
+  "trial_days": 14,
+  "receipt_url": "https://haiphen.io/#profile/billing",
+  "support_email": "pi@haiphenai.com"
+}

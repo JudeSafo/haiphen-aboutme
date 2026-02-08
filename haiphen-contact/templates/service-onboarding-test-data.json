@@ -1,0 +1,14 @@
+{
+  "name": "Jude",
+  "user_login": "jks142857",
+  "service_name": "Haiphen Secure",
+  "service_endpoint": "https://api.haiphen.io/v1/secure/scan",
+  "getting_started_steps": [
+    { "step": 1, "description": "Generate an API key from your profile settings." },
+    { "step": 2, "description": "Install the Haiphen CLI: brew install haiphen" },
+    { "step": 3, "description": "Run your first scan: haiphen secure scan --target example.com" }
+  ],
+  "cli_command": "haiphen secure scan --target example.com --format json",
+  "docs_url": "https://haiphen.io/#docs",
+  "support_email": "pi@haiphenai.com"
+}
