@@ -27,7 +27,7 @@ WELCOME_TOS_PDF_URL = "https://haiphen.io/assets/legal/Haiphen_Service_Agreement
 WELCOME_TOS_VERSION = "sla_v0.2_2026-01-22"
 WELCOME_TOS_EFFECTIVE = "2026-01-22"
 WELCOME_LEGAL_TERMS_URL = "https://haiphen.io/terms.html"
-ONBOARDING_TEMPLATE_ID = "d-2e68baf8efac47a0a3a619d94243cf6f"
+ONBOARDING_TEMPLATE_ID = "d-69b112ac1d3a4c6ca96efc7449bdd54d"
 ONBOARDING_APP_URL = "https://app.haiphen.io/"
 ONBOARDING_URL = "https://haiphen.io/#onboarding"
 ONBOARDING_DOCS_URL = "https://haiphen.io/#docs"
@@ -44,14 +44,16 @@ DAILY_FROM_NAME = "Haiphen"
 DAILY_SUBJECT_PREFIX = "Haiphen Daily"
 PUBLIC_APP_PROFILE_URL = "https://haiphen.io/#profile"
 TRADES_JSON_URL = "https://haiphen.io/assets/trades/trades.json"
-# Purchase confirmation (set after creating SendGrid template)
-PURCHASE_TEMPLATE_ID = ""
+# Purchase confirmation
+PURCHASE_TEMPLATE_ID = "d-0fedc516b07e431ca14ab19296a5f9e0"
 PURCHASE_FROM_NAME = "Haiphen"
-# Trial expiry warning (set after creating SendGrid template)
-TRIAL_EXPIRING_TEMPLATE_ID = ""
+# Trial expiry warning
+TRIAL_EXPIRING_TEMPLATE_ID = "d-3b24950902734a30b6255a5695b5634f"
 TRIAL_FROM_NAME = "Haiphen"
-# Usage quota alert (set after creating SendGrid template)
-USAGE_ALERT_TEMPLATE_ID = ""
+# Usage quota alert
+USAGE_ALERT_TEMPLATE_ID = "d-88f4602240c34b938a8229a875b45e13"
+# Subscription change
+SUBSCRIPTION_CHANGE_TEMPLATE_ID = "d-5d33c72cf8be4fcf90a6102f7c3f5cf9"
 USAGE_FROM_NAME = "Haiphen"
 
 # If you add the D1 idempotency table for email events

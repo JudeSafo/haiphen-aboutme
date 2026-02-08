@@ -1,0 +1,59 @@
+name: Daily Test Suite
+
+on:
+  schedule:
+    - cron: "0 6 * * *"   # 6:00 UTC daily (midnight CST)
+  workflow_dispatch:        # manual trigger
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        service:
+          - auth
+          - api
+          - checkout
+          - contact
+          - orchestrator
+          - crawler
+          - secure
+          - network
+          - graph
+          - risk
+          - causal
+          - supply
+
+    name: haiphen-${{ matrix.service }}
+    defaults:
+      run:
+        working-directory: haiphen-${{ matrix.service }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: haiphen-${{ matrix.service }}/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci || npm install
+
+      - name: Run vitest
+        run: npx vitest run --reporter=verbose
+
+  summary:
+    needs: test
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Report results
+        run: |
+          echo "## Daily Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "All 12 service test suites executed." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Check individual job results above for details." >> $GITHUB_STEP_SUMMARY

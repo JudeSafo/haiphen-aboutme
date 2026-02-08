@@ -3,6 +3,30 @@ import { SignJWT, jwtVerify } from 'jose';
 const encoder = new TextEncoder();
 const DEFAULT_LOGOUT_REDIRECT = 'https://haiphen.io/';
 
+/* ── IP-based rate limiter (in-memory, per-isolate) ── */
+const RATE_LIMIT_WINDOW_MS = 60_000; // 1 minute
+const RATE_LIMIT_MAX_LOGIN = 10;     // 10 login attempts per minute per IP
+const RATE_LIMIT_MAX_CALLBACK = 20;  // 20 callback attempts per minute per IP
+const _rl = new Map();
+
+function rateLimit(ip, bucket, max) {
+  const key = `${bucket}:${ip}`;
+  const now = Date.now();
+  let entry = _rl.get(key);
+  if (!entry || now - entry.ts > RATE_LIMIT_WINDOW_MS) {
+    entry = { ts: now, count: 0 };
+  }
+  entry.count++;
+  _rl.set(key, entry);
+  // Lazy cleanup: prune stale entries every 100 calls
+  if (_rl.size > 500) {
+    for (const [k, v] of _rl) {
+      if (now - v.ts > RATE_LIMIT_WINDOW_MS) _rl.delete(k);
+    }
+  }
+  return entry.count > max;
+}
+
 /**
  * Utility: CORS headers
  */
@@ -207,8 +231,17 @@ async function handleAuth(req, env, jwtKey) {
     return new Response(null, { status: 204, headers: corsHeaders(origin) });
   }
 
+  const clientIp = req.headers.get('CF-Connecting-IP') || 'unknown';
+
   // ---- /login ----
   if (url.pathname === '/login') {
+    if (rateLimit(clientIp, 'login', RATE_LIMIT_MAX_LOGIN)) {
+      return new Response(JSON.stringify({ ok: false, error: 'Too many requests' }), {
+        status: 429,
+        headers: { ...corsHeaders(origin), 'Content-Type': 'application/json', 'Retry-After': '60' },
+      });
+    }
+
     const toRaw =
       url.searchParams.get('to') ||
       url.searchParams.get('return_to') ||
@@ -274,6 +307,13 @@ async function handleAuth(req, env, jwtKey) {
 
   // ---- /callback ----
   if (url.pathname === '/callback') {
+    if (rateLimit(clientIp, 'callback', RATE_LIMIT_MAX_CALLBACK)) {
+      return new Response(JSON.stringify({ ok: false, error: 'Too many requests' }), {
+        status: 429,
+        headers: { ...corsHeaders(origin), 'Content-Type': 'application/json', 'Retry-After': '60' },
+      });
+    }
+
     try {
       const code = url.searchParams.get('code');
       const state = url.searchParams.get('state'); // encoded return URL
@@ -340,6 +380,13 @@ async function handleAuth(req, env, jwtKey) {
 
   // ---- /callback/google ----
   if (url.pathname === '/callback/google') {
+    if (rateLimit(clientIp, 'callback', RATE_LIMIT_MAX_CALLBACK)) {
+      return new Response(JSON.stringify({ ok: false, error: 'Too many requests' }), {
+        status: 429,
+        headers: { ...corsHeaders(origin), 'Content-Type': 'application/json', 'Retry-After': '60' },
+      });
+    }
+
     try {
       const code = url.searchParams.get('code');
       const stateRaw = url.searchParams.get('state');

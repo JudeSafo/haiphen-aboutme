@@ -111,7 +111,7 @@ describe("Protocol Analyzer", () => {
       ];
 
       const decoded = decodePackets(packets, modbusProtocol, "plc:502");
-      expect(decoded[0].payload_size).toBe(3); // 6 hex chars = 3 bytes
+      expect(decoded[0].payload_size).toBe(6); // 12 hex chars = 6 bytes
     });
   });
 

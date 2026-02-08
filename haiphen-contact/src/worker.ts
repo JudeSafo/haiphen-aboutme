@@ -76,7 +76,28 @@ export interface Env {
   DAILY_FROM_NAME?: string;
   DAILY_SUBJECT_PREFIX?: string;
   PUBLIC_APP_PROFILE_URL?: string;  
-  TRADES_JSON_URL?: string;  
+  TRADES_JSON_URL?: string;
+}
+
+/* ── IP-based rate limiter (in-memory, per-isolate) ── */
+const RATE_WINDOW_MS = 60_000;
+const RATE_MAX_CONTACT = 5; // 5 contact form submissions per minute per IP
+const _rl = new Map<string, { ts: number; count: number }>();
+
+function rateLimit(ip: string, max: number): boolean {
+  const now = Date.now();
+  let entry = _rl.get(ip);
+  if (!entry || now - entry.ts > RATE_WINDOW_MS) {
+    entry = { ts: now, count: 0 };
+  }
+  entry.count++;
+  _rl.set(ip, entry);
+  if (_rl.size > 500) {
+    for (const [k, v] of _rl) {
+      if (now - v.ts > RATE_WINDOW_MS) _rl.delete(k);
+    }
+  }
+  return entry.count > max;
 }
 
 function getBuildId(env: Env): string {
@@ -706,7 +727,6 @@ async function handleWelcome(request: Request, env: Env): Promise<Response> {
   if (already) {
     console.log("onboarding.confirm.already_sent", {
       user_login: userLogin,
-      plan,
       request_id: requestId,
       sent_at: already.sent_at,
       message_id: already.message_id ?? null,
@@ -787,7 +807,6 @@ async function handleWelcome(request: Request, env: Env): Promise<Response> {
   if (!sgResp.ok) {
     console.error("onboarding.confirm.sendgrid_failed", {
       user_login: userLogin,
-      plan,
       request_id: requestId,
       template_id: templateId,
       details: sgResp.details ?? null,
@@ -1042,6 +1061,11 @@ export class TicketQueue extends DurableObject {
 }
 
 async function handleContact(request: Request, env: Env): Promise<Response> {
+  const clientIp = request.headers.get('CF-Connecting-IP') || 'unknown';
+  if (rateLimit(clientIp, RATE_MAX_CONTACT)) {
+    return json({ ok: false, error: 'Too many requests' }, 429);
+  }
+
   const payload = await safeJson<ContactPayload>(request);
   if (!payload) return json({ ok: false, error: "Invalid JSON" }, 400);
 
@@ -1974,6 +1998,18 @@ async function runDailyDigest(env: Env, when: Date): Promise<{
     },
   ];
 
+  const emailOnly = await env.DB.prepare(
+    `
+    SELECT email, name
+    FROM email_list_subscribers
+    WHERE list_id = 'daily_digest' AND active = 1
+    ORDER BY email ASC
+    `
+  ).all<EmailOnlySubscriber>();
+
+  const emailOnlyRows = emailOnly.results ?? [];
+  console.log("[digest] email-only subscribers", emailOnlyRows.length);
+
   for (const r of rows) {
     attempted++;
 
@@ -2039,18 +2075,6 @@ async function runDailyDigest(env: Env, when: Date): Promise<{
         },
       ],
     });
-
-    const emailOnly = await env.DB.prepare(
-      `
-      SELECT email, name
-      FROM email_list_subscribers
-      WHERE list_id = 'daily_digest' AND active = 1
-      ORDER BY email ASC
-      `
-    ).all<EmailOnlySubscriber>();
-
-    const emailOnlyRows = emailOnly.results ?? [];
-    console.log("[digest] email-only subscribers", emailOnlyRows.length);
 
     if (sg.ok) {
       sent++;

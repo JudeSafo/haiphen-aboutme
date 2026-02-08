@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "vitest"
   },
   "keywords": [],
   "author": "",
@@ -14,8 +14,10 @@
     "stripe": "^20.1.0"
   },
   "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "^0.8.19",
     "@cloudflare/workers-types": "^4.20260103.0",
     "typescript": "^5.9.3",
+    "vitest": "~3.2.0",
     "wrangler": "^4.54.0"
   }
 }
