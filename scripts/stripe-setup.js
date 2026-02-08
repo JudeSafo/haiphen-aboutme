@@ -26,8 +26,8 @@ const SERVICES = [
     name: "Haiphen CLI",
     description: "Command Center for Edge Intelligence — telemetry, data ingestion, manipulation, and command/control hub.",
     prices: [
-      { lookup_key: "haiphen_cli_pro",        unit_amount: 2900,  interval: "month", nickname: "Pro" },
-      { lookup_key: "haiphen_cli_enterprise",  unit_amount: 9900,  interval: "month", nickname: "Enterprise" },
+      { lookup_key: "haiphen_cli_pro",        unit_amount: 4900,  interval: "month", nickname: "Pro" },
+      { lookup_key: "haiphen_cli_enterprise",  unit_amount: 19900, interval: "month", nickname: "Enterprise" },
     ],
   },
   // FINTECH
@@ -36,7 +36,7 @@ const SERVICES = [
     name: "Haiphen WebApp",
     description: "Browser-based trading dashboard with real-time data visualization and portfolio management.",
     prices: [
-      { lookup_key: "haiphen_webapp_standard", unit_amount: 1900,  interval: "month", nickname: "Standard" },
+      { lookup_key: "haiphen_webapp_standard", unit_amount: 3900,  interval: "month", nickname: "Standard" },
     ],
   },
   {
@@ -50,7 +50,7 @@ const SERVICES = [
     name: "Haiphen Mobile",
     description: "iOS and Android app for on-the-go portfolio monitoring and alerts.",
     prices: [
-      { lookup_key: "haiphen_mobile_standard", unit_amount: 999,   interval: "month", nickname: "Standard" },
+      { lookup_key: "haiphen_mobile_standard", unit_amount: 1999,  interval: "month", nickname: "Standard" },
     ],
   },
   {
@@ -58,7 +58,7 @@ const SERVICES = [
     name: "Haiphen Desktop",
     description: "Cross-platform desktop application with advanced charting and local data processing.",
     prices: [
-      { lookup_key: "haiphen_desktop_standard", unit_amount: 1499, interval: "month", nickname: "Standard" },
+      { lookup_key: "haiphen_desktop_standard", unit_amount: 2999, interval: "month", nickname: "Standard" },
     ],
   },
   {
@@ -73,7 +73,9 @@ const SERVICES = [
     name: "Haiphen Secure",
     description: "Automated security scanning and vulnerability assessment for edge infrastructure.",
     prices: [
-      { lookup_key: "haiphen_secure_standard", unit_amount: 3900,  interval: "month", nickname: "Standard" },
+      { lookup_key: "haiphen_secure_standard", unit_amount: 7900,  interval: "month", nickname: "Standard" },
+      { lookup_key: "haiphen_secure_pro",      unit_amount: 14900, interval: "month", nickname: "Pro" },
+      { lookup_key: "haiphen_secure_enterprise", unit_amount: 39900, interval: "month", nickname: "Enterprise" },
     ],
   },
   {
@@ -81,7 +83,9 @@ const SERVICES = [
     name: "Network Trace",
     description: "Deep packet inspection and protocol analysis for industrial networks.",
     prices: [
-      { lookup_key: "network_trace_standard",  unit_amount: 999,   interval: "month", nickname: "Standard" },
+      { lookup_key: "network_trace_standard",  unit_amount: 1999,  interval: "month", nickname: "Standard" },
+      { lookup_key: "network_trace_pro",       unit_amount: 4900,  interval: "month", nickname: "Pro" },
+      { lookup_key: "network_trace_enterprise", unit_amount: 19900, interval: "month", nickname: "Enterprise" },
     ],
   },
   {
@@ -89,7 +93,9 @@ const SERVICES = [
     name: "Knowledge Graph",
     description: "Entity extraction, relationship mapping, and semantic knowledge base for your data.",
     prices: [
-      { lookup_key: "knowledge_graph_standard", unit_amount: 9900, interval: "month", nickname: "Standard" },
+      { lookup_key: "knowledge_graph_standard", unit_amount: 19900, interval: "month", nickname: "Standard" },
+      { lookup_key: "knowledge_graph_pro",      unit_amount: 39900, interval: "month", nickname: "Pro" },
+      { lookup_key: "knowledge_graph_enterprise", unit_amount: 99900, interval: "month", nickname: "Enterprise" },
     ],
   },
   {
@@ -97,7 +103,9 @@ const SERVICES = [
     name: "Risk Analysis",
     description: "Quantitative risk assessment and scenario modeling for portfolio and infrastructure.",
     prices: [
-      { lookup_key: "risk_analysis_standard",  unit_amount: 4900,  interval: "month", nickname: "Standard" },
+      { lookup_key: "risk_analysis_standard",  unit_amount: 9900,  interval: "month", nickname: "Standard" },
+      { lookup_key: "risk_analysis_pro",       unit_amount: 19900, interval: "month", nickname: "Pro" },
+      { lookup_key: "risk_analysis_enterprise", unit_amount: 49900, interval: "month", nickname: "Enterprise" },
     ],
   },
   {
@@ -105,7 +113,9 @@ const SERVICES = [
     name: "Causal Chain",
     description: "Root cause analysis and causal inference engine for complex event chains.",
     prices: [
-      { lookup_key: "causal_chain_standard",   unit_amount: 2900,  interval: "month", nickname: "Standard" },
+      { lookup_key: "causal_chain_standard",   unit_amount: 5900,  interval: "month", nickname: "Standard" },
+      { lookup_key: "causal_chain_pro",        unit_amount: 11900, interval: "month", nickname: "Pro" },
+      { lookup_key: "causal_chain_enterprise", unit_amount: 29900, interval: "month", nickname: "Enterprise" },
     ],
   },
   {
@@ -113,7 +123,18 @@ const SERVICES = [
     name: "Supply Chain Intel",
     description: "Supply chain visibility, risk scoring, and disruption intelligence.",
     prices: [
-      { lookup_key: "supply_chain_standard",   unit_amount: 7900,  interval: "month", nickname: "Standard" },
+      { lookup_key: "supply_chain_standard",   unit_amount: 14900, interval: "month", nickname: "Standard" },
+      { lookup_key: "supply_chain_pro",        unit_amount: 29900, interval: "month", nickname: "Pro" },
+      { lookup_key: "supply_chain_enterprise", unit_amount: 79900, interval: "month", nickname: "Enterprise" },
+    ],
+  },
+  // COHORT BUNDLE
+  {
+    service_id: "haiphen_cohort",
+    name: "Haiphen Cohort",
+    description: "All-access bundle: every Haiphen service at a discounted rate.",
+    prices: [
+      { lookup_key: "haiphen_cohort_pro", unit_amount: 32500, interval: "month", nickname: "Pro Bundle" },
     ],
   },
 ];

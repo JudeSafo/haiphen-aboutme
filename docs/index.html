@@ -208,6 +208,9 @@
 	    .content-widget.active {
 	      display: block; opacity: 1;
 	    }
+	    body.sidebar-collapsed .content-widget {
+	      max-width: none;
+	    }
 	    
 	    /* ============================================================
 	       Bottom Left Contact Widget (Profile)
@@ -536,6 +539,12 @@
 		/* give space so content doesn't sit under sidebar on wide screens */
 		@media (min-width: 920px) {
 		  .main-container { padding-left: 220px; }
+		}
+		body.sidebar-collapsed {
+		  --sidebar-w: 48px;
+		}
+		body.sidebar-collapsed .main-container {
+		  padding-left: calc(2rem + 48px);
 		}
 
 		/* ============================================================

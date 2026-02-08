@@ -10,8 +10,8 @@
       "docs_section": "docs-cli-commands",
       "pricing": {
         "free": { "label": "Free", "requests": 100 },
-        "pro": { "price": 29, "label": "Pro", "lookup_key": "haiphen_cli_pro" },
-        "enterprise": { "price": 99, "label": "Enterprise", "lookup_key": "haiphen_cli_enterprise" }
+        "pro": { "price": 49, "label": "Pro", "lookup_key": "haiphen_cli_pro" },
+        "enterprise": { "price": 199, "label": "Enterprise", "lookup_key": "haiphen_cli_enterprise" }
       },
       "trial": { "type": "requests", "limit": 100 },
       "features": [
@@ -32,7 +32,7 @@
       "status": "available",
       "docs_section": "docs-overview",
       "pricing": {
-        "standard": { "price": 19, "label": "Standard", "lookup_key": "haiphen_webapp_standard" }
+        "standard": { "price": 39, "label": "Standard", "lookup_key": "haiphen_webapp_standard" }
       },
       "trial": { "type": "days", "limit": 7 },
       "features": [
@@ -74,7 +74,7 @@
       "status": "available",
       "docs_section": null,
       "pricing": {
-        "standard": { "price": 9.99, "label": "Standard", "lookup_key": "haiphen_mobile_standard" }
+        "standard": { "price": 19.99, "label": "Standard", "lookup_key": "haiphen_mobile_standard" }
       },
       "trial": { "type": "days", "limit": 14 },
       "features": [
@@ -95,7 +95,7 @@
       "status": "available",
       "docs_section": "docs-install",
       "pricing": {
-        "standard": { "price": 14.99, "label": "Standard", "lookup_key": "haiphen_desktop_standard" }
+        "standard": { "price": 29.99, "label": "Standard", "lookup_key": "haiphen_desktop_standard" }
       },
       "trial": { "type": "days", "limit": 30 },
       "features": [
@@ -137,9 +137,9 @@
       "status": "available",
       "docs_section": "docs-secure",
       "pricing": {
-        "standard": { "price": 39, "label": "Standard", "lookup_key": "haiphen_secure_standard" },
-        "pro": { "price": 79, "label": "Pro", "lookup_key": "haiphen_secure_pro" },
-        "enterprise": { "price": 199, "label": "Enterprise", "lookup_key": "haiphen_secure_enterprise" }
+        "standard": { "price": 79, "label": "Standard", "lookup_key": "haiphen_secure_standard" },
+        "pro": { "price": 149, "label": "Pro", "lookup_key": "haiphen_secure_pro" },
+        "enterprise": { "price": 399, "label": "Enterprise", "lookup_key": "haiphen_secure_enterprise" }
       },
       "trial": { "type": "requests", "limit": 50, "unit": "scans" },
       "features": [
@@ -160,9 +160,9 @@
       "status": "available",
       "docs_section": "docs-network",
       "pricing": {
-        "standard": { "price": 9.99, "label": "Standard", "lookup_key": "network_trace_standard" },
-        "pro": { "price": 29, "label": "Pro", "lookup_key": "network_trace_pro" },
-        "enterprise": { "price": 99, "label": "Enterprise", "lookup_key": "network_trace_enterprise" }
+        "standard": { "price": 19.99, "label": "Standard", "lookup_key": "network_trace_standard" },
+        "pro": { "price": 49, "label": "Pro", "lookup_key": "network_trace_pro" },
+        "enterprise": { "price": 199, "label": "Enterprise", "lookup_key": "network_trace_enterprise" }
       },
       "trial": { "type": "requests", "limit": 10, "unit": "scans" },
       "features": [
@@ -183,9 +183,9 @@
       "status": "available",
       "docs_section": "docs-graph",
       "pricing": {
-        "standard": { "price": 99, "label": "Standard", "lookup_key": "knowledge_graph_standard" },
-        "pro": { "price": 199, "label": "Pro", "lookup_key": "knowledge_graph_pro" },
-        "enterprise": { "price": 499, "label": "Enterprise", "lookup_key": "knowledge_graph_enterprise" }
+        "standard": { "price": 199, "label": "Standard", "lookup_key": "knowledge_graph_standard" },
+        "pro": { "price": 399, "label": "Pro", "lookup_key": "knowledge_graph_pro" },
+        "enterprise": { "price": 999, "label": "Enterprise", "lookup_key": "knowledge_graph_enterprise" }
       },
       "trial": { "type": "requests", "limit": 1000, "unit": "entities" },
       "features": [
@@ -206,9 +206,9 @@
       "status": "available",
       "docs_section": "docs-risk",
       "pricing": {
-        "standard": { "price": 49, "label": "Standard", "lookup_key": "risk_analysis_standard" },
-        "pro": { "price": 99, "label": "Pro", "lookup_key": "risk_analysis_pro" },
-        "enterprise": { "price": 249, "label": "Enterprise", "lookup_key": "risk_analysis_enterprise" }
+        "standard": { "price": 99, "label": "Standard", "lookup_key": "risk_analysis_standard" },
+        "pro": { "price": 199, "label": "Pro", "lookup_key": "risk_analysis_pro" },
+        "enterprise": { "price": 499, "label": "Enterprise", "lookup_key": "risk_analysis_enterprise" }
       },
       "trial": { "type": "requests", "limit": 25, "unit": "assessments" },
       "features": [
@@ -229,9 +229,9 @@
       "status": "available",
       "docs_section": "docs-causal",
       "pricing": {
-        "standard": { "price": 29, "label": "Standard", "lookup_key": "causal_chain_standard" },
-        "pro": { "price": 59, "label": "Pro", "lookup_key": "causal_chain_pro" },
-        "enterprise": { "price": 149, "label": "Enterprise", "lookup_key": "causal_chain_enterprise" }
+        "standard": { "price": 59, "label": "Standard", "lookup_key": "causal_chain_standard" },
+        "pro": { "price": 119, "label": "Pro", "lookup_key": "causal_chain_pro" },
+        "enterprise": { "price": 299, "label": "Enterprise", "lookup_key": "causal_chain_enterprise" }
       },
       "trial": { "type": "requests", "limit": 10, "unit": "analyses" },
       "features": [
@@ -252,9 +252,9 @@
       "status": "available",
       "docs_section": "docs-supply",
       "pricing": {
-        "standard": { "price": 79, "label": "Standard", "lookup_key": "supply_chain_standard" },
-        "pro": { "price": 149, "label": "Pro", "lookup_key": "supply_chain_pro" },
-        "enterprise": { "price": 399, "label": "Enterprise", "lookup_key": "supply_chain_enterprise" }
+        "standard": { "price": 149, "label": "Standard", "lookup_key": "supply_chain_standard" },
+        "pro": { "price": 299, "label": "Pro", "lookup_key": "supply_chain_pro" },
+        "enterprise": { "price": 799, "label": "Enterprise", "lookup_key": "supply_chain_enterprise" }
       },
       "trial": { "type": "requests", "limit": 5, "unit": "analyses" },
       "features": [
