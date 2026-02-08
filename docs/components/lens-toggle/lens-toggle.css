@@ -1,0 +1,189 @@
+/* docs/components/lens-toggle/lens-toggle.css */
+
+.lens-toggle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Main button — matches site-header__iconbtn sizing */
+.lens-toggle__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 9999px;
+  border: 1px solid rgba(15,23,42,0.10);
+  background: rgba(15,23,42,0.04);
+  color: var(--hdr-text, #0f172a);
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.12s ease;
+}
+
+.lens-toggle__btn:hover {
+  background: rgba(15,23,42,0.08);
+  border-color: rgba(15,23,42,0.16);
+  transform: translateY(-1px);
+}
+
+.lens-toggle__btn:active {
+  transform: translateY(0);
+}
+
+.lens-toggle__btn:focus-visible {
+  outline: 2px solid rgba(90,155,212,0.45);
+  outline-offset: 2px;
+}
+
+.lens-toggle__btn svg {
+  display: block;
+}
+
+/* Dropdown */
+.lens-toggle__dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 160px;
+  padding: 6px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.96);
+  border: 1px solid rgba(15,23,42,0.10);
+  box-shadow: 0 12px 32px rgba(2,6,23,0.14);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(-4px);
+  transition: opacity 0.14s ease, transform 0.14s ease, visibility 0.14s ease;
+  z-index: 2100;
+}
+
+.lens-toggle__dropdown.is-open {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+/* Hover bridge */
+.lens-toggle__dropdown::before {
+  content: "";
+  position: absolute;
+  top: -10px;
+  left: 0;
+  right: 0;
+  height: 12px;
+}
+
+/* Options */
+.lens-toggle__option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 9px 10px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--hdr-text, #0f172a);
+  font: 700 12px/1 ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+  cursor: pointer;
+  transition: background 0.12s ease;
+  text-align: left;
+}
+
+.lens-toggle__option:hover {
+  background: rgba(15,23,42,0.06);
+}
+
+.lens-toggle__option svg:first-child {
+  flex: 0 0 auto;
+  opacity: 0.7;
+}
+
+.lens-toggle__option span {
+  flex: 1;
+}
+
+/* Checkmark — hidden unless active */
+.lens-toggle__check {
+  opacity: 0;
+  flex: 0 0 auto;
+  color: #5A9BD4;
+  transition: opacity 0.15s ease;
+}
+
+.lens-toggle__option.is-active .lens-toggle__check {
+  opacity: 1;
+}
+
+.lens-toggle__option.is-active {
+  background: rgba(90,155,212,0.08);
+}
+
+/* First-time instruction bubble */
+.lens-toggle__bubble {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 200px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.97);
+  border: 1px solid rgba(90,155,212,0.25);
+  box-shadow: 0 8px 24px rgba(2,6,23,0.12);
+  font-size: 11px;
+  font-weight: 700;
+  color: #334155;
+  line-height: 1.45;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(-4px);
+  transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s ease;
+  z-index: 2090;
+}
+
+.lens-toggle__bubble.is-visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+/* Finance-mode overrides for the toggle itself */
+html[data-lens="finance"] .lens-toggle__btn {
+  border-color: rgba(148,163,184,0.22);
+  background: rgba(148,163,184,0.10);
+  color: #e2e8f0;
+}
+
+html[data-lens="finance"] .lens-toggle__btn:hover {
+  background: rgba(148,163,184,0.18);
+  border-color: rgba(148,163,184,0.30);
+}
+
+html[data-lens="finance"] .lens-toggle__dropdown {
+  background: rgba(15,23,42,0.96);
+  border-color: rgba(148,163,184,0.18);
+}
+
+html[data-lens="finance"] .lens-toggle__option {
+  color: #e2e8f0;
+}
+
+html[data-lens="finance"] .lens-toggle__option:hover {
+  background: rgba(90,155,212,0.12);
+}
+
+html[data-lens="finance"] .lens-toggle__option.is-active {
+  background: rgba(90,155,212,0.15);
+}
+
+html[data-lens="finance"] .lens-toggle__bubble {
+  background: rgba(15,23,42,0.96);
+  border-color: rgba(90,155,212,0.30);
+  color: #cbd5e1;
+}

@@ -260,3 +260,47 @@
     transform: none;
   }
 }
+
+/* ============================================================
+   Finance lens — dark mission overrides
+   ============================================================ */
+
+html[data-lens="finance"] .mission-eyebrow {
+  background: rgba(90,155,212,0.15);
+  color: #8bb8e0;
+}
+
+html[data-lens="finance"] .mission-card {
+  background: rgba(15,23,42,0.8);
+  border-color: rgba(148,163,184,0.15);
+}
+
+html[data-lens="finance"] .mission-card h3 {
+  color: #e2e8f0;
+}
+
+html[data-lens="finance"] .mission-card p {
+  color: rgba(226,232,240,0.7);
+}
+
+html[data-lens="finance"] .mission-block {
+  background: rgba(15,23,42,0.8);
+  border-color: rgba(148,163,184,0.15);
+}
+
+html[data-lens="finance"] .mission-block__copy h3 {
+  color: #e2e8f0;
+}
+
+html[data-lens="finance"] .mission-block__copy p {
+  color: rgba(226,232,240,0.72);
+}
+
+html[data-lens="finance"] .mission-list {
+  color: rgba(226,232,240,0.7);
+}
+
+html[data-lens="finance"] .mission-hero {
+  background: rgba(15,23,42,0.92);
+  border-color: rgba(148,163,184,0.18);
+}

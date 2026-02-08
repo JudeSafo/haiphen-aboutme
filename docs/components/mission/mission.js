@@ -5,6 +5,18 @@
   const CSS_ID = 'mission-css';
   const NS = (window.HAIPHEN = window.HAIPHEN || {});
 
+  /* ---- Template cache ---- */
+  let _cachedTech = null;
+  let _cachedFinance = null;
+  let _lensListenerWired = false;
+
+  function getTemplateUrl() {
+    const lens = NS.lens?.get?.() ?? 'tech';
+    return lens === 'finance'
+      ? 'components/mission/mission-finance.html'
+      : 'components/mission/mission.html';
+  }
+
   async function fetchText(url) {
     const resp = await fetch(url, { cache: 'no-store' });
     if (!resp.ok) throw new Error(`HTTP ${resp.status} for ${url}`);
@@ -94,7 +106,14 @@
 
     try {
       ensureCss('components/mission/mission.css');
-      const html = await fetchText('components/mission/mission.html');
+      const url = getTemplateUrl();
+      const html = await fetchText(url);
+
+      /* Cache the fetched template */
+      const lens = NS.lens?.get?.() ?? 'tech';
+      if (lens === 'finance') _cachedFinance = html;
+      else _cachedTech = html;
+
       mount.innerHTML = html;
       initMission(mount);
     } catch (err) {
@@ -105,6 +124,36 @@
           <div style="margin-top:.35rem;color:#667;">Check console for details.</div>
         </div>
       `;
+    }
+
+    /* Wire lens-switch listener (once) */
+    if (!_lensListenerWired) {
+      _lensListenerWired = true;
+      window.addEventListener('haiphen:lens', async (e) => {
+        const m = document.getElementById('mission-mount');
+        if (!m || !m.innerHTML.trim()) return; /* only swap if section is visible */
+
+        const newLens = e.detail?.lens ?? 'tech';
+        const cached = newLens === 'finance' ? _cachedFinance : _cachedTech;
+        let html;
+
+        if (cached) {
+          html = cached;
+        } else {
+          const u = newLens === 'finance'
+            ? 'components/mission/mission-finance.html'
+            : 'components/mission/mission.html';
+          html = await fetchText(u);
+          if (newLens === 'finance') _cachedFinance = html;
+          else _cachedTech = html;
+        }
+
+        /* Reset lightbox flag so it re-wires */
+        delete m.dataset.hpMissionLightbox;
+
+        m.innerHTML = html;
+        initMission(m);
+      });
     }
   };
 })();

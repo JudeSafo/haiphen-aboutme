@@ -268,3 +268,48 @@
     width: calc(100vw - 80px);
   }
 }
+
+/* ============================================================
+   Finance lens — dark chatbot overrides
+   ============================================================ */
+
+html[data-lens="finance"] .hp-chatbot__panel {
+  background: rgba(15,23,42,0.97);
+  border-color: rgba(148,163,184,0.18);
+}
+
+html[data-lens="finance"] .hp-chatbot__prompt {
+  background: rgba(30,40,60,0.6);
+  border-color: rgba(148,163,184,0.12);
+  color: #e2e8f0;
+}
+
+html[data-lens="finance"] .hp-chatbot__prompt:hover {
+  background: rgba(90,155,212,0.12);
+  border-color: rgba(90,155,212,0.22);
+}
+
+html[data-lens="finance"] .hp-chatbot__header {
+  border-bottom-color: rgba(148,163,184,0.12);
+}
+
+html[data-lens="finance"] .hp-chatbot__input {
+  background: rgba(30,40,60,0.6);
+  border-color: rgba(148,163,184,0.12);
+  color: #e2e8f0;
+}
+
+html[data-lens="finance"] .hp-chatbot__hover-bar {
+  background: rgba(15,23,42,0.97);
+  border-color: rgba(148,163,184,0.18);
+}
+
+html[data-lens="finance"] .hp-chatbot__hover-bar input {
+  background: rgba(30,40,60,0.6);
+  border-color: rgba(148,163,184,0.12);
+  color: #e2e8f0;
+}
+
+html[data-lens="finance"] .hp-chatbot__result:hover {
+  background: rgba(90,155,212,0.10);
+}

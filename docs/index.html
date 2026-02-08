@@ -61,6 +61,7 @@
 	  <script src="components/checkout-success/checkout-success.js"></script>
 	  <script src="components/cookie-consent/cookie-consent.js"></script>
 	  <script src="components/chatbot/chatbot.js"></script>
+	  <script src="components/lens-toggle/lens-toggle.js"></script>
 
 	  <script>
 	    window.HAIPHEN = window.HAIPHEN || {};
@@ -2671,6 +2672,11 @@
 
 		  // NEW
 		  safe(H.loadHeroDeviceLauncher, 'hero-device-launcher');
+
+		  // Lens toggle (mounts inside header, so wait for header:ready)
+		  window.addEventListener('haiphen:header:ready', function () {
+		    safe(H.loadLensToggle, 'lens-toggle');
+		  }, { once: true });
 
 		  // Checkout success interstitial (query param detection)
 		  if (H.CheckoutSuccess?.detect?.()) {
