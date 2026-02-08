@@ -125,18 +125,33 @@
     return true;
   }
 
+  function wireReveal(root) {
+    var revealEls = (root || document).querySelectorAll('.hp-contact-reveal');
+    if (!revealEls.length) return;
+    var io = new IntersectionObserver(function(entries) {
+      entries.forEach(function(e) {
+        if (e.isIntersecting) { e.target.classList.add('is-visible'); io.unobserve(e.target); }
+      });
+    }, { threshold: 0.15 });
+    revealEls.forEach(function(el) { io.observe(el); });
+  }
+
   // ✅ PUBLIC INIT (no auto observer unless you call it)
   function init(rootEl) {
     const root = rootEl || document;
 
     // Fast-path: if the form exists now, wire immediately.
-    if (attachOnce(root)) return true;
+    if (attachOnce(root)) {
+      wireReveal(root);
+      return true;
+    }
 
     // Optional: if you *do* want a wait mode, do it only when Contact is being opened.
     const startedAt = Date.now();
     const obs = new MutationObserver(() => {
       if (attachOnce(root)) {
         obs.disconnect();
+        wireReveal(root);
       } else if (Date.now() - startedAt > WIRE_TIMEOUT_MS) {
         obs.disconnect();
         console.error(LOG_PREFIX, "timed out waiting for #contactForm to appear");

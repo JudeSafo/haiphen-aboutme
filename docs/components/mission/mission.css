@@ -51,12 +51,17 @@
   align-items: center;
   padding: 6px 12px;
   border-radius: 999px;
-  background: rgba(148,163,184,0.16);
-  color: #e2e8f0;
+  background: rgba(15, 23, 42, 0.08);
+  color: #334155;
   font-weight: 800;
   font-size: 0.72rem;
   letter-spacing: 0.2em;
   text-transform: uppercase;
+}
+
+.mission-hero-main .mission-eyebrow{
+  background: rgba(148,163,184,0.16);
+  color: #e2e8f0;
 }
 
 .mission-lede{

@@ -22,7 +22,7 @@
 
   /* Component-specific surfaces */
   --sidebar-bg: rgba(255, 255, 255, 0.96);          /* clean white body */
-  --sidebar-session-bg: rgba(15, 23, 42, 0.05);     /* cool slate tint for session area */
+  --sidebar-session-bg: rgba(15, 23, 42, 0.09);     /* cool slate tint for session area */
   --nav-pill-bg: var(--surface-3);
   --nav-pill-border: rgba(15, 23, 42, 0.10);  
 }

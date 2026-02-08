@@ -46,6 +46,13 @@
   <script src="components/sidebar/site-sidebar.js"></script>
   <script src="components/footers/site-footer.js"></script>
   <script src="assets/site.js"></script>
+  <script>
+  window.showSection = function(section) {
+    var map = {Trades:'fintech',Services:'services',OnePager:'collaborate',
+      FAQ:'faq',Contact:'contact-us',Docs:'docs',Cohort:'cohort',Profile:'profile'};
+    window.location.href = '/#' + (map[section] || section.toLowerCase());
+  };
+  </script>
 
   <style>
     .docs-page { max-width: 780px; margin: 0 auto; text-align: left; }

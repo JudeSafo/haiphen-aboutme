@@ -252,7 +252,7 @@ api_get() {
         <section class="api-section" id="docs-rate-limits" data-api-section>
           <h3>Rate limits</h3>
           <p>
-            Limits should be explicit and plan-based. Suggested defaults (tunable):
+            All API endpoints enforce plan-based rate limits. Exceeding your limit returns HTTP 429.
           </p>
 
           <div class="api-table" role="table" aria-label="Rate limits">

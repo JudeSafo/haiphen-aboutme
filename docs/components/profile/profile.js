@@ -722,6 +722,8 @@
       if (!tab) return;
       const name = tab.getAttribute('data-profile-tab');
       switchTab(root, name);
+      const hash = name === 'overview' ? '#profile' : '#profile:' + name;
+      history.replaceState(null, '', hash);
     });
   }
 

@@ -2356,9 +2356,11 @@
 		  }
 
 		  if (slug === 'onboarding') {
+		    if (typeof window.showSection === "function") {
+		      window.showSection("Onboarding");
+		      activateSectionMenuFor("Onboarding");
+		    }
 		    try {
-		      const contentWidget = document.getElementById("content-widget");
-		      if (contentWidget) contentWidget.classList.add("active");
 		      window.HAIPHEN?.showProfile?.({ preserveHash: true, subId: 'profile-onboarding' });
 		    } catch (e) {
 		      console.warn('[router] #onboarding failed', e);
@@ -2366,14 +2368,12 @@
 		    return;
 		  }
 
-		  // ✅ NEW: profile is not a normal injected "sectionContent" page
 		  if (slug === 'profile') {
+		    if (typeof window.showSection === "function") {
+		      window.showSection("Profile");
+		      activateSectionMenuFor("Profile");
+		    }
 		    try {
-		      // Optionally ensure widget is visible before profile mounts into it
-		      const contentWidget = document.getElementById("content-widget");
-		      if (contentWidget) contentWidget.classList.add("active");
-
-		      // Open profile — pass subId as tab so #profile:billing opens the billing tab
 		      window.HAIPHEN?.showProfile?.({ preserveHash: true, subId: subId || '', tab: subId || '' });
 		    } catch (e) {
 		      console.warn('[router] #profile failed', e);
