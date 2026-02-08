@@ -25,17 +25,14 @@
   opacity: 0.35;
 }
 
-/* ✅ Fit-to-viewport: panel becomes a flex column with bounded height */
+/* Panel: flex column bounded to viewport */
 .haiphen-overlay__panel{
   position: relative;
   width: min(1100px, calc(100vw - 2rem));
   margin: 1rem auto;
-
-  /* NEW */
   max-height: calc(100vh - 2rem);
   display: flex;
   flex-direction: column;
-
   border-radius: 18px;
   overflow: hidden;
   border: 1px solid rgba(255,255,255,0.14);
@@ -44,12 +41,9 @@
   backdrop-filter: blur(10px);
 }
 
-/* On taller screens you used bigger margins; keep height math consistent */
 @media (min-height: 700px){
   .haiphen-overlay__panel{
     margin: 2.0rem auto;
-
-    /* NEW */
     max-height: calc(100vh - 4rem);
   }
 }
@@ -62,8 +56,6 @@
   padding: 1rem 1.1rem;
   background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(255,255,255,0.86));
   border-bottom: 1px solid rgba(10,20,40,0.08);
-
-  /* NEW */
   flex: 0 0 auto;
 }
 
@@ -107,26 +99,37 @@
   box-shadow: 0 8px 18px rgba(0,0,0,0.12);
 }
 
-/* ✅ Body fills remaining panel height and is allowed to shrink */
+/* ====================================================================
+   Body: 2-column grid with explicit placement
+   ==================================================================== */
 .haiphen-overlay__body{
   display: grid;
   grid-template-columns: 1fr 300px;
   gap: 0;
-
-  /* NEW */
   flex: 1 1 auto;
-  min-height: 0; /* critical: allows grid children to shrink */
+  min-height: 0;
+  overflow-y: auto;
 }
 
-@media (max-width: 980px){
-  .haiphen-overlay__body{ grid-template-columns: 1fr; }
+/* Force all left-column children into column 1 */
+.haiphen-overlay__chartWrap,
+.haiphen-overlay__entityRow,
+.haiphen-overlay__portfolio,
+.haiphen-overlay__extremes {
+  grid-column: 1;
 }
 
-/* ✅ ChartWrap becomes a flex column so canvas can flex */
+/* Controls sidebar: column 2, span all rows */
+.haiphen-overlay__controls {
+  grid-column: 2;
+  grid-row: 1 / span 20;
+}
+
+/* ====================================================================
+   Chart area
+   ==================================================================== */
 .haiphen-overlay__chartWrap{
   padding: 1rem 1.1rem 1.1rem;
-
-  /* NEW */
   display: flex;
   flex-direction: column;
   min-height: 0;
@@ -135,65 +138,53 @@
 
 .haiphen-overlay__canvas{
   width: 100%;
-
-  /* CHANGED: remove fixed 420px height; let it flex */
-  height: auto;
-  flex: 1 1 auto;
-  min-height: 180px;
-
+  aspect-ratio: 2.2;
+  max-height: min(420px, 48vh);
+  min-height: 160px;
+  flex: 0 1 auto;
   border-radius: 16px;
   border: 1px solid rgba(10,20,40,0.08);
   background: linear-gradient(180deg, #ffffff, #fbfcfe);
 }
 
+/* ====================================================================
+   Stats row (Last / Min / Max / Delta)
+   ==================================================================== */
 .haiphen-overlay__stats{
-  margin-top: .8rem;
+  margin-top: .7rem;
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: .6rem;
-
-  /* NEW */
+  gap: .5rem;
   flex: 0 0 auto;
-}
-
-@media (max-width: 980px){
-  .haiphen-overlay__stats{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 .haiphen-overlay__stat{
   border: 1px solid rgba(10,20,40,0.08);
   background: rgba(255,255,255,0.7);
-  border-radius: 14px;
-  padding: .65rem .75rem;
+  border-radius: 12px;
+  padding: .5rem .65rem;
 }
 .haiphen-overlay__stat .k{
-  font-size: .78rem;
+  font-size: .72rem;
   color: #5b677a;
   font-weight: 800;
 }
 .haiphen-overlay__stat .v{
-  margin-top: .15rem;
-  font-size: 1.05rem;
+  margin-top: .1rem;
+  font-size: .95rem;
   font-weight: 950;
   color: #142033;
 }
 
-/* ✅ Controls can shrink (no panel overflow); keep your look */
+/* ====================================================================
+   Controls sidebar
+   ==================================================================== */
 .haiphen-overlay__controls{
   padding: 1rem 1rem 1.1rem;
   border-left: 1px solid rgba(10,20,40,0.08);
   background: rgba(250,252,255,0.85);
-
-  /* NEW */
   min-height: 0;
-  overflow: hidden;
-}
-
-@media (max-width: 980px){
-  .haiphen-overlay__controls{
-    border-left: none;
-    border-top: 1px solid rgba(10,20,40,0.08);
-  }
+  overflow-y: auto;
 }
 
 .haiphen-overlay__control{
@@ -248,13 +239,15 @@
   line-height: 1.45;
 }
 
-/* NOTE: entityRow / extremes / portfolio are children of __body
-   and will appear before controls. Keep them compact and allow shrink. */
+/* ====================================================================
+   Entity row / badges / meta
+   ==================================================================== */
 .haiphen-overlay__entityRow {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-top: 10px;
+  padding: 0 1.1rem;
+  margin-top: 4px;
 }
 
 .haiphen-overlay__badge {
@@ -284,52 +277,71 @@
   text-overflow: ellipsis;
 }
 
+/* ====================================================================
+   Extremes (top/bottom impact tables)
+   ==================================================================== */
 .haiphen-overlay__extremes {
-  margin-top: 12px;
+  margin: 8px 1.1rem 1rem;
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  align-items: start;
 }
 
 .haiphen-overlay__extremes .xbox {
-  border: 1px solid rgba(20,32,51,0.10);
-  border-radius: 12px;
+  max-height: clamp(120px, 20vh, 200px);
+  overflow: auto;
   padding: 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(20,32,51,0.10);
   background: rgba(255,255,255,0.75);
 }
 
 .haiphen-overlay__extremes .xtitle {
-  font-size: 12px;
+  font-size: 0.82rem;
   font-weight: 600;
-  margin-bottom: 8px;
+  line-height: 1.15;
+  margin-bottom: 6px;
   color: rgba(20,32,51,0.75);
 }
 
 .haiphen-overlay__extremes .xrow {
   display: grid;
-  grid-template-columns: 1.6fr 0.6fr 0.8fr;
-  gap: 10px;
-  padding: 6px 0;
+  grid-template-columns: 1fr auto auto;
+  gap: 8px;
+  padding: 4px 0;
   border-top: 1px solid rgba(20,32,51,0.06);
   font-size: 12px;
+  line-height: 1.15;
 }
 
 .haiphen-overlay__extremes .xrow:first-of-type {
   border-top: 0;
 }
 
-/* Portfolio block */
+.haiphen-overlay__extremes .cn{
+  font-size: 0.82rem;
+}
+.haiphen-overlay__extremes .sym,
+.haiphen-overlay__extremes .pnl{
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+
+.haiphen-overlay__extremes .muted{
+  padding: 6px 0;
+  font-size: 0.82rem;
+}
+
+/* ====================================================================
+   Portfolio block
+   ==================================================================== */
 .haiphen-overlay__portfolio {
-  margin-top: 12px;
+  margin: 8px 1.1rem 0;
   padding: 10px;
   border: 1px solid rgba(20,32,51,0.10);
   border-radius: 12px;
   background: rgba(255,255,255,0.75);
-}
-
-/* Portfolio should feel intentionally minimal */
-.haiphen-overlay__portfolio {
-  margin-top: 14px;
 }
 .haiphen-overlay__portfolio label {
   display: block;
@@ -343,120 +355,160 @@
   border-radius: 10px;
 }
 
-/* ------------------------------------------------------------------
-   Short viewports: reduce density slightly (no scrolling, fit better)
-   ------------------------------------------------------------------ */
-@media (max-height: 720px){
-  .haiphen-overlay__header{ padding: .85rem .95rem; }
-  .haiphen-overlay__chartWrap{ padding: .85rem .95rem .95rem; }
-  .haiphen-overlay__controls{ padding: .85rem .9rem .95rem; }
+/* ====================================================================
+   Responsive: medium screens (tablet / narrow desktop)
+   ==================================================================== */
+@media (max-width: 980px){
+  .haiphen-overlay__body{
+    grid-template-columns: 1fr;
+  }
+
+  .haiphen-overlay__chartWrap,
+  .haiphen-overlay__entityRow,
+  .haiphen-overlay__portfolio,
+  .haiphen-overlay__extremes,
+  .haiphen-overlay__controls {
+    grid-column: 1;
+  }
+
+  .haiphen-overlay__controls {
+    grid-row: auto;
+    border-left: none;
+    border-top: 1px solid rgba(10,20,40,0.08);
+  }
 
   .haiphen-overlay__stats{
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .haiphen-overlay__canvas{
-    min-height: 150px;
+    max-height: min(360px, 40vh);
   }
 }
 
-/* =========================
-   Extremes: compact + scroll
-   ========================= */
+/* ====================================================================
+   Responsive: short viewports (laptops, zoom, landscape phones)
+   ==================================================================== */
+@media (max-height: 720px){
+  .haiphen-overlay__header{ padding: .75rem .95rem; }
+  .haiphen-overlay__chartWrap{ padding: .75rem .95rem .85rem; }
 
-/* Ensure extremes never bully the chart/stats above */
-.haiphen-overlay__extremes{
-  margin-top: 10px;
-}
-
-/* 2 columns side-by-side, but allow wrap on tight screens */
-.haiphen-overlay__extremes{
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-  align-items: start;
-}
-
-/* Each box: cap height so it doesn’t cover stats/graph */
-.haiphen-overlay__extremes .xbox{
-  /* Key: stop vertical takeover on TVs */
-  max-height: clamp(140px, 22vh, 220px);
-  overflow: auto;
-
-  /* Make it feel smaller */
-  padding: 10px 10px;
-  border-radius: 12px;
-}
-
-/* Title tighter */
-.haiphen-overlay__extremes .xtitle{
-  font-size: 0.85rem;
-  line-height: 1.15;
-  margin-bottom: 6px;
-}
-
-/* Rows tighter */
-.haiphen-overlay__extremes .xrow{
-  display: grid;
-  grid-template-columns: 1fr auto auto;
-  gap: 8px;
-
-  padding: 4px 0;
-  line-height: 1.15;
-}
-
-/* Slightly smaller text so 3–6 items fit comfortably */
-.haiphen-overlay__extremes .cn{
-  font-size: 0.82rem;
-}
-.haiphen-overlay__extremes .sym,
-.haiphen-overlay__extremes .pnl{
-  font-size: 0.82rem;
-  white-space: nowrap;
-}
-
-/* Muted placeholder tighter too */
-.haiphen-overlay__extremes .muted{
-  padding: 6px 0;
-  font-size: 0.82rem;
-}
-
-/* On very short/tight viewports (TVs, zoom, etc), stack boxes */
-@media (max-height: 740px), (max-width: 720px){
-  .haiphen-overlay__extremes{
-    grid-template-columns: 1fr;
+  .haiphen-overlay__canvas{
+    max-height: min(280px, 38vh);
+    min-height: 140px;
   }
 
-  .haiphen-overlay__extremes .xbox{
-    max-height: clamp(120px, 18vh, 180px);
+  .haiphen-overlay__stats{
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: .4rem;
   }
+
+  .haiphen-overlay__stat{
+    padding: .35rem .5rem;
+  }
+  .haiphen-overlay__stat .k{ font-size: .68rem; }
+  .haiphen-overlay__stat .v{ font-size: .85rem; }
 }
 
-/* (Optional) If you want even more compression, make the list 2 columns
-   inside each box when there are many rows. This is safe because you rarely
-   have >5, but it helps on tiny viewports. */
-@media (max-height: 740px){
-  .haiphen-overlay__extremes .xbox{
-    column-count: 1; /* keep 1 by default */
+/* ====================================================================
+   Responsive: mobile (narrow width)
+   ==================================================================== */
+@media (max-width: 600px){
+  .haiphen-overlay__panel{
+    width: calc(100vw - 1rem);
+    margin: .5rem auto;
+    max-height: calc(100vh - 1rem);
+    border-radius: 14px;
   }
-}
 
-/* Large monitors: prevent extremes from overlapping chart/stats */
-@media (min-width: 1400px){
-  .haiphen-overlay__extremes .xbox{
-    max-height: min(200px, 25vh);
+  .haiphen-overlay__header{
+    padding: .75rem .85rem;
   }
+
+  .haiphen-overlay__title{
+    font-size: 1.05rem;
+  }
+
+  .haiphen-overlay__close{
+    width: 34px;
+    height: 34px;
+    font-size: 1.3rem;
+    border-radius: 10px;
+  }
+
   .haiphen-overlay__chartWrap{
-    overflow-y: auto;
+    padding: .65rem .75rem .75rem;
   }
-  .haiphen-overlay__controls{
-    min-height: 0;
-  }
-}
 
-/* Force 2-column stats grid at narrow widths */
-@media (max-width: 720px){
+  .haiphen-overlay__canvas{
+    aspect-ratio: 1.6;
+    max-height: min(240px, 35vh);
+    min-height: 120px;
+    border-radius: 12px;
+  }
+
   .haiphen-overlay__stats{
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: .4rem;
   }
+
+  .haiphen-overlay__stat{
+    border-radius: 10px;
+    padding: .4rem .55rem;
+  }
+  .haiphen-overlay__stat .k{ font-size: .68rem; }
+  .haiphen-overlay__stat .v{ font-size: .85rem; }
+
+  .haiphen-overlay__entityRow{
+    padding: 0 .75rem;
+  }
+
+  .haiphen-overlay__extremes{
+    grid-template-columns: 1fr;
+    margin: 6px .75rem .75rem;
+  }
+
+  .haiphen-overlay__extremes .xbox{
+    max-height: clamp(100px, 18vh, 160px);
+  }
+
+  .haiphen-overlay__portfolio{
+    margin: 6px .75rem 0;
+  }
+
+  .haiphen-overlay__controls{
+    padding: .75rem .75rem .85rem;
+  }
+}
+
+/* ====================================================================
+   Responsive: very short + narrow (landscape phones)
+   ==================================================================== */
+@media (max-height: 500px){
+  .haiphen-overlay__panel{
+    margin: .25rem auto;
+    max-height: calc(100vh - .5rem);
+  }
+
+  .haiphen-overlay__header{ padding: .5rem .75rem; }
+  .haiphen-overlay__title{ font-size: 1rem; }
+  .haiphen-overlay__kicker{ font-size: .7rem; }
+
+  .haiphen-overlay__canvas{
+    max-height: min(180px, 30vh);
+    min-height: 100px;
+  }
+
+  .haiphen-overlay__stats{
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: .3rem;
+    margin-top: .4rem;
+  }
+
+  .haiphen-overlay__stat{
+    padding: .25rem .4rem;
+    border-radius: 8px;
+  }
+  .haiphen-overlay__stat .k{ font-size: .62rem; }
+  .haiphen-overlay__stat .v{ font-size: .75rem; }
 }
