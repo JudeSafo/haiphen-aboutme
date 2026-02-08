@@ -20,9 +20,9 @@
 
 .section-menu__btn {
   appearance: none;
-  border: 1px solid rgba(90,155,212,0.35);
-  background: rgba(255,255,255,0.86);
-  color: var(--brand-ink);
+  border: 1px solid #4a8ec4;
+  background: #5A9BD4;
+  color: #fff;
 
   padding: 0.70rem 1.15rem;
   border-radius: 9999px;
@@ -32,18 +32,18 @@
   font-size: 0.95rem;
   letter-spacing: 0.01em;
 
-  box-shadow: 0 6px 18px rgba(17,24,39,0.08);
+  box-shadow: 0 6px 18px rgba(17,24,39,0.12);
   transition: transform 120ms ease, background 160ms ease, border-color 160ms ease;
 }
 
 .section-menu__btn:hover {
   transform: translateY(-1px);
-  background: rgba(90,155,212,0.10);
-  border-color: rgba(90,155,212,0.55);
+  background: #4a8ec4;
+  border-color: #3d7eb4;
 }
 
 .section-menu__btn.is-active {
-  background: var(--brand);
+  background: #3d7eb4;
   color: #fff;
-  border-color: var(--brand);
+  border-color: #3d7eb4;
 }

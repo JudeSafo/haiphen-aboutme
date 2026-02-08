@@ -486,3 +486,69 @@ body.sidebar-collapsed .site-sidebar:hover .sidebar-session .sidebar-session__su
   background: rgba(15,23,42,.03);
   text-decoration: none;
 }
+
+/* ============================================================
+   Finance lens — keep sidebar light (original color profile)
+   ============================================================ */
+
+html[data-lens="finance"] .site-sidebar {
+  background: #edf1f5;
+  border-color: rgba(30, 41, 59, 0.60);
+}
+
+html[data-lens="finance"] .site-sidebar__session {
+  background: #1e293b;
+  border-bottom-color: rgba(148,163,184,0.18);
+}
+
+html[data-lens="finance"] .site-sidebar__session .sidebar-session__title,
+html[data-lens="finance"] .site-sidebar__session .sidebar-session-title {
+  color: #f8fafc;
+}
+
+html[data-lens="finance"] .site-sidebar__session .sidebar-session__sub,
+html[data-lens="finance"] .site-sidebar__session .sidebar-session-sub {
+  color: #94a3b8;
+}
+
+html[data-lens="finance"] .site-sidebar__link {
+  color: #334155;
+}
+
+html[data-lens="finance"] .sidebar-session-trigger {
+  border-color: rgba(148,163,184,.20);
+  background: rgba(30,41,59,.50);
+}
+
+html[data-lens="finance"] .sidebar-session-dropdown {
+  background: #1e293b;
+  border-color: rgba(148,163,184,.18);
+}
+
+html[data-lens="finance"] .sidebar-session-link,
+html[data-lens="finance"] .sidebar-session-btn {
+  border-color: rgba(148,163,184,.15);
+  background: rgba(51,65,85,.50);
+  color: #f8fafc;
+}
+
+html[data-lens="finance"] .sidebar-session-link:hover,
+html[data-lens="finance"] .sidebar-session-btn:hover {
+  background: rgba(90,155,212,.12);
+}
+
+html[data-lens="finance"] .sidebar-session-key code {
+  border-color: rgba(148,163,184,.18);
+  background: rgba(51,65,85,.50);
+  color: #e2e8f0;
+}
+
+html[data-lens="finance"] .sidebar-session-divider {
+  background: rgba(148,163,184,.15);
+}
+
+html[data-lens="finance"] .sidebar-login-btn--google {
+  background: rgba(51,65,85,.50);
+  color: #f8fafc;
+  border-color: rgba(148,163,184,.18);
+}

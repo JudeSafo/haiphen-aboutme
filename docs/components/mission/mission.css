@@ -262,38 +262,38 @@
 }
 
 /* ============================================================
-   Finance lens — dark mission overrides
+   Finance lens — dark charcoal blue mission overrides
    ============================================================ */
 
 html[data-lens="finance"] .mission-eyebrow {
   background: rgba(90,155,212,0.15);
-  color: #8bb8e0;
+  color: #5A9BD4;
 }
 
 html[data-lens="finance"] .mission-card {
-  background: rgba(15,23,42,0.8);
-  border-color: rgba(148,163,184,0.15);
+  background: rgba(30,41,59,0.85);
+  border-color: rgba(148,163,184,0.18);
 }
 
 html[data-lens="finance"] .mission-card h3 {
-  color: #e2e8f0;
+  color: #f8fafc;
 }
 
 html[data-lens="finance"] .mission-card p {
-  color: rgba(226,232,240,0.7);
+  color: rgba(226,232,240,0.75);
 }
 
 html[data-lens="finance"] .mission-block {
-  background: rgba(15,23,42,0.8);
-  border-color: rgba(148,163,184,0.15);
+  background: rgba(30,41,59,0.85);
+  border-color: rgba(148,163,184,0.18);
 }
 
 html[data-lens="finance"] .mission-block__copy h3 {
-  color: #e2e8f0;
+  color: #f8fafc;
 }
 
 html[data-lens="finance"] .mission-block__copy p {
-  color: rgba(226,232,240,0.72);
+  color: rgba(226,232,240,0.75);
 }
 
 html[data-lens="finance"] .mission-list {
@@ -301,6 +301,6 @@ html[data-lens="finance"] .mission-list {
 }
 
 html[data-lens="finance"] .mission-hero {
-  background: rgba(15,23,42,0.92);
-  border-color: rgba(148,163,184,0.18);
+  background: rgba(30,41,59,0.92);
+  border-color: rgba(148,163,184,0.20);
 }

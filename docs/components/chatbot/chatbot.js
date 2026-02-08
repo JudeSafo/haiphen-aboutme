@@ -294,7 +294,15 @@
         if (isFullOpen) closeAll();
         const section = getCurrentSection();
         if (section !== 'default') {
-          showTransit(section);
+          /* Mobile: just pulse the FAB icon instead of showing the text panel */
+          if (window.matchMedia('(max-width: 720px)').matches) {
+            fab.classList.remove('is-pulsing');
+            void fab.offsetWidth;
+            fab.classList.add('is-pulsing');
+            fab.addEventListener('animationend', () => fab.classList.remove('is-pulsing'), { once: true });
+          } else {
+            showTransit(section);
+          }
         }
       });
 
@@ -326,8 +334,17 @@
       }
 
       /* ---- Initial peek: company intro + starter prompts ---- */
+      /* On mobile (narrow screens): just pulse the FAB icon, don't open the panel */
+      const isMobileChat = window.matchMedia('(max-width: 720px)').matches;
 
-      setTimeout(showPeek, 1500);
+      if (isMobileChat) {
+        setTimeout(() => {
+          fab.classList.add('is-pulsing');
+          fab.addEventListener('animationend', () => fab.classList.remove('is-pulsing'), { once: true });
+        }, 1500);
+      } else {
+        setTimeout(showPeek, 1500);
+      }
     }
   };
 })();

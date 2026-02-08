@@ -6,6 +6,13 @@
   const INSTALL_HASH = '#docs:docs-install-brew';
   const INSTALL_COMMAND = 'brew install haiphen';
 
+  /* ── Timing constants ── */
+  const OPEN_DELAY   = 200;   // ms before opening on hover
+  const CLOSE_DELAY  = 400;   // ms before closing on mouse-leave
+  const COOLDOWN_MS  = 800;   // suppress re-trigger window after close
+  const SCROLL_WAIT  = 300;   // ms to wait for panel expand before focus-scroll
+  const SCROLL_GUARD = 1500;  // ms to suppress IntersectionObserver during scroll
+
   function routeToDocsInstall(source = 'hero_install_cta') {
     try {
       const fn = window?.HAIPHEN?.ApiAccess?.requestAccess;
@@ -54,6 +61,7 @@
   function isOpen(root) {
     return root?.classList?.contains('is-open');
   }
+
   function lazyLoadDemo(root) {
     if (!root) return;
     const gif = root.querySelector('.hdl-demo-gif');
@@ -65,6 +73,10 @@
     gif.onload = () => demo.classList.add('is-loaded');
   }
 
+  /* ── Focus-scroll state ── */
+  let focusScrollActive = false;   // true while viewport is shifted to GIF
+  let scrollingForFocus  = false;  // true during the scroll animation (guards Observer)
+
   function open(root) {
     if (!root) return;
     root.classList.add('is-open');
@@ -72,21 +84,47 @@
     if (panel) panel.setAttribute('aria-hidden', 'false');
     lazyLoadDemo(root);
 
-    // Scroll so the GIF is centered in viewport
-    const hdl = root.closest('.hdl') || root;
-    try {
-      hdl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    } catch {}
+    // Focus-scroll: wait for CSS max-height transition to settle, then
+    // scroll so the panel top meets the header bottom (via scroll-margin-top)
+    // and the panel fills down to the viewport bottom.
+    focusScrollActive = true;
+    scrollingForFocus = true;
+    setTimeout(() => {
+      if (!isOpen(root)) { scrollingForFocus = false; return; }
+      if (panel) {
+        panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+      // Release scroll guard after scroll animation finishes
+      setTimeout(() => { scrollingForFocus = false; }, SCROLL_GUARD);
+    }, SCROLL_WAIT);
   }
-  function close(root) {
+
+  /**
+   * Close the panel and restore scroll position.
+   * @param {'hero'|'sections'} scrollTarget — where to scroll back
+   */
+  function close(root, scrollTarget = 'hero') {
     if (!root) return;
     root.classList.remove('is-open');
     const panel = root.querySelector('[data-hdl-panel]');
     if (panel) panel.setAttribute('aria-hidden', 'true');
+
+    if (focusScrollActive) {
+      focusScrollActive = false;
+      if (scrollTarget === 'hero') {
+        const hero = document.querySelector('section.hero');
+        if (hero) hero.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } else {
+        // 'sections' — scroll to section menu so buttons are visible
+        const menu = document.querySelector('#section-menu-mount');
+        if (menu) menu.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
   }
+
   function toggle(root) {
     if (!root) return;
-    if (isOpen(root)) close(root);
+    if (isOpen(root)) close(root, 'hero');
     else open(root);
   }
 
@@ -102,25 +140,46 @@
     const cmdEl = root.querySelector('[data-hdl-command]');
     if (cmdEl) cmdEl.textContent = INSTALL_COMMAND;
 
-    // --- Debounced hover on the entire .hero zone ---
-    let openTimer = null;
+    // --- Debounced hover with cooldown throttle ---
+    let openTimer  = null;
     let closeTimer = null;
+    let cooldownUntil = 0;          // timestamp: suppress re-open before this
+    let lastLeaveY = 0;             // track mouse exit Y for directional close
+
     const isMobile = () => window.matchMedia('(hover: none)').matches;
 
     function scheduleOpen() {
       if (isMobile()) return;
+      // Suppress during cooldown window (prevents flicker on meta positions)
+      if (Date.now() < cooldownUntil) return;
       clearTimeout(closeTimer);
       closeTimer = null;
       if (isOpen(root)) return;
-      openTimer = setTimeout(() => { open(root); openTimer = null; }, 200);
+      openTimer = setTimeout(() => { open(root); openTimer = null; }, OPEN_DELAY);
     }
 
-    function scheduleClose() {
+    function scheduleClose(e) {
       if (isMobile()) return;
       clearTimeout(openTimer);
       openTimer = null;
       if (!isOpen(root)) return;
-      closeTimer = setTimeout(() => { close(root); closeTimer = null; }, 400);
+
+      // Capture exit direction from mouse event
+      if (e && typeof e.clientY === 'number') lastLeaveY = e.clientY;
+
+      closeTimer = setTimeout(() => {
+        // Determine scroll restoration based on exit direction
+        const panelEl = root.querySelector('[data-hdl-panel]');
+        const panelRect = panelEl?.getBoundingClientRect();
+        // If cursor exited above the panel midpoint → user went up → restore hero
+        // If cursor exited below → user went down → show section buttons
+        const midY = panelRect ? (panelRect.top + panelRect.bottom) / 2 : Infinity;
+        const target = lastLeaveY < midY ? 'hero' : 'sections';
+
+        close(root, target);
+        closeTimer = null;
+        cooldownUntil = Date.now() + COOLDOWN_MS;
+      }, CLOSE_DELAY);
     }
 
     // Hover zone: entire .hero section + the panel itself
@@ -149,13 +208,14 @@
       });
     }
 
-    // ESC closes
+    // ESC closes (always restores hero)
     window.addEventListener(
       'keydown',
       (e) => {
         if (e.key === 'Escape') {
           clearTimeout(openTimer);
-          close(root);
+          close(root, 'hero');
+          cooldownUntil = Date.now() + COOLDOWN_MS;
         }
       },
       { passive: true }
@@ -164,9 +224,12 @@
     // Click anywhere outside the hero closes
     document.addEventListener('click', (e) => {
       const t = e.target;
-      const clickedInHero = !!(hero && hero.contains(t));
+      const clickedInHero  = !!(hero && hero.contains(t));
       const clickedInPanel = !!(root && root.contains(t));
-      if (!clickedInHero && !clickedInPanel) close(root);
+      if (!clickedInHero && !clickedInPanel) {
+        close(root, 'hero');
+        cooldownUntil = Date.now() + COOLDOWN_MS;
+      }
     });
 
     // Nav button dismissal: clicking section nav buttons closes the panel
@@ -174,18 +237,21 @@
       const btn = e.target.closest('[data-section]');
       if (btn && isOpen(root)) {
         clearTimeout(openTimer);
-        close(root);
+        close(root, 'sections');
+        cooldownUntil = Date.now() + COOLDOWN_MS;
       }
     });
 
     // IntersectionObserver: close when hero scrolls out of view
+    // IMPORTANT: suppressed during focus-scroll (we EXPECT hero to leave view)
     if (hero && typeof IntersectionObserver !== 'undefined') {
       const obs = new IntersectionObserver(
         (entries) => {
           for (const entry of entries) {
-            if (!entry.isIntersecting && isOpen(root)) {
+            if (!entry.isIntersecting && isOpen(root) && !scrollingForFocus) {
               clearTimeout(openTimer);
-              close(root);
+              close(root, 'hero');
+              cooldownUntil = Date.now() + COOLDOWN_MS;
             }
           }
         },

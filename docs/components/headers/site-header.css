@@ -524,35 +524,35 @@
 }
 
 /* ============================================================
-   Finance lens — dark header overrides
+   Finance lens — dark charcoal blue header overrides
    ============================================================ */
 
 html[data-lens="finance"] .site-header {
-  background: rgba(11,18,32,0.96);
+  background: rgba(15,23,42,0.97);
   border-bottom-color: rgba(148,163,184,0.15);
 }
 
 html[data-lens="finance"] .site-header__link {
-  color: #e2e8f0;
+  color: #f8fafc;
 }
 
 html[data-lens="finance"] .site-header__link:hover {
-  background: rgba(148,163,184,0.10);
+  background: rgba(90,155,212,0.10);
 }
 
 html[data-lens="finance"] .site-header__item:hover .site-header__link,
 html[data-lens="finance"] .site-header__item:focus-within .site-header__link {
   background: rgba(90,155,212,0.14);
-  color: #e2e8f0;
+  color: #f8fafc;
 }
 
 html[data-lens="finance"] .site-header__dropdown {
-  background: rgba(15,23,42,0.96);
-  border-color: rgba(148,163,184,0.18);
+  background: rgba(15,23,42,0.97);
+  border-color: rgba(148,163,184,0.20);
 }
 
 html[data-lens="finance"] .site-header__drop-link {
-  color: #cbd5e1;
+  color: #e2e8f0;
 }
 
 html[data-lens="finance"] .site-header__drop-link:hover {
@@ -561,31 +561,31 @@ html[data-lens="finance"] .site-header__drop-link:hover {
 
 html[data-lens="finance"] .site-header__items {
   background: var(--nav-pill-bg);
-  border-color: rgba(148,163,184,0.12);
+  border-color: rgba(148,163,184,0.15);
 }
 
 html[data-lens="finance"] .site-header__hamburger span {
-  background: #e2e8f0;
+  background: #f8fafc;
 }
 
 html[data-lens="finance"] .session-pill {
-  background: rgba(30,40,60,0.7);
-  border-color: rgba(148,163,184,0.18);
-  color: #e2e8f0;
+  background: rgba(51,65,85,0.7);
+  border-color: rgba(148,163,184,0.20);
+  color: #f8fafc;
 }
 
 html[data-lens="finance"] .session-pill:hover {
-  background: rgba(148,163,184,0.14);
+  background: rgba(90,155,212,0.14);
 }
 
 html[data-lens="finance"] .session-dropdown {
-  background: rgba(15,23,42,0.96);
-  border-color: rgba(148,163,184,0.18);
+  background: rgba(15,23,42,0.97);
+  border-color: rgba(148,163,184,0.20);
 }
 
 html[data-lens="finance"] .session-dropdown__name,
 html[data-lens="finance"] .session-dropdown__link {
-  color: #e2e8f0;
+  color: #f8fafc;
 }
 
 html[data-lens="finance"] .session-dropdown__link:hover {
@@ -593,13 +593,13 @@ html[data-lens="finance"] .session-dropdown__link:hover {
 }
 
 html[data-lens="finance"] .session-dropdown__logout {
-  background: rgba(30,40,60,0.55);
-  border-color: rgba(148,163,184,0.12);
-  color: #e2e8f0;
+  background: rgba(51,65,85,0.55);
+  border-color: rgba(148,163,184,0.15);
+  color: #f8fafc;
 }
 
 html[data-lens="finance"] .session-dropdown__logout:hover {
-  background: rgba(239,68,68,0.12);
+  background: rgba(239,68,68,0.14);
 }
 
 html[data-lens="finance"] .session-dropdown__divider {
@@ -607,15 +607,16 @@ html[data-lens="finance"] .session-dropdown__divider {
 }
 
 html[data-lens="finance"] .session-tabs {
-  background: rgba(148,163,184,0.08);
+  background: rgba(148,163,184,0.06);
   border-color: rgba(148,163,184,0.12);
 }
 
 html[data-lens="finance"] .session-tab {
-  color: #cbd5e1;
+  color: #e2e8f0;
 }
 
 html[data-lens="finance"] .session-tab[aria-selected="true"] {
-  background: rgba(30,40,60,0.8);
-  border-color: rgba(148,163,184,0.18);
+  background: rgba(51,65,85,0.8);
+  border-color: rgba(148,163,184,0.20);
 }
+

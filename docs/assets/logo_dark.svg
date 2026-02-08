@@ -1,42 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 80">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 130">
   <defs>
-    <filter id="logoGlow">
-      <feGaussianBlur stdDeviation="2" result="blur"/>
-      <feMerge>
-        <feMergeNode in="blur"/>
-        <feMergeNode in="SourceGraphic"/>
-      </feMerge>
-    </filter>
-    <linearGradient id="logoGrad" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="#5A9BD4"/>
-      <stop offset="100%" stop-color="#7BB8E8"/>
-    </linearGradient>
+    <!-- Clip: bottom portion where right ring passes IN FRONT of left ring -->
+    <clipPath id="rf">
+      <rect x="60" y="65" width="130" height="70"/>
+    </clipPath>
   </defs>
 
-  <!-- Robot icon (simplified from robot_haiphen) -->
-  <g transform="translate(16,12) scale(0.055)" filter="url(#logoGlow)">
-    <!-- Robot head frame -->
-    <polygon fill="#5A9BD4" points="847.49,1051.43 754.49,1051.43 754.49,978.57 865.06,978.57 865.06,1048.43 859.06,1048.43
-      859.06,984.57 760.49,984.57 760.49,1045.43 847.49,1045.43"/>
-    <!-- Antenna -->
-    <polygon fill="#5A9BD4" points="850.49,981.57 844.49,981.57 844.49,956.29 757.49,956.29 757.49,950.29 850.49,950.29"/>
-    <!-- Antenna tip -->
-    <rect x="847.49" y="1062.15" fill="#5A9BD4" width="14.57" height="6"/>
-    <!-- Eyes -->
-    <rect x="780.2" y="999.57" fill="#5A9BD4" width="6" height="15.43"/>
-    <rect x="831.63" y="999.57" fill="#5A9BD4" width="6" height="15.43"/>
-    <!-- Mouth -->
-    <rect x="783.2" y="1030" fill="#5A9BD4" width="51.43" height="6"/>
-  </g>
+  <!-- Layer 1: Full right ring (back) -->
+  <circle cx="128" cy="65" r="42" fill="none" stroke="#7BB8E8" stroke-width="17"/>
 
-  <!-- "haiphen" text -->
-  <text x="80" y="52" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace"
-        font-size="36" font-weight="800" fill="url(#logoGrad)" filter="url(#logoGlow)"
-        letter-spacing="-0.5">haiphen</text>
+  <!-- Layer 2: Full left ring — covers right ring at top overlap -->
+  <circle cx="72" cy="65" r="42" fill="none" stroke="#f8fafc" stroke-width="17"/>
 
-  <!-- Tagline -->
-  <text x="80" y="70" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace"
-        font-size="10" font-weight="600" fill="rgba(226,232,240,0.5)"
-        letter-spacing="0.5">Semantic Edge Protocol Intelligence</text>
+  <!-- Layer 3: Right ring front arc — passes in front at bottom -->
+  <circle cx="128" cy="65" r="42" fill="none" stroke="#7BB8E8" stroke-width="17" clip-path="url(#rf)"/>
+
+  <!-- Chevrons (>>>) between the rings -->
+  <polyline points="91,52 100,65 91,78" fill="none" stroke="#c8ddf0" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="100,52 109,65 100,78" fill="none" stroke="#93bde0" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="109,52 118,65 109,78" fill="none" stroke="#5A9BD4" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>

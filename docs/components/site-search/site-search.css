@@ -31,6 +31,23 @@
   outline-offset: 2px;
 }
 
+/* Finance lens — solid search button */
+html[data-lens="finance"] .site-header__iconbtn {
+  background: #1e293b;
+  border-color: rgba(148,163,184,0.30);
+  color: #f8fafc;
+}
+
+html[data-lens="finance"] .site-header__iconbtn:hover {
+  background: #334155;
+  border-color: rgba(90,155,212,0.45);
+}
+
+/* Invert the search icon to white in finance mode (img can't inherit currentColor) */
+html[data-lens="finance"] .site-header__iconbtn .site-header__icon {
+  filter: brightness(0) invert(1);
+}
+
 /* Overlay */
 .site-search__overlay {
   position: fixed;

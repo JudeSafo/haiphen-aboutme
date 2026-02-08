@@ -116,3 +116,34 @@
   .hp-cohort-banner__msg{ white-space: normal; line-height: 1.2; }
   .hp-cohort-banner__badge{ display:none; }
 }
+
+/* ============================================================
+   Finance lens — solid opaque cohort banner for dark theme
+   ============================================================ */
+
+html[data-lens="finance"] {
+  --cohort-banner-bg: rgba(16, 185, 129, 0.22);
+  --cohort-banner-border: rgba(16, 185, 129, 0.35);
+  --cohort-banner-text: #a7f3d0;
+  --cohort-banner-pill: rgba(16, 185, 129, 0.28);
+}
+
+html[data-lens="finance"] .hp-cohort-banner {
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+html[data-lens="finance"] .hp-cohort-banner__badge {
+  border-color: rgba(16, 185, 129, 0.30);
+  color: #a7f3d0;
+}
+
+html[data-lens="finance"] .hp-cohort-banner__x {
+  border-color: rgba(16, 185, 129, 0.28);
+  background: rgba(15, 23, 42, 0.65);
+  color: #a7f3d0;
+}
+
+html[data-lens="finance"] .hp-cohort-banner__x:hover {
+  background: rgba(15, 23, 42, 0.80);
+}

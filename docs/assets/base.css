@@ -116,20 +116,20 @@ body {
    ============================================================ */
 
 html[data-lens="finance"] {
-  --text: #e2e8f0;
+  --text: #f8fafc;
   --muted: #94a3b8;
-  --bg: #0b1220;
-  --surface: rgba(15,23,42,0.92);
-  --border: rgba(148,163,184,0.18);
+  --bg: #0f172a;
+  --surface: rgba(30,41,59,0.95);
+  --border: rgba(148,163,184,0.20);
   --shadow: 0 8px 24px rgba(0,0,0,0.35);
   --brand: #5A9BD4;
   --brand-ink: #c8ddf0;
   --brand-hover: #8bb8e0;
-  --surface-2: rgba(15,23,42,0.92);
-  --surface-3: rgba(30,40,60,0.72);
-  --sidebar-bg: rgba(15,23,42,0.96);
-  --sidebar-session-bg: rgba(148,163,184,0.12);
-  --nav-pill-bg: rgba(30,40,60,0.72);
+  --surface-2: rgba(30,41,59,0.95);
+  --surface-3: rgba(51,65,85,0.80);
+  --sidebar-bg: rgba(15,23,42,0.98);
+  --sidebar-session-bg: rgba(148,163,184,0.08);
+  --nav-pill-bg: rgba(51,65,85,0.70);
   --nav-pill-border: rgba(148,163,184,0.18);
 }
 
@@ -138,8 +138,8 @@ html[data-lens="finance"] body {
 }
 
 html[data-lens="finance"] .hp-card {
-  background: rgba(15,23,42,0.8);
-  border-color: rgba(148,163,184,0.15);
+  background: rgba(30,41,59,0.85);
+  border-color: rgba(148,163,184,0.18);
 }
 
 html[data-lens="finance"] .main-container {

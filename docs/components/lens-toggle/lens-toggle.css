@@ -18,7 +18,7 @@
   background: rgba(15,23,42,0.04);
   color: var(--hdr-text, #0f172a);
   cursor: pointer;
-  transition: background 0.15s ease, border-color 0.15s ease, transform 0.12s ease;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.12s ease, box-shadow 0.15s ease;
 }
 
 .lens-toggle__btn:hover {
@@ -40,27 +40,38 @@
   display: block;
 }
 
-/* Dropdown */
+/* ---- Hover dropdown ---- */
 .lens-toggle__dropdown {
   position: absolute;
   top: calc(100% + 8px);
   right: 0;
-  width: 160px;
-  padding: 6px;
+  width: 280px;
+  display: flex;
+  flex-direction: row;
   border-radius: 12px;
-  background: rgba(255,255,255,0.96);
-  border: 1px solid rgba(15,23,42,0.10);
-  box-shadow: 0 12px 32px rgba(2,6,23,0.14);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background: #ffffff;
+  border: 1px solid rgba(90,155,212,0.20);
+  box-shadow: 0 10px 32px rgba(2,6,23,0.14);
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-  transform: translateY(-4px);
-  transition: opacity 0.14s ease, transform 0.14s ease, visibility 0.14s ease;
-  z-index: 2100;
+  transform: translateY(-6px);
+  transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
+  z-index: 2090;
+  overflow: hidden;
 }
 
+/* Show on hover (desktop only — touch devices use tap via JS .is-open) */
+@media (hover: hover) and (pointer: fine) {
+  .lens-toggle:hover .lens-toggle__dropdown {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+}
+
+/* JS-driven open state (used on mobile tap and as fallback) */
 .lens-toggle__dropdown.is-open {
   opacity: 1;
   visibility: visible;
@@ -68,122 +79,122 @@
   transform: translateY(0);
 }
 
-/* Hover bridge */
-.lens-toggle__dropdown::before {
-  content: "";
-  position: absolute;
-  top: -10px;
-  left: 0;
-  right: 0;
-  height: 12px;
-}
-
-/* Options */
+/* Each option half */
 .lens-toggle__option {
+  flex: 1;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 8px;
-  width: 100%;
-  padding: 9px 10px;
-  border: none;
-  border-radius: 8px;
-  background: transparent;
-  color: var(--hdr-text, #0f172a);
-  font: 700 12px/1 ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+  gap: 4px;
+  padding: 12px 10px;
   cursor: pointer;
-  transition: background 0.12s ease;
-  text-align: left;
+  transition: background 0.15s ease;
+  text-align: center;
 }
 
 .lens-toggle__option:hover {
-  background: rgba(15,23,42,0.06);
-}
-
-.lens-toggle__option svg:first-child {
-  flex: 0 0 auto;
-  opacity: 0.7;
-}
-
-.lens-toggle__option span {
-  flex: 1;
-}
-
-/* Checkmark — hidden unless active */
-.lens-toggle__check {
-  opacity: 0;
-  flex: 0 0 auto;
-  color: #5A9BD4;
-  transition: opacity 0.15s ease;
-}
-
-.lens-toggle__option.is-active .lens-toggle__check {
-  opacity: 1;
-}
-
-.lens-toggle__option.is-active {
   background: rgba(90,155,212,0.08);
 }
 
-/* First-time instruction bubble */
-.lens-toggle__bubble {
-  position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
-  width: 200px;
-  padding: 10px 12px;
-  border-radius: 10px;
-  background: rgba(255,255,255,0.97);
-  border: 1px solid rgba(90,155,212,0.25);
-  box-shadow: 0 8px 24px rgba(2,6,23,0.12);
+/* Highlight the option that represents the OTHER perspective (the one you'd switch to) */
+.lens-toggle__option--finance { order: 1; }
+.lens-toggle__divider         { order: 2; }
+.lens-toggle__option--tech    { order: 3; }
+
+/* Divider between the two options */
+.lens-toggle__divider {
+  width: 1px;
+  align-self: stretch;
+  background: rgba(90,155,212,0.20);
+  flex-shrink: 0;
+}
+
+/* Icon emoji */
+.lens-toggle__icon {
+  font-size: 20px;
+  line-height: 1;
+}
+
+/* Label text */
+.lens-toggle__label {
   font-size: 11px;
   font-weight: 700;
   color: #334155;
-  line-height: 1.45;
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-  transform: translateY(-4px);
-  transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s ease;
-  z-index: 2090;
+  line-height: 1.3;
 }
 
-.lens-toggle__bubble.is-visible {
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(0);
+/* Preview description */
+.lens-toggle__preview {
+  font-size: 10px;
+  font-weight: 400;
+  color: #64748b;
+  line-height: 1.35;
 }
 
-/* Finance-mode overrides for the toggle itself */
+/* Active indicator — the NON-current perspective is dimmed (it's what you'd switch away from) */
+.lens-toggle__option.is-current {
+  opacity: 0.40;
+  cursor: default;
+}
+
+.lens-toggle__option.is-current:hover {
+  background: transparent;
+}
+
+/* ---- Flash / pulse animation for first-visit attention ---- */
+@keyframes lens-flash {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(90,155,212,0); }
+  20% { box-shadow: 0 0 0 6px rgba(90,155,212,0.45); }
+  40% { box-shadow: 0 0 0 0 rgba(90,155,212,0); }
+  60% { box-shadow: 0 0 0 4px rgba(90,155,212,0.30); }
+  80% { box-shadow: 0 0 0 0 rgba(90,155,212,0); }
+}
+
+.lens-toggle__btn.is-flashing {
+  animation: lens-flash 1.6s ease-in-out;
+}
+
+/* ---- Finance-mode overrides ---- */
 html[data-lens="finance"] .lens-toggle__btn {
-  border-color: rgba(148,163,184,0.22);
-  background: rgba(148,163,184,0.10);
-  color: #e2e8f0;
+  border-color: rgba(148,163,184,0.30);
+  background: #1e293b;
+  color: #f8fafc;
 }
 
 html[data-lens="finance"] .lens-toggle__btn:hover {
-  background: rgba(148,163,184,0.18);
-  border-color: rgba(148,163,184,0.30);
+  background: #334155;
+  border-color: rgba(90,155,212,0.45);
 }
 
 html[data-lens="finance"] .lens-toggle__dropdown {
-  background: rgba(15,23,42,0.96);
-  border-color: rgba(148,163,184,0.18);
-}
-
-html[data-lens="finance"] .lens-toggle__option {
-  color: #e2e8f0;
+  background: #0f172a;
+  border-color: rgba(90,155,212,0.25);
 }
 
 html[data-lens="finance"] .lens-toggle__option:hover {
   background: rgba(90,155,212,0.12);
 }
 
-html[data-lens="finance"] .lens-toggle__option.is-active {
-  background: rgba(90,155,212,0.15);
+html[data-lens="finance"] .lens-toggle__divider {
+  background: rgba(148,163,184,0.20);
 }
 
-html[data-lens="finance"] .lens-toggle__bubble {
-  background: rgba(15,23,42,0.96);
-  border-color: rgba(90,155,212,0.30);
-  color: #cbd5e1;
+html[data-lens="finance"] .lens-toggle__label {
+  color: #e2e8f0;
+}
+
+html[data-lens="finance"] .lens-toggle__preview {
+  color: #94a3b8;
+}
+
+@keyframes lens-flash-dark {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(90,155,212,0); }
+  20% { box-shadow: 0 0 0 6px rgba(90,155,212,0.55); }
+  40% { box-shadow: 0 0 0 0 rgba(90,155,212,0); }
+  60% { box-shadow: 0 0 0 4px rgba(90,155,212,0.35); }
+  80% { box-shadow: 0 0 0 0 rgba(90,155,212,0); }
+}
+
+html[data-lens="finance"] .lens-toggle__btn.is-flashing {
+  animation: lens-flash-dark 1.6s ease-in-out;
 }

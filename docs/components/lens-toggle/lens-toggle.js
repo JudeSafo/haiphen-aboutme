@@ -5,9 +5,15 @@
   var NS = (window.HAIPHEN = window.HAIPHEN || {});
 
   var STORAGE_KEY  = 'haiphen.lens';
-  var INTRO_KEY    = 'haiphen.lens_intro_seen';
+  var FLASH_KEY    = 'haiphen.lens_flash';   // JSON object: { Trades:1, Services:1, ... }
   var LENS_ATTR    = 'data-lens';
   var CSS_ID       = 'lens-toggle-css';
+
+  /* Sections that trigger the first-visit flash */
+  var FLASH_SECTIONS = ['Trades', 'Services', 'OnePager', 'FAQ'];
+
+  /* Active flash interval ID (so we can cancel it on acknowledge) */
+  var _flashInterval = null;
 
   /* ---- Public API ---- */
 
@@ -20,19 +26,18 @@
     if (value !== 'tech' && value !== 'finance') return;
     try { localStorage.setItem(STORAGE_KEY, value); } catch (_) {}
     applyLens(value);
+    updateDropdownState(value);
     window.dispatchEvent(new CustomEvent('haiphen:lens', { detail: { lens: value } }));
   }
 
   function applyLens(value) {
     var html = document.documentElement;
-    /* Add transition class briefly for smooth color change */
     html.classList.add('lens-transition');
     if (value === 'finance') {
       html.setAttribute(LENS_ATTR, 'finance');
     } else {
       html.removeAttribute(LENS_ATTR);
     }
-    /* Remove transition class after animation completes */
     setTimeout(function () { html.classList.remove('lens-transition'); }, 600);
   }
 
@@ -54,6 +59,94 @@
     document.head.appendChild(link);
   }
 
+  /* ---- Dropdown state management ---- */
+
+  /*
+   * Highlighting logic:
+   *   tech mode  → "Tech Perspective" is highlighted (active), "Finance" is dimmed
+   *   finance mode → "Finance Perspective" is highlighted (active), "Tech" is dimmed
+   * The NON-current option is the clickable switch target.
+   */
+  function updateDropdownState(lens) {
+    var finOpt  = document.querySelector('.lens-toggle__option--finance');
+    var techOpt = document.querySelector('.lens-toggle__option--tech');
+    if (!finOpt || !techOpt) return;
+
+    if (lens === 'finance') {
+      finOpt.classList.remove('is-current');
+      techOpt.classList.add('is-current');
+    } else {
+      techOpt.classList.remove('is-current');
+      finOpt.classList.add('is-current');
+    }
+  }
+
+  /* ---- Flash (first-visit per section) ---- */
+
+  function getFlashState() {
+    try {
+      var raw = localStorage.getItem(FLASH_KEY);
+      return raw ? JSON.parse(raw) : {};
+    } catch (_) { return {}; }
+  }
+
+  function markFlashed(section) {
+    var state = getFlashState();
+    state[section] = 1;
+    try { localStorage.setItem(FLASH_KEY, JSON.stringify(state)); } catch (_) {}
+  }
+
+  function shouldFlash(section) {
+    if (FLASH_SECTIONS.indexOf(section) === -1) return false;
+    var state = getFlashState();
+    return !state[section];
+  }
+
+  function stopFlashing() {
+    if (_flashInterval) {
+      clearInterval(_flashInterval);
+      _flashInterval = null;
+    }
+    var btn = document.querySelector('.lens-toggle__btn');
+    if (btn) btn.classList.remove('is-flashing');
+  }
+
+  function doPulse() {
+    var btn = document.querySelector('.lens-toggle__btn');
+    if (!btn) return;
+    btn.classList.remove('is-flashing');
+    void btn.offsetWidth; /* force reflow to restart animation */
+    btn.classList.add('is-flashing');
+  }
+
+  function flashToggle(section) {
+    var btn = document.querySelector('.lens-toggle__btn');
+    if (!btn) return;
+
+    markFlashed(section);
+
+    /* Stop any existing flash loop */
+    stopFlashing();
+
+    /* Start repeating pulse every 2.4s (animation is 1.6s + 0.8s gap) */
+    setTimeout(function () {
+      doPulse();
+      _flashInterval = setInterval(doPulse, 2400);
+    }, 600);
+  }
+
+  /* Expose for showSection() to call */
+  NS.lensFlashForSection = function (sectionName) {
+    var ALIASES = {
+      fintech: 'Trades', Fintech: 'Trades',
+      collaborate: 'OnePager', Collaborate: 'OnePager',
+      faq: 'FAQ', Faq: 'FAQ',
+      services: 'Services'
+    };
+    var resolved = ALIASES[sectionName] || sectionName;
+    if (shouldFlash(resolved)) flashToggle(resolved);
+  };
+
   /* ---- Load component ---- */
 
   NS.loadLensToggle = async function loadLensToggle() {
@@ -71,76 +164,69 @@
       return;
     }
 
-    var root     = mount.querySelector('.lens-toggle');
     var btn      = mount.querySelector('.lens-toggle__btn');
     var dropdown = mount.querySelector('.lens-toggle__dropdown');
-    var bubble   = mount.querySelector('.lens-toggle__bubble');
-    var options  = mount.querySelectorAll('.lens-toggle__option');
+    var wrapper  = mount.querySelector('.lens-toggle');
 
-    if (!root || !btn || !dropdown) return;
+    if (!btn) return;
 
-    /* ---- Highlight current lens ---- */
-    function syncActive() {
-      var current = getLens();
-      options.forEach(function (opt) {
-        opt.classList.toggle('is-active', opt.getAttribute('data-lens') === current);
+    /* Detect touch device (no fine pointer = mobile/tablet) */
+    var isTouchDevice = !window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+
+    /* Set initial dropdown state */
+    updateDropdownState(getLens());
+
+    /* ---- Hover acknowledges (stops) the flash ---- */
+    if (wrapper) {
+      wrapper.addEventListener('mouseenter', function () {
+        stopFlashing();
       });
     }
-    syncActive();
 
-    /* ---- Dropdown open/close ---- */
-    function openDropdown()  { dropdown.classList.add('is-open'); closeBubble(); }
-    function closeDropdown() { dropdown.classList.remove('is-open'); }
+    /* ---- Close dropdown helper ---- */
+    function closeDropdown() {
+      if (dropdown) dropdown.classList.remove('is-open');
+    }
 
+    /* ---- Click button ---- */
     btn.addEventListener('click', function (e) {
       e.stopPropagation();
-      if (dropdown.classList.contains('is-open')) {
-        closeDropdown();
+      stopFlashing();
+
+      if (isTouchDevice) {
+        /* Mobile: first tap opens dropdown, second tap (while open) toggles lens */
+        if (dropdown && dropdown.classList.contains('is-open')) {
+          closeDropdown();
+          setLens(getLens() === 'tech' ? 'finance' : 'tech');
+        } else {
+          if (dropdown) dropdown.classList.add('is-open');
+        }
       } else {
-        openDropdown();
+        /* Desktop: direct toggle (dropdown already visible via CSS :hover) */
+        setLens(getLens() === 'tech' ? 'finance' : 'tech');
       }
     });
 
-    /* Close on outside click */
-    document.addEventListener('click', function (e) {
-      if (!root.contains(e.target)) closeDropdown();
-    });
-
-    /* Escape key */
-    document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape') closeDropdown();
-    });
-
-    /* ---- Option click → switch lens ---- */
-    options.forEach(function (opt) {
-      opt.addEventListener('click', function () {
-        var lens = opt.getAttribute('data-lens');
-        setLens(lens);
-        syncActive();
+    /* ---- Click dropdown options → pick specific lens ---- */
+    if (dropdown) {
+      dropdown.addEventListener('click', function (e) {
+        var opt = e.target.closest('[data-lens-pick]');
+        if (!opt) return;
+        e.stopPropagation();
+        stopFlashing();
+        var pick = opt.getAttribute('data-lens-pick');
+        if (pick && !opt.classList.contains('is-current')) {
+          setLens(pick);
+        }
         closeDropdown();
       });
+    }
+
+    /* ---- Close dropdown on outside tap (mobile) ---- */
+    document.addEventListener('click', function (e) {
+      if (dropdown && dropdown.classList.contains('is-open') && !wrapper.contains(e.target)) {
+        closeDropdown();
+      }
     });
-
-    /* ---- First-time instruction bubble ---- */
-    function closeBubble() {
-      if (!bubble) return;
-      bubble.classList.remove('is-visible');
-      try { localStorage.setItem(INTRO_KEY, '1'); } catch (_) {}
-    }
-
-    var introSeen = false;
-    try { introSeen = localStorage.getItem(INTRO_KEY) === '1'; } catch (_) {}
-
-    if (!introSeen && bubble) {
-      /* Short delay so it appears after page settles */
-      setTimeout(function () { bubble.classList.add('is-visible'); }, 1200);
-      /* Auto-dismiss after 6s */
-      setTimeout(closeBubble, 7200);
-      /* Dismiss on any click */
-      document.addEventListener('click', closeBubble, { once: true });
-    }
-
-    /* ---- Sync if lens changes externally ---- */
-    window.addEventListener('haiphen:lens', syncActive);
   };
 })();

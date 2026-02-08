@@ -259,6 +259,22 @@
   margin-top: 2px;
 }
 
+@media (max-width: 720px) {
+  /* Suppress peek/transit auto-popups on mobile (JS handles this too) */
+  .hp-chatbot__panel.is-peek,
+  .hp-chatbot__panel.is-transit {
+    display: none;
+  }
+  .hp-chatbot__hover-bar {
+    display: none;
+  }
+  .hp-chatbot__panel.is-open {
+    width: calc(100vw - 32px);
+    right: -4px;
+    max-height: 70vh;
+  }
+}
+
 @media (max-width: 400px) {
   .hp-chatbot__panel {
     width: calc(100vw - 40px);
@@ -270,7 +286,7 @@
 }
 
 /* ============================================================
-   Finance lens — dark chatbot overrides
+   Finance lens — dark charcoal blue chatbot overrides
    ============================================================ */
 
 html[data-lens="finance"] .hp-chatbot__panel {
@@ -279,9 +295,9 @@ html[data-lens="finance"] .hp-chatbot__panel {
 }
 
 html[data-lens="finance"] .hp-chatbot__prompt {
-  background: rgba(30,40,60,0.6);
+  background: rgba(30,41,59,0.6);
   border-color: rgba(148,163,184,0.12);
-  color: #e2e8f0;
+  color: #f8fafc;
 }
 
 html[data-lens="finance"] .hp-chatbot__prompt:hover {
@@ -294,9 +310,9 @@ html[data-lens="finance"] .hp-chatbot__header {
 }
 
 html[data-lens="finance"] .hp-chatbot__input {
-  background: rgba(30,40,60,0.6);
+  background: rgba(30,41,59,0.6);
   border-color: rgba(148,163,184,0.12);
-  color: #e2e8f0;
+  color: #f8fafc;
 }
 
 html[data-lens="finance"] .hp-chatbot__hover-bar {
@@ -305,9 +321,9 @@ html[data-lens="finance"] .hp-chatbot__hover-bar {
 }
 
 html[data-lens="finance"] .hp-chatbot__hover-bar input {
-  background: rgba(30,40,60,0.6);
+  background: rgba(30,41,59,0.6);
   border-color: rgba(148,163,184,0.12);
-  color: #e2e8f0;
+  color: #f8fafc;
 }
 
 html[data-lens="finance"] .hp-chatbot__result:hover {

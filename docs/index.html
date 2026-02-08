@@ -184,7 +184,7 @@
 	    .section-menu button {
 	      background: #5A9BD4;
 	      color: #fff;
-	      border: none;
+	      border: 1px solid #4a8ec4;
 	      padding: 0.75rem 1.5rem;
 	      border-radius: 4px;
 	      cursor: pointer;
@@ -192,7 +192,7 @@
 	      transition: background 0.3s ease;
 	    }
 	    .section-menu button:hover {
-	      background: #34495e;
+	      background: #4a8ec4;
 	    }
 	    
 	    /* ============================================================
@@ -1089,7 +1089,171 @@
 	    ============================================================ */
 	    @media (max-width: 600px) {
 	      .hero h1 { font-size: 2.5rem; }
+	      .hero-logo img { transform: none; }
+	      .hero p { transform: none; text-align: center; }
 	      .section-menu { flex-direction: column; align-items: center; }
+	    }
+
+	    /* ============================================================
+	       Finance Lens — Dark Charcoal Blue Overrides
+	    ============================================================ */
+
+	    /* --- Tier 1: Page-level --- */
+	    html[data-lens="finance"] body {
+	      background: #0f172a;
+	    }
+	    html[data-lens="finance"] .main-container {
+	      background: transparent;
+	    }
+	    html[data-lens="finance"] .content-widget {
+	      background: #1e293b;
+	      border: 1px solid rgba(148,163,184,0.18);
+	      box-shadow: 0 4px 24px rgba(0,0,0,0.30);
+	      color: #f8fafc;
+	    }
+
+	    /* --- Tier 2: Hero --- */
+	    html[data-lens="finance"] .hero h1 { color: #f8fafc; }
+	    html[data-lens="finance"] .hero p  { color: #cbd5e1; }
+
+	    /* --- Tier 3: Navbar (legacy) --- */
+	    html[data-lens="finance"] nav.navbar {
+	      background: rgba(15,23,42,0.95);
+	      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+	    }
+	    html[data-lens="finance"] nav.navbar .nav-links a { color: #f8fafc; }
+	    html[data-lens="finance"] nav.navbar .nav-links a:hover { background: rgba(90,155,212,0.12); }
+	    html[data-lens="finance"] nav.navbar .login-btn { background: #5A9BD4; color: #fff; }
+	    html[data-lens="finance"] nav.navbar .login-btn:hover { background: #7ab4e0; }
+
+	    /* --- Tier 4: Section menu --- */
+	    html[data-lens="finance"] .section-menu button,
+	    html[data-lens="finance"] .section-menu__btn {
+	      background: #5A9BD4;
+	      border: 1px solid #4a8ec4;
+	      color: #fff;
+	    }
+	    html[data-lens="finance"] .section-menu button:hover,
+	    html[data-lens="finance"] .section-menu button.active,
+	    html[data-lens="finance"] .section-menu__btn:hover,
+	    html[data-lens="finance"] .section-menu__btn.is-active {
+	      background: #4a8ec4;
+	      border-color: #3d7eb4;
+	      color: #fff;
+	    }
+
+	    /* --- Tier 5: Stats & KPI cards (lifted with visible border) --- */
+	    html[data-lens="finance"] .stat,
+	    html[data-lens="finance"] .stat-btn {
+	      background: #1e293b;
+	      border-color: rgba(148,163,184,0.18);
+	    }
+	    html[data-lens="finance"] .stat-k  { color: #cbd5e1; }
+	    html[data-lens="finance"] .stat-s  { color: #94a3b8; }
+	    html[data-lens="finance"] .stat-ic { color: #5A9BD4; }
+
+	    html[data-lens="finance"] .trades-kpi-card {
+	      background: #1e293b;
+	      border-color: rgba(148,163,184,0.18);
+	    }
+	    html[data-lens="finance"] .trades-kpi-name  { color: #cbd5e1; }
+	    html[data-lens="finance"] .trades-kpi-value { color: #f8fafc; }
+	    html[data-lens="finance"] .trades-kpi-icon  { color: #5A9BD4; }
+
+	    /* --- Tier 6: Trade thumbs, panels, badges --- */
+	    html[data-lens="finance"] .trades-thumb {
+	      background: #1e293b;
+	      border-color: rgba(148,163,184,0.18);
+	    }
+	    html[data-lens="finance"] .trades-thumb-date { color: #cbd5e1; }
+	    html[data-lens="finance"] .trades-panel {
+	      background: #1e293b;
+	      border-color: rgba(148,163,184,0.18);
+	      color: #f8fafc;
+	    }
+	    html[data-lens="finance"] .trades-badge { color: #cbd5e1; }
+	    html[data-lens="finance"] .trades-subtitle { color: #cbd5e1; }
+	    html[data-lens="finance"] .trades-summary-box {
+	      background: #172033;
+	      border-color: rgba(148,163,184,0.18);
+	      border-left: 4px solid #5A9BD4;
+	      color: #f8fafc;
+	    }
+
+	    /* --- Tier 7: Pipeline steps & accordions --- */
+	    html[data-lens="finance"] .pipe-step {
+	      background: #172033;
+	      border-color: rgba(148,163,184,0.18);
+	    }
+	    html[data-lens="finance"] .pipe-node  { color: #5A9BD4; }
+	    html[data-lens="finance"] .pipe-title { color: #f8fafc; }
+	    html[data-lens="finance"] .pipe-sub   { color: #cbd5e1; }
+	    html[data-lens="finance"] .pipe-arrow { color: #64748b; }
+
+	    html[data-lens="finance"] .acc {
+	      background: #172033;
+	      border-color: rgba(148,163,184,0.18);
+	    }
+	    html[data-lens="finance"] .acc summary { color: #f8fafc; }
+	    html[data-lens="finance"] .acc ul      { color: #cbd5e1; }
+
+	    /* --- Tier 8: Buttons (bright borders, clear hover) --- */
+	    html[data-lens="finance"] .btn {
+	      background: #1e293b;
+	      border: 1px solid rgba(148,163,184,0.22);
+	      color: #f8fafc;
+	    }
+	    html[data-lens="finance"] .btn:hover {
+	      background: rgba(90,155,212,0.12);
+	      border-color: #5A9BD4;
+	      color: #fff;
+	    }
+	    html[data-lens="finance"] .btn-ghost {
+	      background: transparent;
+	      border: 1px solid rgba(148,163,184,0.25);
+	      color: #f8fafc;
+	    }
+	    html[data-lens="finance"] .btn-primary {
+	      background: #5A9BD4;
+	      color: #fff;
+	    }
+
+	    /* --- Tier 9: Fintech details --- */
+	    html[data-lens="finance"] .fintech-tech {
+	      border-top-color: rgba(148,163,184,0.15);
+	    }
+	    html[data-lens="finance"] .fintech-tech > summary {
+	      color: #f8fafc;
+	    }
+	    html[data-lens="finance"] .fintech-tech > summary:hover {
+	      color: #5A9BD4;
+	    }
+
+	    /* --- Tier 10: Contact popup, tooltips, service keys --- */
+	    html[data-lens="finance"] .contact-popup {
+	      background: #1e293b;
+	      border: 1px solid rgba(148,163,184,0.22);
+	      color: #f8fafc;
+	    }
+	    html[data-lens="finance"] .service-keys {
+	      background-color: #172033;
+	      color: #f8fafc;
+	    }
+	    html[data-lens="finance"] .service-tooltip {
+	      background: #1e293b;
+	      border-color: rgba(148,163,184,0.22);
+	      color: #f8fafc;
+	    }
+
+	    /* --- Tier 11: Gallery, steps, misc text --- */
+	    html[data-lens="finance"] .gallery-item figcaption { color: #cbd5e1; }
+	    html[data-lens="finance"] .step p { color: #cbd5e1; }
+	    html[data-lens="finance"] .session-user { color: #f8fafc; }
+	    html[data-lens="finance"] .session-user .logout-link:hover { color: #5A9BD4; }
+
+	    /* --- Tier 12: Archive nav --- */
+	    html[data-lens="finance"] .archive-nav {
+	      background: rgba(15,23,42,0.8);
 	    }
 	  </style>
 	</head>
@@ -1999,6 +2163,11 @@
 		  contentWidget.innerHTML = html || `<p>No content available.</p>`;
 		  contentWidget.classList.add("active");
 
+		  // Flash the lens toggle on first visit to this section
+		  if (typeof window.HAIPHEN?.lensFlashForSection === 'function') {
+		    window.HAIPHEN.lensFlashForSection(resolved);
+		  }
+
 		  // Wire fade-in reveal for section elements
 		  wireRevealElements(contentWidget);
 
@@ -2700,6 +2869,40 @@
 		  }
 
 		  updateSessionWidget();
+
+		  /* ---- Lens asset & tagline swapper ---- */
+		  var LENS_ASSETS = {
+		    tech: {
+		      heroLogo: 'assets/robot_haiphen.svg',
+		      headerLogo: 'assets/logo.png',
+		      tagline: 'API Everything \u00AE[<span style="color: red;">\u2665</span>]'
+		    },
+		    finance: {
+		      heroLogo: 'assets/robot_haiphen_dark.svg',
+		      headerLogo: 'assets/logo_dark.svg',
+		      tagline: 'Signals Intel \u2764\uFE0F Trading Infra'
+		    }
+		  };
+
+		  function applyLensAssets(lens) {
+		    var cfg = LENS_ASSETS[lens] || LENS_ASSETS.tech;
+		    var heroImg = document.querySelector('.hero-logo img');
+		    if (heroImg) heroImg.src = cfg.heroLogo;
+		    var hdrImg = document.querySelector('.site-header__logo');
+		    if (hdrImg) hdrImg.src = cfg.headerLogo;
+		    var tagEl = document.querySelector('.hero-tagline');
+		    if (tagEl) tagEl.innerHTML = cfg.tagline;
+		  }
+
+		  // Apply on lens change
+		  window.addEventListener('haiphen:lens', function (e) {
+		    applyLensAssets(e.detail.lens);
+		  });
+
+		  // Apply on load if finance is saved
+		  if ((window.HAIPHEN?.lens?.get?.() || 'tech') === 'finance') {
+		    applyLensAssets('finance');
+		  }
 		});
 	  </script>
 	<div id="checkout-success-mount" style="display:none;"></div>
