@@ -91,20 +91,20 @@
             <a class="session-dropdown__link" href="javascript:void(0)" role="menuitem" data-session-nav="profile">
               Profile
             </a>
+            <a class="session-dropdown__link" href="javascript:void(0)" role="menuitem" data-session-nav="getting-started">
+              Getting Started
+            </a>
             <a class="session-dropdown__link" href="javascript:void(0)" role="menuitem" data-session-nav="settings">
               Settings
+            </a>
+            <a class="session-dropdown__link" href="javascript:void(0)" role="menuitem" data-session-nav="apikeys">
+              API Keys
             </a>
             <a class="session-dropdown__link" href="javascript:void(0)" role="menuitem" data-session-nav="billing">
               Billing & Plan
             </a>
             <a class="session-dropdown__link" href="javascript:void(0)" role="menuitem" data-session-nav="quota">
               Rate Limits & Quota
-            </a>
-            <a class="session-dropdown__link" href="javascript:void(0)" role="menuitem" data-session-nav="apikeys">
-              API Keys
-            </a>
-            <a class="session-dropdown__link" href="javascript:void(0)" role="menuitem" data-session-nav="getting-started">
-              Getting Started
             </a>
           </nav>
 
@@ -122,12 +122,12 @@
 
   // Map nav items to profile sub-sections or SPA sections
   const NAV_MAP = {
-    profile:           { section: 'Profile', tab: 'overview' },
-    settings:          { section: 'Profile', tab: 'settings' },
-    billing:           { section: 'Profile', tab: 'billing' },
-    quota:             { section: 'Profile', tab: 'billing' },
-    apikeys:           { section: 'Profile', tab: 'apikeys' },
-    'getting-started': { section: 'GettingStarted' },
+    profile:           { section: 'Profile', tab: 'overview', hash: '#profile' },
+    settings:          { section: 'Profile', tab: 'settings', hash: '#profile:settings' },
+    billing:           { section: 'Profile', tab: 'billing', hash: '#profile:billing' },
+    quota:             { section: 'Profile', tab: 'billing', hash: '#profile:billing' },
+    apikeys:           { section: 'Profile', tab: 'apikeys', hash: '#profile:apikeys' },
+    'getting-started': { section: 'GettingStarted', hash: '#getting-started' },
   };
 
   function renderLoggedIn(slot, user) {
@@ -165,6 +165,11 @@
           }, { once: true });
         }
         pill.setAttribute('aria-expanded', 'false');
+
+        // Update URL hash for shareability
+        if (mapping?.hash) {
+          window.location.hash = mapping.hash;
+        }
 
         window.dispatchEvent(new CustomEvent('haiphen:session:navigate', {
           detail: { page, tab: mapping?.tab || null },

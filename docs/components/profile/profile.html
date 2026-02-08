@@ -375,14 +375,20 @@
       <div class="hp-card__hd">
         <div>
           <div class="hp-card__title">Billing & Plan</div>
-          <div class="hp-card__sub">View your current plan and upgrade options.</div>
+          <div class="hp-card__sub">View your current plan, subscriptions, and manage billing.</div>
         </div>
       </div>
       <div class="hp-card__bd">
+        <div class="hp-status" data-profile-billing-status hidden></div>
+
         <div class="hp-kv">
           <div class="hp-kv__row">
             <div class="hp-kv__k">Current Plan</div>
             <div class="hp-kv__v"><span class="hp-pill" data-profile-billing-plan>—</span></div>
+          </div>
+          <div class="hp-kv__row">
+            <div class="hp-kv__k">Status</div>
+            <div class="hp-kv__v" data-profile-plan-status>—</div>
           </div>
           <div class="hp-kv__row">
             <div class="hp-kv__k">Rate Limit</div>
@@ -396,11 +402,38 @@
 
         <div class="hp-divider"></div>
 
+        <!-- Subscriptions table -->
+        <div class="hp-billing-subs" data-profile-subs-section hidden>
+          <div class="hp-billing-subs__title">Subscriptions</div>
+          <div class="hp-tableWrap">
+            <table class="hp-table" aria-label="Subscriptions">
+              <thead>
+                <tr>
+                  <th>Service</th>
+                  <th>Status</th>
+                  <th>Since</th>
+                </tr>
+              </thead>
+              <tbody data-profile-subs-tbody>
+                <tr><td colspan="3" class="hp-muted">Loading…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="hp-divider"></div>
+
         <div class="hp-billing-cta">
           <a class="hp-profile__btn hp-profile__btn--primary" href="#subscribe">
             Upgrade Plan
           </a>
-          <span class="hp-pref__note">Upgrade for higher rate limits and more services.</span>
+          <button class="hp-profile__btn hp-profile__btn--primary" type="button" data-profile-action="portal" hidden>
+            Manage Billing
+          </button>
+          <button class="hp-profile__btn hp-profile__btn--danger" type="button" data-profile-action="suspend" hidden>
+            Cancel Plan
+          </button>
+          <span class="hp-pref__note" data-profile-billing-note>Upgrade for higher rate limits and more services.</span>
         </div>
       </div>
     </div>

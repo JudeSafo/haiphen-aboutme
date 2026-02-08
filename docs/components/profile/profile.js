@@ -439,7 +439,7 @@
     await hydrateOnboardingLinks(root);
 
     // 2d) billing tab
-    hydrateBillingTab(root, me);
+    await hydrateBillingTab(root, me);
 
     // 3) render sticky reveal (if present)
     renderReveal(root);
@@ -725,7 +725,20 @@
     });
   }
 
-  function hydrateBillingTab(root, me) {
+  const CHECKOUT_ORIGIN = 'https://checkout.haiphen.io';
+
+  function setBillingStatus(root, msg, kind) {
+    const el = qs('[data-profile-billing-status]', root);
+    if (!el) return;
+    if (!msg) { el.hidden = true; el.textContent = ''; el.classList.remove('hp-status--ok', 'hp-status--warn'); return; }
+    el.hidden = false;
+    el.textContent = String(msg);
+    el.classList.remove('hp-status--ok', 'hp-status--warn');
+    if (kind === 'ok') el.classList.add('hp-status--ok');
+    if (kind === 'warn') el.classList.add('hp-status--warn');
+  }
+
+  async function hydrateBillingTab(root, me) {
     const plan = me?.plan || me?.entitlements?.plan || 'free';
     const billingPlanEl = qs('[data-profile-billing-plan]', root);
     if (billingPlanEl) {
@@ -738,6 +751,66 @@
     const QUOTAS = { free: '200/day', pro: '10,000/day', enterprise: '50,000/day' };
     setText(qs('[data-profile-rate-limit]', root), RATE_LIMITS[plan.toLowerCase()] || '60/min');
     setText(qs('[data-profile-daily-quota]', root), QUOTAS[plan.toLowerCase()] || '200/day');
+
+    // Fetch live billing data from checkout worker
+    let accountData = null;
+    try {
+      accountData = await getJson(`${CHECKOUT_ORIGIN}/v1/account/status`);
+    } catch (e) {
+      // Non-critical: if checkout is unreachable, static data is still shown
+      console.warn(LOG, 'failed to load account status', e);
+    }
+
+    if (accountData?.ok) {
+      // Plan status
+      const statusText = accountData.plan_active ? 'Active' : (accountData.entitled ? 'Entitled' : 'Inactive');
+      setText(qs('[data-profile-plan-status]', root), statusText);
+
+      // Update plan from live data if different
+      const livePlan = accountData.plan || plan;
+      if (billingPlanEl) {
+        setText(billingPlanEl, livePlan);
+        billingPlanEl.classList.remove('hp-pill--free', 'hp-pill--pro', 'hp-pill--enterprise');
+        billingPlanEl.classList.add(`hp-pill--${livePlan.toLowerCase()}`);
+      }
+      setText(qs('[data-profile-rate-limit]', root), RATE_LIMITS[livePlan.toLowerCase()] || '60/min');
+      setText(qs('[data-profile-daily-quota]', root), QUOTAS[livePlan.toLowerCase()] || '200/day');
+
+      // Subscriptions table
+      const subs = Array.isArray(accountData.subscriptions) ? accountData.subscriptions : [];
+      const subsSection = qs('[data-profile-subs-section]', root);
+      const subsTbody = qs('[data-profile-subs-tbody]', root);
+
+      if (subs.length > 0 && subsSection && subsTbody) {
+        subsSection.hidden = false;
+        subsTbody.innerHTML = subs.map((s) => {
+          const sid = escapeHtml(s.service_id || '—');
+          const status = escapeHtml(s.status || '—');
+          const since = s.current_period_start ? escapeHtml(fmtIso(s.current_period_start)) : '—';
+          const badgeClass = s.status === 'active' ? 'hp-badge hp-badge--active' :
+                             s.status === 'trialing' ? 'hp-badge hp-badge--active' :
+                             'hp-badge hp-badge--revoked';
+          return `<tr><td>${sid}</td><td><span class="${badgeClass}">${status}</span></td><td>${since}</td></tr>`;
+        }).join('');
+      }
+
+      // Show portal + cancel buttons for paying users
+      const portalBtn = qs('[data-profile-action="portal"]', root);
+      const suspendBtn = qs('[data-profile-action="suspend"]', root);
+      const hasStripeCustomer = !!accountData.stripe_customer_id;
+      const hasActiveSubs = subs.some((s) => s.status === 'active' || s.status === 'trialing');
+
+      if (portalBtn && hasStripeCustomer) portalBtn.hidden = false;
+      if (suspendBtn && hasActiveSubs) suspendBtn.hidden = false;
+
+      // Update note text for paid users
+      const noteEl = qs('[data-profile-billing-note]', root);
+      if (noteEl && hasActiveSubs) {
+        noteEl.textContent = 'Manage your subscription or cancel anytime.';
+      }
+    } else {
+      setText(qs('[data-profile-plan-status]', root), plan === 'free' ? 'Free tier' : '—');
+    }
   }
 
   function wire(root) {
@@ -809,6 +882,58 @@
         return;
       }
 
+      const portal = t?.closest?.('[data-profile-action="portal"]');
+      if (portal) {
+        e.preventDefault();
+        portal.disabled = true;
+        portal.textContent = 'Opening…';
+        setBillingStatus(root, 'Opening Stripe billing portal…', '');
+        try {
+          const res = await postJson(`${CHECKOUT_ORIGIN}/v1/billing/portal`, {});
+          if (res?.url) {
+            window.location.assign(res.url);
+          } else {
+            setBillingStatus(root, 'Unable to open billing portal.', 'warn');
+          }
+        } catch (err) {
+          setBillingStatus(root, `Portal error: ${err?.message || err}`, 'warn');
+        } finally {
+          portal.disabled = false;
+          portal.textContent = 'Manage Billing';
+        }
+        return;
+      }
+
+      const suspend = t?.closest?.('[data-profile-action="suspend"]');
+      if (suspend) {
+        e.preventDefault();
+        const confirmed = window.confirm(
+          'Cancel your plan? All active subscriptions will be canceled with a prorated refund. You will be downgraded to the free tier.'
+        );
+        if (!confirmed) return;
+
+        suspend.disabled = true;
+        suspend.textContent = 'Canceling…';
+        setBillingStatus(root, 'Canceling subscriptions…', '');
+        try {
+          const res = await postJson(`${CHECKOUT_ORIGIN}/v1/account/suspend`, {});
+          if (res?.ok) {
+            const note = res.refund_note || 'Plan canceled.';
+            setBillingStatus(root, `Plan canceled. ${note}`, 'ok');
+            // Refresh billing tab to show updated state
+            await hydrate(root);
+          } else {
+            setBillingStatus(root, `Cancel failed: ${res?.error || 'Unknown error'}`, 'warn');
+          }
+        } catch (err) {
+          setBillingStatus(root, `Cancel failed: ${err?.message || err}`, 'warn');
+        } finally {
+          suspend.disabled = false;
+          suspend.textContent = 'Cancel Plan';
+        }
+        return;
+      }
+
       // Not present in your current HTML, but harmless to keep.
       const close = t?.closest?.('[data-profile-action="close"]');
       if (close) {
@@ -849,7 +974,7 @@
   NS.showProfile = async function showProfileWithHash(opts = {}) {
     const preserveHash = !!opts?.preserveHash;
     const subId = String(opts?.subId || '').trim();
-    const tab = String(opts?.tab || '').trim();
+    const tab = String(opts?.tab || opts?.subId || '').trim();
     if (!preserveHash) setProfileHash(subId);
     return await showProfile({ subId, tab });
   };

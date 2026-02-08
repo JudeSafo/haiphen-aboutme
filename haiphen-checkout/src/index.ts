@@ -639,6 +639,40 @@ async function stripePostForm(
 }
 
 /**
+ * Stripe DELETE helper (e.g. cancel subscription with proration).
+ */
+async function stripeDelete(
+  env: Env,
+  path: string,
+  form?: URLSearchParams
+): Promise<any> {
+  const res = await fetch(`https://api.stripe.com${path}`, {
+    method: "DELETE",
+    headers: {
+      authorization: `Bearer ${env.STRIPE_SECRET_KEY}`,
+      ...(form ? { "content-type": "application/x-www-form-urlencoded" } : {}),
+    },
+    ...(form ? { body: form.toString() } : {}),
+  });
+
+  const text = await res.text();
+  let data: any;
+  try {
+    data = JSON.parse(text);
+  } catch {
+    data = { raw: text };
+  }
+
+  if (!res.ok) {
+    console.error("Stripe DELETE error", res.status, data);
+    throw new Error(
+      `Stripe error ${res.status}: ${data?.error?.message ?? "unknown"}`
+    );
+  }
+  return data;
+}
+
+/**
  * Stripe webhook signature verification (v1).
  * We compute HMAC-SHA256 over `${t}.${rawBody}` and compare with any v1 signature.
  */
@@ -1467,6 +1501,153 @@ export default {
 
         return json(
           { ok: true, service_id: serviceId, message: "You'll be notified when this service launches." },
+          { headers: h },
+        );
+      }
+
+      // ── Account status ──────────────────────────────────────────────────
+      // GET /v1/account/status — returns plan, subscriptions, Stripe customer ID
+      if (url.pathname === "/v1/account/status" && req.method === "GET") {
+        const authed = await requireAuth(req, env);
+        const access = await getAccessState(env, authed.userLogin);
+
+        // Fetch active service subscriptions
+        const subsResult = await env.DB.prepare(
+          `SELECT service_id, status, stripe_subscription_id, stripe_customer_id, current_period_start, current_period_end
+           FROM service_subscriptions
+           WHERE user_login = ?
+           ORDER BY updated_at DESC`
+        )
+          .bind(authed.userLogin)
+          .all();
+
+        const subscriptions = (subsResult?.results ?? []).map((row: any) => ({
+          service_id: row.service_id,
+          status: row.status,
+          stripe_subscription_id: row.stripe_subscription_id ?? null,
+          stripe_customer_id: row.stripe_customer_id ?? null,
+          current_period_start: row.current_period_start ?? null,
+          current_period_end: row.current_period_end ?? null,
+        }));
+
+        // Find a stripe_customer_id from any subscription
+        const stripeCustomerId =
+          subscriptions.find((s: any) => s.stripe_customer_id)?.stripe_customer_id ?? null;
+
+        return json(
+          {
+            ok: true,
+            plan: access.plan,
+            plan_active: access.planActive,
+            entitled: access.entitled,
+            subscriptions,
+            stripe_customer_id: stripeCustomerId,
+          },
+          { headers: h },
+        );
+      }
+
+      // ── Billing portal ────────────────────────────────────────────────────
+      // POST /v1/billing/portal — creates a Stripe Customer Portal session
+      if (url.pathname === "/v1/billing/portal" && req.method === "POST") {
+        const authed = await requireAuth(req, env);
+
+        // Find stripe_customer_id
+        const sub = await env.DB.prepare(
+          `SELECT stripe_customer_id FROM service_subscriptions
+           WHERE user_login = ? AND stripe_customer_id IS NOT NULL
+           LIMIT 1`
+        )
+          .bind(authed.userLogin)
+          .first<{ stripe_customer_id: string }>();
+
+        if (!sub?.stripe_customer_id) {
+          return badRequest("No Stripe customer found. You may not have an active subscription.");
+        }
+
+        const returnUrl =
+          env.PUBLIC_SITE_ORIGIN
+            ? `${env.PUBLIC_SITE_ORIGIN}/#profile:billing`
+            : "https://haiphen.io/#profile:billing";
+
+        const form = new URLSearchParams();
+        form.set("customer", sub.stripe_customer_id);
+        form.set("return_url", returnUrl);
+
+        const session = await stripePostForm(env, "/v1/billing_portal/sessions", form);
+
+        return json({ ok: true, url: session.url }, { headers: h });
+      }
+
+      // ── Account suspend ───────────────────────────────────────────────────
+      // POST /v1/account/suspend — cancels all active Stripe subscriptions with proration
+      if (url.pathname === "/v1/account/suspend" && req.method === "POST") {
+        const authed = await requireAuth(req, env);
+
+        // Find all active subscriptions with Stripe IDs
+        const activeSubs = await env.DB.prepare(
+          `SELECT service_id, stripe_subscription_id FROM service_subscriptions
+           WHERE user_login = ? AND status IN ('active','trialing') AND stripe_subscription_id IS NOT NULL`
+        )
+          .bind(authed.userLogin)
+          .all();
+
+        const rows = activeSubs?.results ?? [];
+        const canceled: string[] = [];
+
+        for (const row of rows) {
+          const subId = (row as any).stripe_subscription_id;
+          if (!subId) continue;
+
+          try {
+            const form = new URLSearchParams();
+            form.set("prorate", "true");
+            await stripeDelete(env, `/v1/subscriptions/${subId}`, form);
+            canceled.push(subId);
+          } catch (err: any) {
+            console.error("suspend.cancel_failed", { subId, error: err?.message });
+          }
+        }
+
+        // Update service_subscriptions status
+        if (canceled.length > 0) {
+          await env.DB.prepare(
+            `UPDATE service_subscriptions SET status = 'canceled', updated_at = datetime('now')
+             WHERE user_login = ? AND stripe_subscription_id IN (${canceled.map(() => '?').join(',')})`
+          )
+            .bind(authed.userLogin, ...canceled)
+            .run();
+        }
+
+        // Downgrade plan to free
+        await env.DB.prepare(
+          `UPDATE plans SET plan = 'free', active = 0, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now')
+           WHERE user_login = ?`
+        )
+          .bind(authed.userLogin)
+          .run();
+
+        // Deactivate entitlements
+        await env.DB.prepare(
+          `UPDATE entitlements SET active = 0, updated_at = unixepoch()
+           WHERE user_login = ?`
+        )
+          .bind(authed.userLogin)
+          .run();
+
+        // Remove KV entitlement
+        try {
+          await env.ENTITLE_KV.delete(`paid:${authed.userLogin}`);
+        } catch {
+          // best-effort
+        }
+
+        return json(
+          {
+            ok: true,
+            canceled,
+            refund_note: "Prorated refund will appear on your next billing statement.",
+          },
           { headers: h },
         );
       }

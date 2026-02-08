@@ -2364,8 +2364,8 @@
 		      const contentWidget = document.getElementById("content-widget");
 		      if (contentWidget) contentWidget.classList.add("active");
 
-		      // Open profile
-		      window.HAIPHEN?.showProfile?.({ preserveHash: true, subId: subId || '' });
+		      // Open profile — pass subId as tab so #profile:billing opens the billing tab
+		      window.HAIPHEN?.showProfile?.({ preserveHash: true, subId: subId || '', tab: subId || '' });
 		    } catch (e) {
 		      console.warn('[router] #profile failed', e);
 		    }

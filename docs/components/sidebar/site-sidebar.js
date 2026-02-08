@@ -119,12 +119,12 @@
 
     // Map nav items to profile sub-sections or SPA sections
     const NAV_MAP = {
-      profile:           { section: 'Profile', tab: 'overview' },
-      settings:          { section: 'Profile', tab: 'settings' },
-      billing:           { section: 'Profile', tab: 'billing' },
-      quota:             { section: 'Profile', tab: 'billing' },
-      apikeys:           { section: 'Profile', tab: 'apikeys' },
-      'getting-started': { section: 'GettingStarted' },
+      profile:           { section: 'Profile', tab: 'overview', hash: '#profile' },
+      settings:          { section: 'Profile', tab: 'settings', hash: '#profile:settings' },
+      billing:           { section: 'Profile', tab: 'billing', hash: '#profile:billing' },
+      quota:             { section: 'Profile', tab: 'billing', hash: '#profile:billing' },
+      apikeys:           { section: 'Profile', tab: 'apikeys', hash: '#profile:apikeys' },
+      'getting-started': { section: 'GettingStarted', hash: '#getting-started' },
     };
 
     function sidebarMenuHtml(user) {
@@ -148,20 +148,20 @@
               <a class="sidebar-session-link" href="javascript:void(0)" role="menuitem" data-session-nav="profile">
                 Profile
               </a>
+              <a class="sidebar-session-link" href="javascript:void(0)" role="menuitem" data-session-nav="getting-started">
+                Getting Started
+              </a>
               <a class="sidebar-session-link" href="javascript:void(0)" role="menuitem" data-session-nav="settings">
                 Settings
+              </a>
+              <a class="sidebar-session-link" href="javascript:void(0)" role="menuitem" data-session-nav="apikeys">
+                API Keys
               </a>
               <a class="sidebar-session-link" href="javascript:void(0)" role="menuitem" data-session-nav="billing">
                 Billing & Plan
               </a>
               <a class="sidebar-session-link" href="javascript:void(0)" role="menuitem" data-session-nav="quota">
                 Rate Limits & Quota
-              </a>
-              <a class="sidebar-session-link" href="javascript:void(0)" role="menuitem" data-session-nav="apikeys">
-                API Keys
-              </a>
-              <a class="sidebar-session-link" href="javascript:void(0)" role="menuitem" data-session-nav="getting-started">
-                Getting Started
               </a>
             </nav>
 
@@ -212,6 +212,11 @@
               dropdown.style.removeProperty('pointer-events');
               menu.removeEventListener('mouseleave', handler);
             }, { once: true });
+          }
+
+          // Update URL hash for shareability
+          if (mapping?.hash) {
+            window.location.hash = mapping.hash;
           }
 
           window.dispatchEvent(new CustomEvent('haiphen:session:navigate', {
@@ -266,7 +271,11 @@
       return escapeHtml(s);
     }
 
+    let _sessionReceived = false;
+
     function onSessionReady(e) {
+      if (_sessionReceived) return;
+      _sessionReceived = true;
       const user = e?.detail?.user || null;
       if (!user) return renderLoggedOut();
       return renderLoggedIn(user);
@@ -274,12 +283,15 @@
 
     window.addEventListener('haiphen:session:ready', onSessionReady);
 
-    // Bootstrap immediately
-    (async () => {
+    // Fallback: if header hasn't fired haiphen:session:ready within 3s, bootstrap independently
+    setTimeout(async () => {
+      if (_sessionReceived) return;
       const me = await authMe();
+      if (_sessionReceived) return; // event fired while we were fetching
+      _sessionReceived = true;
       if (!me.ok || !me.user) return renderLoggedOut();
       return renderLoggedIn(me.user);
-    })();
+    }, 3000);
   }
 
   async function loadSidebar() {
