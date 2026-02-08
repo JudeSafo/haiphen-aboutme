@@ -2072,6 +2072,11 @@
 
 		        const cohortHtmlResp = await fetch("components/cohort/cohort.html", { cache: "no-store" });
 		        cohortMount.innerHTML = await cohortHtmlResp.text();
+		        // Lazy-load the video iframe only when cohort is visible
+		        cohortMount.querySelectorAll('iframe[data-src]').forEach(function(f) {
+		          f.src = f.getAttribute('data-src');
+		          f.removeAttribute('data-src');
+		        });
 		        window.HAIPHEN?.Cohort?.init?.(cohortMount);
 		      } catch (e) {
 		        console.warn("[Trades] failed to load Cohort", e);
