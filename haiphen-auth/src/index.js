@@ -160,6 +160,318 @@ async function googleToken(code, clientId, clientSecret, redirectUri) {
 }
 
 /**
+ * Upsert user record in D1 during OAuth callback.
+ * Returns { isNew } so caller can trigger first-login flows.
+ * Best-effort: never block the login flow if DB write fails.
+ */
+async function ensureUserInDb(env, userLogin, name, email) {
+  if (!env.DB) return { isNew: false };
+  try {
+    // Check if user already exists (for first-login detection)
+    const existing = await env.DB.prepare(
+      `SELECT user_login FROM users WHERE user_login = ?`
+    ).bind(userLogin).first();
+    const isNew = !existing;
+
+    await env.DB.prepare(`
+      INSERT INTO users(user_login, name, email, last_seen_at)
+      VALUES (?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+      ON CONFLICT(user_login) DO UPDATE SET
+        name = COALESCE(excluded.name, users.name),
+        email = COALESCE(excluded.email, users.email),
+        last_seen_at = strftime('%Y-%m-%dT%H:%M:%fZ','now')
+    `).bind(userLogin, name || null, email || null).run();
+    await env.DB.prepare(`
+      INSERT OR IGNORE INTO plans(user_login, plan, active) VALUES (?, 'free', 1)
+    `).bind(userLogin).run();
+
+    return { isNew };
+  } catch (e) {
+    console.error('ensureUserInDb failed (non-fatal):', e);
+    return { isNew: false };
+  }
+}
+
+/**
+ * Send first-login notification emails:
+ *  1) Admin alert to OWNER_EMAIL (jude@haiphen.io)
+ *  2) Welcome email to the new user
+ * Idempotent via welcome_emails table.
+ */
+async function sendFirstLoginEmails(env, userLogin, name, email, provider) {
+  if (!env.SENDGRID_API_KEY || !env.DB) return;
+  const ownerEmail = env.OWNER_EMAIL || 'jude@haiphen.io';
+  const fromEmail = env.FROM_EMAIL || 'jude@haiphen.io';
+  const fromName = env.FROM_NAME || 'Haiphen';
+
+  try {
+    // Idempotency check — skip if already sent
+    const already = await env.DB.prepare(
+      `SELECT sent_at FROM welcome_emails WHERE user_login = ? LIMIT 1`
+    ).bind(userLogin).first();
+    if (already) return;
+
+    const now = new Date();
+    const signupDate = now.toISOString().slice(0, 10);
+    const signupTime = now.toISOString().slice(11, 19) + ' UTC';
+    const outreachBy = new Date(now.getTime() + 48 * 60 * 60 * 1000)
+      .toISOString().slice(0, 10);
+    const displayName = name || userLogin;
+    const displayEmail = email || '(none)';
+    const providerLabel = (provider || 'github').charAt(0).toUpperCase()
+      + (provider || 'github').slice(1);
+
+    // ── 1) Admin notification to jude@haiphen.io ──
+    const adminHtml = `
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"></head>
+<body style="margin:0;padding:0;background:#f6f8fb;font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f6f8fb;">
+<tr><td align="center" style="padding:32px 16px;">
+<table role="presentation" width="560" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;width:100%;background:#fff;border:1px solid #e6ecf3;border-radius:16px;overflow:hidden;">
+
+  <tr><td style="padding:22px 28px 14px;">
+    <div style="font-weight:900;font-size:18px;color:#2c3e50;">New User Signup</div>
+    <div style="font-size:12px;color:#667;margin-top:2px;">Haiphen &bull; ${signupDate}</div>
+  </td></tr>
+
+  <tr><td style="padding:0 28px;"><div style="height:1px;background:#e6ecf3;"></div></td></tr>
+
+  <tr><td style="padding:14px 28px;">
+    <div style="background:#ecfdf5;border:1px solid #a7f3d0;border-radius:12px;padding:12px 14px;">
+      <div style="font-size:13px;font-weight:800;color:#065f46;">A new user just signed up via ${providerLabel}</div>
+    </div>
+  </td></tr>
+
+  <tr><td style="padding:10px 28px 22px;">
+    <div style="background:#fbfcfe;border:1px solid #e6ecf3;border-radius:12px;padding:14px;margin-bottom:16px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+        <tr>
+          <td style="padding:7px 0;font-size:13px;color:#667;">Name</td>
+          <td style="padding:7px 0;font-size:13px;color:#2c3e50;font-weight:700;text-align:right;">${escHtml(displayName)}</td>
+        </tr>
+        <tr>
+          <td style="padding:7px 0;font-size:13px;color:#667;border-top:1px solid #eef2f7;">Email</td>
+          <td style="padding:7px 0;font-size:13px;color:#2c3e50;font-weight:700;text-align:right;">${escHtml(displayEmail)}</td>
+        </tr>
+        <tr>
+          <td style="padding:7px 0;font-size:13px;color:#667;border-top:1px solid #eef2f7;">User ID</td>
+          <td style="padding:7px 0;font-size:13px;color:#2c3e50;font-weight:700;text-align:right;">${escHtml(userLogin)}</td>
+        </tr>
+        <tr>
+          <td style="padding:7px 0;font-size:13px;color:#667;border-top:1px solid #eef2f7;">Provider</td>
+          <td style="padding:7px 0;font-size:13px;color:#5A9BD4;font-weight:700;text-align:right;">${providerLabel}</td>
+        </tr>
+        <tr>
+          <td style="padding:7px 0;font-size:13px;color:#667;border-top:1px solid #eef2f7;">Signed up</td>
+          <td style="padding:7px 0;font-size:13px;color:#2c3e50;font-weight:700;text-align:right;">${signupDate} ${signupTime}</td>
+        </tr>
+      </table>
+    </div>
+
+    <div style="font-size:14px;font-weight:900;color:#2c3e50;margin-bottom:10px;">Suggested outreach</div>
+    <div style="background:#fbfcfe;border:1px solid #e6ecf3;border-left:3px solid #5A9BD4;border-radius:12px;padding:14px;margin-bottom:16px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td style="padding:5px 0;vertical-align:top;width:18px;">
+            <div style="width:6px;height:6px;border-radius:50%;background:#5A9BD4;margin-top:6px;"></div>
+          </td>
+          <td style="padding:5px 0 5px 8px;font-size:13px;line-height:1.5;color:#556;">
+            <strong style="color:#2c3e50;">Within 48 hours</strong> (by ${outreachBy}) &mdash; Send a personal welcome email introducing yourself and asking about their use case.
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:5px 0;vertical-align:top;width:18px;">
+            <div style="width:6px;height:6px;border-radius:50%;background:#5A9BD4;margin-top:6px;"></div>
+          </td>
+          <td style="padding:5px 0 5px 8px;font-size:13px;line-height:1.5;color:#556;">
+            <strong style="color:#2c3e50;">Day 3&ndash;5</strong> &mdash; Follow up with a quick demo link or schedule a 15-min call via your <a href="https://calendar.app.google/jQzWz98eCC5jMLrQA" style="color:#5A9BD4;text-decoration:none;font-weight:700;">booking calendar</a>.
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:5px 0;vertical-align:top;width:18px;">
+            <div style="width:6px;height:6px;border-radius:50%;background:#5A9BD4;margin-top:6px;"></div>
+          </td>
+          <td style="padding:5px 0 5px 8px;font-size:13px;line-height:1.5;color:#556;">
+            <strong style="color:#2c3e50;">Day 7</strong> &mdash; If no response, send a final nudge with a link to the cohort program or a relevant case study.
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <div style="font-size:13px;color:#667;line-height:1.6;">
+      Quick links:
+      <a href="https://haiphen.io/#profile" style="color:#5A9BD4;text-decoration:none;font-weight:700;">User profile</a> &bull;
+      <a href="https://haiphen.io/#docs" style="color:#5A9BD4;text-decoration:none;font-weight:700;">API docs</a> &bull;
+      <a href="https://haiphen.io/#cohort" style="color:#5A9BD4;text-decoration:none;font-weight:700;">Cohort program</a>
+    </div>
+  </td></tr>
+
+  <tr><td style="padding:0 28px;"><div style="height:1px;background:#e6ecf3;"></div></td></tr>
+  <tr><td style="padding:14px 28px;text-align:center;">
+    <div style="font-size:11px;color:#778;">Haiphen internal notification &bull; ${signupDate}</div>
+  </td></tr>
+</table>
+</td></tr></table>
+</body></html>`;
+
+    await sgSend(env.SENDGRID_API_KEY, {
+      from: { email: fromEmail, name: fromName },
+      personalizations: [{
+        to: [{ email: ownerEmail }],
+        subject: `New signup: ${displayName} (${displayEmail}) via ${providerLabel}`,
+      }],
+      content: [
+        { type: 'text/html', value: adminHtml },
+      ],
+    });
+    console.log('[first-login] admin notification sent', { userLogin, email: ownerEmail });
+
+    // ── 2) Welcome email to the new user ──
+    if (email) {
+      const userHtml = buildWelcomeHtml(displayName, userLogin, providerLabel);
+      await sgSend(env.SENDGRID_API_KEY, {
+        from: { email: fromEmail, name: fromName },
+        personalizations: [{
+          to: [{ email, name: displayName }],
+          subject: 'Welcome to Haiphen',
+        }],
+        content: [
+          { type: 'text/html', value: userHtml },
+        ],
+      });
+      console.log('[first-login] welcome email sent', { userLogin, email });
+    }
+
+    // ── 3) Record in welcome_emails for idempotency ──
+    await env.DB.prepare(
+      `INSERT OR IGNORE INTO welcome_emails(user_login, sent_at, source, details_json)
+       VALUES (?, strftime('%Y-%m-%dT%H:%M:%fZ','now'), 'oauth_callback', ?)`
+    ).bind(userLogin, JSON.stringify({ name, email, provider })).run();
+
+  } catch (e) {
+    console.error('[first-login] email send failed (non-fatal):', e);
+  }
+}
+
+function escHtml(s) {
+  return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function buildWelcomeHtml(name, userLogin, provider) {
+  return `<!DOCTYPE html>
+<html><head><meta charset="utf-8"></head>
+<body style="margin:0;padding:0;background:#f6f8fb;font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f6f8fb;">
+<tr><td align="center" style="padding:32px 16px;">
+<table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;background:#fff;border:1px solid #e6ecf3;border-radius:16px;overflow:hidden;">
+
+  <tr><td style="padding:22px 28px 14px;">
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
+      <td align="left" style="vertical-align:middle;">
+        <div style="font-weight:900;font-size:18px;color:#2c3e50;line-height:1.3;">Haiphen</div>
+        <div style="font-size:12px;color:#667;line-height:1.4;margin-top:2px;">Signals intelligence &bull; automated trading telemetry &bull; API Everything &hearts;</div>
+      </td>
+      <td align="right" style="vertical-align:middle;">
+        <a href="https://haiphen.io" style="font-size:12px;color:#5A9BD4;font-weight:700;text-decoration:none;">haiphen.io</a>
+      </td>
+    </tr></table>
+  </td></tr>
+
+  <tr><td style="padding:0 28px;"><div style="height:1px;background:#e6ecf3;"></div></td></tr>
+
+  <tr><td style="padding:14px 28px;">
+    <div style="background:#ecfdf5;border:1px solid #a7f3d0;border-radius:12px;padding:12px 14px;">
+      <div style="font-size:13px;font-weight:800;color:#065f46;">Welcome to Haiphen, ${escHtml(name)}!</div>
+    </div>
+  </td></tr>
+
+  <tr><td style="padding:10px 28px 22px;">
+    <p style="margin:0 0 14px;font-size:15px;line-height:1.6;color:#2c3e50;font-weight:700;">
+      Hi ${escHtml(name)},
+    </p>
+    <p style="margin:0 0 20px;font-size:14px;line-height:1.6;color:#556;">
+      Your account has been created. Here are a few things to get you started:
+    </p>
+
+    <div style="background:#fbfcfe;border:1px solid #e6ecf3;border-radius:12px;padding:14px;margin-bottom:20px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td style="padding:5px 0;vertical-align:top;width:18px;">
+            <div style="width:6px;height:6px;border-radius:50%;background:#10B981;margin-top:6px;"></div>
+          </td>
+          <td style="padding:5px 0 5px 8px;font-size:13px;line-height:1.5;color:#556;">
+            <strong style="color:#2c3e50;">Explore the API docs</strong> &mdash; See endpoints, try live requests, and generate your API key.
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:5px 0;vertical-align:top;width:18px;">
+            <div style="width:6px;height:6px;border-radius:50%;background:#10B981;margin-top:6px;"></div>
+          </td>
+          <td style="padding:5px 0 5px 8px;font-size:13px;line-height:1.5;color:#556;">
+            <strong style="color:#2c3e50;">Set up your profile</strong> &mdash; Configure notification preferences and manage API keys.
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:5px 0;vertical-align:top;width:18px;">
+            <div style="width:6px;height:6px;border-radius:50%;background:#10B981;margin-top:6px;"></div>
+          </td>
+          <td style="padding:5px 0 5px 8px;font-size:13px;line-height:1.5;color:#556;">
+            <strong style="color:#2c3e50;">Join the cohort program</strong> &mdash; Connect with other users and get early access to new features.
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+      <tr>
+        <td align="center">
+          <a href="https://haiphen.io/#getting-started" style="display:inline-block;background-color:#5A9BD4;color:#ffffff;font-size:14px;font-weight:900;text-decoration:none;padding:12px 28px;border-radius:12px;">Get Started</a>
+        </td>
+      </tr>
+    </table>
+
+    <p style="margin:20px 0 0;font-size:13px;line-height:1.6;color:#667;">
+      Questions? Reply to this email or reach us at <a href="mailto:pi@haiphenai.com" style="color:#5A9BD4;text-decoration:none;font-weight:700;">pi@haiphenai.com</a>.
+    </p>
+  </td></tr>
+
+  <tr><td style="padding:0 28px;"><div style="height:1px;background:#e6ecf3;"></div></td></tr>
+  <tr><td style="padding:18px 28px 22px;">
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr><td align="center">
+      <p style="margin:0 0 6px;font-size:11px;color:#778;line-height:1.5;">
+        Haiphen &bull; Manhattan, NY &bull; <a href="mailto:pi@haiphenai.com" style="color:#778;text-decoration:none;">pi@haiphenai.com</a> &bull; (512) 910-4544
+      </p>
+      <p style="margin:0;font-size:11px;color:#778;line-height:1.5;">
+        You received this because you just signed up on <a href="https://haiphen.io" style="color:#5A9BD4;text-decoration:none;font-weight:700;">haiphen.io</a>.
+      </p>
+    </td></tr></table>
+  </td></tr>
+
+</table>
+</td></tr></table>
+</body></html>`;
+}
+
+async function sgSend(apiKey, body) {
+  const resp = await fetch('https://api.sendgrid.com/v3/mail/send', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  });
+  if (!resp.ok) {
+    const text = await resp.text().catch(() => '');
+    console.error('[sgSend] failed', { status: resp.status, body: text });
+  }
+  return resp;
+}
+
+
+/**
  * Fetch Google user profile.
  */
 async function googleUserInfo(accessToken) {
@@ -220,7 +532,7 @@ async function getUserFromToken(token, jwtKey, env) {
 /**
  * Handle all requests to auth.haiphen.io
  */
-async function handleAuth(req, env, jwtKey) {
+async function handleAuth(req, env, jwtKey, ctx) {
   const origin = req.headers.get('Origin') || 'https://haiphen.io';
   const url = new URL(req.url);
   const { GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET } = env;
@@ -350,6 +662,12 @@ async function handleAuth(req, env, jwtKey) {
         .setAudience('haiphen-auth')
         .sign(jwtKey);
 
+      // Persist user in D1 + send first-login emails (best-effort, non-blocking)
+      ctx.waitUntil((async () => {
+        const { isNew } = await ensureUserInDb(env, user.login, user.name, user.email);
+        if (isNew) await sendFirstLoginEmails(env, user.login, user.name, user.email, 'github');
+      })());
+
       // wide cookie across *.haiphen.io
       const cookie = buildAuthCookie(jwt, { maxAge: 604800 });
 
@@ -426,6 +744,12 @@ async function handleAuth(req, env, jwtKey) {
         .setExpirationTime(exp)
         .setAudience('haiphen-auth')
         .sign(jwtKey);
+
+      // Persist user in D1 + send first-login emails (best-effort, non-blocking)
+      ctx.waitUntil((async () => {
+        const { isNew } = await ensureUserInDb(env, `google:${gUser.id}`, gUser.name || gUser.email, gUser.email);
+        if (isNew) await sendFirstLoginEmails(env, `google:${gUser.id}`, gUser.name || gUser.email, gUser.email, 'google');
+      })());
 
       const cookie = buildAuthCookie(jwt, { maxAge: 604800 });
 
@@ -705,7 +1029,7 @@ export default {
 
     // Dispatch by hostname
     if (host === 'auth.haiphen.io') {
-      return handleAuth(req, env, jwtKey);
+      return handleAuth(req, env, jwtKey, ctx);
     }
     if (host === 'app.haiphen.io') {
       return handleApp(req, env, jwtKey);

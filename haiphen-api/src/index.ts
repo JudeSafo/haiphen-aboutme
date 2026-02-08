@@ -136,11 +136,18 @@ function b64urlToString(b64url: string): string {
   return atob(b64);
 }
 
-async function ensureUser(env: Env, userLogin: string) {
-  await env.DB.prepare(`INSERT OR IGNORE INTO users(user_login) VALUES (?)`).bind(userLogin).run();
+async function ensureUser(env: Env, user: { user_login: string; name?: string | null; email?: string | null }) {
+  await env.DB.prepare(`
+    INSERT INTO users(user_login, name, email, last_seen_at)
+    VALUES (?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+    ON CONFLICT(user_login) DO UPDATE SET
+      name = COALESCE(excluded.name, users.name),
+      email = COALESCE(excluded.email, users.email),
+      last_seen_at = strftime('%Y-%m-%dT%H:%M:%fZ','now')
+  `).bind(user.user_login, user.name ?? null, user.email ?? null).run();
   await env.DB.prepare(`
     INSERT OR IGNORE INTO plans(user_login, plan, active) VALUES (?, 'free', 1)
-  `).bind(userLogin).run();
+  `).bind(user.user_login).run();
 }
 
 async function getPlan(env: Env, userLogin: string): Promise<"free" | "pro" | "enterprise"> {
@@ -248,18 +255,16 @@ function requireScope(scopes: string[], needed: string, requestId: string) {
   if (!scopes.includes(needed)) throw err("forbidden", "Insufficient scope", requestId, 403);
 }
 
-async function authCookieUser(req: Request, env: Env, requestId: string): Promise<{ user_login: string }> {
+async function authCookieUser(req: Request, env: Env, requestId: string): Promise<{ user_login: string; name?: string | null; email?: string | null }> {
   try {
     const user = await requireUserFromAuthCookie(req, env.JWT_SECRET);
-    // Optional: mirror revocation if you want (jti is available in auth.ts claims currently only internally)
-    return { user_login: user.login };
+    return { user_login: user.login, name: user.name, email: user.email };
   } catch (e: any) {
-    // Normalize to your API error format
     throw err("unauthorized", "Unauthorized", requestId, 401);
   }
 }
 
-async function authSessionUser(req: Request, env: Env, requestId: string): Promise<{ user_login: string }> {
+async function authSessionUser(req: Request, env: Env, requestId: string): Promise<{ user_login: string; name?: string | null; email?: string | null }> {
   // 1) Browser dashboard path: signed auth cookie
   try {
     return await authCookieUser(req, env, requestId);
@@ -273,7 +278,7 @@ async function authSessionUser(req: Request, env: Env, requestId: string): Promi
 
   try {
     const user = await verifyUserFromJwt(token, env.JWT_SECRET);
-    return { user_login: user.login };
+    return { user_login: user.login, name: user.name, email: user.email };
   } catch {
     throw err("unauthorized", "Unauthorized", requestId, 401);
   }
@@ -392,7 +397,7 @@ async function route(req: Request, env: Env): Promise<Response> {
   // ---- whoami / me (cookie auth) ----
   if (req.method === "GET" && (url.pathname === "/v1/whoami" || url.pathname === "/v1/me")) {
     const u = await authCookieUser(req, env, requestId);
-    await ensureUser(env, u.user_login);
+    await ensureUser(env, u);
 
     const plan = await getPlan(env, u.user_login);
     const entitlements = planToEntitlements(plan);
@@ -432,7 +437,7 @@ async function route(req: Request, env: Env): Promise<Response> {
   // GET /v1/onboarding/resources
   if (req.method === "GET" && url.pathname === "/v1/onboarding/resources") {
     const u = await authSessionUser(req, env, requestId);
-    await ensureUser(env, u.user_login);
+    await ensureUser(env, u);
 
     const plan = await getPlan(env, u.user_login);
     const entitlements = planToEntitlements(plan);
@@ -454,7 +459,7 @@ async function route(req: Request, env: Env): Promise<Response> {
   // GET /v1/keys/list
   if (req.method === "GET" && url.pathname === "/v1/keys/list") {
     const u = await authCookieUser(req, env, requestId);
-    await ensureUser(env, u.user_login);
+    await ensureUser(env, u);
 
     const keys = await env.DB.prepare(`
       SELECT
@@ -724,7 +729,7 @@ async function route(req: Request, env: Env): Promise<Response> {
   // POST /v1/keys/issue  body: { scopes?: string[] }
   if (req.method === "POST" && url.pathname === "/v1/keys/issue") {
     const u = await authCookieUser(req, env, requestId);
-    await ensureUser(env, u.user_login);
+    await ensureUser(env, u);
 
     const plan = await getPlan(env, u.user_login);
 
@@ -767,7 +772,7 @@ async function route(req: Request, env: Env): Promise<Response> {
   // POST /v1/keys/rotate  body: { revoke_key_id?: string, scopes?: string[] }
   if (req.method === "POST" && url.pathname === "/v1/keys/rotate") {
     const u = await authCookieUser(req, env, requestId);
-    await ensureUser(env, u.user_login);
+    await ensureUser(env, u);
 
     const body = await req.json().catch(() => ({})) as { revoke_key_id?: string; scopes?: string[] };
     const revokeKeyId = body.revoke_key_id;
@@ -826,7 +831,7 @@ async function route(req: Request, env: Env): Promise<Response> {
     const body = await req.json().catch(() => null) as null | { user_login: string; plan: "free" | "pro" | "enterprise" };
     if (!body?.user_login || !body?.plan) return err("invalid_request", "Invalid body", requestId, 400, corsHeaders(req, env));
 
-    await ensureUser(env, body.user_login);
+    await ensureUser(env, { user_login: body.user_login });
     await env.DB.prepare(`
       INSERT INTO plans(user_login, plan, active, updated_at)
       VALUES (?, ?, 1, strftime('%Y-%m-%dT%H:%M:%fZ','now'))

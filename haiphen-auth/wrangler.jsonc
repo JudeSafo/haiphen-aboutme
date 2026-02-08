@@ -26,8 +26,19 @@
     }
   ],
 
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "haiphen_api",
+      "database_id": "9a26fb67-b6e5-4d5f-8e62-3ecfde5ee8c2"
+    }
+  ],
+
   "vars": {
-    "GOOGLE_REDIRECT_URI": "https://auth.haiphen.io/callback/google"
+    "GOOGLE_REDIRECT_URI": "https://auth.haiphen.io/callback/google",
+    "FROM_EMAIL": "jude@haiphen.io",
+    "FROM_NAME": "Haiphen",
+    "OWNER_EMAIL": "jude@haiphen.io"
   },
 
   "routes": [

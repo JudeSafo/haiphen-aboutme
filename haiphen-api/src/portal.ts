@@ -22,10 +22,15 @@ type ApiKeyRow = {
 export async function getWhoami(req: Request, env: Env) {
   const user = await requireUserFromAuthCookie(req, env.JWT_SECRET);
 
-  // Ensure user exists
+  // Upsert user with name/email from JWT claims
   await env.DB.prepare(
-    `INSERT INTO users (user_login) VALUES (?) ON CONFLICT(user_login) DO NOTHING`
-  ).bind(user.login).run();
+    `INSERT INTO users (user_login, name, email, last_seen_at)
+     VALUES (?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+     ON CONFLICT(user_login) DO UPDATE SET
+       name = COALESCE(excluded.name, users.name),
+       email = COALESCE(excluded.email, users.email),
+       last_seen_at = strftime('%Y-%m-%dT%H:%M:%fZ','now')`
+  ).bind(user.login, user.name ?? null, user.email ?? null).run();
 
   // plans table is canonical here (you also have entitlements; you can unify later)
   const plan = await env.DB.prepare(
