@@ -246,7 +246,8 @@
 
 @media (max-width: 860px){
   .site-header__menu{ display:none; }
-  .site-header__inner{ justify-content: space-between; }
+  .site-header__inner{ justify-content: flex-start; }
+  .site-header__session{ margin-left: auto; }
 }
 
 /* --- Session dropdown --- */
