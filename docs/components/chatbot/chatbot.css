@@ -3,6 +3,7 @@
   bottom: 20px;
   right: 20px;
   z-index: 8000;
+  transition: bottom 0.4s ease;
 }
 
 /* ---- FAB button ---- */

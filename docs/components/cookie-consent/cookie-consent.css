@@ -150,6 +150,13 @@
   }
 }
 
+/* Shift bottom-fixed widgets above the banner */
+body.consent-banner-visible .contact-widget,
+body.consent-banner-visible .hp-chatbot {
+  transition: bottom 0.4s ease;
+  bottom: 64px;
+}
+
 @media (max-width: 420px) {
   .hp-consent__inner {
     flex-direction: column;

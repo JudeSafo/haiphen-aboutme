@@ -62,10 +62,14 @@
       if (!banner) return;
 
       // Show banner after 1s delay
-      setTimeout(() => banner.classList.add('is-visible'), 1000);
+      setTimeout(() => {
+        banner.classList.add('is-visible');
+        document.body.classList.add('consent-banner-visible');
+      }, 1000);
 
       const hide = () => {
         banner.classList.remove('is-visible');
+        document.body.classList.remove('consent-banner-visible');
         setTimeout(() => { mount.innerHTML = ''; }, 400);
       };
 
