@@ -18,12 +18,50 @@
     </div>
   </div>
 
-  <div class="hp-profile__grid">
-    <!-- Onboarding destination -->
-    <div id="profile-onboarding" class="hp-card hp-card--full hp-onboarding">
+  <!-- Tab navigation -->
+  <div class="hp-profile__tabs" role="tablist" aria-label="Profile sections">
+    <button class="hp-tab" role="tab" aria-selected="true" data-profile-tab="overview">Overview</button>
+    <button class="hp-tab" role="tab" aria-selected="false" data-profile-tab="apikeys">API Keys</button>
+    <button class="hp-tab" role="tab" aria-selected="false" data-profile-tab="settings">Settings</button>
+    <button class="hp-tab" role="tab" aria-selected="false" data-profile-tab="billing">Billing</button>
+  </div>
+
+  <!-- Tab: Overview -->
+  <div class="hp-profile__panel" data-profile-panel="overview">
+    <!-- Account card -->
+    <div class="hp-card">
       <div class="hp-card__hd">
         <div>
-          <div class="hp-card__title hp-card__title--lg">Onboarding Hub</div>
+          <div class="hp-card__title">Account</div>
+          <div class="hp-card__sub">Signed-in identity and plan status.</div>
+        </div>
+      </div>
+      <div class="hp-card__bd">
+        <div class="hp-kv">
+          <div class="hp-kv__row">
+            <div class="hp-kv__k">User</div>
+            <div class="hp-kv__v" data-profile-user>—</div>
+          </div>
+          <div class="hp-kv__row">
+            <div class="hp-kv__k">Email</div>
+            <div class="hp-kv__v" data-profile-email>—</div>
+          </div>
+          <div class="hp-kv__row">
+            <div class="hp-kv__k">Plan</div>
+            <div class="hp-kv__v"><span class="hp-pill" data-profile-plan>—</span></div>
+          </div>
+        </div>
+        <div class="hp-note">
+          Cookie auth is used for the dashboard. API keys (Bearer tokens) are used for metrics/RSS/webhooks.
+        </div>
+      </div>
+    </div>
+
+    <!-- Onboarding steps -->
+    <div class="hp-card">
+      <div class="hp-card__hd">
+        <div>
+          <div class="hp-card__title hp-card__title--lg">Onboarding</div>
           <div class="hp-card__sub">Complete these steps to get fully set up with Haiphen.</div>
         </div>
       </div>
@@ -91,21 +129,12 @@
           <div class="hp-step" data-step="cohort">
             <span class="hp-step__num" data-step-status="pending">6</span>
             <div class="hp-step__body">
-              <a class="hp-step__link" href="#cohort">
-                <strong>Join the Cohort</strong>
+              <a class="hp-step__link" href="#getting-started">
+                <strong>Getting Started</strong>
               </a>
-              <span>Access program resources and onboarding support.</span>
+              <span>Access guides, demo GIFs, and platform resources.</span>
             </div>
           </div>
-        </div>
-
-        <div class="hp-onboarding__video">
-          <iframe
-            title="Haiphen onboarding briefing"
-            src="https://drive.google.com/file/d/1pjF73rMSsbIJbgS0dOyFL0eX1vbCJm2Z/preview"
-            loading="lazy"
-            allow="autoplay"
-          ></iframe>
         </div>
 
         <div class="hp-divider"></div>
@@ -123,9 +152,9 @@
             <strong>Profile + Keys</strong>
             <span>Rotate/revoke keys and update email preferences.</span>
           </a>
-          <a class="hp-onboarding__item" href="#cohort" data-onboarding-link="cohort_url">
-            <strong>Cohort Guide</strong>
-            <span>Program details, timeline, and FAQ.</span>
+          <a class="hp-onboarding__item" href="#getting-started" data-onboarding-link="cohort_url">
+            <strong>Getting Started</strong>
+            <span>Guides, demos, and platform resources.</span>
           </a>
           <a class="hp-onboarding__item" href="https://calendar.app.google/jQzWz98eCC5jMLrQA" target="_blank" rel="noopener" data-onboarding-link="calendar_url">
             <strong>Book Onboarding Call</strong>
@@ -157,71 +186,42 @@
             <code class="hp-onboarding__cmd">haiphen metrics kpis</code>
           </a>
           <a class="hp-onboarding__item hp-onboarding__item--service" href="#docs:docs-secure" data-onboarding-link="secure_docs_url">
-            <strong>Haiphen Secure <span class="hp-svc-badge hp-svc-badge--soon">Coming Soon</span></strong>
+            <strong>Haiphen Secure <span class="hp-svc-badge hp-svc-badge--available">Available</span></strong>
             <span>Vulnerability and compliance scanning.</span>
             <code class="hp-onboarding__cmd">haiphen secure scan --target &lt;t&gt;</code>
           </a>
           <a class="hp-onboarding__item hp-onboarding__item--service" href="#docs:docs-network" data-onboarding-link="network_docs_url">
-            <strong>Network Trace <span class="hp-svc-badge hp-svc-badge--soon">Coming Soon</span></strong>
+            <strong>Network Trace <span class="hp-svc-badge hp-svc-badge--available">Available</span></strong>
             <span>Protocol-level traffic analysis.</span>
             <code class="hp-onboarding__cmd">haiphen network trace --target &lt;t&gt;</code>
           </a>
           <a class="hp-onboarding__item hp-onboarding__item--service" href="#docs:docs-graph" data-onboarding-link="graph_docs_url">
-            <strong>Knowledge Graph <span class="hp-svc-badge hp-svc-badge--soon">Coming Soon</span></strong>
+            <strong>Knowledge Graph <span class="hp-svc-badge hp-svc-badge--available">Available</span></strong>
             <span>Entity relationships and topology queries.</span>
             <code class="hp-onboarding__cmd">haiphen graph query --q &lt;query&gt;</code>
           </a>
           <a class="hp-onboarding__item hp-onboarding__item--service" href="#docs:docs-risk" data-onboarding-link="risk_docs_url">
-            <strong>Risk Analysis <span class="hp-svc-badge hp-svc-badge--soon">Coming Soon</span></strong>
+            <strong>Risk Analysis <span class="hp-svc-badge hp-svc-badge--available">Available</span></strong>
             <span>Scenario modeling and risk assessments.</span>
             <code class="hp-onboarding__cmd">haiphen risk assess --scenario &lt;s&gt;</code>
           </a>
           <a class="hp-onboarding__item hp-onboarding__item--service" href="#docs:docs-causal" data-onboarding-link="causal_docs_url">
-            <strong>Causal Chain <span class="hp-svc-badge hp-svc-badge--soon">Coming Soon</span></strong>
+            <strong>Causal Chain <span class="hp-svc-badge hp-svc-badge--available">Available</span></strong>
             <span>Root-cause and event chain analysis.</span>
             <code class="hp-onboarding__cmd">haiphen causal analyze --events &lt;file&gt;</code>
           </a>
           <a class="hp-onboarding__item hp-onboarding__item--service" href="#docs:docs-supply" data-onboarding-link="supply_docs_url">
-            <strong>Supply Chain Intel <span class="hp-svc-badge hp-svc-badge--soon">Coming Soon</span></strong>
+            <strong>Supply Chain Intel <span class="hp-svc-badge hp-svc-badge--available">Available</span></strong>
             <span>Supplier risk scoring and alerts.</span>
             <code class="hp-onboarding__cmd">haiphen supply assess --supplier &lt;name&gt;</code>
           </a>
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- Account -->
-    <div class="hp-card">
-      <div class="hp-card__hd">
-        <div>
-          <div class="hp-card__title">Account</div>
-          <div class="hp-card__sub">Signed-in identity and plan status.</div>
-        </div>
-      </div>
-
-      <div class="hp-card__bd">
-        <div class="hp-kv">
-          <div class="hp-kv__row">
-            <div class="hp-kv__k">User</div>
-            <div class="hp-kv__v" data-profile-user>—</div>
-          </div>
-          <div class="hp-kv__row">
-            <div class="hp-kv__k">Email</div>
-            <div class="hp-kv__v" data-profile-email>—</div>
-          </div>
-          <div class="hp-kv__row">
-            <div class="hp-kv__k">Plan</div>
-            <div class="hp-kv__v"><span class="hp-pill" data-profile-plan>—</span></div>
-          </div>
-        </div>
-
-        <div class="hp-note">
-          Cookie auth is used for the dashboard. API keys (Bearer tokens) are used for metrics/RSS/webhooks.
-        </div>
-      </div>
-    </div>
-
-    <!-- API Keys -->
+  <!-- Tab: API Keys -->
+  <div class="hp-profile__panel" data-profile-panel="apikeys" hidden>
     <div class="hp-card">
       <div class="hp-card__hd hp-card__hd--split">
         <div>
@@ -245,7 +245,7 @@
           <div class="hp-reveal__hd">
             <div>
               <div class="hp-reveal__title">New API key</div>
-              <div class="hp-reveal__sub">Copy this now. You won’t be able to view it again.</div>
+              <div class="hp-reveal__sub">Copy this now. You won't be able to view it again.</div>
             </div>
 
             <div class="hp-reveal__hdActions">
@@ -291,7 +291,7 @@
             <div><span class="hp-muted">Last used:</span> <span data-profile-active-used>—</span></div>
           </div>
 
-          <!-- hidden: active key id (so revoke-active can work without re-listing) -->
+          <!-- hidden: active key id -->
           <div data-profile-active-id hidden>—</div>
         </div>
 
@@ -322,9 +322,11 @@
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- Email Preferences -->
-    <div class="hp-card hp-card--full">
+  <!-- Tab: Settings -->
+  <div class="hp-profile__panel" data-profile-panel="settings" hidden>
+    <div class="hp-card">
       <div class="hp-card__hd">
         <div>
           <div class="hp-card__title">Email Preferences</div>
@@ -363,6 +365,43 @@
             <span class="hp-pref__note">Applies to future sends.</span>
           </div>
         </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab: Billing -->
+  <div class="hp-profile__panel" data-profile-panel="billing" hidden>
+    <div class="hp-card">
+      <div class="hp-card__hd">
+        <div>
+          <div class="hp-card__title">Billing & Plan</div>
+          <div class="hp-card__sub">View your current plan and upgrade options.</div>
+        </div>
+      </div>
+      <div class="hp-card__bd">
+        <div class="hp-kv">
+          <div class="hp-kv__row">
+            <div class="hp-kv__k">Current Plan</div>
+            <div class="hp-kv__v"><span class="hp-pill" data-profile-billing-plan>—</span></div>
+          </div>
+          <div class="hp-kv__row">
+            <div class="hp-kv__k">Rate Limit</div>
+            <div class="hp-kv__v" data-profile-rate-limit>—</div>
+          </div>
+          <div class="hp-kv__row">
+            <div class="hp-kv__k">Daily Quota</div>
+            <div class="hp-kv__v" data-profile-daily-quota>—</div>
+          </div>
+        </div>
+
+        <div class="hp-divider"></div>
+
+        <div class="hp-billing-cta">
+          <a class="hp-profile__btn hp-profile__btn--primary" href="#subscribe">
+            Upgrade Plan
+          </a>
+          <span class="hp-pref__note">Upgrade for higher rate limits and more services.</span>
+        </div>
       </div>
     </div>
   </div>

@@ -26,6 +26,10 @@
     }
   ],
 
+  "vars": {
+    "GOOGLE_REDIRECT_URI": "https://auth.haiphen.io/callback/google"
+  },
+
   "routes": [
     "auth.haiphen.io/*",
     "app.haiphen.io/*"

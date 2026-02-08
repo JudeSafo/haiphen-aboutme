@@ -16,12 +16,13 @@
   --radius: 14px;
   --radius-sm: 10px;
 
-  /* Sub-surfaces (slightly tinted, still glassy) */
-  --surface-2: rgba(248, 250, 252, 0.92);     /* subtle cool slate */
-  --surface-3: rgba(248, 250, 252, 0.72);     /* lighter for pill areas */
+  /* Sub-surfaces */
+  --surface-2: rgba(255, 240, 243, 0.92);     /* soft rose (header dropdowns) */
+  --surface-3: rgba(252, 234, 238, 0.72);     /* rose nav pill bg */
 
   /* Component-specific surfaces */
-  --sidebar-bg: var(--surface-2);
+  --sidebar-bg: rgba(255, 255, 255, 0.96);          /* clean white body */
+  --sidebar-session-bg: rgba(15, 23, 42, 0.05);     /* cool slate tint for session area */
   --nav-pill-bg: var(--surface-3);
   --nav-pill-border: rgba(15, 23, 42, 0.10);  
 }
@@ -83,4 +84,18 @@ a:hover { text-decoration: underline; }
 .nav-links a.active {
   background: #ecf0f1;
   border-radius: 4px;
+}
+
+/* Sidebar-collapsed mode (API docs full-width) */
+body.sidebar-collapsed .main-container {
+  padding-left: 16px;
+}
+
+/* General mobile overflow prevention */
+.main-container {
+  min-width: 0;
+}
+
+body {
+  overflow-x: hidden;
 }

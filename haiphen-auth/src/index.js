@@ -114,6 +114,42 @@ function getCookieValue(header, key) {
 }
 
 /**
+ * Exchange Google OAuth code for an access token.
+ */
+async function googleToken(code, clientId, clientSecret, redirectUri) {
+  const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: new URLSearchParams({
+      code,
+      client_id: clientId,
+      client_secret: clientSecret,
+      redirect_uri: redirectUri,
+      grant_type: 'authorization_code',
+    }),
+  });
+  const data = await tokenRes.json();
+  console.log('google.token.exchange', { ok: tokenRes.ok, status: tokenRes.status });
+  return data;
+}
+
+/**
+ * Fetch Google user profile.
+ */
+async function googleUserInfo(accessToken) {
+  const res = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      Accept: 'application/json',
+    },
+  });
+  if (!res.ok) throw new Error(`Google userinfo ${res.status}`);
+  return res.json();
+}
+
+/**
  * Exchange GitHub OAuth code for an access token.
  */
 async function githubToken(code, clientId, clientSecret) {
@@ -179,6 +215,7 @@ async function handleAuth(req, env, jwtKey) {
       'https://haiphen.io/';
 
     const to = safeReturnToWithNative(toRaw);
+    const provider = (url.searchParams.get('provider') || 'github').toLowerCase();
 
     // "native=1" tells auth to hand a token back to localhost callback.
     const native = url.searchParams.get('native') === '1' || isNativeReturnTo(to);
@@ -208,7 +245,22 @@ async function handleAuth(req, env, jwtKey) {
       }
     }
 
-    // Use GitHub "state" param to carry return-to
+    if (provider === 'google') {
+      // Google OAuth flow
+      const googleRedirectUri = env.GOOGLE_REDIRECT_URI || 'https://auth.haiphen.io/callback/google';
+      const state = encodeURIComponent(JSON.stringify({ to, provider: 'google' }));
+      const googleUrl =
+        `https://accounts.google.com/o/oauth2/v2/auth` +
+        `?client_id=${encodeURIComponent(env.GOOGLE_CLIENT_ID)}` +
+        `&redirect_uri=${encodeURIComponent(googleRedirectUri)}` +
+        `&response_type=code` +
+        `&scope=${encodeURIComponent('openid email profile')}` +
+        `&state=${state}` +
+        `&access_type=online`;
+      return redirectResponse(googleUrl);
+    }
+
+    // Default: GitHub OAuth flow
     const state = encodeURIComponent(to);
     const redirect = encodeURIComponent(callbackURL);
     const gh =
@@ -282,6 +334,73 @@ async function handleAuth(req, env, jwtKey) {
       });
     } catch (err) {
       console.error('❌ Callback error:', err);
+      return textResponse('Internal Error', origin, 500);
+    }
+  }
+
+  // ---- /callback/google ----
+  if (url.pathname === '/callback/google') {
+    try {
+      const code = url.searchParams.get('code');
+      const stateRaw = url.searchParams.get('state');
+      if (!code) return textResponse('Missing code', origin, 400);
+
+      // Parse state to recover return URL
+      let returnToFromState = 'https://haiphen.io/';
+      try {
+        const parsed = JSON.parse(decodeURIComponent(stateRaw || ''));
+        if (parsed?.to) returnToFromState = parsed.to;
+      } catch {
+        // state might be a plain URL (fallback)
+        if (stateRaw) returnToFromState = decodeURIComponent(stateRaw);
+      }
+
+      const googleRedirectUri = env.GOOGLE_REDIRECT_URI || 'https://auth.haiphen.io/callback/google';
+      const tokenData = await googleToken(code, env.GOOGLE_CLIENT_ID, env.GOOGLE_CLIENT_SECRET, googleRedirectUri);
+      if (!tokenData.access_token) throw new Error('Missing access_token from Google');
+
+      const gUser = await googleUserInfo(tokenData.access_token);
+      console.log('🔍 Google user:', gUser.email);
+
+      const now = Math.floor(Date.now() / 1000);
+      const exp = now + 60 * 60 * 24 * 7; // 7d
+      const jti = crypto.randomUUID();
+
+      const jwt = await new SignJWT({
+        sub: `google:${gUser.id}`,
+        name: gUser.name || gUser.email,
+        avatar: gUser.picture || '',
+        email: gUser.email,
+        provider: 'google',
+        jti,
+      })
+        .setProtectedHeader({ alg: 'HS256' })
+        .setIssuedAt(now)
+        .setExpirationTime(exp)
+        .setAudience('haiphen-auth')
+        .sign(jwtKey);
+
+      const cookie = buildAuthCookie(jwt, { maxAge: 604800 });
+
+      let returnTo = safeReturnToWithNative(returnToFromState);
+
+      // Native CLI handoff
+      if (returnTo.startsWith('http://127.0.0.1') || returnTo.startsWith('http://localhost')) {
+        const u = new URL(returnTo);
+        u.hash = `token=${encodeURIComponent(jwt)}`;
+        returnTo = u.toString();
+      }
+
+      return new Response(null, {
+        status: 302,
+        headers: {
+          'Set-Cookie': cookie,
+          Location: returnTo,
+          ...corsHeaders(origin),
+        },
+      });
+    } catch (err) {
+      console.error('❌ Google callback error:', err);
       return textResponse('Internal Error', origin, 500);
     }
   }

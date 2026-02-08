@@ -73,13 +73,13 @@
     if (!slot) return;
 
     const AUTH_ORIGIN = 'https://auth.haiphen.io';
-    const LOGIN_URL = `${AUTH_ORIGIN}/login`;
     const LOGOUT_URL = `${AUTH_ORIGIN}/logout`;
 
-    function loginHref() {
+    function loginHref(provider) {
       const here = window.location.href;
-      const u = new URL(LOGIN_URL);
+      const u = new URL(`${AUTH_ORIGIN}/login`);
       u.searchParams.set('to', here);
+      u.searchParams.set('provider', provider || 'github');
       return u.toString();
     }
 
@@ -101,12 +101,31 @@
       slot.innerHTML = `
         <div class="sidebar-session">
           <div class="sidebar-session__title">Session</div>
-          <div class="sidebar-session__sub">You’re not logged in.</div>
-          <a class="sidebar-session__login login-btn" href="${loginHref()}">Login</a>
+          <div class="sidebar-session__sub">You're not logged in.</div>
+          <div class="sidebar-login-buttons">
+            <a class="sidebar-login-btn sidebar-login-btn--github" href="${loginHref('github')}">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+              GitHub
+            </a>
+            <a class="sidebar-login-btn sidebar-login-btn--google" href="${loginHref('google')}">
+              <svg width="14" height="14" viewBox="0 0 48 48" aria-hidden="true"><path fill="#4285F4" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#34A853" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#EA4335" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+              Google
+            </a>
+          </div>
         </div>
       `;
       slot.hidden = false;
     }
+
+    // Map nav items to profile sub-sections or SPA sections
+    const NAV_MAP = {
+      profile:           { section: 'Profile', tab: 'overview' },
+      settings:          { section: 'Profile', tab: 'settings' },
+      billing:           { section: 'Profile', tab: 'billing' },
+      quota:             { section: 'Profile', tab: 'billing' },
+      apikeys:           { section: 'Profile', tab: 'apikeys' },
+      'getting-started': { section: 'GettingStarted' },
+    };
 
     function sidebarMenuHtml(user) {
       const name = user?.name || user?.sub || 'User';
@@ -114,44 +133,43 @@
       const sub = user?.sub || '—';
       const avatar = user?.avatar || user?.avatar_url || '';
 
-      // Keep ONE authoritative api-cred block (hydrated by ApiAccess) inside dropdown.
-      const apiCred = window.HAIPHEN?.SessionProfileTemplate?.apiCredBlockHtml
-        ? window.HAIPHEN.SessionProfileTemplate.apiCredBlockHtml()
-        : `<div class="api-cred" data-api-cred hidden></div>`;
-
       return `
         <div class="sidebar-session-menu" data-sidebar-session-menu>
           <div class="sidebar-session-trigger" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">
             <div class="sidebar-session-left">
               <div class="sidebar-session-title">${escapeHtml(name)}</div>
-              <div class="sidebar-session-sub">${escapeHtml(email)} • ${escapeHtml(sub)}</div>
-              <div class="sidebar-session-key">
-                <span>Key</span>
-                <code data-sidebar-api-key-preview>••••••••••••••••</code>
-              </div>
+              <div class="sidebar-session-sub">${escapeHtml(email)}</div>
             </div>
             ${avatar ? `<img class="sidebar-session-avatar" src="${escapeAttr(avatar)}" alt="" aria-hidden="true" />` : ''}
           </div>
 
           <div class="sidebar-session-dropdown" role="menu" aria-label="Session menu">
-            <div class="sidebar-session-links">
+            <nav class="sidebar-session-links">
               <a class="sidebar-session-link" href="javascript:void(0)" role="menuitem" data-session-nav="profile">
-                Profile <span style="opacity:.65;">›</span>
+                Profile
               </a>
               <a class="sidebar-session-link" href="javascript:void(0)" role="menuitem" data-session-nav="settings">
-                Settings <span style="opacity:.65;">›</span>
+                Settings
               </a>
-              <button class="sidebar-session-btn" type="button" role="menuitem" data-session-action="rotate-key">
-                Rotate API key <span style="opacity:.65;">⟲</span>
-              </button>
-              <button class="sidebar-session-btn" type="button" role="menuitem" data-session-action="logout">
-                Logout <span style="opacity:.65;">×</span>
-              </button>
-            </div>
+              <a class="sidebar-session-link" href="javascript:void(0)" role="menuitem" data-session-nav="billing">
+                Billing & Plan
+              </a>
+              <a class="sidebar-session-link" href="javascript:void(0)" role="menuitem" data-session-nav="quota">
+                Rate Limits & Quota
+              </a>
+              <a class="sidebar-session-link" href="javascript:void(0)" role="menuitem" data-session-nav="apikeys">
+                API Keys
+              </a>
+              <a class="sidebar-session-link" href="javascript:void(0)" role="menuitem" data-session-nav="getting-started">
+                Getting Started
+              </a>
+            </nav>
 
             <div class="sidebar-session-divider"></div>
 
-            ${apiCred}
+            <button class="sidebar-session-btn" type="button" role="menuitem" data-session-action="logout">
+              Logout
+            </button>
           </div>
         </div>
       `;
@@ -162,9 +180,8 @@
       if (!menu) return;
 
       const trigger = menu.querySelector('.sidebar-session-trigger');
-      const preview = menu.querySelector('[data-sidebar-api-key-preview]');
 
-      // Toggle aria-expanded for semantics (CSS does the actual open/close)
+      // Toggle aria-expanded
       if (trigger) {
         trigger.addEventListener('click', () => {
           const expanded = trigger.getAttribute('aria-expanded') === 'true';
@@ -181,34 +198,20 @@
         const nav = e.target.closest('[data-session-nav]');
         if (nav) {
           const page = nav.getAttribute('data-session-nav');
+          const mapping = NAV_MAP[page];
 
-          // extensible hook: let your app/router own this later
-          window.dispatchEvent(new CustomEvent('haiphen:session:navigate', { detail: { page } }));
+          window.dispatchEvent(new CustomEvent('haiphen:session:navigate', {
+            detail: { page, tab: mapping?.tab || null },
+          }));
 
-          // sensible defaults today
-          if (page === 'profile') {
-            // 1) Prefer direct component invocation
+          if (mapping?.section === 'GettingStarted') {
+            if (typeof window.showSection === 'function') window.showSection('GettingStarted');
+          } else if (mapping?.section === 'Profile') {
             if (typeof window.HAIPHEN?.showProfile === 'function') {
-              try { await window.HAIPHEN.showProfile(); } catch (err) {
-                console.warn('[sidebar-session] showProfile failed', err);
-              }
-              return;
-            }
-
-            // 2) Fallback: if you later wire Profile into showSection()
-            if (typeof window.showSection === 'function') {
+              await window.HAIPHEN.showProfile({ tab: mapping?.tab });
+            } else if (typeof window.showSection === 'function') {
               window.showSection('Profile');
-              return;
             }
-
-            console.warn('[sidebar-session] profile clicked but no handler present');
-            return;
-          }
-
-          if (page === 'settings') {
-            // You can implement later; for now don’t throw.
-            console.info('[sidebar-session] settings clicked (unimplemented)');
-            return;
           }
           return;
         }
@@ -220,56 +223,11 @@
 
         if (action === 'logout') {
           btn.disabled = true;
-          const prev = btn.textContent;
           btn.textContent = 'Logging out…';
           const here = window.location.href;
           const u = new URL(LOGOUT_URL);
-          u.searchParams.set('to', here);          
+          u.searchParams.set('to', here);
           window.location.assign(u.toString());
-          return;
-        }
-
-        if (action === 'rotate-key') {
-          btn.disabled = true;
-          const prev = btn.textContent;
-          btn.textContent = 'Rotating…';
-          try {
-            if (window.HAIPHEN?.ApiAccess?.rotateKeyAndRefresh) {
-              await window.HAIPHEN.ApiAccess.rotateKeyAndRefresh(menu);
-            } else {
-              console.warn('[sidebar-session] ApiAccess.rotateKeyAndRefresh missing');
-            }
-          } catch (err) {
-            console.warn('[sidebar-session] rotate failed', err?.message || err);
-          } finally {
-            btn.textContent = prev;
-            btn.disabled = false;
-          }
-        }
-      });
-
-      // Hydrate API cred block and mirror key into the trigger preview
-      requestAnimationFrame(() => {
-        try {
-          if (window.HAIPHEN?.ApiAccess?.hydrate) window.HAIPHEN.ApiAccess.hydrate(menu);
-        } catch {}
-
-        // Mirror hydrated key text to the trigger preview (without duplicating data-api-* selectors)
-        const keyEl = menu.querySelector('[data-api-key]');
-        if (keyEl && preview) {
-          const sync = () => {
-            const t = (keyEl.textContent || '').trim();
-            if (t) preview.textContent = t;
-          };
-          sync();
-
-          const obs = new MutationObserver(sync);
-          obs.observe(keyEl, { childList: true, characterData: true, subtree: true });
-
-          // Cleanup if menu is removed
-          window.setTimeout(() => {
-            if (!document.body.contains(menu)) obs.disconnect();
-          }, 10_000);
         }
       });
     }
@@ -280,7 +238,7 @@
       wireSidebarMenu();
     }
 
-    // Minimal escaping (since name/email are user-derived)
+    // Minimal escaping
     function escapeHtml(s) {
       const str = String(s ?? '');
       return str
@@ -291,11 +249,9 @@
         .replace(/'/g, '&#39;');
     }
     function escapeAttr(s) {
-      // same as escapeHtml for our purposes
       return escapeHtml(s);
     }
 
-    // Prefer the already-emitted session event (from header), but also self-bootstrap.
     function onSessionReady(e) {
       const user = e?.detail?.user || null;
       if (!user) return renderLoggedOut();
@@ -304,7 +260,7 @@
 
     window.addEventListener('haiphen:session:ready', onSessionReady);
 
-    // Bootstrap immediately (in case header isn’t loaded yet)
+    // Bootstrap immediately
     (async () => {
       const me = await authMe();
       if (!me.ok || !me.user) return renderLoggedOut();
@@ -329,7 +285,6 @@
 
     wire(mount);
 
-    // ✅ mount exists here AND sidebar HTML is now in the DOM
     insertSidebarSessionCard(mount);
   }
 

@@ -7,10 +7,11 @@
 
   width: 168px;
   background: var(--sidebar-bg);
-  border: 1px solid var(--border);
+  border: 2px solid rgba(15, 23, 42, 0.14);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
   backdrop-filter: blur(10px);
+  overflow: hidden;
 }
 
 .site-sidebar__nav {
@@ -53,9 +54,21 @@
   .site-sidebar { display: none; }
 }
 
+/* Sidebar collapse when viewing API docs */
+.site-sidebar {
+  transition: transform 0.25s ease, opacity 0.25s ease;
+}
+
+body.sidebar-collapsed .site-sidebar {
+  transform: translateX(-200px);
+  opacity: 0;
+  pointer-events: none;
+}
+
 .site-sidebar__session{
   padding: 10px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 2px solid rgba(15, 23, 42, 0.10);
+  background: var(--sidebar-session-bg, rgba(15, 23, 42, 0.05));
 }
 
 .site-sidebar__session .api-cred{
@@ -268,4 +281,47 @@
   margin: 0;
   padding: 12px;
   border-radius: 14px;
+}
+
+/* --- Sidebar dual login buttons --- */
+.sidebar-login-buttons{
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.sidebar-login-btn{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 800;
+  text-decoration: none;
+  transition: background .12s ease;
+}
+
+.sidebar-login-btn--github{
+  background: #24292f;
+  color: #fff;
+  border: 1px solid #24292f;
+}
+
+.sidebar-login-btn--github:hover{
+  background: #2f363d;
+  text-decoration: none;
+}
+
+.sidebar-login-btn--google{
+  background: #fff;
+  color: #3c4043;
+  border: 1px solid rgba(15,23,42,.15);
+}
+
+.sidebar-login-btn--google:hover{
+  background: rgba(15,23,42,.03);
+  text-decoration: none;
 }

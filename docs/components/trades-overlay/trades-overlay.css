@@ -440,3 +440,23 @@
     column-count: 1; /* keep 1 by default */
   }
 }
+
+/* Large monitors: prevent extremes from overlapping chart/stats */
+@media (min-width: 1400px){
+  .haiphen-overlay__extremes .xbox{
+    max-height: min(200px, 25vh);
+  }
+  .haiphen-overlay__chartWrap{
+    overflow-y: auto;
+  }
+  .haiphen-overlay__controls{
+    min-height: 0;
+  }
+}
+
+/* Force 2-column stats grid at narrow widths */
+@media (max-width: 720px){
+  .haiphen-overlay__stats{
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

@@ -56,6 +56,8 @@
       <script src="components/hero-device-launcher/hero-device-launcher.js"></script>
       <link rel="stylesheet" href="components/hero-device-launcher/hero-device-launcher.css" />
 	  <script defer src="components/profile/profile.js"></script>
+	  <script defer src="components/getting-started/getting-started.js"></script>
+	  <link rel="stylesheet" href="components/getting-started/getting-started.css" />
 	  <script src="components/checkout-success/checkout-success.js"></script>
 	  <script src="components/cookie-consent/cookie-consent.js"></script>
 	  <script src="components/chatbot/chatbot.js"></script>
@@ -1975,6 +1977,9 @@
 		  contentWidget.innerHTML = html || `<p>No content available.</p>`;
 		  contentWidget.classList.add("active");
 
+		  // Collapse sidebar when viewing API docs to give docs full width
+		  document.body.classList.toggle('sidebar-collapsed', resolved === 'Docs');
+
 		  initSnapStacks(contentWidget);
 
 		  // Section-specific bootstrapping
@@ -2089,6 +2094,22 @@
 
 		    return;
 		  }
+		  if (resolved === "GettingStarted") {
+		    (async () => {
+		      try {
+		        if (typeof window.HAIPHEN?.loadGettingStarted === 'function') {
+		          await window.HAIPHEN.loadGettingStarted();
+		        }
+		      } catch (e) {
+		        console.warn("[GettingStarted] failed to load", e);
+		      }
+		      requestAnimationFrame(() => {
+		        scrollToWithHeaderOffset(contentWidget, 12);
+		      });
+		    })();
+		    return;
+		  }
+
 		  // Non-Trades: default scroll to widget top
 		  requestAnimationFrame(() => {
 		    scrollToWithHeaderOffset(contentWidget, 12);
@@ -2109,6 +2130,7 @@
 		  Cohort: 'cohort',
 		  Profile: 'profile',
 		  Onboarding: 'onboarding',
+		  GettingStarted: 'getting-started',
 		};
 
 		const HASH_SECTION = Object.fromEntries(

@@ -1,0 +1,136 @@
+<!-- docs/components/getting-started/getting-started.html -->
+<section class="hp-gs" aria-label="Getting Started">
+
+  <!-- Hero -->
+  <div class="hp-gs__hero">
+    <h2 class="hp-gs__title">Get Started with Haiphen</h2>
+    <p class="hp-gs__sub">
+      Haiphen is a Semantic Edge Protocol Intelligence Platform.
+      Parse industrial IoT, edge protocol, and OT traffic data through normalized APIs,
+      CLI tools, and real-time dashboards.
+    </p>
+    <div class="hp-gs__demo">
+      <img class="hp-gs__gif" data-src="demos/cli-workflow.gif" alt="Haiphen CLI workflow demo" loading="lazy" />
+    </div>
+  </div>
+
+  <!-- Entitlement gate overlay for free users -->
+  <div class="hp-gs__gate" data-gs-gate hidden>
+    <div class="hp-gs__gate-inner">
+      <h3>Upgrade to Pro</h3>
+      <p>Full getting-started guides, demo GIFs, and installation walkthroughs are available for Pro and Enterprise users.</p>
+      <a class="hp-gs__gate-btn" href="#subscribe">Upgrade Now</a>
+    </div>
+  </div>
+
+  <!-- CLI Installation -->
+  <div class="hp-gs__section" data-gs-gated>
+    <h3 class="hp-gs__section-title">CLI Installation</h3>
+    <p class="hp-gs__section-sub">Install the Haiphen CLI on any platform and authenticate in seconds.</p>
+
+    <div class="hp-gs__install-grid">
+      <div class="hp-gs__install-card">
+        <strong>macOS (Homebrew)</strong>
+        <code>brew install haiphen/tap/haiphen</code>
+      </div>
+      <div class="hp-gs__install-card">
+        <strong>Linux / macOS (curl)</strong>
+        <code>curl -fsSL https://get.haiphen.io | sh</code>
+      </div>
+      <div class="hp-gs__install-card">
+        <strong>Windows (Scoop)</strong>
+        <code>scoop install haiphen</code>
+      </div>
+      <div class="hp-gs__install-card">
+        <strong>Docker</strong>
+        <code>docker pull ghcr.io/haiphen/cli:latest</code>
+      </div>
+    </div>
+
+    <div class="hp-gs__demo">
+      <img class="hp-gs__gif" data-src="demos/cli-login.gif" alt="Haiphen CLI login demo" loading="lazy" />
+    </div>
+
+    <div class="hp-gs__quickstart">
+      <code>haiphen login</code>
+      <code>haiphen status</code>
+      <code>haiphen serve</code>
+    </div>
+
+    <p class="hp-gs__link-out">
+      <a href="install.html" target="_blank" rel="noopener">Full installation docs &rarr;</a>
+    </p>
+  </div>
+
+  <!-- Intelligence Services -->
+  <div class="hp-gs__section" data-gs-gated>
+    <h3 class="hp-gs__section-title">Intelligence Services</h3>
+    <p class="hp-gs__section-sub">Six production-ready analysis engines, each with a CLI command and demo.</p>
+
+    <div class="hp-gs__services-grid">
+      <details class="hp-gs__svc-card">
+        <summary><strong>Haiphen Secure</strong> <span>Vulnerability & compliance scanning</span></summary>
+        <code>haiphen secure scan --target &lt;target&gt;</code>
+        <img class="hp-gs__gif" data-src="demos/cli-secure.gif" alt="Secure demo" loading="lazy" />
+      </details>
+
+      <details class="hp-gs__svc-card">
+        <summary><strong>Network Trace</strong> <span>Protocol-level traffic analysis</span></summary>
+        <code>haiphen network trace --target &lt;target&gt;</code>
+        <img class="hp-gs__gif" data-src="demos/cli-network.gif" alt="Network demo" loading="lazy" />
+      </details>
+
+      <details class="hp-gs__svc-card">
+        <summary><strong>Knowledge Graph</strong> <span>Entity relationships & topology</span></summary>
+        <code>haiphen graph query --q &lt;query&gt;</code>
+        <img class="hp-gs__gif" data-src="demos/cli-graph.gif" alt="Graph demo" loading="lazy" />
+      </details>
+
+      <details class="hp-gs__svc-card">
+        <summary><strong>Risk Analysis</strong> <span>Scenario modeling & Monte Carlo</span></summary>
+        <code>haiphen risk assess --scenario &lt;scenario&gt;</code>
+        <img class="hp-gs__gif" data-src="demos/cli-risk.gif" alt="Risk demo" loading="lazy" />
+      </details>
+
+      <details class="hp-gs__svc-card">
+        <summary><strong>Causal Chain</strong> <span>Root-cause & event chain analysis</span></summary>
+        <code>haiphen causal analyze --events &lt;file&gt;</code>
+        <img class="hp-gs__gif" data-src="demos/cli-causal.gif" alt="Causal demo" loading="lazy" />
+      </details>
+
+      <details class="hp-gs__svc-card">
+        <summary><strong>Supply Chain Intel</strong> <span>Supplier risk scoring & alerts</span></summary>
+        <code>haiphen supply assess --supplier &lt;name&gt;</code>
+        <img class="hp-gs__gif" data-src="demos/cli-supply.gif" alt="Supply demo" loading="lazy" />
+      </details>
+    </div>
+  </div>
+
+  <!-- Desktop & Mobile -->
+  <div class="hp-gs__section" data-gs-gated>
+    <h3 class="hp-gs__section-title">Desktop & Mobile</h3>
+    <p class="hp-gs__section-sub">Access Haiphen from any device with native apps.</p>
+
+    <div class="hp-gs__apps-grid">
+      <div class="hp-gs__app-card">
+        <strong>Desktop App</strong>
+        <p>Full dashboard, service panels, and API key management.</p>
+        <div class="hp-gs__app-links">
+          <a href="install.html#desktop" target="_blank" rel="noopener">.dmg (macOS)</a>
+          <a href="install.html#desktop" target="_blank" rel="noopener">.msi (Windows)</a>
+          <a href="install.html#desktop" target="_blank" rel="noopener">.AppImage (Linux)</a>
+        </div>
+      </div>
+
+      <div class="hp-gs__app-card">
+        <strong>Mobile App</strong>
+        <p>Dashboards, alerts, and service access on the go.</p>
+        <div class="hp-gs__app-links">
+          <a href="install.html#mobile" target="_blank" rel="noopener">TestFlight (iOS)</a>
+          <a href="install.html#mobile" target="_blank" rel="noopener">Play Store (Android)</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</section>

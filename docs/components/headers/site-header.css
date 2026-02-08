@@ -62,7 +62,7 @@
   gap: 10px;
   padding: 6px;
   border-radius: 999px;
-  background: rgba(255,255,255,.55);
+  background: var(--nav-pill-bg, rgba(252, 234, 238, 0.72));
   border: 1px solid rgba(15,23,42,.08);
 }
 
@@ -294,6 +294,165 @@
   background: rgba(255,255,255,.90);
   border-color: rgba(15,23,42,.10);
   box-shadow: 0 8px 24px rgba(2,6,23,.08);
+}
+
+/* --- Structured session dropdown --- */
+.session-dropdown__identity{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 10px 8px;
+}
+
+.session-dropdown__avatar{
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  border: 1px solid rgba(15,23,42,.12);
+  object-fit: cover;
+  flex: 0 0 auto;
+}
+
+.session-dropdown__info{
+  min-width: 0;
+}
+
+.session-dropdown__name{
+  font-weight: 950;
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.session-dropdown__meta{
+  opacity: .7;
+  font-weight: 700;
+  font-size: 11px;
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.session-dropdown__plan{
+  display: inline-block;
+  margin-top: 4px;
+  font-size: 10px;
+  font-weight: 900;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: rgba(90,155,212,.12);
+  border: 1px solid rgba(90,155,212,.22);
+  color: #1d6fb5;
+}
+
+.session-dropdown__divider{
+  height: 1px;
+  background: rgba(15,23,42,.08);
+  margin: 6px 0;
+}
+
+.session-dropdown__nav{
+  display: grid;
+  gap: 2px;
+  padding: 4px 0;
+}
+
+.session-dropdown__link{
+  display: block;
+  padding: 9px 12px;
+  border-radius: 10px;
+  font-weight: 800;
+  font-size: 12px;
+  color: var(--hdr-text);
+  text-decoration: none;
+  transition: background .12s ease;
+}
+
+.session-dropdown__link:hover{
+  background: rgba(15,23,42,.05);
+  text-decoration: none;
+}
+
+.session-dropdown__actions{
+  padding: 4px 0;
+}
+
+.session-dropdown__logout{
+  appearance: none;
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(15,23,42,.08);
+  background: rgba(255,255,255,.55);
+  font-weight: 800;
+  font-size: 12px;
+  color: var(--hdr-text);
+  cursor: pointer;
+  text-align: left;
+  transition: background .12s ease;
+}
+
+.session-dropdown__logout:hover{
+  background: rgba(239,68,68,.06);
+}
+
+/* --- Dual login buttons --- */
+.session-login-buttons{
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.session-login-btn{
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font: 700 12px/1 ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+  text-decoration: none;
+  transition: transform .12s ease, box-shadow .12s ease;
+  white-space: nowrap;
+}
+
+.session-login-btn:hover{
+  transform: translateY(-1px);
+  text-decoration: none;
+}
+
+.session-login-btn--github{
+  background: #24292f;
+  color: #fff;
+  border: 1px solid #24292f;
+  box-shadow: 0 6px 16px rgba(36,41,47,.22);
+}
+
+.session-login-btn--github:hover{
+  box-shadow: 0 10px 22px rgba(36,41,47,.30);
+}
+
+.session-login-btn--google{
+  background: #fff;
+  color: #3c4043;
+  border: 1px solid rgba(15,23,42,.15);
+  box-shadow: 0 6px 16px rgba(0,0,0,.08);
+}
+
+.session-login-btn--google:hover{
+  box-shadow: 0 10px 22px rgba(0,0,0,.14);
+}
+
+@media (max-width: 860px){
+  .session-login-buttons{
+    flex-direction: column;
+    gap: 6px;
+  }
+  .session-login-btn{
+    font-size: 11px;
+    padding: 7px 10px;
+  }
 }
 
 .session-panel{

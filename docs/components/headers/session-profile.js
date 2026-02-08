@@ -1,13 +1,12 @@
 /* docs/components/headers/session-profile.js
  * Renders #session-slot as:
- *  - Logged out: Login button
- *  - Logged in: avatar pill + dropdown w/ logout + api key actions
+ *  - Logged out: dual-provider login buttons (GitHub + Google)
+ *  - Logged in: avatar pill + structured dropdown with full navigation
  */
 (function () {
   'use strict';
 
   const AUTH_ORIGIN = 'https://auth.haiphen.io';
-  const LOGIN_URL = `${AUTH_ORIGIN}/login`;
   const LOGOUT_URL = `${AUTH_ORIGIN}/logout`;
 
   function qs(root, sel) {
@@ -28,16 +27,35 @@
     }
   }
 
-  function loginHref() {
-    // preserve current page as return target (works w/ your auth worker "to" param)
+  function loginHref(provider) {
     const here = window.location.href;
-    const u = new URL(LOGIN_URL);
+    const u = new URL(`${AUTH_ORIGIN}/login`);
     u.searchParams.set('to', here);
+    u.searchParams.set('provider', provider || 'github');
     return u.toString();
   }
 
   function renderLoggedOut(slot) {
-    slot.innerHTML = `<a href="${loginHref()}" class="login-btn">Login</a>`;
+    slot.innerHTML = `
+      <div class="session-login-buttons">
+        <a href="${loginHref('github')}" class="session-login-btn session-login-btn--github">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+          Sign in with GitHub
+        </a>
+        <a href="${loginHref('google')}" class="session-login-btn session-login-btn--google">
+          <svg width="16" height="16" viewBox="0 0 48 48" aria-hidden="true"><path fill="#4285F4" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#34A853" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#EA4335" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+          Sign in with Google
+        </a>
+      </div>
+    `;
+  }
+
+  function escapeHtml(s) {
+    return String(s ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
   }
 
   function sessionDropdownHtml(user) {
@@ -45,36 +63,55 @@
     const sub = user?.sub || '—';
     const email = user?.email || '—';
     const avatar = user?.avatar || user?.avatar_url || '';
-
-    // The api-cred block is reused (same selectors) so ApiAccess.hydrate can fill it.
-    const apiCred = window.HAIPHEN?.SessionProfileTemplate?.apiCredBlockHtml
-      ? window.HAIPHEN.SessionProfileTemplate.apiCredBlockHtml()
-      : `<div class="api-cred" data-api-cred hidden></div>`;
+    const provider = user?.provider || 'github';
+    const plan = user?.plan || 'Free';
 
     return `
       <div class="session-menu" data-session-menu>
         <button class="session-pill" type="button" aria-haspopup="true" aria-expanded="false">
-          ${avatar ? `<img class="session-avatar" src="${avatar}" alt="" aria-hidden="true" />` : ''}
-          <span>${name}</span>
+          ${avatar ? `<img class="session-avatar" src="${escapeHtml(avatar)}" alt="" aria-hidden="true" />` : ''}
+          <span>${escapeHtml(name)}</span>
         </button>
 
         <div class="session-dropdown" role="menu" aria-label="Session menu">
-          <div style="padding: 8px 10px 4px 10px;">
-            <div style="font-weight: 900; font-size: 13px;">${name}</div>
-            <div style="opacity: .75; font-weight: 700; font-size: 12px; margin-top: 2px;">
-              ${email} <span style="opacity:.55;">•</span> ${sub}
+          <div class="session-dropdown__identity">
+            ${avatar ? `<img class="session-dropdown__avatar" src="${escapeHtml(avatar)}" alt="" />` : ''}
+            <div class="session-dropdown__info">
+              <div class="session-dropdown__name">${escapeHtml(name)}</div>
+              <div class="session-dropdown__meta">
+                ${escapeHtml(email)} <span style="opacity:.5;">•</span> @${escapeHtml(sub)}
+              </div>
+              <span class="session-dropdown__plan">${escapeHtml(plan)}</span>
             </div>
           </div>
 
-          <div class="session-panel">
-            ${apiCred}
-          </div>
+          <div class="session-dropdown__divider"></div>
 
-          <div style="display:flex; gap:8px; padding: 10px;">
-            <button class="api-btn api-btn-ghost" type="button" data-session-action="rotate-key">
-              Request new API key
-            </button>
-            <button class="api-btn api-btn-ghost" type="button" data-session-action="logout">
+          <nav class="session-dropdown__nav">
+            <a class="session-dropdown__link" href="javascript:void(0)" role="menuitem" data-session-nav="profile">
+              Profile
+            </a>
+            <a class="session-dropdown__link" href="javascript:void(0)" role="menuitem" data-session-nav="settings">
+              Settings
+            </a>
+            <a class="session-dropdown__link" href="javascript:void(0)" role="menuitem" data-session-nav="billing">
+              Billing & Plan
+            </a>
+            <a class="session-dropdown__link" href="javascript:void(0)" role="menuitem" data-session-nav="quota">
+              Rate Limits & Quota
+            </a>
+            <a class="session-dropdown__link" href="javascript:void(0)" role="menuitem" data-session-nav="apikeys">
+              API Keys
+            </a>
+            <a class="session-dropdown__link" href="javascript:void(0)" role="menuitem" data-session-nav="getting-started">
+              Getting Started
+            </a>
+          </nav>
+
+          <div class="session-dropdown__divider"></div>
+
+          <div class="session-dropdown__actions">
+            <button class="session-dropdown__logout" type="button" data-session-action="logout">
               Logout
             </button>
           </div>
@@ -83,22 +120,53 @@
     `;
   }
 
+  // Map nav items to profile sub-sections or SPA sections
+  const NAV_MAP = {
+    profile:           { section: 'Profile', tab: 'overview' },
+    settings:          { section: 'Profile', tab: 'settings' },
+    billing:           { section: 'Profile', tab: 'billing' },
+    quota:             { section: 'Profile', tab: 'billing' },
+    apikeys:           { section: 'Profile', tab: 'apikeys' },
+    'getting-started': { section: 'GettingStarted' },
+  };
+
   function renderLoggedIn(slot, user) {
     slot.innerHTML = sessionDropdownHtml(user);
 
     const menu = qs(slot, '[data-session-menu]');
     const pill = qs(menu, '.session-pill');
-    const dropdown = qs(menu, '.session-dropdown');
 
-    // Accessibility: toggle aria-expanded on focus/blur
+    // Toggle aria-expanded
     pill.addEventListener('click', () => {
       const expanded = pill.getAttribute('aria-expanded') === 'true';
       pill.setAttribute('aria-expanded', expanded ? 'false' : 'true');
-      // CSS already opens on :hover/:focus-within; aria is for semantics.
     });
 
     // Wire dropdown actions
     menu.addEventListener('click', async (e) => {
+      // Navigation links
+      const nav = e.target.closest('[data-session-nav]');
+      if (nav) {
+        e.preventDefault();
+        const page = nav.getAttribute('data-session-nav');
+        const mapping = NAV_MAP[page];
+
+        window.dispatchEvent(new CustomEvent('haiphen:session:navigate', {
+          detail: { page, tab: mapping?.tab || null },
+        }));
+
+        if (mapping?.section === 'GettingStarted') {
+          if (typeof window.showSection === 'function') window.showSection('GettingStarted');
+        } else if (mapping?.section === 'Profile') {
+          if (typeof window.HAIPHEN?.showProfile === 'function') {
+            await window.HAIPHEN.showProfile({ tab: mapping?.tab });
+          } else if (typeof window.showSection === 'function') {
+            window.showSection('Profile');
+          }
+        }
+        return;
+      }
+
       const btn = e.target.closest('[data-session-action]');
       if (!btn) return;
 
@@ -110,37 +178,13 @@
         const here = window.location.href;
         const u = new URL(LOGOUT_URL);
         u.searchParams.set('to', here);
-        u.searchParams.set('reauth', '1'); // force the login flow to run again
+        u.searchParams.set('reauth', '1');
         window.location.assign(u.toString());
-        return;
-      }
-
-      if (action === 'rotate-key') {
-        btn.disabled = true;
-        const prev = btn.textContent;
-        btn.textContent = 'Rotating…';
-        try {
-          // Prefer ApiAccess helper so the DOM in dropdown + sidebar updates
-          if (window.HAIPHEN?.ApiAccess?.rotateKeyAndRefresh) {
-            await window.HAIPHEN.ApiAccess.rotateKeyAndRefresh(menu);
-          } else {
-            console.warn('[session-profile] ApiAccess.rotateKeyAndRefresh missing');
-          }
-        } catch (err) {
-          console.warn('[session-profile] rotate failed', err?.message || err);
-        } finally {
-          btn.textContent = prev;
-          btn.disabled = false;
-        }
       }
     });
 
-    // Hydrate the api-cred block inside the dropdown
+    // Let other components know session is ready
     requestAnimationFrame(() => {
-      try {
-        if (window.HAIPHEN?.ApiAccess?.hydrate) window.HAIPHEN.ApiAccess.hydrate(menu);
-      } catch {}
-      // Let other components know session is ready
       window.dispatchEvent(new CustomEvent('haiphen:session:ready', { detail: { user } }));
     });
   }

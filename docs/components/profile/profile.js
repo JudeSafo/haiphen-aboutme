@@ -350,6 +350,10 @@
 
     await hydrate(mount);
 
+    // Switch to requested tab if specified
+    const tab = String(opts?.tab || '').trim();
+    if (tab) switchTab(mount, tab);
+
     requestAnimationFrame(() => {
       const requestedSubId = String(opts?.subId || '').trim();
       const target =
@@ -433,6 +437,9 @@
 
     // 2c) onboarding links
     await hydrateOnboardingLinks(root);
+
+    // 2d) billing tab
+    hydrateBillingTab(root, me);
 
     // 3) render sticky reveal (if present)
     renderReveal(root);
@@ -691,11 +698,54 @@
     });
   }
 
+  function switchTab(root, tabName) {
+    const tabs = qa('[data-profile-tab]', root);
+    const panels = qa('[data-profile-panel]', root);
+
+    tabs.forEach((t) => {
+      const selected = t.getAttribute('data-profile-tab') === tabName;
+      t.setAttribute('aria-selected', selected ? 'true' : 'false');
+    });
+
+    panels.forEach((p) => {
+      const active = p.getAttribute('data-profile-panel') === tabName;
+      p.hidden = !active;
+    });
+  }
+
+  function wireProfileTabs(root) {
+    const tabBar = qs('.hp-profile__tabs', root);
+    if (!tabBar) return;
+
+    tabBar.addEventListener('click', (e) => {
+      const tab = e.target.closest('[data-profile-tab]');
+      if (!tab) return;
+      const name = tab.getAttribute('data-profile-tab');
+      switchTab(root, name);
+    });
+  }
+
+  function hydrateBillingTab(root, me) {
+    const plan = me?.plan || me?.entitlements?.plan || 'free';
+    const billingPlanEl = qs('[data-profile-billing-plan]', root);
+    if (billingPlanEl) {
+      setText(billingPlanEl, plan);
+      billingPlanEl.classList.remove('hp-pill--free', 'hp-pill--pro', 'hp-pill--enterprise');
+      billingPlanEl.classList.add(`hp-pill--${plan.toLowerCase()}`);
+    }
+
+    const RATE_LIMITS = { free: '60/min', pro: '600/min', enterprise: '6,000/min' };
+    const QUOTAS = { free: '200/day', pro: '10,000/day', enterprise: '50,000/day' };
+    setText(qs('[data-profile-rate-limit]', root), RATE_LIMITS[plan.toLowerCase()] || '60/min');
+    setText(qs('[data-profile-daily-quota]', root), QUOTAS[plan.toLowerCase()] || '200/day');
+  }
+
   function wire(root) {
     if (root.__haiphenProfileWired) return;
     root.__haiphenProfileWired = true;
 
     wireServicesToggle(root);
+    wireProfileTabs(root);
 
     root.addEventListener('click', async (e) => {
       const t = e.target;
@@ -799,8 +849,9 @@
   NS.showProfile = async function showProfileWithHash(opts = {}) {
     const preserveHash = !!opts?.preserveHash;
     const subId = String(opts?.subId || '').trim();
+    const tab = String(opts?.tab || '').trim();
     if (!preserveHash) setProfileHash(subId);
-    return await showProfile({ subId });
+    return await showProfile({ subId, tab });
   };
 
   // Optional: auto-open if user visits /#profile directly
@@ -812,12 +863,15 @@
     }
   });
 
-  // Sidebar navigation hook
+  // Sidebar/header navigation hook
   window.addEventListener('haiphen:session:navigate', (ev) => {
     const page = ev?.detail?.page;
-    if (page === 'profile') {
+    const tab = ev?.detail?.tab || null;
+    const profilePages = ['profile', 'settings', 'billing', 'quota', 'apikeys'];
+    if (profilePages.includes(page)) {
       ensureContentWidgetVisible();
-      NS.showProfile().catch((e) => console.warn(LOG, 'showProfile failed', e));
+      if (typeof window.showSection === 'function') window.showSection('Profile');
+      NS.showProfile({ tab }).catch((e) => console.warn(LOG, 'showProfile failed', e));
     }
   });
 })();
