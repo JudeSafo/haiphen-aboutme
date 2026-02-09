@@ -61,7 +61,8 @@
       { label: "Docs • Supply Chain", section: "Docs", elementId: "docs-supply", keywords: ["docs", "supply", "chain", "disruption", "supplier"] },
       { label: "Docs • CLI Commands", section: "Docs", elementId: "docs-cli-commands", keywords: ["docs", "cli", "commands", "haiphen", "terminal"] },
 
-      // --- Tech services (mission spotlight)
+      // --- Platform & Tech services (mission spotlight)
+      { label: "Trading Telemetry Suite", section: "OnePager", elementId: "svc-platform", hash: "mission:svc-platform", keywords: ["platform", "suite", "telemetry", "trading", "full platform", "all services", "aggregate"] },
       { label: "Haiphen Secure", section: "OnePager", elementId: "svc-secure", hash: "mission:svc-secure", keywords: ["secure", "security", "vulnerability", "scanning", "compliance", "cve", "infrastructure"] },
       { label: "Network Trace", section: "OnePager", elementId: "svc-network", hash: "mission:svc-network", keywords: ["network", "trace", "protocol", "fix", "itch", "ouch", "market data", "latency", "feed"] },
       { label: "Knowledge Graph", section: "OnePager", elementId: "svc-graph", hash: "mission:svc-graph", keywords: ["knowledge", "graph", "entity", "extraction", "sec filings", "ownership", "intelligence"] },

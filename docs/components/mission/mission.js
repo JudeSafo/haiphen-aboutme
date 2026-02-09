@@ -17,6 +17,38 @@
 
   const SERVICES = [
     {
+      key: 'platform',
+      serviceId: 'haiphen_platform',
+      isPlatform: true,
+      tech: {
+        name: 'Trading Telemetry Suite',
+        eyebrow: 'Full Platform',
+        problem: 'Building a trading operation means stitching together separate tools for data feeds, risk, compliance, entity research, and post-trade analysis. Each vendor is another integration, another bill, another point of failure.',
+        solution: 'Haiphen is a single platform that covers the entire trading lifecycle: ingest market data, scan your infrastructure for vulnerabilities, map entity relationships for alpha signals, stress-test portfolios with Monte Carlo simulations, trace causal chains across executions, and monitor counterparty exposure. All six services share a unified API, a single CLI, and one authentication layer. Deploy locally for development or cloud-native on Cloudflare Workers for production.',
+        steps: [
+          { title: 'Ingest', desc: 'Connect market data feeds, import portfolios, and register your infrastructure' },
+          { title: 'Analyze', desc: 'Run security scans, risk simulations, entity graphs, and causal analysis in parallel' },
+          { title: 'Act', desc: 'Generate signals, set alerts, export reports, and integrate via webhooks' },
+        ],
+      },
+      finance: {
+        name: 'Trading Intelligence Platform',
+        eyebrow: 'Full Platform',
+        problem: 'Portfolio managers juggle separate vendors for market data, compliance, risk analytics, research, and post-trade reporting. Fragmented tooling means slower decisions and hidden blind spots.',
+        solution: 'One platform for the full investment lifecycle: real-time market data analysis, regulatory compliance scanning, portfolio risk modeling, corporate entity intelligence, trade chain reconstruction, and counterparty monitoring. Unified API, single CLI, one login. Run locally or deploy cloud-native.',
+        steps: [
+          { title: 'Connect', desc: 'Link market feeds, import portfolios, catalog your infrastructure' },
+          { title: 'Analyze', desc: 'Compliance, risk, entity research, and post-trade analysis from one dashboard' },
+          { title: 'Report', desc: 'Automated alerts, scheduled reports, and API-driven integrations' },
+        ],
+      },
+      assets: {
+        demo: 'assets/demos/cli-workflow.gif',
+        scenario: 'assets/scenarios/scenario-secure.svg',
+        icon: 'assets/mission/telemetry-dashboard.svg',
+      },
+    },
+    {
       key: 'secure',
       serviceId: 'haiphen_secure',
       tech: {
@@ -305,6 +337,30 @@
 
     const docsHref = docsSection ? '#docs:' + docsSection : '#docs';
 
+    // Cohort CTA for individual services (not platform)
+    var cohortHtml = '';
+    if (!svc.isPlatform) {
+      cohortHtml = '<div class="ms-cohort-cta">' +
+        '<span class="ms-cohort-cta__badge">Limited</span>' +
+        '<span class="ms-cohort-cta__text">Get all 6 services bundled in the <strong>Cohort Program</strong></span>' +
+        '<a class="ms-cohort-cta__link" href="#cohort">Learn more</a>' +
+      '</div>';
+    }
+
+    // Platform entry gets different action buttons
+    var actionsHtml;
+    if (svc.isPlatform) {
+      actionsHtml = '<div class="ms-actions">' +
+        '<a class="btn btn-primary" href="#cohort">Join Cohort Program</a>' +
+        '<a class="btn btn-ghost" href="' + esc(docsHref) + '">Explore Docs</a>' +
+      '</div>';
+    } else {
+      actionsHtml = '<div class="ms-actions">' +
+        '<a class="btn btn-primary" href="#services" data-service-id="' + esc(svc.serviceId) + '">Start Free Trial</a>' +
+        '<a class="btn btn-ghost" href="' + esc(docsHref) + '">View API Docs</a>' +
+      '</div>';
+    }
+
     return '<div class="ms-spotlight" id="svc-' + esc(svc.key) + '">' +
       '<div class="ms-demo">' +
         '<img class="ms-demo__gif" src="' + esc(a.demo) + '" alt="' + esc(d.name) + ' CLI demo" loading="lazy" decoding="async" />' +
@@ -320,10 +376,8 @@
         '<div class="ms-steps">' + stepsHtml + '</div>' +
         featuresHtml +
         ((priceHtml || trialHtml) ? '<div class="ms-pricing">' + priceHtml + trialHtml + '</div>' : '') +
-        '<div class="ms-actions">' +
-          '<a class="btn btn-primary" href="#services" data-service-id="' + esc(svc.serviceId) + '">Start Free Trial</a>' +
-          '<a class="btn btn-ghost" href="' + esc(docsHref) + '">View API Docs</a>' +
-        '</div>' +
+        actionsHtml +
+        cohortHtml +
       '</div>' +
     '</div>';
   }
@@ -353,7 +407,7 @@
      SELECT SERVICE
      ================================================================ */
 
-  function selectService(key) {
+  function selectService(key, opts) {
     var svc = SERVICES.find(function (s) { return s.key === key; });
     if (!svc) return;
 
@@ -372,6 +426,14 @@
         pill.classList.toggle('is-active', isActive);
         pill.setAttribute('aria-selected', isActive ? 'true' : 'false');
       });
+    }
+
+    // Update URL hash for shareability (skip when called from router to prevent loops)
+    if (!(opts && opts.fromRouter)) {
+      var nextHash = '#mission:svc-' + key;
+      if (window.location.hash !== nextHash) {
+        history.replaceState(null, '', nextHash);
+      }
     }
   }
 
@@ -626,9 +688,10 @@
     _activeKey = key;
 
     // If mission is already rendered, select immediately
+    // Pass fromRouter to avoid re-writing the hash that triggered this call
     var spotMount = document.getElementById('mission-spotlight');
     if (spotMount && spotMount.innerHTML.trim()) {
-      selectService(key);
+      selectService(key, { fromRouter: true });
     }
     // Otherwise _activeKey is set — loadMission will use it
   };
