@@ -1980,6 +1980,15 @@
       <div id="mission-mount"></div>
     </section>
   `,
+      "Profile": `
+        <section class="hp-section-reveal">
+          <div class="hp-profile-skeleton">
+            <div class="hp-skel hp-skel--title"></div>
+            <div class="hp-skel hp-skel--line"></div>
+            <div class="hp-skel hp-skel--line hp-skel--short"></div>
+          </div>
+        </section>
+      `,
       "FAQ": `
 		    <section id="faq" class="hp-section-reveal">
 		      <div id="faq-mount"></div>
@@ -2572,10 +2581,7 @@
 		  }
 
 		  if (slug === 'profile') {
-		    if (typeof window.showSection === "function") {
-		      window.showSection("Profile");
-		      activateSectionMenuFor("Profile");
-		    }
+		    activateSectionMenuFor("Profile");
 		    try {
 		      window.HAIPHEN?.showProfile?.({ preserveHash: true, subId: subId || '', tab: subId || '' });
 		    } catch (e) {

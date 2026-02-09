@@ -342,6 +342,12 @@
     await injectCssOnce('assets/base.css');
     await injectCssOnce('components/profile/profile.css');
 
+    // Validate DOM: if flag says mounted but .hp-profile is gone, reset
+    if (mount.__haiphenProfileMounted && !mount.querySelector('.hp-profile')) {
+      mount.__haiphenProfileMounted = false;
+      mount.__haiphenProfileWired = false;
+    }
+
     if (!mount.__haiphenProfileMounted) {
       const html = await fetchText('components/profile/profile.html');
       mount.innerHTML = html;
@@ -409,6 +415,7 @@
         return;
       }
       console.warn(LOG, 'failed to load /v1/me', e);
+      setStatus(root, `Unable to load profile data: ${e?.message || e}`, 'warn');
       throw e;
     }
 
@@ -960,15 +967,33 @@
 
   async function showProfile(opts = {}) {
     try {
-      ensureContentWidgetVisible();
+      const mount = ensureContentWidgetVisible();
+
+      // Show loading skeleton if profile DOM is not yet present
+      if (!mount?.querySelector('.hp-profile')) {
+        mount.innerHTML = `<section class="hp-section-reveal">
+          <div class="hp-profile-skeleton">
+            <div class="hp-skel hp-skel--title"></div>
+            <div class="hp-skel hp-skel--line"></div>
+            <div class="hp-skel hp-skel--line hp-skel--short"></div>
+          </div>
+        </section>`;
+        mount.classList.add('active');
+      }
+
       await ensureMounted(opts);
     } catch (e) {
       console.warn(LOG, 'failed to mount profile', e);
-      setStatus(ensureMountEl(), `Unable to load profile: ${e?.message || e}`, 'warn');
-      try {
-        window.alert(`Unable to load profile: ${e?.message || e}`);
-      } catch {
-        /* noop */
+      const mount = ensureMountEl();
+      // Show inline error instead of alert
+      if (e && (e.status === 401 || e.status === 403)) return; // redirect already handled
+      const msg = `Unable to load profile: ${e?.message || e}`;
+      const existing = mount.querySelector('.hp-profile');
+      if (existing) {
+        setStatus(mount, msg, 'warn');
+      } else {
+        mount.innerHTML = `<section class="hp-section-reveal is-visible"><p class="hp-status--warn" style="padding:2rem;text-align:center;">${msg}</p></section>`;
+        mount.classList.add('active');
       }
     }
   }

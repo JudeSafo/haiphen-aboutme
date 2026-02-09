@@ -1,5 +1,25 @@
 /* docs/components/profile/profile.css */
 
+/* Loading skeleton */
+.hp-profile-skeleton {
+  padding: 2rem;
+  max-width: 900px;
+}
+.hp-skel {
+  border-radius: 6px;
+  background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+  background-size: 200% 100%;
+  animation: hp-shimmer 1.5s infinite;
+  margin-bottom: 12px;
+}
+.hp-skel--title { height: 28px; width: 200px; }
+.hp-skel--line  { height: 16px; width: 100%; }
+.hp-skel--short { width: 60%; }
+@keyframes hp-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
 .hp-profile {
   padding: 18px 16px 28px;
   max-width: 900px;
