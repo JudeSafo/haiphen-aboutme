@@ -1984,9 +1984,6 @@
     <section id="mission-section" class="hp-section-reveal">
       <div id="mission-mount"></div>
     </section>
-    <section class="hp-section-reveal">
-      <div id="services-plans-mount"></div>
-    </section>
   `,
       "Profile": `
         <section class="hp-section-reveal">
@@ -2192,8 +2189,8 @@
 		  // Wire fade-in reveal for section elements
 		  wireRevealElements(contentWidget);
 
-		  // Collapse sidebar when viewing API docs to give docs full width
-		  document.body.classList.toggle('sidebar-collapsed', resolved === 'Docs');
+		  // Collapse sidebar when viewing API docs or mission to give full width
+		  document.body.classList.toggle('sidebar-collapsed', resolved === 'Docs' || resolved === 'OnePager');
 
 		  // Dismiss all header dropdowns (prevents them staying visible after nav click)
 		  document.querySelectorAll('.site-header__item').forEach(function(item) {
@@ -2219,10 +2216,6 @@
 		    (async () => {
 		      try { await window.HAIPHEN?.loadMission?.(); }
 		      catch (e) { console.warn("[Mission] loadMission failed", e); }
-		      try { await window.HAIPHEN?.loadServicesPlans?.(); }
-		      catch (e) { console.warn("[Services] loadServicesPlans failed", e); }
-		      currentPageIndex = 0;
-		      renderOnePagerPage();
 		      if (!_opts.suppressScroll) {
 		        requestAnimationFrame(() => {
 		          const top = document.getElementById("mission-top") || document.getElementById("mission-section") || contentWidget;

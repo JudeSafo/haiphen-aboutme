@@ -6,11 +6,12 @@
   <!-- Hero: tech lens variant -->
   <header class="mission-hero-main mission-reveal" data-lens-tech>
     <div class="mission-hero__copy">
-      <span class="mission-eyebrow">Platform</span>
-      <h2>Signals infrastructure for modern industrial systems.</h2>
+      <span class="mission-eyebrow">Trading Platform</span>
+      <h2>Full-stack trading telemetry, signals intelligence, and automated execution.</h2>
       <p class="mission-lede">
-        Haiphen builds operational intelligence across security, protocol analysis, and edge-native
-        infrastructure so engineering teams can move faster with confidence.
+        Haiphen is an end-to-end platform for quantitative traders and fintech engineers: real-time data ingestion,
+        portfolio risk modeling, automated trade execution, and edge-native signals infrastructure &mdash;
+        all deployable locally via CLI or cloud-native on Cloudflare Workers.
       </p>
       <div class="mission-hero__actions">
         <a class="btn btn-primary" href="#docs">Explore Docs</a>
@@ -18,7 +19,7 @@
       </div>
     </div>
     <div class="mission-hero__figure" aria-hidden="true">
-      <img class="mission-figure" data-lightbox src="assets/mission/signals.svg" alt="Signals overview" loading="lazy" decoding="async" />
+      <img class="mission-figure" data-lightbox src="assets/mission/signals.svg" alt="Trading signals overview" loading="lazy" decoding="async" />
     </div>
   </header>
 
@@ -41,10 +42,10 @@
     </div>
   </header>
 
-  <!-- Spotlight: JS renders the active service here -->
-  <div id="mission-spotlight" class="mission-reveal"></div>
-
-  <!-- Catalogue nav: JS populates pills from data registry -->
-  <nav class="mission-catalogue mission-reveal" role="tablist" aria-label="Service catalogue"></nav>
+  <!-- Body: side catalogue + spotlight -->
+  <div class="mission-body mission-reveal">
+    <nav class="mission-catalogue" role="tablist" aria-label="Service catalogue"></nav>
+    <div id="mission-spotlight"></div>
+  </div>
 
 </section>

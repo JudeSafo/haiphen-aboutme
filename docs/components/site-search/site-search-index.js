@@ -61,13 +61,13 @@
       { label: "Docs • Supply Chain", section: "Docs", elementId: "docs-supply", keywords: ["docs", "supply", "chain", "disruption", "supplier"] },
       { label: "Docs • CLI Commands", section: "Docs", elementId: "docs-cli-commands", keywords: ["docs", "cli", "commands", "haiphen", "terminal"] },
 
-      // --- Tech services
-      { label: "Haiphen Secure", section: "Services", elementId: "services-plans-mount", keywords: ["secure", "security", "vulnerability", "scanning", "compliance"] },
-      { label: "Network Trace", section: "Services", elementId: "services-plans-mount", keywords: ["network", "trace", "protocol", "modbus", "opc-ua", "mqtt"] },
-      { label: "Knowledge Graph", section: "Services", elementId: "services-plans-mount", keywords: ["knowledge", "graph", "entity", "extraction", "semantic"] },
-      { label: "Risk Analysis", section: "Services", elementId: "services-plans-mount", keywords: ["risk", "analysis", "modeling", "stress test", "var"] },
-      { label: "Causal Chain", section: "Services", elementId: "services-plans-mount", keywords: ["causal", "chain", "root cause", "inference", "incident"] },
-      { label: "Supply Chain Intel", section: "Services", elementId: "services-plans-mount", keywords: ["supply", "chain", "disruption", "supplier", "geopolitical"] },
+      // --- Tech services (mission spotlight)
+      { label: "Haiphen Secure", section: "OnePager", elementId: "svc-secure", hash: "mission:svc-secure", keywords: ["secure", "security", "vulnerability", "scanning", "compliance", "cve", "infrastructure"] },
+      { label: "Network Trace", section: "OnePager", elementId: "svc-network", hash: "mission:svc-network", keywords: ["network", "trace", "protocol", "fix", "itch", "ouch", "market data", "latency", "feed"] },
+      { label: "Knowledge Graph", section: "OnePager", elementId: "svc-graph", hash: "mission:svc-graph", keywords: ["knowledge", "graph", "entity", "extraction", "sec filings", "ownership", "intelligence"] },
+      { label: "Risk Analysis", section: "OnePager", elementId: "svc-risk", hash: "mission:svc-risk", keywords: ["risk", "analysis", "monte carlo", "var", "portfolio", "stress test", "sharpe"] },
+      { label: "Causal Chain", section: "OnePager", elementId: "svc-causal", hash: "mission:svc-causal", keywords: ["causal", "chain", "event", "propagation", "execution", "trade chain", "post-trade"] },
+      { label: "Counterparty Intel", section: "OnePager", elementId: "svc-supply", hash: "mission:svc-supply", keywords: ["counterparty", "exposure", "concentration", "broker", "clearing", "risk"] },
 
       // --- Profile subsections
       { label: "Profile • API Keys", section: "Profile", elementId: "profile", keywords: ["api", "keys", "rotate", "revoke", "bearer"] },

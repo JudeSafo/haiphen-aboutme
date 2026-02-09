@@ -21,22 +21,20 @@
       serviceId: 'haiphen_secure',
       tech: {
         name: 'Haiphen Secure',
-        eyebrow: 'Security',
-        headline: 'Continuous vulnerability scanning for edge infrastructure.',
-        problem: 'Industrial controllers and edge devices run firmware riddled with known CVEs. Manual vulnerability audits are slow, expensive, and consistently miss critical exposures that attackers exploit.',
-        solution: 'Automated CVE correlation engine that matches your asset metadata (vendor, model, firmware) against vulnerability databases. Calculates risk scores, maps IEC 62443 compliance, and generates remediation playbooks.',
+        eyebrow: 'Infrastructure Security',
+        problem: 'Unpatched CVEs in your trading stack create attack surface that auditors flag and regulators penalize.',
+        solution: 'Automated CVE correlation that maps your dependencies against vulnerability databases. Calculates exploitability scores, flags compliance gaps (SOC 2, PCI DSS), and generates remediation playbooks.',
         steps: [
-          { title: 'Inventory', desc: 'Register assets with vendor, model, and firmware metadata' },
-          { title: 'Scan', desc: 'Automated CVE matching with confidence scoring' },
-          { title: 'Remediate', desc: 'Prioritized findings with actionable playbooks' },
+          { title: 'Inventory', desc: 'Register APIs, databases, brokers, and dependencies' },
+          { title: 'Scan', desc: 'CVE matching with exploitability scoring' },
+          { title: 'Remediate', desc: 'Prioritized findings with upgrade paths' },
         ],
       },
       finance: {
         name: 'Compliance Scanner',
         eyebrow: 'Compliance',
-        headline: 'Automated compliance scanning for trading infrastructure.',
-        problem: 'Trading systems must meet regulatory standards (SOC 2, MiFID II, SEC Rule 15c3-5) but manual compliance audits are slow, error-prone, and quickly outdated as infrastructure evolves.',
-        solution: 'Continuous compliance monitoring that maps trading infrastructure components against regulatory frameworks. Automated drift detection, evidence collection, and audit-ready reporting.',
+        problem: 'Trading systems must meet SOC 2, MiFID II, and SEC 15c3-5 but manual audits are slow and quickly outdated.',
+        solution: 'Continuous compliance monitoring across regulatory frameworks. Automated drift detection, evidence collection, and audit-ready reporting.',
         steps: [
           { title: 'Register', desc: 'Catalog trading systems and components' },
           { title: 'Assess', desc: 'Automated regulatory framework mapping' },
@@ -54,26 +52,24 @@
       serviceId: 'network_trace',
       tech: {
         name: 'Network Trace',
-        eyebrow: 'Protocol Analysis',
-        headline: 'Deep protocol analysis and traffic inspection at scale.',
-        problem: 'Industrial protocols like Modbus and OPC-UA carry critical control data but lack visibility tools. Anomalous traffic goes undetected until equipment fails or safety is compromised.',
-        solution: 'Packet-level protocol analyzer that decodes function codes, reconstructs sessions, and detects specification violations. Supports Modbus, OPC-UA, MQTT, DNP3, BACnet, and EthernetIP.',
+        eyebrow: 'Feed Analysis',
+        problem: 'Market data feeds over FIX, ITCH, and proprietary protocols are opaque at the wire level. Latency spikes and dropped ticks cost real money.',
+        solution: 'Packet-level protocol analyzer for financial data feeds. Decodes FIX sessions, reconstructs order books from ITCH/OUCH streams, and measures tick-to-trade latency with microsecond precision.',
         steps: [
-          { title: 'Capture', desc: 'Ingest raw packets or PCAP files for analysis' },
-          { title: 'Decode', desc: 'Protocol-aware deep packet inspection and session reconstruction' },
-          { title: 'Detect', desc: 'Anomaly detection with alerting and exportable reports' },
+          { title: 'Capture', desc: 'Tap live feeds or replay PCAP/FIX logs' },
+          { title: 'Decode', desc: 'FIX 4.2/4.4/5.0, ITCH, OUCH, SBE parsing' },
+          { title: 'Measure', desc: 'Latency histograms and feed health dashboards' },
         ],
       },
       finance: {
         name: 'Market Data Analyzer',
         eyebrow: 'Market Data',
-        headline: 'Real-time exchange connectivity and protocol analysis.',
-        problem: 'Market data feeds use complex protocols (FIX, ITCH, OUCH) that are difficult to debug. Latency spikes and dropped messages lead to missed fills and stale pricing.',
-        solution: 'Packet-level protocol analyzer for financial data feeds. Decodes FIX sessions, reconstructs order books from ITCH streams, and measures end-to-end latency with microsecond precision.',
+        problem: 'Market data feeds use complex protocols (FIX, ITCH, OUCH) that are hard to debug. Latency spikes lead to missed fills and stale pricing.',
+        solution: 'Protocol analyzer for financial data feeds. Decodes FIX sessions, reconstructs order books, and measures end-to-end latency with microsecond precision.',
         steps: [
-          { title: 'Connect', desc: 'Tap into exchange feeds and market data streams' },
-          { title: 'Decode', desc: 'FIX/ITCH/OUCH protocol parsing with session reconstruction' },
-          { title: 'Monitor', desc: 'Latency measurement and connectivity anomaly alerts' },
+          { title: 'Connect', desc: 'Tap into exchange feeds and data streams' },
+          { title: 'Decode', desc: 'FIX/ITCH/OUCH session reconstruction' },
+          { title: 'Monitor', desc: 'Latency measurement and anomaly alerts' },
         ],
       },
       assets: {
@@ -88,25 +84,23 @@
       tech: {
         name: 'Knowledge Graph',
         eyebrow: 'Entity Intelligence',
-        headline: 'Entity extraction and relationship mapping from your data.',
-        problem: 'Critical relationships between assets, events, and entities are buried across siloed data sources. Manual correlation is time-intensive and misses transitive dependencies.',
-        solution: 'Semantic knowledge graph with automated entity extraction, relationship inference, and recursive traversal up to 5 hops deep. Bulk ingest up to 50 entities per call with cross-source deduplication.',
+        problem: 'Alpha hides in relationships: ownership chains, board interlocks, subsidiary connections. This data is scattered across SEC filings, earnings calls, and news.',
+        solution: 'Semantic graph that auto-extracts entities from SEC filings, earnings transcripts, and financial news. Maps ownership chains and corporate relationships with recursive traversal up to 5 hops deep.',
         steps: [
-          { title: 'Ingest', desc: 'Extract entities from structured and unstructured data' },
-          { title: 'Map', desc: 'Automated relationship inference and graph construction' },
-          { title: 'Query', desc: 'Recursive traversal and GraphQL query interface' },
+          { title: 'Ingest', desc: 'Feed SEC filings, earnings calls, or custom sources' },
+          { title: 'Map', desc: 'Entity extraction, relationship inference, deduplication' },
+          { title: 'Query', desc: 'Recursive traversal and structured query API' },
         ],
       },
       finance: {
         name: 'Entity Intelligence',
         eyebrow: 'Intelligence',
-        headline: 'Entity extraction and relationship mapping from financial data.',
-        problem: 'Ownership chains, beneficial interests, and corporate relationships are scattered across SEC filings, earnings transcripts, and news sources. Analysts spend hours manually piecing together connections.',
-        solution: 'Automated entity extraction from SEC filings, earnings calls, and financial news. Maps ownership chains, board interlocks, and subsidiary relationships with cross-source deduplication.',
+        problem: 'Ownership chains and corporate relationships are scattered across SEC filings, earnings transcripts, and news. Analysts spend hours piecing together connections.',
+        solution: 'Automated entity extraction from SEC filings, earnings calls, and financial news. Maps ownership chains, board interlocks, and subsidiary relationships.',
         steps: [
-          { title: 'Ingest', desc: 'Parse SEC filings, earnings transcripts, and news feeds' },
-          { title: 'Link', desc: 'Ownership and relationship inference across corporate structures' },
-          { title: 'Query', desc: 'Graph traversal for due diligence and research' },
+          { title: 'Ingest', desc: 'Parse SEC filings, transcripts, and news' },
+          { title: 'Link', desc: 'Ownership inference across corporate structures' },
+          { title: 'Query', desc: 'Graph traversal for due diligence' },
         ],
       },
       assets: {
@@ -120,26 +114,24 @@
       serviceId: 'risk_analysis',
       tech: {
         name: 'Risk Analysis',
-        eyebrow: 'Risk',
-        headline: 'Quantitative risk modeling and scenario stress testing.',
-        problem: 'Traditional risk assessment uses static models that underestimate tail risk and miss correlation between portfolio components under stress conditions.',
-        solution: 'Monte Carlo simulation engine (5,000 iterations default) computing VaR, CVaR, Sharpe ratio, and max drawdown. Includes parametric VaR, historical VaR, and 4 predefined stress scenarios (market crash, rate spike, sector rotation, liquidity crisis).',
+        eyebrow: 'Portfolio Risk',
+        problem: 'Most risk tools are expensive terminals or static spreadsheets. Traders need programmable, API-driven risk metrics that execute in milliseconds.',
+        solution: 'Monte Carlo simulation engine computing VaR, CVaR, Sharpe, and max drawdown. Includes parametric VaR, historical VaR, and stress scenarios for market crashes, rate spikes, and liquidity crises.',
         steps: [
-          { title: 'Define', desc: 'Configure portfolio holdings and risk parameters' },
-          { title: 'Simulate', desc: 'Monte Carlo simulation with configurable scenarios' },
-          { title: 'Review', desc: 'VaR, CVaR, Sharpe, and tail risk metrics' },
+          { title: 'Define', desc: 'Configure holdings, weights, and parameters' },
+          { title: 'Simulate', desc: 'Monte Carlo with custom stress scenarios' },
+          { title: 'Review', desc: 'VaR, CVaR, Sharpe, and tail risk output' },
         ],
       },
       finance: {
         name: 'Portfolio Risk Engine',
         eyebrow: 'Portfolio Risk',
-        headline: 'Portfolio stress testing for traders and advisers.',
-        problem: 'Portfolio managers and financial advisers need robust risk metrics but off-the-shelf tools are expensive, inflexible, and don\u2019t integrate with modern data pipelines.',
-        solution: 'Monte Carlo simulation engine built for portfolio risk. Computes VaR, CVaR, and max drawdown across multi-asset portfolios. Predefined stress scenarios for market crashes, rate spikes, and liquidity crises.',
+        problem: 'Off-the-shelf risk tools are expensive, inflexible, and don\u2019t integrate with modern data pipelines.',
+        solution: 'Monte Carlo simulation engine for portfolio risk. Computes VaR, CVaR, and max drawdown across multi-asset portfolios with predefined stress scenarios.',
         steps: [
           { title: 'Portfolio', desc: 'Import holdings from CSV, API, or manual entry' },
-          { title: 'Stress Test', desc: 'Run scenarios across market crash, rate spike, and liquidity crisis' },
-          { title: 'Report', desc: 'Exportable risk metrics with scenario comparisons' },
+          { title: 'Stress Test', desc: 'Market crash, rate spike, and liquidity scenarios' },
+          { title: 'Report', desc: 'Exportable metrics with scenario comparisons' },
         ],
       },
       assets: {
@@ -153,26 +145,24 @@
       serviceId: 'causal_chain',
       tech: {
         name: 'Causal Chain',
-        eyebrow: 'Causality',
-        headline: 'Root cause analysis and incident chain reconstruction.',
-        problem: 'When complex systems fail, incident timelines span dozens of events across multiple sources. Root cause analysis is manual, slow, and frequently wrong about propagation chains.',
-        solution: 'Causal inference engine that builds directed acyclic graphs from event sequences. Identifies root causes with confidence scores, traces propagation chains, and generates counterfactual reasoning (what would have prevented the incident).',
+        eyebrow: 'Event Analysis',
+        problem: 'When trades go wrong, the causal chain spans order routing, microstructure, and cross-asset correlations. Post-trade tools show what happened but not why.',
+        solution: 'Causal inference engine that builds directed acyclic graphs from execution data and market events. Traces propagation chains, identifies root causes, and generates counterfactual P&L analysis.',
         steps: [
-          { title: 'Ingest', desc: 'Feed event sequences from logs, alerts, and sensors' },
-          { title: 'Build', desc: 'Automated causal DAG construction with confidence scoring' },
-          { title: 'Analyze', desc: 'Root cause identification and counterfactual reasoning' },
+          { title: 'Ingest', desc: 'Feed execution logs, events, and order flow' },
+          { title: 'Build', desc: 'Causal DAG construction with confidence scoring' },
+          { title: 'Analyze', desc: 'Root cause ID and what-if counterfactuals' },
         ],
       },
       finance: {
         name: 'Trade Chain Analysis',
         eyebrow: 'Trade Chains',
-        headline: 'Market event propagation and flash crash reconstruction.',
-        problem: 'Market dislocations cascade across instruments and venues in milliseconds. Post-trade analysis tools can\u2019t reconstruct the chain of events that led to a flash crash or liquidity vacuum.',
-        solution: 'Causal inference engine that traces how market events propagate across instruments, reconstructs incident timelines, and enables counterfactual reasoning for post-trade analysis and regulatory reporting.',
+        problem: 'Market dislocations cascade across instruments in milliseconds. Post-trade tools can\u2019t reconstruct flash crash propagation paths.',
+        solution: 'Causal inference engine that traces how market events propagate, reconstructs incident timelines, and enables counterfactual reasoning for post-trade analysis.',
         steps: [
-          { title: 'Ingest', desc: 'Feed market events, execution data, and order flow' },
-          { title: 'Trace', desc: 'Event propagation graph across correlated instruments' },
-          { title: 'Reconstruct', desc: 'Timeline reconstruction with what-if scenario analysis' },
+          { title: 'Ingest', desc: 'Feed market events, executions, and order flow' },
+          { title: 'Trace', desc: 'Propagation graph across correlated instruments' },
+          { title: 'Reconstruct', desc: 'Timeline with what-if scenario analysis' },
         ],
       },
       assets: {
@@ -185,27 +175,25 @@
       key: 'supply',
       serviceId: 'supply_chain',
       tech: {
-        name: 'Supply Chain Intel',
-        eyebrow: 'Supply Chain',
-        headline: 'Disruption intelligence and supplier risk mapping.',
-        problem: 'Supply chain disruptions from geopolitical events, financial instability, or delivery failures propagate invisibly through multi-tier networks until production halts.',
-        solution: 'Multi-dimensional risk scorer analyzing financial health (0\u2013100), geopolitical exposure (0\u2013100), and delivery reliability (0\u2013100) across your supplier network. Identifies single-source bottlenecks and recommends alternative suppliers.',
+        name: 'Counterparty Intel',
+        eyebrow: 'Counterparty Risk',
+        problem: 'Your operation depends on prime brokers, clearing houses, and custodians. Concentration risk is invisible until a counterparty fails.',
+        solution: 'Multi-dimensional risk scorer analyzing credit exposure, concentration risk, and settlement reliability across your counterparty network. Identifies single-point-of-failure exposures and recommends diversification.',
         steps: [
-          { title: 'Register', desc: 'Map supplier network with tier and dependency data' },
-          { title: 'Score', desc: 'Financial, geopolitical, and delivery risk scoring' },
-          { title: 'Monitor', desc: 'Continuous alerts and alternative supplier recommendations' },
+          { title: 'Register', desc: 'Map brokers, clearing, custodians, vendors' },
+          { title: 'Score', desc: 'Credit, concentration, and operational risk' },
+          { title: 'Monitor', desc: 'Alerts and diversification recommendations' },
         ],
       },
       finance: {
         name: 'Counterparty Intel',
         eyebrow: 'Counterparty',
-        headline: 'Counterparty exposure mapping and concentration risk scoring.',
-        problem: 'Counterparty risk is distributed across prime brokers, clearing houses, and custodians. Concentration risks and credit exposures are invisible until a counterparty fails.',
-        solution: 'Multi-dimensional counterparty risk scorer analyzing credit exposure, concentration risk, and settlement reliability across your counterparty network. Identifies single-point-of-failure exposures and recommends diversification.',
+        problem: 'Counterparty risk across prime brokers, clearing houses, and custodians is invisible until a counterparty fails.',
+        solution: 'Multi-dimensional risk scorer analyzing credit exposure, concentration risk, and settlement reliability. Identifies single-point-of-failure exposures.',
         steps: [
           { title: 'Register', desc: 'Map counterparty network with exposure data' },
-          { title: 'Score', desc: 'Credit, concentration, and operational risk scoring' },
-          { title: 'Monitor', desc: 'Continuous exposure alerts and diversification recommendations' },
+          { title: 'Score', desc: 'Credit, concentration, and operational scoring' },
+          { title: 'Monitor', desc: 'Exposure alerts and diversification recs' },
         ],
       },
       assets: {
@@ -345,7 +333,7 @@
      ================================================================ */
 
   function renderCatalogue(lens) {
-    return SERVICES.map(function (svc) {
+    var pills = SERVICES.map(function (svc) {
       var d = svc[lens] || svc.tech;
       var active = svc.key === _activeKey ? ' is-active' : '';
       return '<button class="mc-pill' + active + '" data-svc="' + esc(svc.key) + '" role="tab" aria-selected="' + (svc.key === _activeKey ? 'true' : 'false') + '">' +
@@ -353,6 +341,12 @@
         '<span class="mc-pill__label">' + esc(d.name) + '</span>' +
       '</button>';
     }).join('');
+
+    var search = '<div class="mc-search">' +
+      '<input class="mc-search__input" type="text" placeholder="Search services\u2026" aria-label="Search services" />' +
+      '</div>';
+
+    return pills + search;
   }
 
   /* ================================================================
@@ -433,6 +427,60 @@
   }
 
   /* ================================================================
+     WIRE CATALOGUE SEARCH
+     ================================================================ */
+
+  function wireCatalogueSearch(root) {
+    var input = root.querySelector('.mc-search__input');
+    if (!input) return;
+
+    input.addEventListener('input', function () {
+      var query = input.value.trim().toLowerCase();
+      var lens = getLens();
+      var pills = root.querySelectorAll('.mc-pill');
+
+      pills.forEach(function (pill) {
+        var key = pill.getAttribute('data-svc');
+        var svc = SERVICES.find(function (s) { return s.key === key; });
+        if (!svc) return;
+
+        if (!query) {
+          pill.classList.remove('is-dimmed');
+          return;
+        }
+
+        var techName = (svc.tech.name || '').toLowerCase();
+        var techEyebrow = (svc.tech.eyebrow || '').toLowerCase();
+        var finName = (svc.finance.name || '').toLowerCase();
+        var finEyebrow = (svc.finance.eyebrow || '').toLowerCase();
+        var svcKey = svc.key.toLowerCase();
+
+        var match = techName.indexOf(query) !== -1 ||
+          techEyebrow.indexOf(query) !== -1 ||
+          finName.indexOf(query) !== -1 ||
+          finEyebrow.indexOf(query) !== -1 ||
+          svcKey.indexOf(query) !== -1;
+
+        pill.classList.toggle('is-dimmed', !match);
+      });
+    });
+
+    // Clicking a dimmed pill clears search and selects it
+    var nav = root.querySelector('.mission-catalogue');
+    if (nav) {
+      nav.addEventListener('click', function (e) {
+        var pill = e.target.closest('.mc-pill');
+        if (pill && pill.classList.contains('is-dimmed')) {
+          input.value = '';
+          root.querySelectorAll('.mc-pill').forEach(function (p) {
+            p.classList.remove('is-dimmed');
+          });
+        }
+      });
+    }
+  }
+
+  /* ================================================================
      HERO LENS VISIBILITY
      ================================================================ */
 
@@ -469,7 +517,8 @@
     var nav = mount.querySelector('.mission-catalogue');
     if (nav) nav.innerHTML = renderCatalogue(lens);
 
-    // Re-wire lightbox on new content
+    // Re-wire search and lightbox on new content
+    wireCatalogueSearch(mount);
     delete mount.dataset.hpMissionLightbox;
     wireLightbox(mount);
   }
@@ -532,8 +581,22 @@
 
       // Wire interactions
       wireCatalogue(mount);
+      wireCatalogueSearch(mount);
       initReveal(mount);
       wireLightbox(mount);
+
+      // Register services in site search
+      if (typeof NS.SiteSearch?.register === 'function') {
+        NS.SiteSearch.register(SERVICES.map(function (svc) {
+          return {
+            label: svc.tech.name,
+            section: 'OnePager',
+            elementId: 'svc-' + svc.key,
+            hash: 'mission:svc-' + svc.key,
+            keywords: [svc.tech.name, svc.finance.name, svc.tech.eyebrow, svc.finance.eyebrow, svc.key].map(function (s) { return s.toLowerCase(); }),
+          };
+        }));
+      }
 
     } catch (err) {
       console.warn('[mission] failed to load', err);
