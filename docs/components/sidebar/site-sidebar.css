@@ -5,7 +5,7 @@
   top: calc(var(--cohort-banner-offset) + var(--header-h) + var(--sidebar-top-gap));
   z-index: 900;
 
-  width: 168px;
+  width: 142px;
   background: var(--sidebar-bg);
   border: 2px solid rgba(15, 23, 42, 0.14);
   border-radius: var(--radius);
@@ -182,7 +182,7 @@ body.sidebar-collapsed .site-sidebar {
 }
 
 body.sidebar-collapsed .site-sidebar:hover {
-  width: 168px;
+  width: 142px;
 }
 
 body.sidebar-collapsed .sidebar-label {

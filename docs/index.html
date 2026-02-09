@@ -220,7 +220,15 @@
 	    .contact-widget {
 	      position: fixed; bottom: 20px; left: 20px;
 	      width: 50px; height: 50px; cursor: pointer; z-index: 1000;
-	      transition: bottom 0.4s ease;
+	      transition: bottom 0.4s ease, opacity 0.35s ease, transform 0.35s ease;
+	      opacity: 0;
+	      transform: translateY(12px);
+	      pointer-events: none;
+	    }
+	    .contact-widget.is-visible {
+	      opacity: 1;
+	      transform: translateY(0);
+	      pointer-events: auto;
 	    }
 	    .contact-widget img {
 	      width: 100%; height: auto; border-radius: 50%;
@@ -272,7 +280,7 @@
 	    }
 
 		:root{
-		  --sidebar-w: 220px;
+		  --sidebar-w: 190px;
 		  --header-h: 70px;
 		}
 
@@ -541,7 +549,7 @@
 
 		/* give space so content doesn't sit under sidebar on wide screens */
 		@media (min-width: 920px) {
-		  .main-container { padding-left: 220px; }
+		  .main-container { padding-left: 190px; }
 		}
 		body.sidebar-collapsed {
 		  --sidebar-w: 48px;
@@ -1305,6 +1313,26 @@
 	      <p>Phone: (512) 910-4544</p>
 	    </div>
 	  </div>
+	  <script>
+	  (function(){
+	    var cw = document.querySelector('.contact-widget');
+	    if (!cw) return;
+	    var timer = null;
+	    function show(){ clearTimeout(timer); cw.classList.add('is-visible'); }
+	    function hide(delay){
+	      clearTimeout(timer);
+	      timer = setTimeout(function(){ cw.classList.remove('is-visible'); }, delay);
+	    }
+	    document.addEventListener('mouseenter', function(e){
+	      if (e.target.closest && e.target.closest('.site-sidebar')) show();
+	    }, true);
+	    document.addEventListener('mouseleave', function(e){
+	      if (e.target.closest && e.target.closest('.site-sidebar')) hide(600);
+	    }, true);
+	    cw.addEventListener('mouseenter', show);
+	    cw.addEventListener('mouseleave', function(){ hide(400); });
+	  })();
+	  </script>
 		<div id="trades-lightbox" onclick="closeTradesLightbox()" style="display:none;">
 		  <img src="" alt="trades preview">
 		</div>  

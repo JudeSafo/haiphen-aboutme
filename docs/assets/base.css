@@ -31,6 +31,16 @@ html, body {
   height: 100%;
 }
 
+/* Scale down on large displays (TVs, ultra-wide monitors) so content
+   breathes. Laptops and standard monitors stay at 100%.
+   Uses zoom (universally supported) so px values also scale. */
+@media (min-width: 1800px) {
+  html { zoom: 0.92; }
+}
+@media (min-width: 2400px) {
+  html { zoom: 0.85; }
+}
+
 body {
   font-family: var(--font-sans);
   color: var(--text);
