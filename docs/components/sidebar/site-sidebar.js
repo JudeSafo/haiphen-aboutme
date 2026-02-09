@@ -44,6 +44,11 @@
       const target = a.getAttribute('data-target') || '';
       const emph = a.getAttribute('data-emph') || '';
 
+      // Pre-select mission service before navigation (so loadMission renders the right one)
+      if (target && target.startsWith('#svc-') && typeof window.HAIPHEN?.selectMissionService === 'function') {
+        window.HAIPHEN.selectMissionService(target.replace('#svc-', ''));
+      }
+
       // Prefer deep-link navigation if available
       if (typeof window.HAIPHEN?.sidebarNavigate === 'function' && section) {
         window.HAIPHEN.sidebarNavigate({

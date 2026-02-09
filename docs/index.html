@@ -2616,6 +2616,14 @@
 		    activateSectionMenuFor(section);
 		  }
 
+		  // Pre-select mission service for deep-links like #mission:svc-risk
+		  if (slug === 'mission' && subId && subId.startsWith('svc-')) {
+		    var svcKey = subId.replace('svc-', '');
+		    if (typeof window.HAIPHEN?.selectMissionService === 'function') {
+		      window.HAIPHEN.selectMissionService(svcKey);
+		    }
+		  }
+
 		  if (slug === 'cohort' && !subId) {
 		    scrollToIdWhenReady('cohort', { maxAttempts: 80, delayMs: 50, extra: 12 });
 		    return;

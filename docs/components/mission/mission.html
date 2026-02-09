@@ -1,18 +1,20 @@
-<section class="mission" aria-label="Mission">
+<section class="mission" aria-label="Services">
 
   <span id="ethos" class="haiphen-nav-target" aria-hidden="true"></span>
+  <span id="mission-top" class="haiphen-nav-target" aria-hidden="true"></span>
 
-  <header class="mission-hero-main mission-reveal">
+  <!-- Hero: tech lens variant -->
+  <header class="mission-hero-main mission-reveal" data-lens-tech>
     <div class="mission-hero__copy">
-      <span class="mission-eyebrow">Mission</span>
-      <h2>Signals infrastructure for modern financial systems.</h2>
+      <span class="mission-eyebrow">Platform</span>
+      <h2>Signals infrastructure for modern industrial systems.</h2>
       <p class="mission-lede">
-        Haiphen builds operational intelligence across security, signal delivery, and edge-native
-        infrastructure so institutional teams can move faster with confidence.
+        Haiphen builds operational intelligence across security, protocol analysis, and edge-native
+        infrastructure so engineering teams can move faster with confidence.
       </p>
       <div class="mission-hero__actions">
-        <a class="btn btn-primary" href="#docs">Explore docs</a>
-        <a class="btn btn-ghost" href="#fintech">View metrics</a>
+        <a class="btn btn-primary" href="#docs">Explore Docs</a>
+        <a class="btn btn-ghost" href="#fintech">View Metrics</a>
       </div>
     </div>
     <div class="mission-hero__figure" aria-hidden="true">
@@ -20,300 +22,29 @@
     </div>
   </header>
 
-  <section class="mission-grid mission-reveal">
-    <div class="mission-card">
-      <h3>OpSec</h3>
-      <p>Zero-trust posture, threat-aware pipelines, and auditable workflows.</p>
-    </div>
-    <div class="mission-card">
-      <h3>Signals</h3>
-      <p>Normalized, latency-aware signal delivery for trading and analytics.</p>
-    </div>
-    <div class="mission-card">
-      <h3>Encryption</h3>
-      <p>Secure transport, tokenized access, and signed data boundaries.</p>
-    </div>
-  </section>
-
-  <section class="mission-grid mission-reveal">
-    <div class="mission-card">
-      <h3>Network</h3>
-      <p>Deep protocol analysis and traffic inspection for industrial networks.</p>
-    </div>
-    <div class="mission-card">
-      <h3>Risk</h3>
-      <p>Quantitative modeling, stress testing, and portfolio risk quantification.</p>
-    </div>
-    <div class="mission-card">
-      <h3>Supply Chain</h3>
-      <p>Multi-tier supplier mapping, disruption scoring, and sourcing intelligence.</p>
-    </div>
-  </section>
-
-  <section class="mission-block mission-reveal" id="mission-opsec" data-mission-section>
-    <div class="mission-block__copy">
-      <span class="mission-eyebrow">OpSec</span>
-      <h3>Operational security designed for regulated environments.</h3>
-      <p>
-        We embed security into ingestion, storage, and delivery, with clear visibility
-        into who accessed what, when, and why.
+  <!-- Hero: finance lens variant -->
+  <header class="mission-hero-main mission-reveal" data-lens-finance style="display:none">
+    <div class="mission-hero__copy">
+      <span class="mission-eyebrow">Trading Intelligence</span>
+      <h2>Edge-native infrastructure for modern portfolio management.</h2>
+      <p class="mission-lede">
+        Haiphen delivers real-time signals, risk analytics, and execution intelligence
+        so traders and portfolio managers can act faster with precision.
       </p>
-      <ul class="mission-list">
-        <li>Hardened ingest endpoints and audit trails</li>
-        <li>Policy-driven access and anomaly monitoring</li>
-        <li>Evidence: signed webhooks and revocation logs</li>
-      </ul>
-      <div class="mission-links">
-        <a href="#mission:ethos">Security ethos</a>
+      <div class="mission-hero__actions">
+        <a class="btn btn-primary" href="#docs">Explore Docs</a>
+        <a class="btn btn-ghost" href="#fintech">View Metrics</a>
       </div>
     </div>
-    <div class="mission-block__figure" aria-hidden="true">
-      <img class="mission-figure" data-lightbox src="assets/mission/opsec.svg" alt="Operational security" loading="lazy" decoding="async" />
+    <div class="mission-hero__figure" aria-hidden="true">
+      <img class="mission-figure" data-lightbox src="assets/mission/signals.svg" alt="Trading signals overview" loading="lazy" decoding="async" />
     </div>
-  </section>
+  </header>
 
-  <section class="mission-block mission-block--reverse mission-reveal" id="mission-signals" data-mission-section>
-    <div class="mission-block__copy">
-      <span id="services-signals" class="haiphen-nav-target" aria-hidden="true"></span>
-      <span class="mission-eyebrow">Signals</span>
-      <h3>Decision-ready signals with consistent schema and cadence.</h3>
-      <p>
-        We consolidate market, macro, and alternative feeds into a unified signal fabric
-        that plugs into portfolio and execution systems.
-      </p>
-      <ul class="mission-list">
-        <li>Multi-source ingestion and dedupe logic</li>
-        <li>Schema-aligned feeds for analytics teams</li>
-        <li>Evidence: daily KPIs and archive snapshots</li>
-      </ul>
-      <div class="mission-links">
-        <a href="#fintech">Signals metrics</a>
-      </div>
-    </div>
-    <div class="mission-block__figure" aria-hidden="true">
-      <img class="mission-figure" data-lightbox src="assets/mission/signals.svg" alt="Signals pipeline" loading="lazy" decoding="async" />
-    </div>
-  </section>
+  <!-- Spotlight: JS renders the active service here -->
+  <div id="mission-spotlight" class="mission-reveal"></div>
 
-  <section class="mission-block mission-reveal" id="mission-encryption" data-mission-section>
-    <div class="mission-block__copy">
-      <span class="mission-eyebrow">Encryption</span>
-      <h3>Secure transport and access boundaries by design.</h3>
-      <p>
-        Encryption and key management are baked into every interface so signal delivery
-        stays protected from ingestion through distribution.
-      </p>
-      <ul class="mission-list">
-        <li>Tokenized access and secret rotation</li>
-        <li>Encrypted transport and scoped credentials</li>
-        <li>Evidence: HMAC-signed endpoints and JWT auth</li>
-      </ul>
-      <div class="mission-links">
-        <a href="#docs">API security docs</a>
-      </div>
-    </div>
-    <div class="mission-block__figure" aria-hidden="true">
-      <img class="mission-figure" data-lightbox src="assets/mission/encryption.svg" alt="Encryption layer" loading="lazy" decoding="async" />
-    </div>
-  </section>
+  <!-- Catalogue nav: JS populates pills from data registry -->
+  <nav class="mission-catalogue mission-reveal" role="tablist" aria-label="Service catalogue"></nav>
 
-  <section class="mission-block mission-block--reverse mission-reveal" id="mission-embedded" data-mission-section>
-    <div class="mission-block__copy">
-      <span class="mission-eyebrow">Cloud-Native</span>
-      <h3>Zero-infrastructure deployment across 200+ edge locations.</h3>
-      <p>
-        Every Haiphen service runs on Cloudflare Workers — no VMs, no containers, no
-        infrastructure to manage. Install via Homebrew, Docker, or use the API directly.
-        Your data is processed at the nearest edge PoP with sub-millisecond cold starts.
-      </p>
-      <ul class="mission-list">
-        <li>Cloudflare Workers with Durable Objects for stateful coordination</li>
-        <li>200+ global PoPs, zero-infrastructure ops for customers</li>
-        <li>Install: <code>brew install haiphenAI/tap/haiphen</code></li>
-      </ul>
-      <div class="mission-links">
-        <a href="#docs">CLI &amp; install guide</a>
-      </div>
-    </div>
-    <div class="mission-block__figure" aria-hidden="true">
-      <img class="mission-figure" data-lightbox src="assets/mission/embedded.svg" alt="Embedded systems" loading="lazy" decoding="async" />
-    </div>
-  </section>
-
-  <section class="mission-block mission-reveal" id="mission-robotics" data-mission-section>
-    <div class="mission-block__copy">
-      <span id="services-gallery" class="haiphen-nav-target" aria-hidden="true"></span>
-      <span class="mission-eyebrow">Robotics</span>
-      <h3>Automation and telemetry for physical workflows.</h3>
-      <p>
-        Our signal stack extends into robotics and hardware automation, capturing telemetry
-        and control data for operational intelligence.
-      </p>
-      <ul class="mission-list">
-        <li>Hardware telemetry ingestion and monitoring</li>
-        <li>Closed-loop automation experimentation</li>
-        <li>Evidence: robotics gallery and embedded prototypes</li>
-      </ul>
-      <div class="mission-links">
-        <a href="#services-gallery">Robotics gallery</a>
-      </div>
-    </div>
-    <div class="mission-block__figure" aria-hidden="true">
-      <img class="mission-figure" data-lightbox src="assets/mission/robotics.svg" alt="Robotics automation" loading="lazy" decoding="async" />
-    </div>
-  </section>
-
-  <section class="mission-block mission-block--reverse mission-reveal" id="mission-edge" data-mission-section>
-    <div class="mission-block__copy">
-      <span class="mission-eyebrow">Edge</span>
-      <h3>Distributed signal delivery at the network edge.</h3>
-      <p>
-        Edge-native infrastructure keeps signal distribution close to execution, with
-        resilient compute across regions and devices.
-      </p>
-      <ul class="mission-list">
-        <li>Edge compute with durable coordination</li>
-        <li>Resilient delivery across regions</li>
-        <li>Evidence: Workers and DO-backed orchestration</li>
-      </ul>
-      <div class="mission-links">
-        <a href="#contact-us">Edge onboarding</a>
-      </div>
-    </div>
-    <div class="mission-block__figure" aria-hidden="true">
-      <img class="mission-figure" data-lightbox src="assets/mission/edge.svg" alt="Edge network" loading="lazy" decoding="async" />
-    </div>
-  </section>
-
-  <section class="mission-block mission-reveal" id="mission-secure" data-mission-section>
-    <div class="mission-block__copy">
-      <span class="mission-eyebrow">Security</span>
-      <h3>Continuous vulnerability scanning and compliance enforcement.</h3>
-      <p>
-        Automated security posture monitoring that correlates CVEs, enforces policies,
-        and generates remediation playbooks for edge and industrial infrastructure.
-      </p>
-      <ul class="mission-list">
-        <li>CVE correlation and severity prioritization</li>
-        <li>Compliance policy enforcement and drift detection</li>
-        <li>Automated remediation playbook generation</li>
-      </ul>
-      <div class="mission-links">
-        <a href="#docs:docs-secure">Secure docs</a>
-      </div>
-    </div>
-    <div class="mission-block__figure" aria-hidden="true">
-      <img class="mission-figure" data-lightbox src="assets/mission/secure.svg" alt="Security scanning" loading="lazy" decoding="async" />
-    </div>
-  </section>
-
-  <section class="mission-block mission-block--reverse mission-reveal" id="mission-network" data-mission-section>
-    <div class="mission-block__copy">
-      <span class="mission-eyebrow">Network</span>
-      <h3>Deep protocol analysis and traffic inspection at scale.</h3>
-      <p>
-        Packet-level decoding for Modbus, OPC-UA, MQTT, and industrial protocols with
-        anomaly detection and session reconstruction.
-      </p>
-      <ul class="mission-list">
-        <li>Multi-protocol packet decoding and inspection</li>
-        <li>Traffic anomaly detection and alerting</li>
-        <li>Session reconstruction and PCAP export</li>
-      </ul>
-      <div class="mission-links">
-        <a href="#docs:docs-network">Network Trace docs</a>
-      </div>
-    </div>
-    <div class="mission-block__figure" aria-hidden="true">
-      <img class="mission-figure" data-lightbox src="assets/mission/network-trace.svg" alt="Network protocol analysis" loading="lazy" decoding="async" />
-    </div>
-  </section>
-
-  <section class="mission-block mission-reveal" id="mission-graph" data-mission-section>
-    <div class="mission-block__copy">
-      <span class="mission-eyebrow">Knowledge</span>
-      <h3>Entity extraction and relationship mapping from your data.</h3>
-      <p>
-        Build queryable knowledge bases from streaming data with automated entity
-        extraction, relationship inference, and cross-source deduplication.
-      </p>
-      <ul class="mission-list">
-        <li>Automated entity extraction from unstructured sources</li>
-        <li>Relationship inference and graph construction</li>
-        <li>GraphQL query interface with deduplication</li>
-      </ul>
-      <div class="mission-links">
-        <a href="#docs:docs-graph">Knowledge Graph docs</a>
-      </div>
-    </div>
-    <div class="mission-block__figure" aria-hidden="true">
-      <img class="mission-figure" data-lightbox src="assets/mission/knowledge-graph.svg" alt="Knowledge graph" loading="lazy" decoding="async" />
-    </div>
-  </section>
-
-  <section class="mission-block mission-block--reverse mission-reveal" id="mission-risk" data-mission-section>
-    <div class="mission-block__copy">
-      <span class="mission-eyebrow">Risk</span>
-      <h3>Quantitative risk modeling and scenario stress testing.</h3>
-      <p>
-        Monte Carlo simulation, Value-at-Risk computation, and correlation analysis
-        for portfolios and infrastructure assets under stress scenarios.
-      </p>
-      <ul class="mission-list">
-        <li>Monte Carlo simulation with configurable scenarios</li>
-        <li>Value-at-Risk and CVaR computation</li>
-        <li>Portfolio correlation and tail risk analysis</li>
-      </ul>
-      <div class="mission-links">
-        <a href="#docs:docs-risk">Risk Analysis docs</a>
-      </div>
-    </div>
-    <div class="mission-block__figure" aria-hidden="true">
-      <img class="mission-figure" data-lightbox src="assets/mission/risk-analysis.svg" alt="Risk analysis" loading="lazy" decoding="async" />
-    </div>
-  </section>
-
-  <section class="mission-block mission-reveal" id="mission-causal" data-mission-section>
-    <div class="mission-block__copy">
-      <span class="mission-eyebrow">Causality</span>
-      <h3>Root cause analysis and incident chain reconstruction.</h3>
-      <p>
-        Causal inference engine that constructs event graphs, traces propagation paths,
-        and enables counterfactual reasoning for complex system failures.
-      </p>
-      <ul class="mission-list">
-        <li>Automated causal graph construction from event data</li>
-        <li>Incident timeline reconstruction and visualization</li>
-        <li>Counterfactual reasoning and anomaly propagation tracking</li>
-      </ul>
-      <div class="mission-links">
-        <a href="#docs:docs-causal">Causal Chain docs</a>
-      </div>
-    </div>
-    <div class="mission-block__figure" aria-hidden="true">
-      <img class="mission-figure" data-lightbox src="assets/mission/causal-chain.svg" alt="Causal chain analysis" loading="lazy" decoding="async" />
-    </div>
-  </section>
-
-  <section class="mission-block mission-block--reverse mission-reveal" id="mission-supply" data-mission-section>
-    <div class="mission-block__copy">
-      <span class="mission-eyebrow">Supply Chain</span>
-      <h3>Disruption intelligence and supplier risk mapping.</h3>
-      <p>
-        Real-time supply chain visibility across tiers with disruption probability scoring,
-        alternative sourcing suggestions, and geopolitical risk overlays.
-      </p>
-      <ul class="mission-list">
-        <li>Multi-tier supplier network mapping</li>
-        <li>Disruption probability scoring and alerting</li>
-        <li>Alternative sourcing and geopolitical risk overlay</li>
-      </ul>
-      <div class="mission-links">
-        <a href="#docs:docs-supply">Supply Chain docs</a>
-      </div>
-    </div>
-    <div class="mission-block__figure" aria-hidden="true">
-      <img class="mission-figure" data-lightbox src="assets/mission/supply-chain.svg" alt="Supply chain intelligence" loading="lazy" decoding="async" />
-    </div>
-  </section>
 </section>
