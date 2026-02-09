@@ -17,7 +17,7 @@
     if (!slot) return;
 
     const showLogin = () => {
-      slot.innerHTML = `<a href="${AUTH_ORIGIN}/login" class="login-btn">Login</a>`;
+      slot.innerHTML = `<a href="${AUTH_ORIGIN}/login?provider=google" class="login-btn">Login</a>`;
     };
 
     try {
