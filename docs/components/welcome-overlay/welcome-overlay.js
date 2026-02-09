@@ -4,6 +4,12 @@
   const NS = (window.HAIPHEN = window.HAIPHEN || {});
   const STORAGE_KEY = 'haiphen.welcome_seen';
 
+  // Capture session early (before async template fetch)
+  let _sessionUser = undefined; // undefined = not yet received
+  window.addEventListener('haiphen:session:ready', (e) => {
+    _sessionUser = e.detail?.user || null;
+  }, { once: true });
+
   function injectCssOnce(href) {
     if (document.querySelector(`link[rel="stylesheet"][href="${href}"]`)) return;
     const link = document.createElement('link');
@@ -46,28 +52,32 @@
       const backdrop = mount.querySelector('[data-welcome-overlay]');
       if (!backdrop) return;
 
-      // Wait for session to know if user is logged in
-      const showIfLoggedIn = (user) => {
-        if (!user) return; // only show for logged-in users
-
+      function show() {
         setTimeout(() => {
           backdrop.classList.add('is-visible');
         }, 600);
-      };
+      }
 
-      // Listen for session ready
-      window.addEventListener('haiphen:session:ready', (e) => {
-        showIfLoggedIn(e.detail?.user);
-      }, { once: true });
+      // Session may have already fired before template loaded
+      if (_sessionUser !== undefined) {
+        if (_sessionUser) show();
+      } else {
+        // Still waiting — listen again
+        window.addEventListener('haiphen:session:ready', (e) => {
+          if (e.detail?.user) show();
+        }, { once: true });
+      }
+
+      // Also check if session pill already exists (logged in)
+      if (_sessionUser === undefined && document.querySelector('.session-pill')) {
+        show();
+      }
 
       // Wire buttons
       backdrop.addEventListener('click', (e) => {
         const action = e.target.closest('[data-welcome-action]');
         if (!action) {
-          // clicking backdrop outside card dismisses
-          if (e.target === backdrop) {
-            dismiss();
-          }
+          if (e.target === backdrop) dismiss();
           return;
         }
 
@@ -75,7 +85,6 @@
         if (act === 'explore') {
           markSeen();
           hide();
-          // Navigate to Getting Started
           if (typeof window.showSection === 'function') {
             window.showSection('GettingStarted');
             window.location.hash = '#getting-started';
@@ -95,7 +104,6 @@
         setTimeout(() => { mount.innerHTML = ''; }, 400);
       }
 
-      // Escape key dismisses
       const onKey = (e) => {
         if (e.key === 'Escape') {
           dismiss();
