@@ -58,6 +58,15 @@
 .hp-catalogue__grid--featured{
   grid-template-columns:1fr;
   max-width:480px;
+  margin-left:auto;
+  margin-right:auto;
+}
+.hp-catalogue__section[data-category="featured"] .hp-catalogue__head{
+  text-align:center;
+}
+.hp-catalogue__section[data-category="featured"] .hp-catalogue__kicker{
+  margin-left:auto;
+  margin-right:auto;
 }
 
 /* ── Service Card (base) ──────────────────────────────────────────────────── */
@@ -65,7 +74,7 @@
   position:relative;
   border:1px solid #e6ecf3;
   border-radius:14px;
-  padding:.9rem .9rem .8rem;
+  padding:2.2rem .9rem .8rem;
   background:#fff;
   display:flex; flex-direction:column;
   transition:transform .12s ease,box-shadow .12s ease,border-color .12s ease;

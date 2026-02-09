@@ -148,7 +148,9 @@
   function isFree(pricing) {
     if (!pricing) return false;
     var keys = Object.keys(pricing);
-    return keys.length === 1 && (pricing[keys[0]].label === 'Free' || pricing[keys[0]].label === 'Bundled with Pro');
+    if (keys.length !== 1) return false;
+    var entry = pricing[keys[0]];
+    return typeof entry.price !== 'number';
   }
 
   function formatPrice(pricing) {

@@ -2237,6 +2237,10 @@
 		      try { await window.HAIPHEN?.loadServicesPlans?.(); }
 		      catch (e) { console.warn("[Services] loadServicesPlans failed", e); }
 		      initSnapStacks(contentWidget);
+		      requestAnimationFrame(() => {
+		        const top = document.getElementById("services-plans-mount") || contentWidget;
+		        scrollToWithHeaderOffset(top, 12);
+		      });
 		    })();
 		  }
 
