@@ -70,26 +70,87 @@
       },
       installation: {
         tech: {
-          cloud: { config: '# wrangler.jsonc — deploy all services\nnpx wrangler deploy --config wrangler.jsonc', verify: 'curl https://api.haiphen.io/v1/health' },
-          local: { install: 'brew install haiphen/tap/haiphen\n# or: curl -sSL https://get.haiphen.io | sh', config: 'haiphen login\nhaiphen status', test: 'haiphen serve\n# Platform running on http://localhost:8787' },
+          cloud: {
+            subtitle: 'Deploy to Cloudflare Workers edge network',
+            providers: [
+              { name: 'Cloudflare Workers', icon: 'assets/partners/cloudflare.svg' },
+              { name: 'AWS', icon: 'assets/partners/aws.svg' },
+            ],
+            snippet: 'npx wrangler deploy --config wrangler.jsonc',
+            features: ['Global edge network', 'Zero cold starts', 'Auto-scaling'],
+          },
+          local: {
+            subtitle: 'Run locally via CLI or container',
+            providers: [
+              { name: 'Homebrew', icon: 'assets/partners/homebrew.svg' },
+              { name: 'Docker', icon: 'assets/partners/docker.svg' },
+            ],
+            snippet: 'brew install haiphen/tap/haiphen && haiphen serve',
+            features: ['Local development', 'Air-gapped deployments', 'Full CLI access'],
+          },
         },
         finance: {
-          cloud: { config: '# Deploy full platform to Cloudflare Workers\nnpx wrangler deploy --config wrangler.jsonc', verify: 'curl https://api.haiphen.io/v1/health' },
-          local: { install: 'brew install haiphen/tap/haiphen\n# or: curl -sSL https://get.haiphen.io | sh', config: 'haiphen login\nhaiphen status', test: 'haiphen serve\n# All services available at localhost:8787' },
+          cloud: {
+            subtitle: 'Deploy to Cloudflare Workers edge network',
+            providers: [
+              { name: 'Cloudflare Workers', icon: 'assets/partners/cloudflare.svg' },
+              { name: 'AWS', icon: 'assets/partners/aws.svg' },
+            ],
+            snippet: 'npx wrangler deploy --config wrangler.jsonc',
+            features: ['Global edge network', 'Zero cold starts', 'Auto-scaling'],
+          },
+          local: {
+            subtitle: 'Run locally via CLI or container',
+            providers: [
+              { name: 'Homebrew', icon: 'assets/partners/homebrew.svg' },
+              { name: 'Docker', icon: 'assets/partners/docker.svg' },
+            ],
+            snippet: 'brew install haiphen/tap/haiphen && haiphen serve',
+            features: ['Local development', 'Air-gapped deployments', 'Full CLI access'],
+          },
         },
       },
       integration: {
         tech: {
+          headline: 'Connect your entire trading stack to Haiphen in minutes',
           api: 'curl -H "Authorization: Bearer $TOKEN" \\\n  https://api.haiphen.io/v1/services',
-          webhook: 'curl -X POST https://api.haiphen.io/v1/webhooks \\\n  -H "Authorization: Bearer $TOKEN" \\\n  -d \'{"url":"https://your-app.com/hook","events":["scan.complete","risk.alert"]}\'',
-          channels: ['Slack', 'Discord', 'Email', 'PagerDuty'],
-          brokers: ['Interactive Brokers', 'Alpaca', 'TD Ameritrade'],
+          webhookEvents: ['scan.complete', 'risk.alert', 'graph.updated', 'supply.breach'],
+          channels: [
+            { name: 'Slack', icon: 'assets/partners/slack.svg' },
+            { name: 'Discord', icon: 'assets/partners/discord.svg' },
+            { name: 'Email', icon: 'assets/partners/email-icon.svg' },
+            { name: 'PagerDuty', icon: 'assets/partners/pagerduty.svg' },
+          ],
+          brokers: [
+            { name: 'Schwab', icon: 'assets/partners/schwab.svg' },
+            { name: 'Robinhood', icon: 'assets/partners/robinhood.svg' },
+            { name: 'E*Trade', icon: 'assets/partners/etrade.svg' },
+            { name: 'Fidelity', icon: 'assets/partners/fidelity.svg' },
+            { name: 'Merrill', icon: 'assets/partners/merrill.svg' },
+            { name: 'Interactive Brokers', icon: 'assets/partners/interactive-brokers.svg' },
+            { name: 'Alpaca', icon: 'assets/partners/alpaca.svg' },
+            { name: 'TD Ameritrade', icon: 'assets/partners/td-ameritrade.svg' },
+          ],
         },
         finance: {
+          headline: 'Connect your investment office to Haiphen in minutes',
           api: 'curl -H "Authorization: Bearer $TOKEN" \\\n  https://api.haiphen.io/v1/services',
-          webhook: 'curl -X POST https://api.haiphen.io/v1/webhooks \\\n  -H "Authorization: Bearer $TOKEN" \\\n  -d \'{"url":"https://your-app.com/hook","events":["compliance.alert","risk.breach"]}\'',
-          channels: ['Slack', 'Discord', 'Email', 'PagerDuty'],
-          brokers: ['Interactive Brokers', 'Alpaca', 'Schwab'],
+          webhookEvents: ['compliance.alert', 'risk.breach', 'graph.updated', 'supply.exposure'],
+          channels: [
+            { name: 'Slack', icon: 'assets/partners/slack.svg' },
+            { name: 'Discord', icon: 'assets/partners/discord.svg' },
+            { name: 'Email', icon: 'assets/partners/email-icon.svg' },
+            { name: 'PagerDuty', icon: 'assets/partners/pagerduty.svg' },
+          ],
+          brokers: [
+            { name: 'Schwab', icon: 'assets/partners/schwab.svg' },
+            { name: 'Interactive Brokers', icon: 'assets/partners/interactive-brokers.svg' },
+            { name: 'Alpaca', icon: 'assets/partners/alpaca.svg' },
+            { name: 'Fidelity', icon: 'assets/partners/fidelity.svg' },
+            { name: 'Merrill', icon: 'assets/partners/merrill.svg' },
+            { name: 'E*Trade', icon: 'assets/partners/etrade.svg' },
+            { name: 'TD Ameritrade', icon: 'assets/partners/td-ameritrade.svg' },
+          ],
         },
       },
       subscribe: {
@@ -145,25 +206,65 @@
       },
       installation: {
         tech: {
-          cloud: { config: '# wrangler.toml — Secure service\nnpx wrangler deploy -c haiphen-secure/wrangler.toml', verify: 'curl https://api.haiphen.io/v1/secure/health' },
-          local: { install: 'haiphen login', config: 'haiphen secure scan --target ./package.json', test: 'haiphen secure report --format json' },
+          cloud: {
+            subtitle: 'Deploy Secure service to Cloudflare Workers',
+            providers: [
+              { name: 'Cloudflare Workers', icon: 'assets/partners/cloudflare.svg' },
+            ],
+            snippet: 'npx wrangler deploy -c haiphen-secure/wrangler.toml',
+            features: ['Automated CVE scanning', 'Edge-deployed', 'CI/CD integration'],
+          },
+          local: {
+            subtitle: 'Scan dependencies from your local machine',
+            providers: [
+              { name: 'Homebrew', icon: 'assets/partners/homebrew.svg' },
+              { name: 'Docker', icon: 'assets/partners/docker.svg' },
+            ],
+            snippet: 'haiphen secure scan --target ./package.json',
+            features: ['Offline scanning', 'CI pipeline integration', 'JSON/PDF reports'],
+          },
         },
         finance: {
-          cloud: { config: '# Deploy compliance scanner\nnpx wrangler deploy -c haiphen-secure/wrangler.toml', verify: 'curl https://api.haiphen.io/v1/secure/health' },
-          local: { install: 'haiphen login', config: 'haiphen secure scan --framework soc2', test: 'haiphen secure report --format pdf' },
+          cloud: {
+            subtitle: 'Deploy compliance scanner to Cloudflare Workers',
+            providers: [
+              { name: 'Cloudflare Workers', icon: 'assets/partners/cloudflare.svg' },
+            ],
+            snippet: 'npx wrangler deploy -c haiphen-secure/wrangler.toml',
+            features: ['Continuous compliance', 'Edge-deployed', 'Multi-framework'],
+          },
+          local: {
+            subtitle: 'Run compliance scans locally',
+            providers: [
+              { name: 'Homebrew', icon: 'assets/partners/homebrew.svg' },
+              { name: 'Docker', icon: 'assets/partners/docker.svg' },
+            ],
+            snippet: 'haiphen secure scan --framework soc2',
+            features: ['Offline compliance', 'Audit-ready reports', 'Air-gapped deployments'],
+          },
         },
       },
       integration: {
         tech: {
+          headline: 'Integrate security scanning into your CI/CD pipeline',
           api: 'curl -X POST https://api.haiphen.io/v1/secure/scan \\\n  -H "Authorization: Bearer $TOKEN" \\\n  -d \'{"target":"./package.json","depth":3}\'',
-          webhook: 'curl -X POST https://api.haiphen.io/v1/webhooks \\\n  -H "Authorization: Bearer $TOKEN" \\\n  -d \'{"url":"https://your-ci.com/hook","events":["scan.complete","cve.critical"]}\'',
-          channels: ['Slack', 'Discord', 'Email'],
+          webhookEvents: ['scan.complete', 'cve.critical'],
+          channels: [
+            { name: 'Slack', icon: 'assets/partners/slack.svg' },
+            { name: 'Discord', icon: 'assets/partners/discord.svg' },
+            { name: 'Email', icon: 'assets/partners/email-icon.svg' },
+          ],
           brokers: [],
         },
         finance: {
+          headline: 'Connect compliance scanning to your regulatory workflow',
           api: 'curl -X POST https://api.haiphen.io/v1/secure/scan \\\n  -H "Authorization: Bearer $TOKEN" \\\n  -d \'{"target":"trading-infra","framework":"soc2"}\'',
-          webhook: 'curl -X POST https://api.haiphen.io/v1/webhooks \\\n  -H "Authorization: Bearer $TOKEN" \\\n  -d \'{"url":"https://compliance.firm.com/hook","events":["compliance.drift"]}\'',
-          channels: ['Slack', 'Email', 'PagerDuty'],
+          webhookEvents: ['compliance.drift', 'scan.complete'],
+          channels: [
+            { name: 'Slack', icon: 'assets/partners/slack.svg' },
+            { name: 'Email', icon: 'assets/partners/email-icon.svg' },
+            { name: 'PagerDuty', icon: 'assets/partners/pagerduty.svg' },
+          ],
           brokers: [],
         },
       },
@@ -219,26 +320,73 @@
       },
       installation: {
         tech: {
-          cloud: { config: '# Deploy Network Trace service\nnpx wrangler deploy -c haiphen-network/wrangler.toml', verify: 'curl https://api.haiphen.io/v1/network/health' },
-          local: { install: 'haiphen login', config: 'haiphen network capture --interface eth0 --protocol fix', test: 'haiphen network analyze --file trade-session.pcap' },
+          cloud: {
+            subtitle: 'Deploy Network Trace to Cloudflare Workers',
+            providers: [
+              { name: 'Cloudflare Workers', icon: 'assets/partners/cloudflare.svg' },
+            ],
+            snippet: 'npx wrangler deploy -c haiphen-network/wrangler.toml',
+            features: ['Edge protocol analysis', 'FIX/ITCH/OUCH support', 'Real-time monitoring'],
+          },
+          local: {
+            subtitle: 'Capture and analyze feeds locally',
+            providers: [
+              { name: 'Homebrew', icon: 'assets/partners/homebrew.svg' },
+              { name: 'Docker', icon: 'assets/partners/docker.svg' },
+            ],
+            snippet: 'haiphen network capture --interface eth0 --protocol fix',
+            features: ['PCAP replay', 'Local feed analysis', 'Latency measurement'],
+          },
         },
         finance: {
-          cloud: { config: '# Deploy Market Data Analyzer\nnpx wrangler deploy -c haiphen-network/wrangler.toml', verify: 'curl https://api.haiphen.io/v1/network/health' },
-          local: { install: 'haiphen login', config: 'haiphen network capture --feed nyse-itch', test: 'haiphen network latency --venue all --format csv' },
+          cloud: {
+            subtitle: 'Deploy Market Data Analyzer to edge',
+            providers: [
+              { name: 'Cloudflare Workers', icon: 'assets/partners/cloudflare.svg' },
+            ],
+            snippet: 'npx wrangler deploy -c haiphen-network/wrangler.toml',
+            features: ['Multi-venue monitoring', 'Feed health dashboards', 'Auto-scaling'],
+          },
+          local: {
+            subtitle: 'Analyze market data feeds locally',
+            providers: [
+              { name: 'Homebrew', icon: 'assets/partners/homebrew.svg' },
+              { name: 'Docker', icon: 'assets/partners/docker.svg' },
+            ],
+            snippet: 'haiphen network capture --feed nyse-itch',
+            features: ['Historical replay', 'Venue comparison', 'CSV/PDF export'],
+          },
         },
       },
       integration: {
         tech: {
+          headline: 'Pipe market data feeds through Haiphen for protocol analysis',
           api: 'curl -X POST https://api.haiphen.io/v1/network/analyze \\\n  -H "Authorization: Bearer $TOKEN" \\\n  -d \'{"protocol":"fix","session_id":"FIX.4.4:SENDER->TARGET"}\'',
-          webhook: 'curl -X POST https://api.haiphen.io/v1/webhooks \\\n  -H "Authorization: Bearer $TOKEN" \\\n  -d \'{"url":"https://ops.firm.com/hook","events":["network.latency_spike","network.feed_gap"]}\'',
-          channels: ['Slack', 'Discord', 'PagerDuty'],
-          brokers: ['Interactive Brokers', 'Alpaca'],
+          webhookEvents: ['network.latency_spike', 'network.feed_gap'],
+          channels: [
+            { name: 'Slack', icon: 'assets/partners/slack.svg' },
+            { name: 'Discord', icon: 'assets/partners/discord.svg' },
+            { name: 'PagerDuty', icon: 'assets/partners/pagerduty.svg' },
+          ],
+          brokers: [
+            { name: 'Interactive Brokers', icon: 'assets/partners/interactive-brokers.svg' },
+            { name: 'Alpaca', icon: 'assets/partners/alpaca.svg' },
+          ],
         },
         finance: {
+          headline: 'Monitor exchange feeds and measure execution quality',
           api: 'curl -X POST https://api.haiphen.io/v1/network/analyze \\\n  -H "Authorization: Bearer $TOKEN" \\\n  -d \'{"feed":"nyse-itch","metrics":["latency","gaps","book_depth"]}\'',
-          webhook: 'curl -X POST https://api.haiphen.io/v1/webhooks \\\n  -H "Authorization: Bearer $TOKEN" \\\n  -d \'{"url":"https://trading.firm.com/hook","events":["feed.degradation"]}\'',
-          channels: ['Slack', 'Email', 'PagerDuty'],
-          brokers: ['Interactive Brokers', 'Alpaca', 'Schwab'],
+          webhookEvents: ['feed.degradation', 'network.latency_spike'],
+          channels: [
+            { name: 'Slack', icon: 'assets/partners/slack.svg' },
+            { name: 'Email', icon: 'assets/partners/email-icon.svg' },
+            { name: 'PagerDuty', icon: 'assets/partners/pagerduty.svg' },
+          ],
+          brokers: [
+            { name: 'Interactive Brokers', icon: 'assets/partners/interactive-brokers.svg' },
+            { name: 'Alpaca', icon: 'assets/partners/alpaca.svg' },
+            { name: 'Schwab', icon: 'assets/partners/schwab.svg' },
+          ],
         },
       },
       subscribe: {
@@ -293,25 +441,64 @@
       },
       installation: {
         tech: {
-          cloud: { config: '# Deploy Knowledge Graph service\nnpx wrangler deploy -c haiphen-graph/wrangler.toml', verify: 'curl https://api.haiphen.io/v1/graph/health' },
-          local: { install: 'haiphen login', config: 'haiphen graph ingest --source sec-filings --ticker AAPL', test: 'haiphen graph query --entity "Apple Inc" --hops 3' },
+          cloud: {
+            subtitle: 'Deploy Knowledge Graph to Cloudflare Workers',
+            providers: [
+              { name: 'Cloudflare Workers', icon: 'assets/partners/cloudflare.svg' },
+            ],
+            snippet: 'npx wrangler deploy -c haiphen-graph/wrangler.toml',
+            features: ['Entity extraction', 'Recursive CTE queries', 'Real-time ingestion'],
+          },
+          local: {
+            subtitle: 'Run entity analysis from your workstation',
+            providers: [
+              { name: 'Homebrew', icon: 'assets/partners/homebrew.svg' },
+              { name: 'Docker', icon: 'assets/partners/docker.svg' },
+            ],
+            snippet: 'haiphen graph ingest --source sec-filings --ticker AAPL',
+            features: ['SEC filing parsing', 'Offline graph queries', 'Custom data sources'],
+          },
         },
         finance: {
-          cloud: { config: '# Deploy Entity Intelligence service\nnpx wrangler deploy -c haiphen-graph/wrangler.toml', verify: 'curl https://api.haiphen.io/v1/graph/health' },
-          local: { install: 'haiphen login', config: 'haiphen graph ingest --source sec-filings --ticker AAPL', test: 'haiphen graph ownership --entity "Apple Inc" --depth 5' },
+          cloud: {
+            subtitle: 'Deploy Entity Intelligence to edge',
+            providers: [
+              { name: 'Cloudflare Workers', icon: 'assets/partners/cloudflare.svg' },
+            ],
+            snippet: 'npx wrangler deploy -c haiphen-graph/wrangler.toml',
+            features: ['Corporate structure mapping', 'Automated ingestion', 'API-first'],
+          },
+          local: {
+            subtitle: 'Run due diligence analysis locally',
+            providers: [
+              { name: 'Homebrew', icon: 'assets/partners/homebrew.svg' },
+              { name: 'Docker', icon: 'assets/partners/docker.svg' },
+            ],
+            snippet: 'haiphen graph ingest --source sec-filings --ticker AAPL',
+            features: ['Offline entity research', 'Multi-hop ownership', 'PDF/JSON reports'],
+          },
         },
       },
       integration: {
         tech: {
+          headline: 'Query entity relationships via API for alpha signals',
           api: 'curl -X POST https://api.haiphen.io/v1/graph/query \\\n  -H "Authorization: Bearer $TOKEN" \\\n  -d \'{"entity":"Apple Inc","hops":3,"relations":["owns","board_member"]}\'',
-          webhook: 'curl -X POST https://api.haiphen.io/v1/webhooks \\\n  -H "Authorization: Bearer $TOKEN" \\\n  -d \'{"url":"https://research.firm.com/hook","events":["graph.entity_updated","graph.new_relation"]}\'',
-          channels: ['Slack', 'Discord', 'Email'],
+          webhookEvents: ['graph.entity_updated', 'graph.new_relation'],
+          channels: [
+            { name: 'Slack', icon: 'assets/partners/slack.svg' },
+            { name: 'Discord', icon: 'assets/partners/discord.svg' },
+            { name: 'Email', icon: 'assets/partners/email-icon.svg' },
+          ],
           brokers: [],
         },
         finance: {
+          headline: 'Integrate entity intelligence into your research workflow',
           api: 'curl -X POST https://api.haiphen.io/v1/graph/query \\\n  -H "Authorization: Bearer $TOKEN" \\\n  -d \'{"entity":"Apple Inc","type":"ownership","depth":5}\'',
-          webhook: 'curl -X POST https://api.haiphen.io/v1/webhooks \\\n  -H "Authorization: Bearer $TOKEN" \\\n  -d \'{"url":"https://compliance.firm.com/hook","events":["graph.ownership_change"]}\'',
-          channels: ['Slack', 'Email'],
+          webhookEvents: ['graph.ownership_change', 'graph.new_relation'],
+          channels: [
+            { name: 'Slack', icon: 'assets/partners/slack.svg' },
+            { name: 'Email', icon: 'assets/partners/email-icon.svg' },
+          ],
           brokers: [],
         },
       },
@@ -367,26 +554,73 @@
       },
       installation: {
         tech: {
-          cloud: { config: '# Deploy Risk Analysis service\nnpx wrangler deploy -c haiphen-risk/wrangler.toml', verify: 'curl https://api.haiphen.io/v1/risk/health' },
-          local: { install: 'haiphen login', config: 'haiphen risk portfolio --import holdings.csv', test: 'haiphen risk simulate --scenarios crash,rate_spike --iterations 10000' },
+          cloud: {
+            subtitle: 'Deploy Risk Analysis to Cloudflare Workers',
+            providers: [
+              { name: 'Cloudflare Workers', icon: 'assets/partners/cloudflare.svg' },
+            ],
+            snippet: 'npx wrangler deploy -c haiphen-risk/wrangler.toml',
+            features: ['Monte Carlo at edge', 'Millisecond VaR', 'Auto-scaling sims'],
+          },
+          local: {
+            subtitle: 'Run portfolio risk simulations locally',
+            providers: [
+              { name: 'Homebrew', icon: 'assets/partners/homebrew.svg' },
+              { name: 'Docker', icon: 'assets/partners/docker.svg' },
+            ],
+            snippet: 'haiphen risk simulate --scenarios crash,rate_spike --iterations 10000',
+            features: ['Offline simulations', 'CSV portfolio import', 'Custom scenarios'],
+          },
         },
         finance: {
-          cloud: { config: '# Deploy Portfolio Risk Engine\nnpx wrangler deploy -c haiphen-risk/wrangler.toml', verify: 'curl https://api.haiphen.io/v1/risk/health' },
-          local: { install: 'haiphen login', config: 'haiphen risk portfolio --import holdings.csv', test: 'haiphen risk report --format pdf --scenarios all' },
+          cloud: {
+            subtitle: 'Deploy Portfolio Risk Engine to edge',
+            providers: [
+              { name: 'Cloudflare Workers', icon: 'assets/partners/cloudflare.svg' },
+            ],
+            snippet: 'npx wrangler deploy -c haiphen-risk/wrangler.toml',
+            features: ['Real-time VaR', 'Multi-asset support', 'Auto-scaling'],
+          },
+          local: {
+            subtitle: 'Run stress tests from your workstation',
+            providers: [
+              { name: 'Homebrew', icon: 'assets/partners/homebrew.svg' },
+              { name: 'Docker', icon: 'assets/partners/docker.svg' },
+            ],
+            snippet: 'haiphen risk report --format pdf --scenarios all',
+            features: ['Client-ready reports', 'Portfolio import', 'Custom scenarios'],
+          },
         },
       },
       integration: {
         tech: {
+          headline: 'Add pre-trade risk checks and portfolio monitoring to your stack',
           api: 'curl -X POST https://api.haiphen.io/v1/risk/simulate \\\n  -H "Authorization: Bearer $TOKEN" \\\n  -d \'{"portfolio_id":"pf_123","scenarios":["crash_2008","covid"],"iterations":10000}\'',
-          webhook: 'curl -X POST https://api.haiphen.io/v1/webhooks \\\n  -H "Authorization: Bearer $TOKEN" \\\n  -d \'{"url":"https://risk.firm.com/hook","events":["risk.var_breach","risk.drawdown_alert"]}\'',
-          channels: ['Slack', 'Discord', 'Email', 'PagerDuty'],
-          brokers: ['Interactive Brokers', 'Alpaca'],
+          webhookEvents: ['risk.var_breach', 'risk.drawdown_alert'],
+          channels: [
+            { name: 'Slack', icon: 'assets/partners/slack.svg' },
+            { name: 'Discord', icon: 'assets/partners/discord.svg' },
+            { name: 'Email', icon: 'assets/partners/email-icon.svg' },
+            { name: 'PagerDuty', icon: 'assets/partners/pagerduty.svg' },
+          ],
+          brokers: [
+            { name: 'Interactive Brokers', icon: 'assets/partners/interactive-brokers.svg' },
+            { name: 'Alpaca', icon: 'assets/partners/alpaca.svg' },
+          ],
         },
         finance: {
+          headline: 'Connect portfolio risk monitoring to your investment workflow',
           api: 'curl -X POST https://api.haiphen.io/v1/risk/simulate \\\n  -H "Authorization: Bearer $TOKEN" \\\n  -d \'{"portfolio_id":"pf_123","metrics":["var","cvar","sharpe"],"confidence":0.99}\'',
-          webhook: 'curl -X POST https://api.haiphen.io/v1/webhooks \\\n  -H "Authorization: Bearer $TOKEN" \\\n  -d \'{"url":"https://pm.firm.com/hook","events":["risk.limit_approach","risk.drawdown_alert"]}\'',
-          channels: ['Slack', 'Email', 'PagerDuty'],
-          brokers: ['Interactive Brokers', 'Schwab'],
+          webhookEvents: ['risk.limit_approach', 'risk.drawdown_alert'],
+          channels: [
+            { name: 'Slack', icon: 'assets/partners/slack.svg' },
+            { name: 'Email', icon: 'assets/partners/email-icon.svg' },
+            { name: 'PagerDuty', icon: 'assets/partners/pagerduty.svg' },
+          ],
+          brokers: [
+            { name: 'Interactive Brokers', icon: 'assets/partners/interactive-brokers.svg' },
+            { name: 'Schwab', icon: 'assets/partners/schwab.svg' },
+          ],
         },
       },
       subscribe: {
@@ -441,25 +675,64 @@
       },
       installation: {
         tech: {
-          cloud: { config: '# Deploy Causal Chain service\nnpx wrangler deploy -c haiphen-causal/wrangler.toml', verify: 'curl https://api.haiphen.io/v1/causal/health' },
-          local: { install: 'haiphen login', config: 'haiphen causal ingest --source execution-logs.json', test: 'haiphen causal trace --event "2024-03-15T14:30:00Z" --depth 5' },
+          cloud: {
+            subtitle: 'Deploy Causal Chain to Cloudflare Workers',
+            providers: [
+              { name: 'Cloudflare Workers', icon: 'assets/partners/cloudflare.svg' },
+            ],
+            snippet: 'npx wrangler deploy -c haiphen-causal/wrangler.toml',
+            features: ['DAG construction', 'Counterfactual analysis', 'Real-time tracing'],
+          },
+          local: {
+            subtitle: 'Trace execution chains from local logs',
+            providers: [
+              { name: 'Homebrew', icon: 'assets/partners/homebrew.svg' },
+              { name: 'Docker', icon: 'assets/partners/docker.svg' },
+            ],
+            snippet: 'haiphen causal ingest --source execution-logs.json',
+            features: ['Offline DAG analysis', 'JSON/FIX log import', 'Timeline export'],
+          },
         },
         finance: {
-          cloud: { config: '# Deploy Trade Chain Analysis\nnpx wrangler deploy -c haiphen-causal/wrangler.toml', verify: 'curl https://api.haiphen.io/v1/causal/health' },
-          local: { install: 'haiphen login', config: 'haiphen causal ingest --source trade-log.csv', test: 'haiphen causal timeline --date 2024-03-15 --format pdf' },
+          cloud: {
+            subtitle: 'Deploy Trade Chain Analysis to edge',
+            providers: [
+              { name: 'Cloudflare Workers', icon: 'assets/partners/cloudflare.svg' },
+            ],
+            snippet: 'npx wrangler deploy -c haiphen-causal/wrangler.toml',
+            features: ['Incident reconstruction', 'Regulatory timelines', 'Auto-scaling'],
+          },
+          local: {
+            subtitle: 'Reconstruct trade chains locally',
+            providers: [
+              { name: 'Homebrew', icon: 'assets/partners/homebrew.svg' },
+              { name: 'Docker', icon: 'assets/partners/docker.svg' },
+            ],
+            snippet: 'haiphen causal timeline --date 2024-03-15 --format pdf',
+            features: ['Offline analysis', 'Regulatory-ready reports', 'What-if scenarios'],
+          },
         },
       },
       integration: {
         tech: {
+          headline: 'Trace execution chains and detect cascading failures',
           api: 'curl -X POST https://api.haiphen.io/v1/causal/trace \\\n  -H "Authorization: Bearer $TOKEN" \\\n  -d \'{"event_id":"evt_abc","depth":5,"include_counterfactual":true}\'',
-          webhook: 'curl -X POST https://api.haiphen.io/v1/webhooks \\\n  -H "Authorization: Bearer $TOKEN" \\\n  -d \'{"url":"https://ops.firm.com/hook","events":["causal.cascade_detected","causal.root_cause"]}\'',
-          channels: ['Slack', 'Discord', 'PagerDuty'],
+          webhookEvents: ['causal.cascade_detected', 'causal.root_cause'],
+          channels: [
+            { name: 'Slack', icon: 'assets/partners/slack.svg' },
+            { name: 'Discord', icon: 'assets/partners/discord.svg' },
+            { name: 'PagerDuty', icon: 'assets/partners/pagerduty.svg' },
+          ],
           brokers: [],
         },
         finance: {
+          headline: 'Reconstruct incident timelines for regulatory reporting',
           api: 'curl -X POST https://api.haiphen.io/v1/causal/timeline \\\n  -H "Authorization: Bearer $TOKEN" \\\n  -d \'{"date":"2024-03-15","portfolio_id":"pf_123","format":"regulatory"}\'',
-          webhook: 'curl -X POST https://api.haiphen.io/v1/webhooks \\\n  -H "Authorization: Bearer $TOKEN" \\\n  -d \'{"url":"https://compliance.firm.com/hook","events":["causal.incident_report"]}\'',
-          channels: ['Slack', 'Email'],
+          webhookEvents: ['causal.incident_report', 'causal.cascade_detected'],
+          channels: [
+            { name: 'Slack', icon: 'assets/partners/slack.svg' },
+            { name: 'Email', icon: 'assets/partners/email-icon.svg' },
+          ],
           brokers: [],
         },
       },
@@ -515,25 +788,65 @@
       },
       installation: {
         tech: {
-          cloud: { config: '# Deploy Counterparty Intel service\nnpx wrangler deploy -c haiphen-supply/wrangler.toml', verify: 'curl https://api.haiphen.io/v1/supply/health' },
-          local: { install: 'haiphen login', config: 'haiphen supply register --counterparty "Goldman Sachs" --type prime_broker', test: 'haiphen supply score --entity all --format json' },
+          cloud: {
+            subtitle: 'Deploy Counterparty Intel to Cloudflare Workers',
+            providers: [
+              { name: 'Cloudflare Workers', icon: 'assets/partners/cloudflare.svg' },
+            ],
+            snippet: 'npx wrangler deploy -c haiphen-supply/wrangler.toml',
+            features: ['Weighted risk scoring', 'Real-time monitoring', 'Edge-deployed'],
+          },
+          local: {
+            subtitle: 'Score counterparties from your workstation',
+            providers: [
+              { name: 'Homebrew', icon: 'assets/partners/homebrew.svg' },
+              { name: 'Docker', icon: 'assets/partners/docker.svg' },
+            ],
+            snippet: 'haiphen supply score --entity all --format json',
+            features: ['Offline scoring', 'Bulk import', 'JSON/PDF reports'],
+          },
         },
         finance: {
-          cloud: { config: '# Deploy Counterparty Intel service\nnpx wrangler deploy -c haiphen-supply/wrangler.toml', verify: 'curl https://api.haiphen.io/v1/supply/health' },
-          local: { install: 'haiphen login', config: 'haiphen supply register --counterparty "Goldman Sachs" --type prime_broker', test: 'haiphen supply report --portfolio all --format pdf' },
+          cloud: {
+            subtitle: 'Deploy Counterparty Intel to edge',
+            providers: [
+              { name: 'Cloudflare Workers', icon: 'assets/partners/cloudflare.svg' },
+            ],
+            snippet: 'npx wrangler deploy -c haiphen-supply/wrangler.toml',
+            features: ['Continuous monitoring', 'Regulatory reporting', 'Auto-scaling'],
+          },
+          local: {
+            subtitle: 'Run counterparty analysis locally',
+            providers: [
+              { name: 'Homebrew', icon: 'assets/partners/homebrew.svg' },
+              { name: 'Docker', icon: 'assets/partners/docker.svg' },
+            ],
+            snippet: 'haiphen supply report --portfolio all --format pdf',
+            features: ['Offline analysis', 'Basel III reports', 'Bulk counterparty import'],
+          },
         },
       },
       integration: {
         tech: {
+          headline: 'Monitor counterparty risk and concentration exposure',
           api: 'curl -X POST https://api.haiphen.io/v1/supply/score \\\n  -H "Authorization: Bearer $TOKEN" \\\n  -d \'{"entity":"Goldman Sachs","dimensions":["credit","concentration","operational"]}\'',
-          webhook: 'curl -X POST https://api.haiphen.io/v1/webhooks \\\n  -H "Authorization: Bearer $TOKEN" \\\n  -d \'{"url":"https://risk.firm.com/hook","events":["supply.rating_change","supply.concentration_breach"]}\'',
-          channels: ['Slack', 'Discord', 'Email'],
+          webhookEvents: ['supply.rating_change', 'supply.concentration_breach'],
+          channels: [
+            { name: 'Slack', icon: 'assets/partners/slack.svg' },
+            { name: 'Discord', icon: 'assets/partners/discord.svg' },
+            { name: 'Email', icon: 'assets/partners/email-icon.svg' },
+          ],
           brokers: [],
         },
         finance: {
+          headline: 'Integrate counterparty monitoring into your compliance workflow',
           api: 'curl -X POST https://api.haiphen.io/v1/supply/score \\\n  -H "Authorization: Bearer $TOKEN" \\\n  -d \'{"entity":"Goldman Sachs","report_type":"regulatory","framework":"basel3"}\'',
-          webhook: 'curl -X POST https://api.haiphen.io/v1/webhooks \\\n  -H "Authorization: Bearer $TOKEN" \\\n  -d \'{"url":"https://compliance.firm.com/hook","events":["supply.exposure_alert"]}\'',
-          channels: ['Slack', 'Email', 'PagerDuty'],
+          webhookEvents: ['supply.exposure_alert', 'supply.rating_change'],
+          channels: [
+            { name: 'Slack', icon: 'assets/partners/slack.svg' },
+            { name: 'Email', icon: 'assets/partners/email-icon.svg' },
+            { name: 'PagerDuty', icon: 'assets/partners/pagerduty.svg' },
+          ],
           brokers: [],
         },
       },
@@ -733,36 +1046,50 @@
      TAB PANEL: INSTALLATION
      ================================================================ */
 
+  function renderInstallCard(path, title) {
+    if (!path) return '';
+
+    var providersHtml = (path.providers || []).map(function (p) {
+      return '<div class="ms-provider-chip">' +
+        '<img class="ms-provider-chip__icon" src="' + esc(p.icon) + '" alt="" width="22" height="22" loading="lazy" />' +
+        '<span class="ms-provider-chip__name">' + esc(p.name) + '</span>' +
+      '</div>';
+    }).join('');
+
+    var featuresHtml = (path.features || []).map(function (f) {
+      return '<li>' + esc(f) + '</li>';
+    }).join('');
+
+    return '<div class="ms-install-card">' +
+      '<div class="ms-install-card__providers">' + providersHtml + '</div>' +
+      '<h4 class="ms-install-card__title">' + esc(title) + '</h4>' +
+      '<p class="ms-install-card__sub">' + esc(path.subtitle || '') + '</p>' +
+      (featuresHtml ? '<ul class="ms-install-card__features">' + featuresHtml + '</ul>' : '') +
+      '<div class="ms-code-block">' + esc(path.snippet || '') + '</div>' +
+    '</div>';
+  }
+
   function renderInstallPanel(svc, lens) {
     var data = svc.installation;
     if (!data) return '<div class="ms-tab-panel"><p>Installation guide coming soon.</p></div>';
     var inst = data[lens] || data.tech || {};
     var docsHref = svc._docsSection ? '#docs:' + svc._docsSection : '#docs';
 
-    var cloudHtml = '';
-    if (inst.cloud) {
-      cloudHtml = '<div class="ms-install-section">' +
-        '<h4 class="ms-install-section__title">Cloud-Native</h4>' +
-        '<div class="ms-code-block"><span class="ms-code-block__label">Deploy</span>' + esc(inst.cloud.config) + '</div>' +
-        '<div class="ms-code-block"><span class="ms-code-block__label">Verify</span>' + esc(inst.cloud.verify) + '</div>' +
-      '</div>';
-    }
+    var diagramHtml = '<div class="ms-install-diagram">' +
+      '<img src="assets/diagrams/install-paths.svg" alt="Deployment options" data-lightbox loading="lazy" decoding="async" />' +
+    '</div>';
 
-    var localHtml = '';
-    if (inst.local) {
-      localHtml = '<div class="ms-install-section">' +
-        '<h4 class="ms-install-section__title">Local CLI</h4>' +
-        '<div class="ms-code-block"><span class="ms-code-block__label">Install</span>' + esc(inst.local.install) + '</div>' +
-        '<div class="ms-code-block"><span class="ms-code-block__label">Configure</span>' + esc(inst.local.config) + '</div>' +
-        '<div class="ms-code-block"><span class="ms-code-block__label">Test</span>' + esc(inst.local.test) + '</div>' +
-      '</div>';
-    }
+    var gridHtml = '<div class="ms-install-grid">' +
+      renderInstallCard(inst.cloud, 'Cloud-Native') +
+      renderInstallCard(inst.local, 'Local / Edge') +
+    '</div>';
 
     return '<div class="ms-tab-panel">' +
       '<h3 class="ms-tab-panel__title">Installation</h3>' +
-      cloudHtml + localHtml +
+      diagramHtml +
+      gridHtml +
       '<div class="ms-actions" style="margin-top:1rem">' +
-        '<a class="btn btn-ghost" href="' + esc(docsHref) + '">Full Documentation</a>' +
+        '<a class="btn btn-ghost" href="' + esc(docsHref) + '">Full Installation Guide</a>' +
       '</div>' +
     '</div>';
   }
@@ -771,52 +1098,87 @@
      TAB PANEL: INTEGRATION
      ================================================================ */
 
+  function renderPartnerCards(items) {
+    if (!items || !items.length) return '';
+    return '<div class="ms-partner-grid">' +
+      items.map(function (p) {
+        return '<div class="ms-partner-card">' +
+          '<img class="ms-partner-card__icon" src="' + esc(p.icon) + '" alt="" width="32" height="32" loading="lazy" />' +
+          '<span class="ms-partner-card__name">' + esc(p.name) + '</span>' +
+        '</div>';
+      }).join('') +
+    '</div>';
+  }
+
   function renderIntegrationPanel(svc, lens) {
     var data = svc.integration;
     if (!data) return '<div class="ms-tab-panel"><p>Integration guide coming soon.</p></div>';
     var integ = data[lens] || data.tech || {};
+    var docsHref = svc._docsSection ? '#docs:' + svc._docsSection : '#docs';
 
+    // Headline
+    var headlineHtml = integ.headline
+      ? '<p class="ms-integ-headline">' + esc(integ.headline) + '</p>'
+      : '';
+
+    // Diagram
+    var diagramHtml = '<div class="ms-integ-diagram">' +
+      '<img src="assets/diagrams/integration-flow.svg" alt="Integration flow" data-lightbox loading="lazy" decoding="async" />' +
+    '</div>';
+
+    // Partner grid — brokers column
+    var brokersCol = '';
+    if (integ.brokers && integ.brokers.length) {
+      brokersCol = '<div>' +
+        '<h4 class="ms-integ-grid__section-title">Broker Partners</h4>' +
+        renderPartnerCards(integ.brokers) +
+      '</div>';
+    } else {
+      brokersCol = '<div>' +
+        '<h4 class="ms-integ-grid__section-title">Broker Partners</h4>' +
+        '<div class="ms-integ-standalone">Standalone service \u2014 no broker connection required</div>' +
+      '</div>';
+    }
+
+    // Channels column
+    var channelsCol = '';
+    if (integ.channels && integ.channels.length) {
+      channelsCol = '<div>' +
+        '<h4 class="ms-integ-grid__section-title">Notifications</h4>' +
+        renderPartnerCards(integ.channels) +
+      '</div>';
+    }
+
+    var gridHtml = '<div class="ms-integ-grid">' + brokersCol + channelsCol + '</div>';
+
+    // API snippet + webhook events
     var apiHtml = '';
     if (integ.api) {
-      apiHtml = '<div class="ms-integration-section">' +
-        '<h4 class="ms-integration-section__title">REST API</h4>' +
+      var eventsHtml = '';
+      if (integ.webhookEvents && integ.webhookEvents.length) {
+        eventsHtml = '<div class="ms-event-row">' +
+          integ.webhookEvents.map(function (ev) {
+            return '<span class="ms-event-badge">' + esc(ev) + '</span>';
+          }).join('') +
+        '</div>';
+      }
+
+      apiHtml = '<div class="ms-integ-api">' +
+        '<h4 class="ms-integ-api__title">API Example</h4>' +
         '<div class="ms-code-block">' + esc(integ.api) + '</div>' +
+        eventsHtml +
       '</div>';
-    }
-
-    var webhookHtml = '';
-    if (integ.webhook) {
-      webhookHtml = '<div class="ms-integration-section">' +
-        '<h4 class="ms-integration-section__title">Webhooks</h4>' +
-        '<div class="ms-code-block">' + esc(integ.webhook) + '</div>' +
-      '</div>';
-    }
-
-    var channelsHtml = '';
-    if (integ.channels && integ.channels.length) {
-      channelsHtml = '<div class="ms-integration-section">' +
-        '<h4 class="ms-integration-section__title">Notifications</h4>' +
-        '<div class="ms-channel-row">' +
-        integ.channels.map(function (ch) {
-          return '<span class="ms-channel-badge">' + esc(ch) + '</span>';
-        }).join('') +
-        '</div></div>';
-    }
-
-    var brokersHtml = '';
-    if (integ.brokers && integ.brokers.length) {
-      brokersHtml = '<div class="ms-integration-section">' +
-        '<h4 class="ms-integration-section__title">Broker Connections</h4>' +
-        '<div class="ms-channel-row">' +
-        integ.brokers.map(function (b) {
-          return '<span class="ms-channel-badge">' + esc(b) + '</span>';
-        }).join('') +
-        '</div></div>';
     }
 
     return '<div class="ms-tab-panel">' +
       '<h3 class="ms-tab-panel__title">Integration</h3>' +
-      apiHtml + webhookHtml + channelsHtml + brokersHtml +
+      headlineHtml +
+      diagramHtml +
+      gridHtml +
+      apiHtml +
+      '<div class="ms-integ-docs-link ms-actions">' +
+        '<a class="btn btn-ghost" href="' + esc(docsHref) + '">Full API Reference</a>' +
+      '</div>' +
     '</div>';
   }
 

@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 200" width="560" height="200">
+  <defs>
+    <linearGradient id="if-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0b1220"/>
+      <stop offset="100%" stop-color="#0f1b2e"/>
+    </linearGradient>
+    <filter id="if-glow">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <pattern id="if-dots" width="20" height="20" patternUnits="userSpaceOnUse">
+      <circle cx="10" cy="10" r="0.6" fill="rgba(148,163,184,0.12)"/>
+    </pattern>
+  </defs>
+
+  <!-- Background -->
+  <rect width="560" height="200" rx="14" fill="url(#if-bg)"/>
+  <rect width="560" height="200" rx="14" fill="url(#if-dots)"/>
+
+  <!-- YOUR APP node -->
+  <rect x="20" y="65" width="110" height="70" rx="10" fill="rgba(90,155,212,0.12)" stroke="#5A9BD4" stroke-width="1"/>
+  <text x="75" y="93" text-anchor="middle" fill="#5A9BD4" font-family="'SF Mono',monospace" font-size="10" font-weight="700">&lt;/&gt;</text>
+  <text x="75" y="112" text-anchor="middle" fill="#e2e8f0" font-family="system-ui,sans-serif" font-size="11" font-weight="700">Your App</text>
+
+  <!-- Arrow 1 -->
+  <line x1="135" y1="100" x2="190" y2="100" stroke="#5A9BD4" stroke-width="1.5" stroke-dasharray="6 3" opacity="0.7">
+    <animate attributeName="stroke-dashoffset" from="18" to="0" dur="1.5s" repeatCount="indefinite"/>
+  </line>
+  <polygon points="188,96 196,100 188,104" fill="#5A9BD4" opacity="0.8"/>
+
+  <!-- HAIPHEN HUB node -->
+  <rect x="200" y="45" width="160" height="110" rx="12" fill="rgba(16,185,129,0.08)" stroke="#10B981" stroke-width="1.5" filter="url(#if-glow)"/>
+  <circle cx="280" cy="78" r="14" fill="rgba(16,185,129,0.15)" stroke="#10B981" stroke-width="1"/>
+  <text x="280" y="82" text-anchor="middle" fill="#10B981" font-family="system-ui,sans-serif" font-size="11" font-weight="800">H</text>
+  <text x="280" y="106" text-anchor="middle" fill="#e2e8f0" font-family="system-ui,sans-serif" font-size="11" font-weight="700">Haiphen API</text>
+  <text x="280" y="122" text-anchor="middle" fill="#94a3b8" font-family="'SF Mono',monospace" font-size="8">REST · Webhooks · WS</text>
+  <text x="280" y="142" text-anchor="middle" fill="#94a3b8" font-family="'SF Mono',monospace" font-size="8">OAuth · API Keys</text>
+
+  <!-- Arrow 2 (top - brokers) -->
+  <line x1="365" y1="80" x2="410" y2="60" stroke="#8B5CF6" stroke-width="1.5" stroke-dasharray="6 3" opacity="0.7">
+    <animate attributeName="stroke-dashoffset" from="18" to="0" dur="1.5s" repeatCount="indefinite"/>
+  </line>
+  <polygon points="407,55 414,59 407,63" fill="#8B5CF6" opacity="0.8"/>
+
+  <!-- Arrow 2 (bottom - channels) -->
+  <line x1="365" y1="120" x2="410" y2="140" stroke="#F59E0B" stroke-width="1.5" stroke-dasharray="6 3" opacity="0.7">
+    <animate attributeName="stroke-dashoffset" from="18" to="0" dur="1.5s" repeatCount="indefinite"/>
+  </line>
+  <polygon points="407,136 414,140 407,144" fill="#F59E0B" opacity="0.8"/>
+
+  <!-- BROKERS group -->
+  <rect x="415" y="24" width="130" height="65" rx="8" fill="rgba(139,92,246,0.08)" stroke="rgba(139,92,246,0.3)" stroke-width="1"/>
+  <text x="480" y="42" text-anchor="middle" fill="#8B5CF6" font-family="system-ui,sans-serif" font-size="9" font-weight="700" letter-spacing="0.05em">BROKER PARTNERS</text>
+  <!-- Icon placeholders as circles -->
+  <circle cx="435" cy="62" r="8" fill="rgba(139,92,246,0.15)" stroke="#8B5CF6" stroke-width="0.5"/>
+  <circle cx="455" cy="62" r="8" fill="rgba(139,92,246,0.15)" stroke="#8B5CF6" stroke-width="0.5"/>
+  <circle cx="475" cy="62" r="8" fill="rgba(139,92,246,0.15)" stroke="#8B5CF6" stroke-width="0.5"/>
+  <circle cx="495" cy="62" r="8" fill="rgba(139,92,246,0.15)" stroke="#8B5CF6" stroke-width="0.5"/>
+  <circle cx="515" cy="62" r="8" fill="rgba(139,92,246,0.15)" stroke="#8B5CF6" stroke-width="0.5"/>
+  <text x="435" y="65" text-anchor="middle" fill="#8B5CF6" font-size="7" font-weight="700">S</text>
+  <text x="455" y="65" text-anchor="middle" fill="#8B5CF6" font-size="7" font-weight="700">R</text>
+  <text x="475" y="65" text-anchor="middle" fill="#8B5CF6" font-size="7" font-weight="700">IB</text>
+  <text x="495" y="65" text-anchor="middle" fill="#8B5CF6" font-size="7" font-weight="700">A</text>
+  <text x="515" y="65" text-anchor="middle" fill="#8B5CF6" font-size="7" font-weight="700">F</text>
+
+  <!-- CHANNELS group -->
+  <rect x="415" y="110" width="130" height="65" rx="8" fill="rgba(245,158,11,0.08)" stroke="rgba(245,158,11,0.3)" stroke-width="1"/>
+  <text x="480" y="128" text-anchor="middle" fill="#F59E0B" font-family="system-ui,sans-serif" font-size="9" font-weight="700" letter-spacing="0.05em">NOTIFICATIONS</text>
+  <circle cx="440" cy="150" r="10" fill="rgba(245,158,11,0.15)" stroke="#F59E0B" stroke-width="0.5"/>
+  <circle cx="465" cy="150" r="10" fill="rgba(245,158,11,0.15)" stroke="#F59E0B" stroke-width="0.5"/>
+  <circle cx="490" cy="150" r="10" fill="rgba(245,158,11,0.15)" stroke="#F59E0B" stroke-width="0.5"/>
+  <circle cx="515" cy="150" r="10" fill="rgba(245,158,11,0.15)" stroke="#F59E0B" stroke-width="0.5"/>
+  <text x="440" y="153" text-anchor="middle" fill="#F59E0B" font-size="7" font-weight="600">#</text>
+  <text x="465" y="153" text-anchor="middle" fill="#F59E0B" font-size="7" font-weight="600">D</text>
+  <text x="490" y="153" text-anchor="middle" fill="#F59E0B" font-size="7" font-weight="600">@</text>
+  <text x="515" y="153" text-anchor="middle" fill="#F59E0B" font-size="7" font-weight="600">PD</text>
+</svg>
