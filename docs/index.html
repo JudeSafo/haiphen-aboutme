@@ -61,6 +61,7 @@
 	  <script src="components/checkout-success/checkout-success.js"></script>
 	  <script src="components/cookie-consent/cookie-consent.js"></script>
 	  <script src="components/chatbot/chatbot.js"></script>
+	  <script src="components/welcome-overlay/welcome-overlay.js"></script>
 	  <script src="components/lens-toggle/lens-toggle.js"></script>
 
 	  <script>
@@ -2868,6 +2869,13 @@
 		    );
 		  }
 
+		  // First-time welcome overlay
+		  if (H.WelcomeOverlay?.init) {
+		    H.WelcomeOverlay.init('#welcome-overlay-mount').catch(e =>
+		      console.warn('[welcome-overlay] init failed', e)
+		    );
+		  }
+
 		  updateSessionWidget();
 
 		  /* ---- Lens asset & tagline swapper ---- */
@@ -2906,6 +2914,7 @@
 		});
 	  </script>
 	<div id="checkout-success-mount" style="display:none;"></div>
+	<div id="welcome-overlay-mount"></div>
 	<div id="chatbot-mount"></div>
 	<div id="cookie-consent-mount"></div>
 	</body>
