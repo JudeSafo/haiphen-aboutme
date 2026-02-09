@@ -62,14 +62,29 @@
     return root?.classList?.contains('is-open');
   }
 
+  const DEMO_SRC_TECH = 'assets/demos/cli-workflow.gif';
+  const DEMO_SRC_FINANCE = 'assets/demos/finance-dashboard.svg';
+
+  function currentLens() {
+    return document.documentElement.getAttribute('data-lens') || 'tech';
+  }
+
   function lazyLoadDemo(root) {
     if (!root) return;
     const gif = root.querySelector('.hdl-demo-gif');
     const demo = root.querySelector('.hdl-demo');
-    if (!gif || !demo || demo.classList.contains('is-loaded')) return;
-    const src = gif.getAttribute('data-hdl-demo-src');
-    if (!src) return;
-    gif.src = src;
+    if (!gif || !demo) return;
+
+    const lens = currentLens();
+    const wantSrc = lens === 'finance' ? DEMO_SRC_FINANCE : DEMO_SRC_TECH;
+    const curSrc = gif.getAttribute('src') || '';
+
+    // If already showing the correct source, skip
+    if (curSrc === wantSrc && demo.classList.contains('is-loaded')) return;
+
+    // Switch source
+    demo.classList.remove('is-loaded');
+    gif.src = wantSrc;
     gif.onload = () => demo.classList.add('is-loaded');
   }
 
@@ -287,6 +302,11 @@
         routeToDocsInstall('hero_install_docs');
       });
     }
+
+    // Lens switch: swap demo asset when lens changes
+    window.addEventListener('haiphen:lens', () => {
+      if (isOpen(root)) lazyLoadDemo(root);
+    });
   }
 
   async function loadHeroDeviceLauncher(mountSelector = '#hero-device-launcher-mount') {

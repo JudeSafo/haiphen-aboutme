@@ -146,6 +146,24 @@ html[data-lens="finance"] .main-container {
   background: var(--bg);
 }
 
+/* Featured section intro */
+.trades-intro {
+  max-width: 860px;
+  margin: 0 auto 2rem;
+  text-align: center;
+}
+.trades-intro h2 {
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: #2c3e50;
+  margin-bottom: 0.5rem;
+}
+.trades-intro p {
+  font-size: 1.05rem;
+  color: #555;
+  line-height: 1.6;
+}
+
 /* Smooth lens transition */
 html.lens-transition,
 html.lens-transition *,

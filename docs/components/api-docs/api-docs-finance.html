@@ -1,0 +1,66 @@
+<!-- docs/components/api-docs/api-docs-finance.html
+     Finance-lens override blocks for API docs.
+     Each [data-finance-override] replaces the matching id in the tech docs. -->
+
+<template data-finance-override="api-hero">
+  <div class="api-hero" id="api-hero">
+    <h1 class="api-hero__title">Haiphen Portfolio API</h1>
+    <p class="api-hero__sub">
+      Programmatic access to trade signals, portfolio analytics, risk metrics,
+      and real-time market data. Built for quantitative traders, portfolio managers,
+      and compliance teams.
+    </p>
+  </div>
+</template>
+
+<template data-finance-override="docs-overview">
+  <section class="api-section" id="docs-overview">
+    <h2>Overview</h2>
+    <p>
+      The Haiphen Portfolio API exposes a RESTful interface for querying
+      trade execution history, daily P&amp;L breakdowns, risk-adjusted returns,
+      and portfolio composition. All endpoints return JSON and support pagination.
+    </p>
+    <h3>Key Capabilities</h3>
+    <ul>
+      <li><strong>Trade History</strong> &mdash; Query executed trades with fill prices, slippage, and strategy tags</li>
+      <li><strong>Portfolio Snapshots</strong> &mdash; Daily AUM, sector allocation, and concentration metrics</li>
+      <li><strong>Risk Analytics</strong> &mdash; VaR, CVaR, Sharpe, Sortino, max drawdown, and custom risk factors</li>
+      <li><strong>Signal Feed</strong> &mdash; Real-time buy/sell/hold signals with confidence scores</li>
+      <li><strong>Compliance Export</strong> &mdash; Audit-ready trade logs with timestamps and counterparty data</li>
+    </ul>
+    <h3>Authentication</h3>
+    <p>
+      All requests require a valid API key passed via the <code>Authorization: Bearer &lt;key&gt;</code> header.
+      Keys are scoped per service and can be rotated from your
+      <a href="#profile/apikeys">API Keys</a> dashboard.
+    </p>
+  </section>
+</template>
+
+<template data-finance-override="docs-quickstart">
+  <section class="api-section" id="docs-quickstart">
+    <h2>Quickstart</h2>
+    <p>Get up and running in under 60 seconds:</p>
+
+    <h3>1. Get Your API Key</h3>
+    <p>Navigate to <a href="#profile/apikeys">Profile &rarr; API Keys</a> and click <strong>Rotate key</strong>.</p>
+
+    <h3>2. Fetch Today's P&amp;L</h3>
+    <pre class="api-code"><code>curl -s https://api.haiphen.io/v1/metrics/kpi \
+  -H "Authorization: Bearer YOUR_KEY" | jq .</code></pre>
+
+    <h3>3. Query Recent Trades</h3>
+    <pre class="api-code"><code>curl -s "https://api.haiphen.io/v1/metrics/trades?limit=10" \
+  -H "Authorization: Bearer YOUR_KEY" | jq '.trades[:3]'</code></pre>
+
+    <h3>4. Check Portfolio Risk</h3>
+    <pre class="api-code"><code>curl -s https://api.haiphen.io/v1/risk/portfolio \
+  -H "Authorization: Bearer YOUR_KEY" | jq '{var,sharpe,beta}'</code></pre>
+
+    <p>
+      See the <a href="#docs:docs-endpoints">Endpoints</a> reference for the full catalogue,
+      or explore interactively in the <a href="#docs:docs-try">Try&nbsp;it</a> console.
+    </p>
+  </section>
+</template>

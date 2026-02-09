@@ -37,10 +37,11 @@
     const SECTION_HASH = {
       Trades: 'fintech',
       Services: 'services',
-      OnePager: 'collaborate',
+      OnePager: 'services',
       FAQ: 'faq',
       Inventory: 'archives',
       Contact: 'contact-us',
+      Docs: 'docs',
     };
 
     function setHash(section) {

@@ -440,6 +440,9 @@
 
       const root = mount.querySelector('#api-docs') || mount;
       init(root);
+
+      // Load finance overrides + apply current lens
+      loadFinanceOverrides(root);
     } catch (err) {
       console.warn('[api-docs] failed to mount', err);
       mount.innerHTML = `<div style="text-align:left;">
@@ -448,4 +451,67 @@
       </div>`;
     }
   };
+
+  /* ── Finance lens overrides ── */
+
+  let _financeTemplates = null;  // Map<id, DocumentFragment>
+  let _techOriginals = null;     // Map<id, HTMLElement>
+
+  async function loadFinanceOverrides(root) {
+    if (_financeTemplates) {
+      applyLensToApiDocs(root);
+      return;
+    }
+
+    try {
+      const resp = await fetch('components/api-docs/api-docs-finance.html', { cache: 'no-store' });
+      if (!resp.ok) return;
+      const html = await resp.text();
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, 'text/html');
+      const templates = doc.querySelectorAll('template[data-finance-override]');
+
+      _financeTemplates = new Map();
+      templates.forEach(function (tmpl) {
+        const id = tmpl.getAttribute('data-finance-override');
+        if (id) _financeTemplates.set(id, tmpl.content);
+      });
+
+      // Cache tech originals
+      _techOriginals = new Map();
+      _financeTemplates.forEach(function (_, id) {
+        var el = root.querySelector('#' + id);
+        if (el) _techOriginals.set(id, el.cloneNode(true));
+      });
+
+      applyLensToApiDocs(root);
+    } catch (e) {
+      console.warn('[api-docs] finance overrides failed', e);
+    }
+
+    // Listen for future lens changes
+    window.addEventListener('haiphen:lens', function () {
+      var docsRoot = document.querySelector('#api-docs') || document.querySelector('#api-docs-mount');
+      if (docsRoot) applyLensToApiDocs(docsRoot);
+    });
+  }
+
+  function applyLensToApiDocs(root) {
+    if (!_financeTemplates || !_techOriginals) return;
+    var lens = document.documentElement.getAttribute('data-lens') || 'tech';
+
+    _financeTemplates.forEach(function (fragment, id) {
+      var target = root.querySelector('#' + id);
+      if (!target) return;
+
+      if (lens === 'finance') {
+        var clone = fragment.cloneNode(true);
+        var newEl = clone.querySelector('#' + id);
+        if (newEl) target.replaceWith(newEl);
+      } else {
+        var orig = _techOriginals.get(id);
+        if (orig) target.replaceWith(orig.cloneNode(true));
+      }
+    });
+  }
 })();

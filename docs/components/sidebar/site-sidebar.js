@@ -360,6 +360,34 @@
     insertSidebarSessionCard(mount);
   }
 
+  function updateSidebarLabels(lens) {
+    const sidebar = qs(SIDEBAR_ID);
+    if (!sidebar) return;
+    const links = sidebar.querySelectorAll('a[data-tech-label][data-finance-label]');
+    links.forEach(function (a) {
+      var label = a.querySelector('.sidebar-label');
+      var icon = a.querySelector('.sidebar-icon');
+      if (!label) return;
+      if (lens === 'finance') {
+        label.textContent = a.getAttribute('data-finance-label') || label.textContent;
+        if (icon) icon.setAttribute('data-icon', a.getAttribute('data-finance-icon') || icon.getAttribute('data-icon'));
+      } else {
+        label.textContent = a.getAttribute('data-tech-label') || label.textContent;
+        if (icon) icon.setAttribute('data-icon', a.getAttribute('data-tech-icon') || icon.getAttribute('data-icon'));
+      }
+    });
+  }
+
+  window.addEventListener('haiphen:lens', function (e) {
+    updateSidebarLabels(e?.detail?.lens || 'tech');
+  });
+
+  // Apply on load based on current lens
+  document.addEventListener('DOMContentLoaded', function () {
+    var lens = document.documentElement.getAttribute('data-lens') || 'tech';
+    setTimeout(function () { updateSidebarLabels(lens); }, 500);
+  });
+
   window.HAIPHEN = window.HAIPHEN || {};
   window.HAIPHEN.loadSidebar = loadSidebar;
 })();

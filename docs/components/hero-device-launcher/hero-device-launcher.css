@@ -191,6 +191,11 @@
   display: block;
 }
 
+/* SVG demos need cover to fill the panel nicely */
+.hdl-demo-gif[src$=".svg"]{
+  object-fit: cover;
+}
+
 /* ── Mobile: fill width with breathing room on sides ── */
 @media (max-width: 720px){
   .hdl{

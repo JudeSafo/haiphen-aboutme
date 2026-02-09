@@ -1759,6 +1759,11 @@
 	    ------------------------------------------------------------ */
 	    const sectionContent = {
 	        "Trades": `
+              <div class="trades-intro">
+                <h2>Featured</h2>
+                <p>Live production systems: automated trading telemetry, risk profiling, and daily performance artifacts.
+                   Everything below is real infrastructure running real capital through real markets.</p>
+              </div>
 	          <section id="trades-top" class="trades-wrap trades-pro hp-section-reveal">
 
 	            <!-- Header -->
@@ -1979,6 +1984,9 @@
     <section id="mission-section" class="hp-section-reveal">
       <div id="mission-mount"></div>
     </section>
+    <section class="hp-section-reveal">
+      <div id="services-plans-mount"></div>
+    </section>
   `,
       "Profile": `
         <section class="hp-section-reveal">
@@ -2165,6 +2173,9 @@
 		    Collaborate: "OnePager",
 		    fintech: "Trades",
 		    Fintech: "Trades",
+		    services: "OnePager",
+		    company: "Contact",
+		    Company: "Contact",
 		  };
 
 		  const resolved = ALIASES[key] || ALIASES[key.toLowerCase()] || key;
@@ -2208,6 +2219,8 @@
 		    (async () => {
 		      try { await window.HAIPHEN?.loadMission?.(); }
 		      catch (e) { console.warn("[Mission] loadMission failed", e); }
+		      try { await window.HAIPHEN?.loadServicesPlans?.(); }
+		      catch (e) { console.warn("[Services] loadServicesPlans failed", e); }
 		      currentPageIndex = 0;
 		      renderOnePagerPage();
 		      requestAnimationFrame(() => {
@@ -2353,7 +2366,7 @@
 		  Trades: 'fintech',
 		  Services: 'services',
 		  Subscribe: 'subscribe',
-		  OnePager: 'collaborate',
+		  OnePager: 'services',
 		  FAQ: 'faq',
 		  Contact: 'contact-us',
 		  Docs: 'docs',
@@ -2369,6 +2382,9 @@
 
 		// ✅ Cohort lives under Trades, so route #cohort -> showSection('Trades')
 		HASH_SECTION['cohort'] = 'Trades';
+		// Backward-compat: #collaborate and #faq still route correctly
+		HASH_SECTION['collaborate'] = 'OnePager';
+		HASH_SECTION['faq'] = 'FAQ';
 		function clearHash({ replace = false } = {}) {
 		  const url = window.location.pathname + window.location.search;
 		  if (replace) history.replaceState(null, '', url);
@@ -2559,8 +2575,8 @@
 
 		  if (slug === 'subscribe') {
 		    if (typeof window.showSection === "function") {
-		      window.showSection("Services");
-		      activateSectionMenuFor("Services");
+		      window.showSection("OnePager");
+		      activateSectionMenuFor("OnePager");
 		    }
 		    window.HAIPHEN?.setServicesSubscribeFocus?.(true);
 		    scrollToIdWhenReady('services-subscribe-banner', { maxAttempts: 80, delayMs: 50, extra: 12 });

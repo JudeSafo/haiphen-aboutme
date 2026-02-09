@@ -131,6 +131,38 @@ body.sidebar-mobile-open .sidebar-mobile-backdrop {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%230f172a' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2.5 10c0-2 1.5-3 3-3h5c1.5 0 3 1 3 3'/%3E%3Cpath d='M4 6c0-1.5 1-2.5 2.5-2.5h3C11 3.5 12 4.5 12 6'/%3E%3Ccircle cx='5' cy='12' r='1' fill='%230f172a'/%3E%3Ccircle cx='8' cy='12' r='1' fill='%230f172a'/%3E%3Ccircle cx='11' cy='12' r='1' fill='%230f172a'/%3E%3C/svg%3E");
 }
 
+/* ── Finance lens icons ── */
+
+/* Compliance: clipboard + checkmark */
+[data-icon="compliance"] {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%230f172a' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='2' width='10' height='12' rx='1.5'/%3E%3Cpath d='M6 8l1.5 1.5L10 6'/%3E%3C/svg%3E");
+}
+
+/* Alpha Signals: bar chart with trend arrow */
+[data-icon="alpha-signals"] {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%230f172a' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='3' y1='13' x2='3' y2='9'/%3E%3Cline x1='7' y1='13' x2='7' y2='6'/%3E%3Cline x1='11' y1='13' x2='11' y2='3'/%3E%3Cpath d='M9 3h2v2'/%3E%3C/svg%3E");
+}
+
+/* Execution: lightning bolt */
+[data-icon="execution"] {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%230f172a' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 1.5L4 9h4l-1 5.5L12 7H8l1-5.5z'/%3E%3C/svg%3E");
+}
+
+/* Market Data: candlestick chart */
+[data-icon="market-data"] {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%230f172a' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='4' y1='2' x2='4' y2='14'/%3E%3Crect x='2.5' y='5' width='3' height='4' rx='.5'/%3E%3Cline x1='10' y1='2' x2='10' y2='14'/%3E%3Crect x='8.5' y='7' width='3' height='4' rx='.5'/%3E%3C/svg%3E");
+}
+
+/* Risk: warning triangle */
+[data-icon="risk"] {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%230f172a' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M8 2L1.5 13h13L8 2z'/%3E%3Cline x1='8' y1='6' x2='8' y2='9'/%3E%3Ccircle cx='8' cy='11' r='.5' fill='%230f172a' stroke='none'/%3E%3C/svg%3E");
+}
+
+/* Automation: gear with play arrow */
+[data-icon="automation"] {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%230f172a' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='8' cy='8' r='6'/%3E%3Cpath d='M6.5 5v6l5-3-5-3z'/%3E%3C/svg%3E");
+}
+
 /* ── Sidebar collapse (icon strip with hover-to-expand) ── */
 .site-sidebar {
   transition: width 0.25s ease, padding 0.25s ease;

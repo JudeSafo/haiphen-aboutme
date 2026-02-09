@@ -1,0 +1,521 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 600" width="960" height="600">
+  <defs>
+    <linearGradient id="bg-grad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0b1220"/>
+      <stop offset="100%" stop-color="#0f1b2e"/>
+    </linearGradient>
+    <linearGradient id="card-grad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="rgba(255,255,255,0.06)"/>
+      <stop offset="100%" stop-color="rgba(255,255,255,0.02)"/>
+    </linearGradient>
+    <linearGradient id="perf-line-grad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#10B981"/>
+      <stop offset="100%" stop-color="#5A9BD4"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="glow-sm">
+      <feGaussianBlur stdDeviation="1.5" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <clipPath id="chart-clip">
+      <rect x="80" y="100" width="560" height="300"/>
+    </clipPath>
+    <pattern id="dot-grid" width="24" height="24" patternUnits="userSpaceOnUse">
+      <circle cx="12" cy="12" r="0.6" fill="rgba(226,232,240,0.08)"/>
+    </pattern>
+  </defs>
+
+  <style>
+    /* Scene cross-fade keyframes */
+    @keyframes scene-fade {
+      0%   { opacity: 0; }
+      5%   { opacity: 1; }
+      25%  { opacity: 1; }
+      30%  { opacity: 0; }
+      100% { opacity: 0; }
+    }
+
+    .scene { opacity: 0; }
+    .scene-1 { animation: scene-fade 16s infinite 0s; }
+    .scene-2 { animation: scene-fade 16s infinite 4s; }
+    .scene-3 { animation: scene-fade 16s infinite 8s; }
+    .scene-4 { animation: scene-fade 16s infinite 12s; }
+
+    /* Ticker scroll */
+    @keyframes ticker-scroll {
+      0%   { transform: translateX(960px); }
+      100% { transform: translateX(-1200px); }
+    }
+
+    .ticker-text {
+      animation: ticker-scroll 12s linear infinite;
+    }
+
+    /* Line chart draw */
+    @keyframes draw-line {
+      0%   { stroke-dashoffset: 900; }
+      100% { stroke-dashoffset: 0; }
+    }
+
+    .perf-line {
+      stroke-dasharray: 900;
+      stroke-dashoffset: 900;
+      animation: draw-line 3s ease-out 4.5s infinite;
+    }
+
+    .bench-line {
+      stroke-dasharray: 900;
+      stroke-dashoffset: 900;
+      animation: draw-line 3s ease-out 5s infinite;
+    }
+
+    /* Volume bars rise */
+    @keyframes bar-rise {
+      0%   { transform: scaleY(0); }
+      100% { transform: scaleY(1); }
+    }
+
+    /* Donut segments */
+    @keyframes donut-draw {
+      0%   { stroke-dashoffset: 565; }
+      100% { stroke-dashoffset: 0; }
+    }
+
+    /* Alert slide-in */
+    @keyframes alert-slide {
+      0%   { transform: translateX(300px); opacity: 0; }
+      20%  { transform: translateX(0); opacity: 1; }
+      80%  { transform: translateX(0); opacity: 1; }
+      100% { transform: translateX(300px); opacity: 0; }
+    }
+
+    .alert-box {
+      animation: alert-slide 4s ease-in-out 9s infinite;
+    }
+
+    /* Trade row fade-in */
+    @keyframes row-fade {
+      0%   { opacity: 0; transform: translateY(10px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
+    .trade-row-1 { opacity: 0; animation: row-fade 0.5s ease-out 12.3s forwards, scene-fade 16s infinite 12s; }
+    .trade-row-2 { opacity: 0; animation: row-fade 0.5s ease-out 12.6s forwards, scene-fade 16s infinite 12s; }
+    .trade-row-3 { opacity: 0; animation: row-fade 0.5s ease-out 12.9s forwards, scene-fade 16s infinite 12s; }
+    .trade-row-4 { opacity: 0; animation: row-fade 0.5s ease-out 13.2s forwards, scene-fade 16s infinite 12s; }
+
+    /* Card pulse */
+    @keyframes card-pulse {
+      0%, 100% { opacity: 0.85; }
+      50%      { opacity: 1; }
+    }
+
+    /* Shared text styles */
+    .t-mono  { font-family: "SF Mono", "Fira Code", "Cascadia Code", monospace; }
+    .t-sans  { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+    .t-text  { fill: #e2e8f0; }
+    .t-muted { fill: rgba(226,232,240,0.5); }
+    .t-blue  { fill: #5A9BD4; }
+    .t-teal  { fill: #10B981; }
+    .t-amber { fill: #F59E0B; }
+    .t-purple{ fill: #8B5CF6; }
+    .t-red   { fill: #EF4444; }
+    .t-green { fill: #10B981; }
+  </style>
+
+  <!-- Background -->
+  <rect width="960" height="600" fill="url(#bg-grad)"/>
+  <rect width="960" height="600" fill="url(#dot-grid)"/>
+
+  <!-- Subtle border frame -->
+  <rect x="16" y="16" width="928" height="568" rx="12" fill="none" stroke="rgba(226,232,240,0.06)" stroke-width="1"/>
+
+  <!-- ============================================ -->
+  <!-- SCENE 1: Market Overview (0-4s)              -->
+  <!-- ============================================ -->
+  <g class="scene scene-1">
+
+    <!-- Header bar -->
+    <rect x="32" y="32" width="896" height="44" rx="6" fill="rgba(255,255,255,0.04)"/>
+    <text x="52" y="59" class="t-sans t-text" font-size="14" font-weight="600">Market Overview</text>
+    <circle cx="900" cy="54" r="4" fill="#10B981"/>
+    <text x="876" y="58" class="t-mono t-muted" font-size="10" text-anchor="end">LIVE</text>
+
+    <!-- Scrolling ticker strip -->
+    <rect x="32" y="86" width="896" height="32" rx="4" fill="rgba(90,155,212,0.08)"/>
+    <clipPath id="ticker-clip">
+      <rect x="32" y="86" width="896" height="32"/>
+    </clipPath>
+    <g clip-path="url(#ticker-clip)">
+      <g class="ticker-text">
+        <text y="107" class="t-mono" font-size="12">
+          <tspan fill="#10B981">AAPL 189.42 +1.2%</tspan>
+          <tspan dx="30" fill="#EF4444">MSFT 421.50 -0.3%</tspan>
+          <tspan dx="30" fill="#10B981">TSLA 248.90 +2.1%</tspan>
+          <tspan dx="30" fill="#10B981">NVDA 875.20 +0.8%</tspan>
+          <tspan dx="30" fill="#F59E0B">GOOG 176.30 +0.1%</tspan>
+          <tspan dx="30" fill="#10B981">AMZN 198.60 +1.5%</tspan>
+        </text>
+      </g>
+    </g>
+
+    <!-- Card 1: Portfolio Value -->
+    <rect x="32" y="140" width="280" height="160" rx="10" fill="url(#card-grad)" stroke="rgba(16,185,129,0.25)" stroke-width="1"/>
+    <rect x="32" y="140" width="280" height="4" rx="2" fill="#10B981" opacity="0.6"/>
+    <text x="52" y="174" class="t-sans t-muted" font-size="12" font-weight="500">PORTFOLIO VALUE</text>
+    <text x="52" y="224" class="t-mono t-teal" font-size="38" font-weight="700" filter="url(#glow-sm)">$2.4M</text>
+    <text x="52" y="252" class="t-mono t-muted" font-size="11">24h change</text>
+    <text x="52" y="272" class="t-mono t-green" font-size="13">+$32,100 (+1.36%)</text>
+
+    <!-- Card 2: Daily P&L -->
+    <rect x="340" y="140" width="280" height="160" rx="10" fill="url(#card-grad)" stroke="rgba(16,185,129,0.25)" stroke-width="1"/>
+    <rect x="340" y="140" width="280" height="4" rx="2" fill="#10B981" opacity="0.6"/>
+    <text x="360" y="174" class="t-sans t-muted" font-size="12" font-weight="500">DAILY P&amp;L</text>
+    <text x="360" y="224" class="t-mono t-green" font-size="38" font-weight="700" filter="url(#glow-sm)">+$18,450</text>
+    <text x="360" y="252" class="t-mono t-muted" font-size="11">Win rate</text>
+    <text x="360" y="272" class="t-mono t-green" font-size="13">68.2% (15/22 trades)</text>
+
+    <!-- Card 3: Sharpe Ratio -->
+    <rect x="648" y="140" width="280" height="160" rx="10" fill="url(#card-grad)" stroke="rgba(90,155,212,0.25)" stroke-width="1"/>
+    <rect x="648" y="140" width="280" height="4" rx="2" fill="#5A9BD4" opacity="0.6"/>
+    <text x="668" y="174" class="t-sans t-muted" font-size="12" font-weight="500">SHARPE RATIO</text>
+    <text x="668" y="224" class="t-mono t-blue" font-size="38" font-weight="700" filter="url(#glow-sm)">2.14</text>
+    <text x="668" y="252" class="t-mono t-muted" font-size="11">Sortino ratio</text>
+    <text x="668" y="272" class="t-mono t-blue" font-size="13">2.87</text>
+
+    <!-- Mini sparklines in cards -->
+    <polyline points="168,280 185,270 200,275 218,260 236,265 254,250 272,255 290,240"
+              fill="none" stroke="#10B981" stroke-width="1.5" opacity="0.4"/>
+    <polyline points="476,280 493,268 510,272 528,258 546,262 564,248 582,252 598,238"
+              fill="none" stroke="#10B981" stroke-width="1.5" opacity="0.4"/>
+    <polyline points="784,280 801,272 818,268 836,270 854,264 872,260 890,258 906,256"
+              fill="none" stroke="#5A9BD4" stroke-width="1.5" opacity="0.4"/>
+
+    <!-- Additional market data rows -->
+    <rect x="32" y="320" width="896" height="36" rx="6" fill="rgba(255,255,255,0.03)"/>
+    <text x="52" y="343" class="t-mono t-muted" font-size="11">S&amp;P 500</text>
+    <text x="200" y="343" class="t-mono t-green" font-size="11">5,218.42 (+0.8%)</text>
+    <text x="400" y="343" class="t-mono t-muted" font-size="11">10Y Treasury</text>
+    <text x="560" y="343" class="t-mono t-amber" font-size="11">4.28% (-2bp)</text>
+    <text x="720" y="343" class="t-mono t-muted" font-size="11">VIX</text>
+    <text x="800" y="343" class="t-mono t-green" font-size="11">14.2 (-0.6)</text>
+
+    <rect x="32" y="366" width="896" height="36" rx="6" fill="rgba(255,255,255,0.02)"/>
+    <text x="52" y="389" class="t-mono t-muted" font-size="11">NASDAQ</text>
+    <text x="200" y="389" class="t-mono t-green" font-size="11">16,742.80 (+1.1%)</text>
+    <text x="400" y="389" class="t-mono t-muted" font-size="11">DXY</text>
+    <text x="560" y="389" class="t-mono t-amber" font-size="11">104.32 (+0.2%)</text>
+    <text x="720" y="389" class="t-mono t-muted" font-size="11">Gold</text>
+    <text x="800" y="389" class="t-mono t-amber" font-size="11">$2,042 (-0.1%)</text>
+
+    <!-- Haiphen branding -->
+    <text x="480" y="560" class="t-sans t-muted" font-size="12" text-anchor="middle" opacity="0.4">haiphen.io</text>
+  </g>
+
+  <!-- ============================================ -->
+  <!-- SCENE 2: Performance Chart (4-8s)            -->
+  <!-- ============================================ -->
+  <g class="scene scene-2">
+
+    <!-- Header -->
+    <rect x="32" y="32" width="896" height="44" rx="6" fill="rgba(255,255,255,0.04)"/>
+    <text x="52" y="59" class="t-sans t-text" font-size="14" font-weight="600">90-Day Performance</text>
+    <text x="900" y="59" class="t-mono t-muted" font-size="11" text-anchor="end">Jan 1 - Mar 31, 2026</text>
+
+    <!-- Chart area background -->
+    <rect x="70" y="90" width="580" height="320" rx="6" fill="rgba(255,255,255,0.02)"/>
+
+    <!-- Y-axis labels -->
+    <text x="62" y="108" class="t-mono t-muted" font-size="9" text-anchor="end">+20%</text>
+    <text x="62" y="188" class="t-mono t-muted" font-size="9" text-anchor="end">+10%</text>
+    <text x="62" y="268" class="t-mono t-muted" font-size="9" text-anchor="end">0%</text>
+    <text x="62" y="348" class="t-mono t-muted" font-size="9" text-anchor="end">-10%</text>
+    <text x="62" y="405" class="t-mono t-muted" font-size="9" text-anchor="end">-20%</text>
+
+    <!-- Grid lines -->
+    <line x1="80" y1="105" x2="640" y2="105" stroke="rgba(226,232,240,0.06)" stroke-width="0.5"/>
+    <line x1="80" y1="185" x2="640" y2="185" stroke="rgba(226,232,240,0.06)" stroke-width="0.5"/>
+    <line x1="80" y1="265" x2="640" y2="265" stroke="rgba(226,232,240,0.08)" stroke-width="0.5" stroke-dasharray="4,4"/>
+    <line x1="80" y1="345" x2="640" y2="345" stroke="rgba(226,232,240,0.06)" stroke-width="0.5"/>
+
+    <!-- X-axis labels -->
+    <text x="80" y="428" class="t-mono t-muted" font-size="9">Jan</text>
+    <text x="266" y="428" class="t-mono t-muted" font-size="9">Feb</text>
+    <text x="453" y="428" class="t-mono t-muted" font-size="9">Mar</text>
+    <text x="626" y="428" class="t-mono t-muted" font-size="9">Apr</text>
+
+    <!-- Volume bars -->
+    <g opacity="0.3">
+      <rect x="85"  y="380" width="8" height="25" rx="1" fill="#5A9BD4"/>
+      <rect x="105" y="370" width="8" height="35" rx="1" fill="#5A9BD4"/>
+      <rect x="125" y="385" width="8" height="20" rx="1" fill="#5A9BD4"/>
+      <rect x="145" y="365" width="8" height="40" rx="1" fill="#10B981"/>
+      <rect x="165" y="375" width="8" height="30" rx="1" fill="#5A9BD4"/>
+      <rect x="185" y="360" width="8" height="45" rx="1" fill="#10B981"/>
+      <rect x="205" y="372" width="8" height="33" rx="1" fill="#5A9BD4"/>
+      <rect x="225" y="368" width="8" height="37" rx="1" fill="#10B981"/>
+      <rect x="245" y="378" width="8" height="27" rx="1" fill="#5A9BD4"/>
+      <rect x="265" y="358" width="8" height="47" rx="1" fill="#10B981"/>
+      <rect x="285" y="370" width="8" height="35" rx="1" fill="#5A9BD4"/>
+      <rect x="305" y="382" width="8" height="23" rx="1" fill="#5A9BD4"/>
+      <rect x="325" y="362" width="8" height="43" rx="1" fill="#10B981"/>
+      <rect x="345" y="374" width="8" height="31" rx="1" fill="#5A9BD4"/>
+      <rect x="365" y="366" width="8" height="39" rx="1" fill="#10B981"/>
+      <rect x="385" y="380" width="8" height="25" rx="1" fill="#5A9BD4"/>
+      <rect x="405" y="355" width="8" height="50" rx="1" fill="#10B981"/>
+      <rect x="425" y="370" width="8" height="35" rx="1" fill="#5A9BD4"/>
+      <rect x="445" y="362" width="8" height="43" rx="1" fill="#10B981"/>
+      <rect x="465" y="376" width="8" height="29" rx="1" fill="#5A9BD4"/>
+      <rect x="485" y="358" width="8" height="47" rx="1" fill="#10B981"/>
+      <rect x="505" y="372" width="8" height="33" rx="1" fill="#5A9BD4"/>
+      <rect x="525" y="365" width="8" height="40" rx="1" fill="#10B981"/>
+      <rect x="545" y="378" width="8" height="27" rx="1" fill="#5A9BD4"/>
+      <rect x="565" y="354" width="8" height="51" rx="1" fill="#10B981"/>
+      <rect x="585" y="368" width="8" height="37" rx="1" fill="#5A9BD4"/>
+      <rect x="605" y="360" width="8" height="45" rx="1" fill="#10B981"/>
+      <rect x="625" y="352" width="8" height="53" rx="1" fill="#10B981"/>
+    </g>
+
+    <!-- Benchmark line (muted) -->
+    <polyline class="bench-line"
+              points="80,265 100,260 120,258 140,255 160,260 180,258 200,252 220,248 240,255 260,250 280,245 300,248 320,242 340,245 360,240 380,244 400,238 420,235 440,240 460,236 480,232 500,235 520,228 540,232 560,225 580,228 600,220 620,222 640,218"
+              fill="none" stroke="rgba(226,232,240,0.25)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+
+    <!-- Portfolio line (teal, animated) -->
+    <polyline class="perf-line"
+              points="80,265 100,258 120,250 140,240 160,248 180,235 200,228 220,218 240,230 260,215 280,205 300,212 320,198 340,205 360,192 380,200 400,185 420,175 440,188 460,178 480,168 500,175 520,160 540,168 560,152 580,158 600,142 620,148 640,132"
+              fill="none" stroke="url(#perf-line-grad)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow-sm)"/>
+
+    <!-- Stats panel on right -->
+    <rect x="680" y="90" width="248" height="320" rx="8" fill="rgba(255,255,255,0.03)" stroke="rgba(226,232,240,0.08)" stroke-width="0.5"/>
+
+    <text x="700" y="122" class="t-sans t-muted" font-size="11" font-weight="500">PERFORMANCE SUMMARY</text>
+
+    <text x="700" y="158" class="t-sans t-muted" font-size="10">Total Return</text>
+    <text x="908" y="158" class="t-mono t-green" font-size="13" text-anchor="end" font-weight="600">+18.4%</text>
+
+    <line x1="700" y1="170" x2="908" y2="170" stroke="rgba(226,232,240,0.06)" stroke-width="0.5"/>
+
+    <text x="700" y="194" class="t-sans t-muted" font-size="10">vs Benchmark</text>
+    <text x="908" y="194" class="t-mono t-teal" font-size="13" text-anchor="end" font-weight="600">+6.2%</text>
+
+    <line x1="700" y1="206" x2="908" y2="206" stroke="rgba(226,232,240,0.06)" stroke-width="0.5"/>
+
+    <text x="700" y="230" class="t-sans t-muted" font-size="10">Max Drawdown</text>
+    <text x="908" y="230" class="t-mono t-amber" font-size="13" text-anchor="end" font-weight="600">-4.8%</text>
+
+    <line x1="700" y1="242" x2="908" y2="242" stroke="rgba(226,232,240,0.06)" stroke-width="0.5"/>
+
+    <text x="700" y="266" class="t-sans t-muted" font-size="10">Volatility (Ann.)</text>
+    <text x="908" y="266" class="t-mono t-text" font-size="13" text-anchor="end" font-weight="600">12.3%</text>
+
+    <line x1="700" y1="278" x2="908" y2="278" stroke="rgba(226,232,240,0.06)" stroke-width="0.5"/>
+
+    <text x="700" y="302" class="t-sans t-muted" font-size="10">Calmar Ratio</text>
+    <text x="908" y="302" class="t-mono t-blue" font-size="13" text-anchor="end" font-weight="600">3.83</text>
+
+    <!-- Legend -->
+    <line x1="700" y1="350" x2="720" y2="350" stroke="#10B981" stroke-width="2.5"/>
+    <text x="728" y="354" class="t-sans t-text" font-size="11">Portfolio</text>
+    <line x1="700" y1="374" x2="720" y2="374" stroke="rgba(226,232,240,0.25)" stroke-width="2"/>
+    <text x="728" y="378" class="t-sans t-muted" font-size="11">Benchmark (S&amp;P 500)</text>
+
+    <!-- Branding -->
+    <text x="480" y="560" class="t-sans t-muted" font-size="12" text-anchor="middle" opacity="0.4">haiphen.io</text>
+  </g>
+
+  <!-- ============================================ -->
+  <!-- SCENE 3: Portfolio Allocation (8-12s)        -->
+  <!-- ============================================ -->
+  <g class="scene scene-3">
+
+    <!-- Header -->
+    <rect x="32" y="32" width="896" height="44" rx="6" fill="rgba(255,255,255,0.04)"/>
+    <text x="52" y="59" class="t-sans t-text" font-size="14" font-weight="600">Portfolio Allocation</text>
+    <text x="900" y="59" class="t-mono t-muted" font-size="11" text-anchor="end">As of Feb 9, 2026</text>
+
+    <!-- Donut chart -->
+    <!-- Total circumference for r=90: 2*pi*90 = 565.49 -->
+    <!-- Equities 45% = 254.47, Fixed Income 25% = 141.37, Alternatives 20% = 113.10, Cash 10% = 56.55 -->
+
+    <!-- Background ring -->
+    <circle cx="280" cy="300" r="90" fill="none" stroke="rgba(226,232,240,0.05)" stroke-width="40"/>
+
+    <!-- Equities 45% (blue) - offset 0 -->
+    <circle cx="280" cy="300" r="90" fill="none" stroke="#5A9BD4" stroke-width="40"
+            stroke-dasharray="254.47 310.52" stroke-dashoffset="0"
+            transform="rotate(-90 280 300)" opacity="0.9"/>
+
+    <!-- Fixed Income 25% (teal) - offset after equities -->
+    <circle cx="280" cy="300" r="90" fill="none" stroke="#10B981" stroke-width="40"
+            stroke-dasharray="141.37 424.12" stroke-dashoffset="-254.47"
+            transform="rotate(-90 280 300)" opacity="0.9"/>
+
+    <!-- Alternatives 20% (purple) -->
+    <circle cx="280" cy="300" r="90" fill="none" stroke="#8B5CF6" stroke-width="40"
+            stroke-dasharray="113.10 452.39" stroke-dashoffset="-395.84"
+            transform="rotate(-90 280 300)" opacity="0.9"/>
+
+    <!-- Cash 10% (amber) -->
+    <circle cx="280" cy="300" r="90" fill="none" stroke="#F59E0B" stroke-width="40"
+            stroke-dasharray="56.55 508.94" stroke-dashoffset="-508.94"
+            transform="rotate(-90 280 300)" opacity="0.9"/>
+
+    <!-- Center label -->
+    <text x="280" y="290" class="t-sans t-muted" font-size="11" text-anchor="middle">TOTAL AUM</text>
+    <text x="280" y="316" class="t-mono t-text" font-size="22" font-weight="700" text-anchor="middle">$2.4M</text>
+
+    <!-- Legend below donut -->
+    <circle cx="160" cy="440" r="5" fill="#5A9BD4"/>
+    <text x="172" y="444" class="t-sans t-text" font-size="12">Equities 45%</text>
+
+    <circle cx="300" cy="440" r="5" fill="#10B981"/>
+    <text x="312" y="444" class="t-sans t-text" font-size="12">Fixed Income 25%</text>
+
+    <circle cx="160" cy="468" r="5" fill="#8B5CF6"/>
+    <text x="172" y="472" class="t-sans t-text" font-size="12">Alternatives 20%</text>
+
+    <circle cx="300" cy="468" r="5" fill="#F59E0B"/>
+    <text x="312" y="472" class="t-sans t-text" font-size="12">Cash 10%</text>
+
+    <!-- Risk metrics sidebar -->
+    <rect x="520" y="100" width="400" height="280" rx="8" fill="rgba(255,255,255,0.03)" stroke="rgba(226,232,240,0.08)" stroke-width="0.5"/>
+
+    <text x="544" y="132" class="t-sans t-muted" font-size="12" font-weight="500">RISK METRICS</text>
+
+    <!-- VaR -->
+    <rect x="544" y="150" width="360" height="52" rx="6" fill="rgba(239,68,68,0.06)" stroke="rgba(239,68,68,0.15)" stroke-width="0.5"/>
+    <text x="564" y="172" class="t-sans t-muted" font-size="10">Value at Risk (95%)</text>
+    <text x="564" y="192" class="t-mono t-amber" font-size="18" font-weight="700">$45,200</text>
+    <text x="884" y="182" class="t-mono t-muted" font-size="10" text-anchor="end">1-day horizon</text>
+
+    <!-- Beta -->
+    <rect x="544" y="214" width="360" height="52" rx="6" fill="rgba(90,155,212,0.06)" stroke="rgba(90,155,212,0.15)" stroke-width="0.5"/>
+    <text x="564" y="236" class="t-sans t-muted" font-size="10">Portfolio Beta</text>
+    <text x="564" y="256" class="t-mono t-blue" font-size="18" font-weight="700">0.82</text>
+    <text x="884" y="246" class="t-mono t-muted" font-size="10" text-anchor="end">vs S&amp;P 500</text>
+
+    <!-- Alpha -->
+    <rect x="544" y="278" width="360" height="52" rx="6" fill="rgba(16,185,129,0.06)" stroke="rgba(16,185,129,0.15)" stroke-width="0.5"/>
+    <text x="564" y="300" class="t-sans t-muted" font-size="10">Jensen's Alpha</text>
+    <text x="564" y="320" class="t-mono t-green" font-size="18" font-weight="700">+3.2%</text>
+    <text x="884" y="310" class="t-mono t-muted" font-size="10" text-anchor="end">annualized</text>
+
+    <!-- Correlation -->
+    <rect x="544" y="342" width="360" height="28" rx="6" fill="rgba(255,255,255,0.02)"/>
+    <text x="564" y="361" class="t-sans t-muted" font-size="10">Correlation to Market</text>
+    <text x="884" y="361" class="t-mono t-text" font-size="11" text-anchor="end">0.74</text>
+
+    <!-- Alert slide-in -->
+    <g class="alert-box">
+      <rect x="520" y="410" width="400" height="52" rx="8" fill="rgba(245,158,11,0.1)" stroke="#F59E0B" stroke-width="1" opacity="0.9"/>
+      <circle cx="546" cy="436" r="10" fill="rgba(245,158,11,0.2)"/>
+      <text x="546" y="440" class="t-sans" font-size="12" text-anchor="middle" fill="#F59E0B" font-weight="700">!</text>
+      <text x="566" y="432" class="t-sans t-amber" font-size="12" font-weight="600">Risk threshold approaching</text>
+      <text x="566" y="450" class="t-mono t-muted" font-size="10">VaR exceeds 2% of portfolio value</text>
+    </g>
+
+    <!-- Branding -->
+    <text x="480" y="560" class="t-sans t-muted" font-size="12" text-anchor="middle" opacity="0.4">haiphen.io</text>
+  </g>
+
+  <!-- ============================================ -->
+  <!-- SCENE 4: Trade Signals (12-16s)              -->
+  <!-- ============================================ -->
+  <g class="scene scene-4">
+
+    <!-- Header -->
+    <rect x="32" y="32" width="896" height="44" rx="6" fill="rgba(255,255,255,0.04)"/>
+    <text x="52" y="59" class="t-sans t-text" font-size="14" font-weight="600">AI Trade Signals</text>
+    <circle cx="862" cy="54" r="4" fill="#10B981">
+      <animate attributeName="opacity" values="1;0.3;1" dur="2s" repeatCount="indefinite"/>
+    </circle>
+    <text x="874" y="58" class="t-mono t-green" font-size="10">4 Active</text>
+
+    <!-- Table header -->
+    <rect x="32" y="96" width="896" height="36" rx="6" fill="rgba(90,155,212,0.08)"/>
+    <text x="72"  y="119" class="t-mono t-muted" font-size="10" font-weight="600">SIGNAL</text>
+    <text x="200" y="119" class="t-mono t-muted" font-size="10" font-weight="600">TICKER</text>
+    <text x="340" y="119" class="t-mono t-muted" font-size="10" font-weight="600">PRICE</text>
+    <text x="480" y="119" class="t-mono t-muted" font-size="10" font-weight="600">TARGET</text>
+    <text x="610" y="119" class="t-mono t-muted" font-size="10" font-weight="600">CONFIDENCE</text>
+    <text x="790" y="119" class="t-mono t-muted" font-size="10" font-weight="600">STRATEGY</text>
+
+    <!-- Trade Row 1: BUY AAPL -->
+    <g class="trade-row-1">
+      <rect x="32" y="142" width="896" height="64" rx="6" fill="rgba(16,185,129,0.04)" stroke="rgba(16,185,129,0.12)" stroke-width="0.5"/>
+      <rect x="52" y="160" width="52" height="24" rx="4" fill="rgba(16,185,129,0.15)"/>
+      <text x="78" y="177" class="t-mono t-green" font-size="11" font-weight="700" text-anchor="middle">BUY</text>
+      <text x="200" y="172" class="t-mono t-text" font-size="15" font-weight="600">AAPL</text>
+      <text x="200" y="192" class="t-mono t-muted" font-size="9">Apple Inc.</text>
+      <text x="340" y="178" class="t-mono t-text" font-size="14">$189.42</text>
+      <text x="480" y="178" class="t-mono t-green" font-size="14">$205.00</text>
+      <!-- Confidence bar -->
+      <rect x="610" y="168" width="120" height="8" rx="4" fill="rgba(226,232,240,0.1)"/>
+      <rect x="610" y="168" width="113" height="8" rx="4" fill="#10B981"/>
+      <text x="610" y="192" class="t-mono t-green" font-size="11" font-weight="600">94%</text>
+      <text x="790" y="178" class="t-mono t-muted" font-size="11">Momentum</text>
+    </g>
+
+    <!-- Trade Row 2: SELL TSLA -->
+    <g class="trade-row-2">
+      <rect x="32" y="216" width="896" height="64" rx="6" fill="rgba(239,68,68,0.04)" stroke="rgba(239,68,68,0.12)" stroke-width="0.5"/>
+      <rect x="52" y="234" width="52" height="24" rx="4" fill="rgba(239,68,68,0.15)"/>
+      <text x="78" y="251" class="t-mono t-red" font-size="11" font-weight="700" text-anchor="middle">SELL</text>
+      <text x="200" y="246" class="t-mono t-text" font-size="15" font-weight="600">TSLA</text>
+      <text x="200" y="266" class="t-mono t-muted" font-size="9">Tesla Inc.</text>
+      <text x="340" y="252" class="t-mono t-text" font-size="14">$248.90</text>
+      <text x="480" y="252" class="t-mono t-red" font-size="14">$218.00</text>
+      <rect x="610" y="242" width="120" height="8" rx="4" fill="rgba(226,232,240,0.1)"/>
+      <rect x="610" y="242" width="104" height="8" rx="4" fill="#EF4444"/>
+      <text x="610" y="266" class="t-mono t-red" font-size="11" font-weight="600">87%</text>
+      <text x="790" y="252" class="t-mono t-muted" font-size="11">Mean Revert</text>
+    </g>
+
+    <!-- Trade Row 3: HOLD MSFT -->
+    <g class="trade-row-3">
+      <rect x="32" y="290" width="896" height="64" rx="6" fill="rgba(245,158,11,0.04)" stroke="rgba(245,158,11,0.12)" stroke-width="0.5"/>
+      <rect x="52" y="308" width="52" height="24" rx="4" fill="rgba(245,158,11,0.15)"/>
+      <text x="78" y="325" class="t-mono t-amber" font-size="11" font-weight="700" text-anchor="middle">HOLD</text>
+      <text x="200" y="320" class="t-mono t-text" font-size="15" font-weight="600">MSFT</text>
+      <text x="200" y="340" class="t-mono t-muted" font-size="9">Microsoft Corp.</text>
+      <text x="340" y="326" class="t-mono t-text" font-size="14">$421.50</text>
+      <text x="480" y="326" class="t-mono t-amber" font-size="14">$430.00</text>
+      <rect x="610" y="316" width="120" height="8" rx="4" fill="rgba(226,232,240,0.1)"/>
+      <rect x="610" y="316" width="91" height="8" rx="4" fill="#F59E0B"/>
+      <text x="610" y="340" class="t-mono t-amber" font-size="11" font-weight="600">76%</text>
+      <text x="790" y="326" class="t-mono t-muted" font-size="11">Valuation</text>
+    </g>
+
+    <!-- Trade Row 4: BUY NVDA -->
+    <g class="trade-row-4">
+      <rect x="32" y="364" width="896" height="64" rx="6" fill="rgba(16,185,129,0.04)" stroke="rgba(16,185,129,0.12)" stroke-width="0.5"/>
+      <rect x="52" y="382" width="52" height="24" rx="4" fill="rgba(16,185,129,0.15)"/>
+      <text x="78" y="399" class="t-mono t-green" font-size="11" font-weight="700" text-anchor="middle">BUY</text>
+      <text x="200" y="394" class="t-mono t-text" font-size="15" font-weight="600">NVDA</text>
+      <text x="200" y="414" class="t-mono t-muted" font-size="9">NVIDIA Corp.</text>
+      <text x="340" y="400" class="t-mono t-text" font-size="14">$875.20</text>
+      <text x="480" y="400" class="t-mono t-green" font-size="14">$950.00</text>
+      <rect x="610" y="390" width="120" height="8" rx="4" fill="rgba(226,232,240,0.1)"/>
+      <rect x="610" y="390" width="109" height="8" rx="4" fill="#10B981"/>
+      <text x="610" y="414" class="t-mono t-green" font-size="11" font-weight="600">91%</text>
+      <text x="790" y="400" class="t-mono t-muted" font-size="11">Breakout</text>
+    </g>
+
+    <!-- Summary bar -->
+    <rect x="32" y="450" width="896" height="40" rx="6" fill="rgba(255,255,255,0.03)"/>
+    <text x="52" y="475" class="t-mono t-muted" font-size="10">Signal Quality Score</text>
+    <rect x="200" y="466" width="200" height="6" rx="3" fill="rgba(226,232,240,0.1)"/>
+    <rect x="200" y="466" width="174" height="6" rx="3" fill="#10B981"/>
+    <text x="410" y="475" class="t-mono t-green" font-size="10" font-weight="600">87/100</text>
+    <text x="560" y="475" class="t-mono t-muted" font-size="10">Active Strategies: 4</text>
+    <text x="790" y="475" class="t-mono t-muted" font-size="10">Updated: 12s ago</text>
+
+    <!-- Branding -->
+    <rect x="320" y="524" width="320" height="36" rx="8" fill="rgba(90,155,212,0.06)" stroke="rgba(90,155,212,0.12)" stroke-width="0.5"/>
+    <text x="480" y="547" class="t-sans" font-size="13" text-anchor="middle" fill="rgba(226,232,240,0.5)" font-weight="500">Powered by <tspan fill="#5A9BD4">Haiphen</tspan></text>
+  </g>
+</svg>

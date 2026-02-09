@@ -10,7 +10,7 @@
   var CSS_ID       = 'lens-toggle-css';
 
   /* Sections that trigger the first-visit flash */
-  var FLASH_SECTIONS = ['Trades', 'Services', 'OnePager', 'FAQ'];
+  var FLASH_SECTIONS = ['Trades', 'Services', 'OnePager', 'FAQ', 'Contact', 'Docs'];
 
   /* Active flash interval ID (so we can cancel it on acknowledge) */
   var _flashInterval = null;
