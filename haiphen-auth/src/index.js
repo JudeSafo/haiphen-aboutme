@@ -199,7 +199,10 @@ async function ensureUserInDb(env, userLogin, name, email) {
  * Idempotent via welcome_emails table.
  */
 async function sendFirstLoginEmails(env, userLogin, name, email, provider) {
-  if (!env.SENDGRID_API_KEY || !env.DB) return;
+  if (!env.SENDGRID_API_KEY || !env.DB) {
+    console.warn('[first-login] skipped: missing', !env.SENDGRID_API_KEY ? 'SENDGRID_API_KEY' : 'DB');
+    return;
+  }
   const ownerEmail = env.OWNER_EMAIL || 'jude@haiphen.io';
   const fromEmail = env.FROM_EMAIL || 'jude@haiphen.io';
   const fromName = env.FROM_NAME || 'Haiphen';
@@ -360,97 +363,180 @@ function escHtml(s) {
 }
 
 function buildWelcomeHtml(name, userLogin, provider) {
+  const firstName = (name || userLogin || '').split(/\s+/)[0];
+  const safeName = escHtml(firstName);
+  const safeLogin = escHtml(userLogin);
+  const subscribeUrl = `https://haiphen.io/#profile/settings`;
   return `<!DOCTYPE html>
-<html><head><meta charset="utf-8"></head>
-<body style="margin:0;padding:0;background:#f6f8fb;font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f6f8fb;">
-<tr><td align="center" style="padding:32px 16px;">
-<table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;background:#fff;border:1px solid #e6ecf3;border-radius:16px;overflow:hidden;">
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Welcome to Haiphen</title>
+  <!--[if mso]>
+  <noscript>
+    <xml>
+      <o:OfficeDocumentSettings>
+        <o:PixelsPerInch>96</o:PixelsPerInch>
+      </o:OfficeDocumentSettings>
+    </xml>
+  </noscript>
+  <![endif]-->
+</head>
+<body style="margin:0;padding:0;background-color:#f6f8fb;font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;">
 
-  <tr><td style="padding:22px 28px 14px;">
-    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
-      <td align="left" style="vertical-align:middle;">
-        <div style="font-weight:900;font-size:18px;color:#2c3e50;line-height:1.3;">Haiphen</div>
-        <div style="font-size:12px;color:#667;line-height:1.4;margin-top:2px;">Signals intelligence &bull; automated trading telemetry &bull; API Everything &hearts;</div>
+  <!-- Preheader -->
+  <div style="display:none;font-size:1px;color:#f6f8fb;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;">
+    Welcome to Haiphen, ${safeName}. Your account is ready — explore the API, set up your profile, and subscribe to the daily digest.
+  </div>
+
+  <!-- Outer wrapper -->
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#f6f8fb;">
+    <tr>
+      <td align="center" style="padding:32px 16px;">
+
+        <!-- Card -->
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" style="max-width:600px;width:100%;background-color:#ffffff;border:1px solid #e6ecf3;border-radius:16px;overflow:hidden;">
+
+          <!-- Header -->
+          <tr>
+            <td style="padding:22px 28px 14px;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                <tr>
+                  <td align="left" style="vertical-align:middle;">
+                    <div style="font-weight:900;font-size:18px;color:#2c3e50;line-height:1.3;">Haiphen</div>
+                    <div style="font-size:12px;color:#667;line-height:1.4;margin-top:2px;">Signals intelligence &bull; automated trading telemetry &bull; API Everything &hearts;</div>
+                  </td>
+                  <td align="right" style="vertical-align:middle;">
+                    <a href="https://haiphen.io" style="font-size:12px;color:#5A9BD4;font-weight:700;text-decoration:none;">haiphen.io</a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Divider -->
+          <tr>
+            <td style="padding:0 28px;">
+              <div style="height:1px;background:#e6ecf3;"></div>
+            </td>
+          </tr>
+
+          <!-- Status banner -->
+          <tr>
+            <td style="padding:14px 28px;">
+              <div style="background:#ecfdf5;border:1px solid #a7f3d0;border-radius:12px;padding:12px 14px;">
+                <div style="font-size:13px;font-weight:800;color:#2c3e50;">Welcome to Haiphen, ${safeName}!</div>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Body -->
+          <tr>
+            <td style="padding:10px 28px 22px;">
+
+              <p style="margin:0 0 14px;font-size:15px;line-height:1.6;color:#2c3e50;font-weight:700;">
+                Hi ${safeName},
+              </p>
+              <p style="margin:0 0 20px;font-size:14px;line-height:1.6;color:#556;">
+                Your account has been created and you're on the <strong style="color:#5A9BD4;">Free</strong> plan. Here's how to get started:
+              </p>
+
+              <!-- Getting started steps -->
+              <div style="font-size:14px;font-weight:900;color:#2c3e50;margin-bottom:14px;">Getting started</div>
+
+              <div style="background:#fbfcfe;border:1px solid #e6ecf3;border-radius:12px;padding:14px;margin-bottom:20px;">
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                  <tr>
+                    <td style="vertical-align:top;width:28px;padding:4px 0;">
+                      <div style="width:22px;height:22px;border-radius:50%;background-color:#5A9BD4;color:#ffffff;font-size:11px;font-weight:900;text-align:center;line-height:22px;">1</div>
+                    </td>
+                    <td style="vertical-align:top;padding:4px 0 4px 10px;">
+                      <div style="font-size:13px;color:#2c3e50;font-weight:800;">Explore the API docs</div>
+                      <div style="font-size:12px;color:#667;margin-top:2px;">See endpoints, try live requests, and generate your API key at <a href="https://haiphen.io/#docs" style="color:#5A9BD4;text-decoration:none;font-weight:700;">haiphen.io/docs</a>.</div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="vertical-align:top;width:28px;padding:10px 0 4px;">
+                      <div style="width:22px;height:22px;border-radius:50%;background-color:#5A9BD4;color:#ffffff;font-size:11px;font-weight:900;text-align:center;line-height:22px;">2</div>
+                    </td>
+                    <td style="vertical-align:top;padding:10px 0 4px 10px;">
+                      <div style="font-size:13px;color:#2c3e50;font-weight:800;">Set up your profile</div>
+                      <div style="font-size:12px;color:#667;margin-top:2px;">Configure notification preferences and manage API keys in your <a href="https://haiphen.io/#profile" style="color:#5A9BD4;text-decoration:none;font-weight:700;">profile settings</a>.</div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="vertical-align:top;width:28px;padding:10px 0 4px;">
+                      <div style="width:22px;height:22px;border-radius:50%;background-color:#5A9BD4;color:#ffffff;font-size:11px;font-weight:900;text-align:center;line-height:22px;">3</div>
+                    </td>
+                    <td style="vertical-align:top;padding:10px 0 4px 10px;">
+                      <div style="font-size:13px;color:#2c3e50;font-weight:800;">Join the cohort program</div>
+                      <div style="font-size:12px;color:#667;margin-top:2px;">Connect with other users and get early access to new features via the <a href="https://haiphen.io/#cohort" style="color:#5A9BD4;text-decoration:none;font-weight:700;">cohort program</a>.</div>
+                    </td>
+                  </tr>
+                </table>
+              </div>
+
+              <!-- CTA -->
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                <tr>
+                  <td align="center">
+                    <a href="https://haiphen.io/#getting-started" style="display:inline-block;background-color:#5A9BD4;color:#ffffff;font-size:14px;font-weight:900;text-decoration:none;padding:12px 28px;border-radius:12px;text-align:center;">Get Started</a>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Daily digest subscribe -->
+              <div style="background:#fbfcfe;border:1px solid #e6ecf3;border-left:3px solid #10B981;border-radius:12px;padding:14px;margin-top:20px;">
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                  <tr>
+                    <td style="vertical-align:top;">
+                      <div style="font-size:13px;font-weight:900;color:#2c3e50;margin-bottom:6px;">Subscribe to the Daily Digest</div>
+                      <div style="font-size:12px;color:#556;line-height:1.55;margin-bottom:12px;">
+                        Get a daily summary of key metrics, market signals, portfolio watchlist updates, and platform alerts delivered to your inbox every morning.
+                      </div>
+                      <a href="${subscribeUrl}" style="display:inline-block;background-color:#10B981;color:#ffffff;font-size:13px;font-weight:800;text-decoration:none;padding:9px 22px;border-radius:10px;text-align:center;">Subscribe to Daily Digest</a>
+                    </td>
+                  </tr>
+                </table>
+              </div>
+
+              <p style="margin:20px 0 0;font-size:13px;line-height:1.6;color:#667;">
+                Questions? Reply to this email or reach us at <a href="mailto:pi@haiphenai.com" style="color:#5A9BD4;text-decoration:none;font-weight:700;">pi@haiphenai.com</a>.
+              </p>
+
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="padding:0 28px;">
+              <div style="height:1px;background:#e6ecf3;"></div>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:18px 28px 22px;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                <tr>
+                  <td align="center">
+                    <p style="margin:0 0 6px;font-size:11px;color:#778;line-height:1.5;">
+                      Haiphen &bull; Manhattan, NY &bull; <a href="mailto:pi@haiphenai.com" style="color:#778;text-decoration:none;">pi@haiphenai.com</a> &bull; (512) 910-4544
+                    </p>
+                    <p style="margin:0;font-size:11px;color:#778;line-height:1.5;">
+                      You received this because you signed up on <a href="https://haiphen.io" style="color:#5A9BD4;text-decoration:none;font-weight:700;">haiphen.io</a>.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+        </table>
       </td>
-      <td align="right" style="vertical-align:middle;">
-        <a href="https://haiphen.io" style="font-size:12px;color:#5A9BD4;font-weight:700;text-decoration:none;">haiphen.io</a>
-      </td>
-    </tr></table>
-  </td></tr>
+    </tr>
+  </table>
 
-  <tr><td style="padding:0 28px;"><div style="height:1px;background:#e6ecf3;"></div></td></tr>
-
-  <tr><td style="padding:14px 28px;">
-    <div style="background:#ecfdf5;border:1px solid #a7f3d0;border-radius:12px;padding:12px 14px;">
-      <div style="font-size:13px;font-weight:800;color:#065f46;">Welcome to Haiphen, ${escHtml(name)}!</div>
-    </div>
-  </td></tr>
-
-  <tr><td style="padding:10px 28px 22px;">
-    <p style="margin:0 0 14px;font-size:15px;line-height:1.6;color:#2c3e50;font-weight:700;">
-      Hi ${escHtml(name)},
-    </p>
-    <p style="margin:0 0 20px;font-size:14px;line-height:1.6;color:#556;">
-      Your account has been created. Here are a few things to get you started:
-    </p>
-
-    <div style="background:#fbfcfe;border:1px solid #e6ecf3;border-radius:12px;padding:14px;margin-bottom:20px;">
-      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
-        <tr>
-          <td style="padding:5px 0;vertical-align:top;width:18px;">
-            <div style="width:6px;height:6px;border-radius:50%;background:#10B981;margin-top:6px;"></div>
-          </td>
-          <td style="padding:5px 0 5px 8px;font-size:13px;line-height:1.5;color:#556;">
-            <strong style="color:#2c3e50;">Explore the API docs</strong> &mdash; See endpoints, try live requests, and generate your API key.
-          </td>
-        </tr>
-        <tr>
-          <td style="padding:5px 0;vertical-align:top;width:18px;">
-            <div style="width:6px;height:6px;border-radius:50%;background:#10B981;margin-top:6px;"></div>
-          </td>
-          <td style="padding:5px 0 5px 8px;font-size:13px;line-height:1.5;color:#556;">
-            <strong style="color:#2c3e50;">Set up your profile</strong> &mdash; Configure notification preferences and manage API keys.
-          </td>
-        </tr>
-        <tr>
-          <td style="padding:5px 0;vertical-align:top;width:18px;">
-            <div style="width:6px;height:6px;border-radius:50%;background:#10B981;margin-top:6px;"></div>
-          </td>
-          <td style="padding:5px 0 5px 8px;font-size:13px;line-height:1.5;color:#556;">
-            <strong style="color:#2c3e50;">Join the cohort program</strong> &mdash; Connect with other users and get early access to new features.
-          </td>
-        </tr>
-      </table>
-    </div>
-
-    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
-      <tr>
-        <td align="center">
-          <a href="https://haiphen.io/#getting-started" style="display:inline-block;background-color:#5A9BD4;color:#ffffff;font-size:14px;font-weight:900;text-decoration:none;padding:12px 28px;border-radius:12px;">Get Started</a>
-        </td>
-      </tr>
-    </table>
-
-    <p style="margin:20px 0 0;font-size:13px;line-height:1.6;color:#667;">
-      Questions? Reply to this email or reach us at <a href="mailto:pi@haiphenai.com" style="color:#5A9BD4;text-decoration:none;font-weight:700;">pi@haiphenai.com</a>.
-    </p>
-  </td></tr>
-
-  <tr><td style="padding:0 28px;"><div style="height:1px;background:#e6ecf3;"></div></td></tr>
-  <tr><td style="padding:18px 28px 22px;">
-    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr><td align="center">
-      <p style="margin:0 0 6px;font-size:11px;color:#778;line-height:1.5;">
-        Haiphen &bull; Manhattan, NY &bull; <a href="mailto:pi@haiphenai.com" style="color:#778;text-decoration:none;">pi@haiphenai.com</a> &bull; (512) 910-4544
-      </p>
-      <p style="margin:0;font-size:11px;color:#778;line-height:1.5;">
-        You received this because you just signed up on <a href="https://haiphen.io" style="color:#5A9BD4;text-decoration:none;font-weight:700;">haiphen.io</a>.
-      </p>
-    </td></tr></table>
-  </td></tr>
-
-</table>
-</td></tr></table>
 </body></html>`;
 }
 
@@ -826,6 +912,52 @@ async function handleAuth(req, env, jwtKey, ctx) {
 
     return redirectResponse(start.toString());
   }  
+
+  // ---- POST /admin/send-welcome ----
+  if (req.method === 'POST' && url.pathname === '/admin/send-welcome') {
+    const token = getAuthToken(req);
+    if (!token) return textResponse('Unauthorized', origin, 401);
+    try {
+      const claims = await getUserFromToken(token, jwtKey, env);
+      if (claims.sub !== 'jks142857') {
+        return jsonResponse({ ok: false, error: 'Forbidden' }, origin, 403);
+      }
+    } catch {
+      return textResponse('Invalid token', origin, 401);
+    }
+
+    if (!env.DB || !env.SENDGRID_API_KEY) {
+      return jsonResponse({ ok: false, error: 'Missing DB or SENDGRID_API_KEY' }, origin, 500);
+    }
+
+    try {
+      const rows = await env.DB.prepare(`
+        SELECT u.user_login, u.name, u.email
+        FROM users u
+        LEFT JOIN welcome_emails w ON u.user_login = w.user_login
+        WHERE w.user_login IS NULL AND u.email IS NOT NULL
+      `).all();
+
+      const sent = [];
+      const skipped = [];
+
+      for (const row of rows.results || []) {
+        try {
+          const provider = row.user_login.startsWith('google:') ? 'google' : 'github';
+          await sendFirstLoginEmails(env, row.user_login, row.name, row.email, provider);
+          sent.push(row.user_login);
+        } catch (e) {
+          console.error(`[admin/send-welcome] failed for ${row.user_login}:`, e);
+          skipped.push(row.user_login);
+        }
+      }
+
+      return jsonResponse({ ok: true, sent, skipped }, origin);
+    } catch (e) {
+      console.error('[admin/send-welcome] error:', e);
+      return jsonResponse({ ok: false, error: e.message }, origin, 500);
+    }
+  }
 
   // ---- /logout ----
   if (url.pathname === '/logout') {
