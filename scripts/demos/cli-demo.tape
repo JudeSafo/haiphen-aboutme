@@ -6,10 +6,10 @@ Output "docs/assets/demos/cli-workflow.gif"
 
 Set Shell "bash"
 Set FontSize 18
-Set Width 680
+Set Width 720
 Set Height 400
 Set Theme "Dracula"
-Set Padding 14
+Set Padding 12
 Set TypingSpeed 40ms
 
 Hide
