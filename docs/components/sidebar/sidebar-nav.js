@@ -125,12 +125,13 @@
       return;
     }
 
-    // 1) Ensure the section is rendered (showSection does sync innerHTML injection)
-    window.showSection(section);
-
     // 2) Wait for target to exist (content is injected dynamically)
     // Prefer emphasize selector; fallback to target selector; fallback to contentRoot.
     const pickSelector = emphasize || target;
+
+    // 1) Ensure the section is rendered (showSection does sync innerHTML injection)
+    // Pass suppressScroll when sidebar will handle its own scroll-to-target
+    window.showSection(section, pickSelector ? { suppressScroll: true } : undefined);
     let el = null;
 
     if (pickSelector) {

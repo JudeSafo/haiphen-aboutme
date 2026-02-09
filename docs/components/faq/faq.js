@@ -145,15 +145,15 @@
     {
       q: "How do I navigate directly to a section (shareable links)?",
       aHtml:
-        `Use hashes: <code>#fintech</code> (Featured), <code>#services</code> (Services), <code>#docs</code> (Documentation), <code>#contact-us</code> (Company). Example: click <a href="#services">#services</a> or <a href="#fintech">#fintech</a>.`,
+        `Use hashes: <code>#fintech</code> (Featured), <code>#mission</code> (Mission), <code>#services</code> (Services), <code>#docs</code> (Documentation), <code>#contact-us</code> (Company). Example: click <a href="#mission">#mission</a> or <a href="#fintech">#fintech</a>.`,
       aText:
-        "Use hashes: #fintech (Featured), #services (Services), #docs (Documentation), #contact-us (Company). Example: #services or #fintech.",
+        "Use hashes: #fintech (Featured), #mission (Mission), #services (Services), #docs (Documentation), #contact-us (Company). Example: #mission or #fintech.",
       tags: ["navigation"],
     },
     {
       q: "Where can I see examples of prior work on this site?",
       aHtml:
-        `The “Tech” dropdown inside Trades shows portfolio-style artifacts, and the OnePager includes case-study visuals. Start at <a href="#fintech">Trades</a> → <a data-faq-go="Trades:fintech-tech" href="#fintech-tech">Tech</a>, or jump to <a href="#services">Services</a>.`,
+        `The "Tech" dropdown inside Trades shows portfolio-style artifacts, and the OnePager includes case-study visuals. Start at <a href="#fintech">Trades</a> → <a data-faq-go="Trades:fintech-tech" href="#fintech-tech">Tech</a>, or jump to <a href="#mission">Mission</a>.`,
       aText:
         "The Tech dropdown inside Trades shows portfolio-style artifacts, and the OnePager includes case-study visuals. Start at Trades → Tech, or jump to OnePager.",
       tags: ["navigation", "general"],
@@ -173,7 +173,7 @@
     {
       q: "Where's the gallery of hardware / field work?",
       aHtml:
-        `The gallery lives in Services. Jump to <a href="#services">Services</a> and scroll to <a data-faq-go="OnePager:services-gallery" href="#services-gallery">Gallery</a>.`,
+        `The gallery lives in Mission. Jump to <a href="#mission">Mission</a> and scroll to <a data-faq-go="OnePager:services-gallery" href="#mission:services-gallery">Gallery</a>.`,
       aText:
         "The gallery lives in OnePager. Jump to OnePager and scroll to Gallery.",
       tags: ["navigation", "services"],

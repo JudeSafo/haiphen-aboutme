@@ -37,7 +37,7 @@
     const SECTION_HASH = {
       Trades: 'fintech',
       Services: 'services',
-      OnePager: 'services',
+      OnePager: 'mission',
       FAQ: 'faq',
       Inventory: 'archives',
       Contact: 'contact-us',

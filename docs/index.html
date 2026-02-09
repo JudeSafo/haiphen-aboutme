@@ -2157,7 +2157,8 @@
 		  els.forEach(function(el) { io.observe(el); });
 		}
 
-		function showSection(sectionName) {
+		function showSection(sectionName, opts) {
+		  var _opts = opts || {};
 		  const contentWidget = document.getElementById("content-widget");
 		  if (!contentWidget) return;
 
@@ -2173,7 +2174,6 @@
 		    Collaborate: "OnePager",
 		    fintech: "Trades",
 		    Fintech: "Trades",
-		    services: "OnePager",
 		    company: "Contact",
 		    Company: "Contact",
 		  };
@@ -2223,10 +2223,12 @@
 		      catch (e) { console.warn("[Services] loadServicesPlans failed", e); }
 		      currentPageIndex = 0;
 		      renderOnePagerPage();
-		      requestAnimationFrame(() => {
-		        const top = document.getElementById("mission-top") || document.getElementById("mission-section") || contentWidget;
-		        scrollToWithHeaderOffset(top, 12);
-		      });
+		      if (!_opts.suppressScroll) {
+		        requestAnimationFrame(() => {
+		          const top = document.getElementById("mission-top") || document.getElementById("mission-section") || contentWidget;
+		          scrollToWithHeaderOffset(top, 12);
+		        });
+		      }
 		    })();
 		    return;
 		  }
@@ -2366,7 +2368,7 @@
 		  Trades: 'fintech',
 		  Services: 'services',
 		  Subscribe: 'subscribe',
-		  OnePager: 'services',
+		  OnePager: 'mission',
 		  FAQ: 'faq',
 		  Contact: 'contact-us',
 		  Docs: 'docs',
