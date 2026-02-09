@@ -1,14 +1,15 @@
-# VHS Tape: Haiphen Risk Assessment
+# VHS Tape: Haiphen Risk — portfolio stress test with metrics
+# Zoomed 640×360 @ 20px — single focused command
 
 Output "docs/assets/demos/cli-risk.gif"
 
 Set Shell "bash"
-Set FontSize 14
-Set Width 900
-Set Height 500
+Set FontSize 20
+Set Width 640
+Set Height 360
 Set Theme "Dracula"
-Set Padding 20
-Set TypingSpeed 50ms
+Set Padding 12
+Set TypingSpeed 40ms
 
 Hide
 Type `export PATH="DEMO_DIR:$PATH" PS1='$ '`
@@ -19,14 +20,8 @@ Enter
 Sleep 300ms
 Show
 
-Type "# Run portfolio risk assessment under stress scenario"
-Enter
-Sleep 500ms
-
 Type `haiphen risk assess --scenario "rate_hike_300bp"`
 Enter
 Sleep 2.5s
 
-Type "# VaR 95%: -4.23%, CVaR: -5.91% over 30-day horizon"
-Enter
 Sleep 3s

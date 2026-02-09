@@ -1,15 +1,15 @@
 # VHS Tape: Haiphen CLI Login
-# Records: haiphen login -> status -> services
+# Zoomed 640×360 @ 20px — auth flow: login → status → services
 
 Output "docs/assets/demos/cli-login.gif"
 
 Set Shell "bash"
-Set FontSize 14
-Set Width 900
-Set Height 500
+Set FontSize 20
+Set Width 640
+Set Height 360
 Set Theme "Dracula"
-Set Padding 20
-Set TypingSpeed 50ms
+Set Padding 12
+Set TypingSpeed 40ms
 
 Hide
 Type `export PATH="DEMO_DIR:$PATH" PS1='$ '`
@@ -20,23 +20,15 @@ Enter
 Sleep 300ms
 Show
 
-Type "# Authenticate with Haiphen via GitHub OAuth"
-Enter
-Sleep 500ms
-
 Type "haiphen login"
 Enter
 Sleep 1.5s
 
-Type "# Check authentication status"
-Enter
-Sleep 300ms
-
 Type "haiphen status"
 Enter
-Sleep 1.5s
+Sleep 2s
 
-Type "# Check all service health"
+Type "clear"
 Enter
 Sleep 300ms
 

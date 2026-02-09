@@ -1,14 +1,15 @@
-# VHS Tape: Haiphen Security Scan
+# VHS Tape: Haiphen Secure — CVE scan with findings table
+# Zoomed 640×360 @ 20px — single focused command
 
 Output "docs/assets/demos/cli-secure.gif"
 
 Set Shell "bash"
-Set FontSize 14
-Set Width 900
-Set Height 520
+Set FontSize 20
+Set Width 640
+Set Height 360
 Set Theme "Dracula"
-Set Padding 20
-Set TypingSpeed 50ms
+Set Padding 12
+Set TypingSpeed 40ms
 
 Hide
 Type `export PATH="DEMO_DIR:$PATH" PS1='$ '`
@@ -19,14 +20,8 @@ Enter
 Sleep 300ms
 Show
 
-Type "# Edge security vulnerability scan"
-Enter
-Sleep 500ms
-
-Type "haiphen secure scan --target edge-gw-prod --type vulnerability"
+Type "haiphen secure scan --target edge-gw-prod"
 Enter
 Sleep 2.5s
 
-Type "# 3 findings detected — 1 high, 1 medium, 1 low"
-Enter
 Sleep 3s

@@ -1,14 +1,15 @@
-# VHS Tape: Haiphen Full Workflow
+# VHS Tape: Haiphen Full Workflow — multi-command platform demo
+# Zoomed 680×400 @ 18px — login → scan → graph query
 
 Output "docs/assets/demos/cli-workflow.gif"
 
 Set Shell "bash"
-Set FontSize 13
-Set Width 960
-Set Height 600
+Set FontSize 18
+Set Width 680
+Set Height 400
 Set Theme "Dracula"
-Set Padding 20
-Set TypingSpeed 45ms
+Set Padding 14
+Set TypingSpeed 40ms
 
 Hide
 Type `export PATH="DEMO_DIR:$PATH" PS1='$ '`
@@ -19,42 +20,26 @@ Enter
 Sleep 300ms
 Show
 
-Type "# Haiphen CLI — Edge Protocol Intelligence"
-Enter
-Sleep 600ms
-
 Type "haiphen login"
 Enter
 Sleep 1.2s
 
 Type "haiphen status"
 Enter
-Sleep 1.2s
+Sleep 2s
 
-Type "# Scan edge gateway for vulnerabilities"
+Type "clear"
 Enter
 Sleep 300ms
 
-Type "haiphen secure scan --target edge-gw-prod --type vulnerability"
+Type "haiphen secure scan --target edge-gw-prod"
 Enter
-Sleep 1.8s
+Sleep 2.5s
 
-Type "# Trace Modbus traffic"
-Enter
-Sleep 300ms
-
-Type "haiphen network trace --target plc-gateway-01 --protocol modbus"
-Enter
-Sleep 1.8s
-
-Type "# Query knowledge graph"
+Type "clear"
 Enter
 Sleep 300ms
 
-Type `haiphen graph query --q "semiconductor suppliers" --depth 2`
-Enter
-Sleep 1.8s
-
-Type "# All services operational. Edge intelligence delivered."
+Type `haiphen graph query --q "semiconductors" --depth 2`
 Enter
 Sleep 3s

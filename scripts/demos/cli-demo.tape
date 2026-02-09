@@ -1,4 +1,5 @@
-# VHS Tape: Haiphen CLI Demo (tight framing)
+# VHS Tape: Haiphen CLI Demo (compact variant)
+# Same output as cli-workflow — this tape used for tight inline embedding
 # Record with: vhs scripts/demos/cli-demo.tape
 
 Output "docs/assets/demos/cli-workflow.gif"
@@ -6,9 +7,9 @@ Output "docs/assets/demos/cli-workflow.gif"
 Set Shell "bash"
 Set FontSize 18
 Set Width 680
-Set Height 480
+Set Height 400
 Set Theme "Dracula"
-Set Padding 16
+Set Padding 14
 Set TypingSpeed 40ms
 
 Hide
@@ -22,15 +23,7 @@ Show
 
 Type "haiphen login"
 Enter
-Sleep 1.5s
-
-Type "clear"
-Enter
-Sleep 300ms
-
-Type "haiphen status"
-Enter
-Sleep 1.5s
+Sleep 1.2s
 
 Type "clear"
 Enter
@@ -38,20 +31,12 @@ Sleep 300ms
 
 Type "haiphen secure scan --target edge-gw-prod"
 Enter
-Sleep 2s
-
-Type "clear"
-Enter
-Sleep 300ms
-
-Type "haiphen network trace --protocol modbus"
-Enter
-Sleep 2s
-
-Type "clear"
-Enter
-Sleep 300ms
-
-Type `haiphen graph query --q "suppliers" --depth 2`
-Enter
 Sleep 2.5s
+
+Type "clear"
+Enter
+Sleep 300ms
+
+Type `haiphen graph query --q "semiconductors" --depth 2`
+Enter
+Sleep 3s
