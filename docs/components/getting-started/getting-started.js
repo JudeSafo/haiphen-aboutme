@@ -58,6 +58,7 @@
     { id: 'gs-verify',   label: 'Verify' },
     { id: 'gs-success',  label: 'Success' },
     { id: 'gs-services', label: 'Services' },
+    { id: 'gs-prospect', label: 'Prospect' },
     { id: 'gs-apps',     label: 'Apps' },
   ];
 
@@ -157,6 +158,46 @@
     'svc-supply-desc': {
       tech: 'Supplier risk scoring & alerts',
       finance: 'Counterparty exposure & concentration risk',
+    },
+    'prospect-title': {
+      tech: 'Prospect Engine',
+      finance: 'Vulnerability Intelligence',
+    },
+    'prospect-sub': {
+      tech: 'Automated vulnerability lead discovery, 6-service investigation pipeline, and closed-loop risk reduction.',
+      finance: 'Automated vulnerability intelligence with investigation workflows, rule-based matching, and risk reduction confirmation.',
+    },
+    'svc-prospect-list-name': {
+      tech: 'Prospect List',
+      finance: 'Lead Discovery',
+    },
+    'svc-prospect-list-desc': {
+      tech: 'Browse vulnerability leads from NVD, OSV, GitHub Advisory & Shodan',
+      finance: 'View discovered vulnerability leads with severity and entity details',
+    },
+    'svc-prospect-investigate-name': {
+      tech: 'Investigate',
+      finance: 'Risk Investigation',
+    },
+    'svc-prospect-investigate-desc': {
+      tech: 'Run 6-service sequential pipeline with upstream context forwarding',
+      finance: 'Run full investigation pipeline across all analysis engines',
+    },
+    'svc-prospect-solve-name': {
+      tech: 'Auto-Resolve',
+      finance: 'Requirement Resolution',
+    },
+    'svc-prospect-solve-desc': {
+      tech: 'Automatically resolve data gaps, monitors & integration requirements',
+      finance: 'Automatically address investigation requirements and data gaps',
+    },
+    'svc-prospect-reinvestigate-name': {
+      tech: 'Re-investigate',
+      finance: 'Risk Confirmation',
+    },
+    'svc-prospect-reinvestigate-desc': {
+      tech: 'Confirm risk reduction with before/after delta scoring',
+      finance: 'Confirm risk reduction and measure improvement over baseline',
     },
   };
 

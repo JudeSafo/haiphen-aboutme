@@ -850,6 +850,147 @@ haiphen secure scan --target "192.168.1.0/24" --type vulnerability</code></pre>
           </details>
         </section>
 
+        <!-- Prospect Engine -->
+        <section class="api-section" id="docs-prospect" data-api-section>
+          <h3>Prospect Engine</h3>
+          <p>Automated vulnerability lead discovery, investigation pipeline, and risk reduction workflow. Crawls NVD, OSV, GitHub Advisory, and Shodan for leads, then runs a 6-service investigation pipeline with rule-based matching and outreach delivery.</p>
+          <p class="api-muted">Base URL: <code>https://api.haiphen.io/v1</code></p>
+
+          <div class="api-endpoints">
+            <div class="api-endpoint">
+              <div class="api-endpoint-top">
+                <span class="api-method">GET</span>
+                <code class="api-path">/prospect/leads</code>
+              </div>
+              <div class="api-endpoint-desc">List vulnerability leads with severity, source, and entity details.</div>
+              <div class="api-endpoint-meta">
+                <div><strong>Auth:</strong> Session JWT (cookie or bearer)</div>
+                <div><strong>Query (optional):</strong> <code>limit</code>, <code>offset</code>, <code>severity</code>, <code>source</code></div>
+                <div><strong>Returns:</strong> <code>{ leads[], total }</code></div>
+              </div>
+              <pre class="api-code"><code data-lang="bash">haiphen prospect list --severity critical --limit 10</code></pre>
+            </div>
+
+            <div class="api-endpoint">
+              <div class="api-endpoint-top">
+                <span class="api-method api-method--post">POST</span>
+                <code class="api-path">/prospect/investigate</code>
+              </div>
+              <div class="api-endpoint-desc">Run the 6-service sequential investigation pipeline (secure &rarr; network &rarr; causal &rarr; risk &rarr; graph &rarr; supply) with upstream context forwarding.</div>
+              <div class="api-endpoint-meta">
+                <div><strong>Auth:</strong> Session JWT</div>
+                <div><strong>Body:</strong> <code>{ "lead_id": "&lt;id&gt;" }</code></div>
+                <div><strong>Returns:</strong> <code>{ investigation_id, steps[], aggregate_score, requirements[] }</code></div>
+              </div>
+              <pre class="api-code"><code data-lang="bash">haiphen prospect investigate --lead &lt;id&gt;</code></pre>
+            </div>
+
+            <div class="api-endpoint">
+              <div class="api-endpoint-top">
+                <span class="api-method">GET</span>
+                <code class="api-path">/prospect/investigations/:id</code>
+              </div>
+              <div class="api-endpoint-desc">View investigation details including step scores, aggregate score, and requirements.</div>
+              <div class="api-endpoint-meta">
+                <div><strong>Auth:</strong> Session JWT</div>
+                <div><strong>Returns:</strong> <code>{ investigation, steps[], requirements[] }</code></div>
+              </div>
+              <pre class="api-code"><code data-lang="bash">haiphen prospect investigation --id &lt;id&gt;</code></pre>
+            </div>
+
+            <div class="api-endpoint">
+              <div class="api-endpoint-top">
+                <span class="api-method api-method--post">POST</span>
+                <code class="api-path">/prospect/solve</code>
+              </div>
+              <div class="api-endpoint-desc">Auto-resolve investigation requirements: data gaps, monitors, and integration needs.</div>
+              <div class="api-endpoint-meta">
+                <div><strong>Auth:</strong> Session JWT</div>
+                <div><strong>Body:</strong> <code>{ "investigation_id": "&lt;id&gt;" }</code></div>
+                <div><strong>Returns:</strong> <code>{ resolved[], unresolved[] }</code></div>
+              </div>
+              <pre class="api-code"><code data-lang="bash">haiphen prospect solve --investigation &lt;id&gt;</code></pre>
+            </div>
+
+            <div class="api-endpoint">
+              <div class="api-endpoint-top">
+                <span class="api-method api-method--post">POST</span>
+                <code class="api-path">/prospect/re-investigate</code>
+              </div>
+              <div class="api-endpoint-desc">Re-run the investigation pipeline after solving requirements. Compares risk scores before and after to confirm reduction.</div>
+              <div class="api-endpoint-meta">
+                <div><strong>Auth:</strong> Session JWT</div>
+                <div><strong>Body:</strong> <code>{ "investigation_id": "&lt;id&gt;" }</code></div>
+                <div><strong>Returns:</strong> <code>{ investigation_id, risk_score_before, risk_score_after, risk_reduction }</code></div>
+              </div>
+              <pre class="api-code"><code data-lang="bash">haiphen prospect re-investigate --investigation &lt;id&gt;</code></pre>
+            </div>
+
+            <div class="api-endpoint">
+              <div class="api-endpoint-top">
+                <span class="api-method">GET</span>
+                <code class="api-path">/prospect/rules</code>
+              </div>
+              <div class="api-endpoint-desc">List use-case matching rules that map lead attributes to service configurations and solution templates.</div>
+              <div class="api-endpoint-meta">
+                <div><strong>Auth:</strong> Session JWT</div>
+                <div><strong>Returns:</strong> <code>{ rules[] }</code></div>
+              </div>
+              <pre class="api-code"><code data-lang="bash">haiphen prospect rules</code></pre>
+            </div>
+          </div>
+
+          <h4>CLI Demos</h4>
+
+          <details class="api-demo-block" open>
+            <summary>Prospect List &mdash; browse vulnerability leads</summary>
+            <img src="assets/demos/cli-prospect-list.gif" alt="Prospect list demo" loading="lazy" decoding="async" />
+          </details>
+
+          <details class="api-demo-block">
+            <summary>Investigate &mdash; 6-service pipeline</summary>
+            <img src="assets/demos/cli-prospect-investigate.gif" alt="Prospect investigate demo" loading="lazy" decoding="async" />
+          </details>
+
+          <details class="api-demo-block">
+            <summary>Auto-Resolve &mdash; solve requirements</summary>
+            <img src="assets/demos/cli-prospect-solve.gif" alt="Prospect auto-resolve demo" loading="lazy" decoding="async" />
+          </details>
+
+          <details class="api-demo-block">
+            <summary>Re-investigate &mdash; confirm risk reduction</summary>
+            <img src="assets/demos/cli-prospect-reinvestigate.gif" alt="Prospect re-investigate demo" loading="lazy" decoding="async" />
+          </details>
+
+          <h4>End-to-End Story Demo</h4>
+          <p class="api-muted">A complete prospect workflow from vulnerability discovery through risk confirmation, narrated in 5 chapters.</p>
+
+          <details class="api-demo-block">
+            <summary>Chapter 1: Discovery &mdash; crawl sources and surface leads</summary>
+            <img src="assets/demos/usecases/uc01-discovery.gif" alt="Usecase Chapter 1: Discovery" loading="lazy" decoding="async" />
+          </details>
+
+          <details class="api-demo-block">
+            <summary>Chapter 2: Investigation &mdash; run the 6-service pipeline</summary>
+            <img src="assets/demos/usecases/uc02-investigation.gif" alt="Usecase Chapter 2: Investigation" loading="lazy" decoding="async" />
+          </details>
+
+          <details class="api-demo-block">
+            <summary>Chapter 3: Requirements &mdash; identify gaps and needs</summary>
+            <img src="assets/demos/usecases/uc03-requirements.gif" alt="Usecase Chapter 3: Requirements" loading="lazy" decoding="async" />
+          </details>
+
+          <details class="api-demo-block">
+            <summary>Chapter 4: Resolution &mdash; auto-resolve requirements</summary>
+            <img src="assets/demos/usecases/uc04-resolution.gif" alt="Usecase Chapter 4: Resolution" loading="lazy" decoding="async" />
+          </details>
+
+          <details class="api-demo-block">
+            <summary>Chapter 5: Confirmation &mdash; verify risk reduction</summary>
+            <img src="assets/demos/usecases/uc05-confirmation.gif" alt="Usecase Chapter 5: Confirmation" loading="lazy" decoding="async" />
+          </details>
+        </section>
+
         <!-- CLI Command Reference -->
         <section class="api-section" id="docs-cli-commands" data-api-section>
           <h3>CLI Command Center</h3>
@@ -887,6 +1028,10 @@ haiphen secure scan --target "192.168.1.0/24" --type vulnerability</code></pre>
             <div class="api-row" role="row"><div role="cell"><code>haiphen risk assess --scenario &lt;s&gt;</code></div><div role="cell">Run a risk assessment</div></div>
             <div class="api-row" role="row"><div role="cell"><code>haiphen causal analyze --events &lt;json&gt;</code></div><div role="cell">Analyze causal chain</div></div>
             <div class="api-row" role="row"><div role="cell"><code>haiphen supply assess --supplier &lt;name&gt;</code></div><div role="cell">Assess supplier risk</div></div>
+            <div class="api-row" role="row"><div role="cell"><code>haiphen prospect list</code></div><div role="cell">List vulnerability leads</div></div>
+            <div class="api-row" role="row"><div role="cell"><code>haiphen prospect investigate --lead &lt;id&gt;</code></div><div role="cell">Run 6-service investigation pipeline</div></div>
+            <div class="api-row" role="row"><div role="cell"><code>haiphen prospect solve --investigation &lt;id&gt;</code></div><div role="cell">Auto-resolve requirements</div></div>
+            <div class="api-row" role="row"><div role="cell"><code>haiphen prospect re-investigate --investigation &lt;id&gt;</code></div><div role="cell">Confirm risk reduction</div></div>
           </div>
 
           <h4>Local gateway proxy</h4>
