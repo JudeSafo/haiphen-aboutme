@@ -1,0 +1,19 @@
+{
+  "name": "haiphen-sync",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "deploy": "npm run build && gcloud functions deploy haiphen-sync --gen2 --runtime=nodejs20 --region=us-central1 --project=united-lane-361102 --source=. --entry-point=handler --trigger-http --no-allow-unauthenticated --memory=256MB --timeout=120s --max-instances=1 --service-account=haiphen-worker@united-lane-361102.iam.gserviceaccount.com --set-env-vars=CF_ACCOUNT_ID=307a5117867a624064b8ec44fb1bac76,CF_D1_DATABASE_ID=9a26fb67-b6e5-4d5f-8e62-3ecfde5ee8c2 --set-secrets=CF_API_TOKEN=HAIPHEN_CF_API_TOKEN:latest"
+  },
+  "dependencies": {
+    "@google-cloud/firestore": "^7.0.0",
+    "@google-cloud/functions-framework": "^3.4.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "@types/node": "^20.0.0"
+  }
+}
