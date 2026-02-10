@@ -62,8 +62,8 @@
     return root?.classList?.contains('is-open');
   }
 
-  const DEMO_SRC_TECH = 'assets/demos/cli-workflow.svg';
-  const DEMO_SRC_FINANCE = 'assets/demos/cli-workflow.svg';
+  const DEMO_SRC_TECH = 'assets/demos/cli-workflow.gif';
+  const DEMO_SRC_FINANCE = 'assets/demos/cli-workflow.gif';
 
   function currentLens() {
     return document.documentElement.getAttribute('data-lens') || 'tech';

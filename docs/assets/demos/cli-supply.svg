@@ -3,107 +3,118 @@
   <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#0b1220"/><stop offset="100%" stop-color="#0f1b2e"/></linearGradient>
   <pattern id="grid" width="24" height="24" patternUnits="userSpaceOnUse"><circle cx="12" cy="12" r=".5" fill="rgba(226,232,240,.06)"/></pattern>
   <clipPath id="vp"><rect width="960" height="600" rx="10"/></clipPath>
-  <!-- Typewriter clips -->
-  <clipPath id="t1"><rect x="55" y="54" height="22" width="0"><animate attributeName="width" dur="20s" repeatCount="indefinite" values="0;0;130;130;0" keyTimes="0;.015;.06;.96;1"/></rect></clipPath>
-  <clipPath id="t2"><rect x="55" y="444" height="22" width="0"><animate attributeName="width" dur="20s" repeatCount="indefinite" values="0;0;361;361;0" keyTimes="0;.43;.47;.96;1"/></rect></clipPath>
-  <clipPath id="t3"><rect x="55" y="724" height="22" width="0"><animate attributeName="width" dur="20s" repeatCount="indefinite" values="0;0;260;260;0" keyTimes="0;.63;.665;.96;1"/></rect></clipPath>
+  <!-- Typewriter: $ haiphen -->
+  <clipPath id="t1"><rect x="55" y="46" height="22" width="0"><animate attributeName="width" dur="20s" repeatCount="indefinite" values="0;0;130;130;0" keyTimes="0;.015;.06;.96;1"/></rect></clipPath>
+  <!-- Typewriter: cmd1 (supply assess) -->
+  <clipPath id="t2"><rect x="55" y="234" height="22" width="0"><animate attributeName="width" dur="20s" repeatCount="indefinite" values="0;0;360;360;0" keyTimes="0;.22;.26;.96;1"/></rect></clipPath>
+  <!-- Typewriter: # annotation -->
+  <clipPath id="ta"><rect x="55" y="194" height="22" width="0"><animate attributeName="width" dur="20s" repeatCount="indefinite" values="0;0;425;425;0" keyTimes="0;.42;.50;.96;1"/></rect></clipPath>
+  <!-- Typewriter: cmd2 (supply report) -->
+  <clipPath id="t3"><rect x="55" y="476" height="22" width="0"><animate attributeName="width" dur="20s" repeatCount="indefinite" values="0;0;360;360;0" keyTimes="0;.63;.665;.96;1"/></rect></clipPath>
 </defs>
 <style>
-  .cam{animation:cam 20s ease-in-out infinite}
+  .cam{animation:cam 20s ease-in-out infinite;transform-origin:0px 0px;transform-box:view-box}
   @keyframes cam{
-    0%,18%{transform:translate(0,0) scale(1)}
-    22%,38%{transform:translate(-144px,-108px) scale(1.3)}
-    42%,58%{transform:translate(-120px,-412px) scale(1.25)}
-    62%,78%{transform:translate(-96px,-672px) scale(1.2)}
-    82%,96%{transform:translate(-168px,-1063px) scale(1.35)}
+    0%,16%{transform:translate(0,0) scale(1)}
+    20%,36%{transform:translate(-96px,-120px) scale(1.2)}
+    40%,56%{transform:translate(-96px,50px) scale(1.2)}
+    60%,76%{transform:translate(-96px,-384px) scale(1.2)}
+    80%,96%{transform:translate(-120px,-631px) scale(1.25)}
     100%{transform:translate(0,0) scale(1)}
   }
   @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
   .m{font-family:"SF Mono","Fira Code","Cascadia Code",monospace;font-size:14px}
   .m2{font-family:"SF Mono","Fira Code","Cascadia Code",monospace;font-size:12px}
-  .ml{font-family:"SF Mono","Fira Code","Cascadia Code",monospace;font-size:20px}
   .mx{font-family:"SF Mono","Fira Code","Cascadia Code",monospace;font-size:28px}
   .c1{fill:#e2e8f0}.c2{fill:rgba(226,232,240,.45)}.cg{fill:#10B981}
   .cb{fill:#5A9BD4}.ca{fill:#F59E0B}.cr{fill:#EF4444}.cp{fill:#8B5CF6}
   .cur{animation:blink 1s step-end infinite}
 </style>
 <g clip-path="url(#vp)">
-<g class="cam">
-  <!-- BG -->
-  <rect x="-600" y="-600" width="2200" height="2200" fill="url(#bg)"/>
-  <rect x="-600" y="-600" width="2200" height="2200" fill="url(#grid)"/>
+  <rect width="960" height="600" fill="url(#bg)"/>
 
-  <!-- Terminal chrome -->
+  <g class="cam">
+    <rect x="-600" y="-600" width="2200" height="2200" fill="url(#grid)"/>
+
+    <!-- ═══ SCENE 1: Welcome (camera: full view) ═══ -->
+    <g clip-path="url(#t1)">
+      <text x="55" y="60" class="m cb">$ haiphen</text>
+    </g>
+    <rect class="cur" x="186" y="47" width="2" height="16" fill="#5A9BD4" fill-opacity="0">
+      <animate attributeName="fill-opacity" dur="20s" repeatCount="indefinite" values="0;0;1;1;0;0" keyTimes="0;.06;.065;.16;.165;1"/>
+    </rect>
+
+    <g opacity="0">
+      <animate attributeName="opacity" dur="20s" repeatCount="indefinite" values="0;0;1;1;0" keyTimes="0;.07;.08;.96;1"/>
+      <text x="55" y="92" class="m c1">Welcome to Haiphen</text>
+      <text x="55" y="114" class="m cp">Signals Intelligence &amp; Trading Infrastructure</text>
+      <text x="55" y="148" class="m c2">Analysis tooling for the software industry.</text>
+      <text x="55" y="168" class="m c2">Let's assess counterparty risk.</text>
+    </g>
+
+    <!-- ═══ ANNOTATION (typed during scene 3 up-pan) ═══ -->
+    <g clip-path="url(#ta)">
+      <text x="55" y="208" class="m ca"># 12 counterparties scored. 2 high-risk flagged.</text>
+    </g>
+    <rect class="cur" x="481" y="195" width="2" height="16" fill="#F59E0B" fill-opacity="0">
+      <animate attributeName="fill-opacity" dur="20s" repeatCount="indefinite" values="0;0;1;1;0;0" keyTimes="0;.50;.505;.56;.565;1"/>
+    </rect>
+
+    <!-- ═══ SCENE 2: Supply assess (camera: zooms down to output) ═══ -->
+    <g clip-path="url(#t2)">
+      <text x="55" y="248" class="m cb">$ haiphen supply assess --entity acme-corp</text>
+    </g>
+    <rect class="cur" x="416" y="235" width="2" height="16" fill="#5A9BD4" fill-opacity="0">
+      <animate attributeName="fill-opacity" dur="20s" repeatCount="indefinite" values="0;0;1;1;0;0" keyTimes="0;.26;.265;.36;.365;1"/>
+    </rect>
+
+    <g opacity="0">
+      <animate attributeName="opacity" dur="20s" repeatCount="indefinite" values="0;0;1;1;0" keyTimes="0;.28;.285;.96;1"/>
+      <text x="55" y="280" class="m c2">ENTITY         RISK     SCORE   CONFIDENCE</text>
+      <text x="55" y="298" class="m c2">-------------------------------------------</text>
+      <text x="55" y="320" class="m c1">acme-corp      <tspan class="cr">HIGH</tspan>     72.4    <tspan class="cg">96.1%</tspan></text>
+      <text x="55" y="348" class="m c2">RISK FACTORS:</text>
+      <text x="55" y="368" class="m c1">  Financial stability     <tspan class="ca">MEDIUM</tspan>   64</text>
+      <text x="55" y="388" class="m c1">  Regulatory compliance   <tspan class="cr">HIGH</tspan>     82</text>
+      <text x="55" y="408" class="m c1">  Operational resilience  <tspan class="cg">LOW</tspan>      45</text>
+      <text x="55" y="428" class="m c1">  Cyber posture           <tspan class="cr">HIGH</tspan>     78</text>
+      <text x="55" y="452" class="m ca">2 high-risk factors identified.</text>
+    </g>
+
+    <!-- ═══ SCENE 4: Report (camera: zooms down to report) ═══ -->
+    <g clip-path="url(#t3)">
+      <text x="55" y="490" class="m cb">$ haiphen supply report --entity acme-corp</text>
+    </g>
+    <rect class="cur" x="416" y="477" width="2" height="16" fill="#5A9BD4" fill-opacity="0">
+      <animate attributeName="fill-opacity" dur="20s" repeatCount="indefinite" values="0;0;1;1;0;0" keyTimes="0;.665;.67;.76;.765;1"/>
+    </rect>
+
+    <g opacity="0">
+      <animate attributeName="opacity" dur="20s" repeatCount="indefinite" values="0;0;1;1;0" keyTimes="0;.68;.685;.96;1"/>
+      <text x="55" y="522" class="m c1">COUNTERPARTY REPORT: acme-corp</text>
+      <text x="55" y="546" class="m c2">  Sector:       Financial Services</text>
+      <text x="55" y="566" class="m c2">  Jurisdiction: US (SEC regulated)</text>
+      <text x="55" y="586" class="m c2">  Last audit:   2025-11-14</text>
+      <text x="55" y="606" class="m c2">  Dependencies: 3 critical systems</text>
+      <text x="55" y="634" class="m cg">Report saved: ./acme-corp-risk.pdf</text>
+      <text x="55" y="650" class="m c1">Ready for review.</text>
+    </g>
+
+    <!-- ═══ SCENE 5: Endcard ═══ -->
+    <g opacity="0">
+      <animate attributeName="opacity" dur="20s" repeatCount="indefinite" values="0;0;1;1;0" keyTimes="0;.84;.85;.96;1"/>
+      <text x="480" y="710" text-anchor="middle" class="mx cb" letter-spacing="12">HAIPHEN</text>
+      <text x="480" y="750" text-anchor="middle" class="m cp">API Everything</text>
+      <text x="480" y="780" text-anchor="middle" class="m2 c2">haiphen.io</text>
+    </g>
+  </g>
+
+  <!-- Fixed terminal chrome -->
+  <rect x="0" y="0" width="960" height="46" fill="#0b1220"/>
   <rect x="20" y="12" width="920" height="30" rx="8" fill="rgba(255,255,255,.06)"/>
   <circle cx="40" cy="27" r="5" fill="#EF4444" opacity=".8"/>
   <circle cx="56" cy="27" r="5" fill="#F59E0B" opacity=".8"/>
   <circle cx="72" cy="27" r="5" fill="#10B981" opacity=".8"/>
   <text x="480" y="31" text-anchor="middle" class="m2 c2">haiphen supply - terminal</text>
-
-  <!-- ═══ SCENE 1: Welcome (y=50..200) ═══ -->
-  <g clip-path="url(#t1)">
-    <text x="55" y="68" class="m cb">$ haiphen</text>
-  </g>
-  <rect class="cur" x="186" y="55" width="2" height="16" fill="#5A9BD4" fill-opacity="0">
-    <animate attributeName="fill-opacity" dur="20s" repeatCount="indefinite" values="0;0;1;1;0;0" keyTimes="0;.06;.065;.18;.185;1"/>
-  </rect>
-
-  <text x="55" y="100" class="m c1" opacity="0">Hey there! Welcome to Haiphen<animate attributeName="opacity" dur="20s" repeatCount="indefinite" values="0;0;1;1;0" keyTimes="0;.07;.075;.96;1"/></text>
-  <text x="55" y="124" class="m cp" opacity="0">Semantic Edge Protocol Intelligence<animate attributeName="opacity" dur="20s" repeatCount="indefinite" values="0;0;1;1;0" keyTimes="0;.09;.095;.96;1"/></text>
-  <text x="55" y="158" class="m c2" opacity="0">Parse industrial IoT, edge protocol, and OT traffic data.<animate attributeName="opacity" dur="20s" repeatCount="indefinite" values="0;0;1;1;0" keyTimes="0;.11;.115;.96;1"/></text>
-  <text x="55" y="178" class="m c2" opacity="0">Deliver normalized APIs to every team in your org.<animate attributeName="opacity" dur="20s" repeatCount="indefinite" values="0;0;1;1;0" keyTimes="0;.13;.135;.96;1"/></text>
-
-  <!-- ═══ SCENE 2: Service overview (y=220..420) ═══ -->
-  <text x="55" y="230" class="m c2" opacity="0">----------------------------------------------<animate attributeName="opacity" dur="20s" repeatCount="indefinite" values="0;0;1;1;0" keyTimes="0;.225;.23;.96;1"/></text>
-  <text x="55" y="256" class="m ca" opacity="0">Counterparty Intelligence &amp; Supply Chain Risk<animate attributeName="opacity" dur="20s" repeatCount="indefinite" values="0;0;1;1;0" keyTimes="0;.245;.25;.96;1"/></text>
-
-  <text x="75" y="286" class="m c2" opacity="0">Score vendors and suppliers across financial<animate attributeName="opacity" dur="20s" repeatCount="indefinite" values="0;0;1;1;0" keyTimes="0;.265;.27;.96;1"/></text>
-  <text x="75" y="306" class="m c2" opacity="0">stability, cyber posture, regulatory status,<animate attributeName="opacity" dur="20s" repeatCount="indefinite" values="0;0;1;1;0" keyTimes="0;.28;.285;.96;1"/></text>
-  <text x="75" y="326" class="m c2" opacity="0">and operational reliability.<animate attributeName="opacity" dur="20s" repeatCount="indefinite" values="0;0;1;1;0" keyTimes="0;.295;.30;.96;1"/></text>
-
-  <text x="75" y="356" class="m c2" opacity="0">Continuous monitoring with alerts on material<animate attributeName="opacity" dur="20s" repeatCount="indefinite" values="0;0;1;1;0" keyTimes="0;.31;.315;.96;1"/></text>
-  <text x="75" y="376" class="m c2" opacity="0">changes to counterparty risk profiles.<animate attributeName="opacity" dur="20s" repeatCount="indefinite" values="0;0;1;1;0" keyTimes="0;.325;.33;.96;1"/></text>
-
-  <text x="55" y="416" class="m c2" opacity="0">----------------------------------------------<animate attributeName="opacity" dur="20s" repeatCount="indefinite" values="0;0;1;1;0" keyTimes="0;.36;.365;.96;1"/></text>
-
-  <!-- ═══ SCENE 3: Supply assess command (y=440..700) ═══ -->
-  <g clip-path="url(#t2)">
-    <text x="55" y="458" class="m cb">$ haiphen supply assess --supplier acme-iot</text>
-  </g>
-  <rect class="cur" x="416" y="445" width="2" height="16" fill="#5A9BD4" fill-opacity="0">
-    <animate attributeName="fill-opacity" dur="20s" repeatCount="indefinite" values="0;0;1;1;0;0" keyTimes="0;.47;.475;.58;.585;1"/>
-  </rect>
-
-  <text x="55" y="490" class="m c2" opacity="0">Assessing counterparty: Acme IoT Solutions...<animate attributeName="opacity" dur="20s" repeatCount="indefinite" values="0;0;1;1;0" keyTimes="0;.49;.495;.96;1"/></text>
-
-  <text x="55" y="520" class="m c1" opacity="0">DIMENSION          SCORE   TREND<animate attributeName="opacity" dur="20s" repeatCount="indefinite" values="0;0;1;1;0" keyTimes="0;.505;.51;.96;1"/></text>
-  <text x="55" y="540" class="m c2" opacity="0">---------------------------------------------<animate attributeName="opacity" dur="20s" repeatCount="indefinite" values="0;0;1;1;0" keyTimes="0;.505;.51;.96;1"/></text>
-  <text x="55" y="564" class="m c1" opacity="0">Financial Health   <tspan class="cg">82/100</tspan>  stable<animate attributeName="opacity" dur="20s" repeatCount="indefinite" values="0;0;1;1;0" keyTimes="0;.52;.525;.96;1"/></text>
-  <text x="55" y="584" class="m c1" opacity="0">Cyber Posture      <tspan class="ca">67/100</tspan>  declining<animate attributeName="opacity" dur="20s" repeatCount="indefinite" values="0;0;1;1;0" keyTimes="0;.535;.54;.96;1"/></text>
-  <text x="55" y="604" class="m c1" opacity="0">Regulatory         <tspan class="cg">91/100</tspan>  stable<animate attributeName="opacity" dur="20s" repeatCount="indefinite" values="0;0;1;1;0" keyTimes="0;.55;.555;.96;1"/></text>
-  <text x="55" y="624" class="m c1" opacity="0">Operational        <tspan class="cb">74/100</tspan>  improving<animate attributeName="opacity" dur="20s" repeatCount="indefinite" values="0;0;1;1;0" keyTimes="0;.565;.57;.96;1"/></text>
-  <text x="55" y="644" class="m c1" opacity="0">Concentration      <tspan class="cr">45/100</tspan>  warning<animate attributeName="opacity" dur="20s" repeatCount="indefinite" values="0;0;1;1;0" keyTimes="0;.58;.585;.96;1"/></text>
-
-  <text x="55" y="678" class="m ca" opacity="0">Overall Risk Score: 71/100 (MODERATE)<animate attributeName="opacity" dur="20s" repeatCount="indefinite" values="0;0;1;1;0" keyTimes="0;.595;.60;.96;1"/></text>
-
-  <!-- ═══ SCENE 4: Alerts command (y=720..900) ═══ -->
-  <g clip-path="url(#t3)">
-    <text x="55" y="738" class="m cb">$ haiphen supply alerts --active</text>
-  </g>
-  <rect class="cur" x="315" y="725" width="2" height="16" fill="#5A9BD4" fill-opacity="0">
-    <animate attributeName="fill-opacity" dur="20s" repeatCount="indefinite" values="0;0;1;1;0;0" keyTimes="0;.665;.67;.78;.785;1"/>
-  </rect>
-
-  <text x="55" y="770" class="m c1" opacity="0">Active alerts for watched suppliers:<animate attributeName="opacity" dur="20s" repeatCount="indefinite" values="0;0;1;1;0" keyTimes="0;.69;.695;.96;1"/></text>
-  <text x="75" y="800" class="m ca" opacity="0">[WARN]  Acme IoT: cyber score -8 in 30d<animate attributeName="opacity" dur="20s" repeatCount="indefinite" values="0;0;1;1;0" keyTimes="0;.71;.715;.96;1"/></text>
-  <text x="75" y="820" class="m cb" opacity="0">[INFO]  TechEdge: new SEC filing detected<animate attributeName="opacity" dur="20s" repeatCount="indefinite" values="0;0;1;1;0" keyTimes="0;.73;.735;.96;1"/></text>
-  <text x="75" y="840" class="m ca" opacity="0">[WARN]  GridCorp: concentration risk &gt; 40%<animate attributeName="opacity" dur="20s" repeatCount="indefinite" values="0;0;1;1;0" keyTimes="0;.745;.75;.96;1"/></text>
-  <text x="55" y="870" class="m c2" opacity="0">3 active alerts. Last check: 2m ago.<animate attributeName="opacity" dur="20s" repeatCount="indefinite" values="0;0;1;1;0" keyTimes="0;.76;.765;.96;1"/></text>
-
-  <!-- ═══ SCENE 5: Endcard (y=950..1080) ═══ -->
-  <text x="480" y="990" text-anchor="middle" class="mx cb" opacity="0" letter-spacing="12">HAIPHEN<animate attributeName="opacity" dur="20s" repeatCount="indefinite" values="0;0;1;1;0" keyTimes="0;.84;.85;.96;1"/></text>
-  <text x="480" y="1030" text-anchor="middle" class="m cp" opacity="0">API Everything<animate attributeName="opacity" dur="20s" repeatCount="indefinite" values="0;0;1;1;0" keyTimes="0;.865;.875;.96;1"/></text>
-  <text x="480" y="1060" text-anchor="middle" class="m2 c2" opacity="0">haiphen.io<animate attributeName="opacity" dur="20s" repeatCount="indefinite" values="0;0;1;1;0" keyTimes="0;.89;.90;.96;1"/></text>
-</g>
 </g>
 </svg>

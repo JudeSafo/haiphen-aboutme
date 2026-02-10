@@ -25,10 +25,18 @@
   margin: 0 auto;
   height: 64px;
   padding: 0 16px;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 16px;
+}
+
+/* Left zone (hamburger + brand) */
+.site-header__left{
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
+  gap: 8px;
+  justify-self: start;
 }
 
 /* Brand */
@@ -50,9 +58,9 @@
   display: block;
 }
 
-/* Menu */
+/* Menu (grid column 2 — always viewport-centered) */
 .site-header__menu{
-  flex: 1;
+  justify-self: center;
   display: flex;
   justify-content: center;
 }
@@ -167,8 +175,9 @@
   opacity: .9;
 }
 
-/* Session area */
+/* Session area (grid column 3 — right-aligned) */
 .site-header__session{
+  justify-self: end;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -246,8 +255,6 @@
 
 @media (max-width: 860px){
   .site-header__menu{ display:none; }
-  .site-header__inner{ justify-content: flex-start; }
-  .site-header__session{ margin-left: auto; }
 }
 
 /* --- Session dropdown --- */

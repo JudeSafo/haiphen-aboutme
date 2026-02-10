@@ -52,7 +52,7 @@
         ],
       },
       assets: {
-        demo: 'assets/demos/cli-workflow.svg',
+        demo: 'assets/demos/cli-workflow.gif',
         scenario: 'assets/scenarios/scenario-secure.svg',
         icon: 'assets/mission/telemetry-dashboard.svg',
       },
@@ -188,7 +188,7 @@
         ],
       },
       assets: {
-        demo: 'assets/demos/cli-secure.svg',
+        demo: 'assets/demos/cli-secure.gif',
         scenario: 'assets/scenarios/scenario-secure.svg',
         icon: 'assets/mission/secure.svg',
       },
@@ -302,7 +302,7 @@
         ],
       },
       assets: {
-        demo: 'assets/demos/cli-network.svg',
+        demo: 'assets/demos/cli-network.gif',
         scenario: 'assets/scenarios/scenario-network.svg',
         icon: 'assets/mission/network-trace.svg',
       },
@@ -423,7 +423,7 @@
         ],
       },
       assets: {
-        demo: 'assets/demos/cli-graph.svg',
+        demo: 'assets/demos/cli-graph.gif',
         scenario: 'assets/scenarios/scenario-graph.svg',
         icon: 'assets/mission/knowledge-graph.svg',
       },
@@ -536,7 +536,7 @@
         ],
       },
       assets: {
-        demo: 'assets/demos/cli-risk.svg',
+        demo: 'assets/demos/cli-risk.gif',
         scenario: 'assets/scenarios/scenario-risk.svg',
         icon: 'assets/mission/risk-analysis.svg',
       },
@@ -657,7 +657,7 @@
         ],
       },
       assets: {
-        demo: 'assets/demos/cli-causal.svg',
+        demo: 'assets/demos/cli-causal.gif',
         scenario: 'assets/scenarios/scenario-causal.svg',
         icon: 'assets/mission/causal-chain.svg',
       },
@@ -770,7 +770,7 @@
         ],
       },
       assets: {
-        demo: 'assets/demos/cli-supply.svg',
+        demo: 'assets/demos/cli-supply.gif',
         scenario: 'assets/scenarios/scenario-supply.svg',
         icon: 'assets/mission/supply-chain.svg',
       },
@@ -884,7 +884,7 @@
         ],
       },
       assets: {
-        demo: 'assets/demos/cli-prospect-list.svg',
+        demo: 'assets/demos/cli-prospect-list.gif',
         scenario: 'assets/scenarios/scenario-secure.svg',
         icon: 'assets/mission/secure.svg',
       },
