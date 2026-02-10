@@ -822,6 +822,18 @@
 	      margin-top: 0.15rem;
 	    }
 
+	    .trades-kpi-value.is-negative {
+	      color: #dc2626;
+	    }
+
+	    .trades-kpi-value.is-positive {
+	      color: #16a34a;
+	    }
+
+	    .trades-kpi-value.is-warning {
+	      color: #d97706;
+	    }
+
 	    /* Mobile: fewer visible columns */
 	    @media (max-width: 640px) {
 	      .trades-kpi-grid {
@@ -1612,8 +1624,53 @@
 	      'Theta': 'theta.svg',
 	      'Vega': 'vega.svg',
 	      'Rho': 'rho.svg',
+	      'Historical Volatility': 'volatility.svg',
+	      'Uncertainty': 'uncertainty.svg',
+	      'Fair Market Price': 'fairprice.svg',
+	      'IV Skew': 'skew.svg',
+	      'Decay Rate': 'decay.svg',
+	      'Gamma Exposure': 'gammaexp.svg',
+	      'Volume Ratio': 'volume.svg',
+	      'OI Ratio': 'openinterest.svg',
 	      'Liquidity Ratios': 'liquidity.svg',
+	      'Decay Weight': 'weight.svg',
+	      'Portfolio': 'portfolio.svg',
+	      'Beta': 'beta.svg',
 	    };
+
+		function kpiValueColorClass(kpi, value) {
+		  const v = String(value || '');
+		  const k = String(kpi || '').toLowerCase();
+		  const isNeg = v.startsWith('-');
+
+		  // PnL and Sharpe: red when negative, green when positive
+		  if (/pnl|sharpe/i.test(k)) return isNeg ? 'is-negative' : 'is-positive';
+
+		  // Drawdown: warning above 50%, red at 90%+
+		  if (/drawdown/i.test(k)) {
+		    const n = parseFloat(v);
+		    if (Number.isFinite(n)) {
+		      if (n >= 90) return 'is-negative';
+		      if (n >= 50) return 'is-warning';
+		    }
+		    return '';
+		  }
+
+		  // Win rate: red if very low, warning if moderate
+		  if (/win rate/i.test(k)) {
+		    const n = parseFloat(v);
+		    if (Number.isFinite(n)) {
+		      if (n < 10) return 'is-negative';
+		      if (n < 30) return 'is-warning';
+		      if (n >= 50) return 'is-positive';
+		    }
+		    return '';
+		  }
+
+		  // Greeks & general: red when negative
+		  if (isNeg) return 'is-negative';
+		  return '';
+		}
 
 		function renderTradesKpiGrid(rows) {
 		  const grid = document.getElementById('trades-kpi-grid');
@@ -1623,8 +1680,19 @@
 
 		  grid.innerHTML = safeRows.map((r, idx) => {
 		    const kpi = escapeHtml(r.kpi || '');
-		    const value = escapeHtml(r.value || '—');
+		    let displayValue = r.value || '—';
+
+		    // Hold time: convert seconds to minutes when >= 240s (4 min)
+		    if (/hold time/i.test(r.kpi)) {
+		      const secs = parseFloat(displayValue);
+		      if (Number.isFinite(secs) && secs >= 240) {
+		        displayValue = (secs / 60).toFixed(1) + 'm';
+		      }
+		    }
+
+		    const value = escapeHtml(displayValue);
 		    const icon = KPI_ICON_MAP[r.kpi] || 'chart.svg';
+		    const colorCls = kpiValueColorClass(r.kpi, r.value);
 
 		    return `
 		      <div
@@ -1640,7 +1708,7 @@
 		          <img src="assets/icons/kpi/${icon}" alt="" aria-hidden="true" />
 		        </div>
 		        <div class="trades-kpi-name">${kpi}</div>
-		        <div class="trades-kpi-value">${value}</div>
+		        <div class="trades-kpi-value${colorCls ? ' ' + colorCls : ''}">${value}</div>
 		      </div>
 		    `;
 		  }).join('');
@@ -1666,7 +1734,7 @@
 			    const series = overlay?.seriesByKpi?.[title] || null;
 			    const hasSeries = Array.isArray(series) && series.length > 0;
 
-			    const subtitle = `Current: ${value} • ${hasSeries ? 'Options day trading metrics' : 'day trading'}`;
+			    const subtitle = `Current: ${value} • ${hasSeries ? 'Live data' : 'Options day trading'}`;
 
 			    const extremes = overlay?.extremes || { hi: [], lo: [] };
 			    const portfolioAssets = overlay?.portfolioAssets || [];

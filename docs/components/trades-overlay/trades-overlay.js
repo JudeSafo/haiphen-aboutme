@@ -1,7 +1,7 @@
   /* docs/components/trades-overlay/trades-overlay.js
-   * KPI overlay with synthetic interactive chart.
+   * KPI overlay with interactive chart and live data series.
    * - Mount once (index.html adds #trades-overlay-mount)
-   * - Open via window.HAIPHEN.TradesOverlay.open({ title, screenshotUrl, seed })
+   * - Open via window.HAIPHEN.TradesOverlay.open({ title, screenshotUrl, seed, series, extremes, portfolioAssets })
    */
   (function () {
     'use strict';
@@ -80,16 +80,34 @@
       const k = String(kpiTitle || '').toLowerCase();
 
       // Greeks: keep meaningful decimals
-      if (/(delta|gamma|theta|vega|rho)/.test(k)) {
+      if (/(delta|gamma|theta|vega|rho|beta)/.test(k) && !/exposure|ratio/.test(k)) {
         return x.toFixed(6).replace(/0+$/, '').replace(/\.$/, '');
       }
 
       // Percent-like
-      if (/percent|win rate|drawdown/.test(k)) {
+      if (/percent|win rate|drawdown|volatility/.test(k)) {
         return x.toFixed(2);
       }
 
-      // USD-ish
+      // USD-ish / price
+      if (/pnl|price|market/i.test(k)) {
+        const abs = Math.abs(x);
+        if (abs >= 1000) return x.toFixed(0);
+        if (abs >= 100) return x.toFixed(1);
+        return x.toFixed(2);
+      }
+
+      // Ratios and exposures
+      if (/ratio|exposure|skew|decay|uncertainty|weight|volume|liquidity/i.test(k)) {
+        return x.toFixed(4).replace(/0+$/, '').replace(/\.$/, '');
+      }
+
+      // Counts (signals, entries, exits, notifications, etc.)
+      if (/scanned|flagged|sent|opened|closed|portfolio/i.test(k)) {
+        return x.toFixed(0);
+      }
+
+      // General fallback
       const abs = Math.abs(x);
       if (abs >= 1000) return x.toFixed(0);
       if (abs >= 100) return x.toFixed(1);
@@ -129,20 +147,26 @@
 
       const metricLabel = (() => {
         const k = String(kpiTitle || '');
-        if (/pnl/i.test(k)) return 'Impact (USD)';
-        if (/percent/i.test(k)) return 'Impact (%)';
-        if (/liquidity/i.test(k)) return 'Impact';
-        if (/unrealized/i.test(k)) return 'Impact (USD)';
-        return 'Impact';
+        if (/pnl|price/i.test(k)) return 'Impact ($)';
+        if (/percent|rate|drawdown|volatility/i.test(k)) return 'Impact (%)';
+        if (/liquidity/i.test(k)) return 'Impact ($)';
+        if (/unrealized/i.test(k)) return 'Impact ($)';
+        return 'Impact ($)';
       })();
 
-      const row = (r) => `
+      const isDollar = /\(\$\)/.test(metricLabel);
+
+      const row = (r) => {
+        const raw = formatNumForKpi(kpiTitle, Number(r.metric_value));
+        const display = isDollar && raw !== '—' ? '$' + raw : raw;
+        return `
         <div class="xrow">
           <div class="cn">${escapeHtml(r.contract_name || '')}</div>
           <div class="sym">${escapeHtml(r.symbol || '')}</div>
-          <div class="pnl">${escapeHtml(formatNumForKpi(kpiTitle, Number(r.metric_value)))}</div>
+          <div class="pnl">${escapeHtml(display)}</div>
         </div>
       `;
+      };
 
       el.innerHTML = `
         <div class="xbox">
@@ -251,14 +275,11 @@
     }
     
     function computeSeriesSourceBadge(seriesMeta) {
-      // seriesMeta items look like {t,v,src} where src is 'real' or 'synthetic'
       const badge = qs('haiphen-overlay-badge');
       const meta = qs('haiphen-overlay-meta');
       if (!badge || !meta) return;
 
       const pts = Array.isArray(seriesMeta) ? seriesMeta : [];
-      const real = pts.filter(p => !p?.src || p?.src === 'real').length;
-      const syn = pts.filter(p => p?.src === 'synthetic').length;
 
       badge.classList.remove('is-real', 'is-mixed');
 
@@ -268,18 +289,10 @@
         return;
       }
 
-      if (syn === 0 && real > 0) {
-        badge.textContent = 'real';
-        badge.classList.add('is-real');
-      } else if (real === 0 && syn > 0) {
-        badge.textContent = 'derivatives';
-      } else {
-        badge.textContent = 'metrics';
-        badge.classList.add('is-mixed');
-      }
-
-      meta.textContent = `${real} real points • ${syn} synthetic • ${pts.length} total`;
-    }  
+      badge.textContent = 'live';
+      badge.classList.add('is-real');
+      meta.textContent = `${pts.length} data points`;
+    }
 
     function drawChart(ctx, opts) {
       const { w, h, type, series, smooth, xLabel, yLabel, xTicks } = opts;
@@ -457,11 +470,30 @@
     function getAxisForKpi(kpiTitle) {
       const k = String(kpiTitle || '').trim();
 
-      // Keep these aligned with your KPI tile names / DB kpi names
       if (/pnl/i.test(k)) return { xLabel: 'Time', yLabel: 'PnL (USD)' };
       if (/percent/i.test(k)) return { xLabel: 'Time', yLabel: 'Percent change (%)' };
       if (/liquidity/i.test(k)) return { xLabel: 'Time', yLabel: 'Liquidity ratio' };
       if (/unrealized/i.test(k)) return { xLabel: 'Time', yLabel: 'Unrealized P/L (USD)' };
+      if (/win rate/i.test(k)) return { xLabel: 'Time', yLabel: 'Win rate (%)' };
+      if (/drawdown/i.test(k)) return { xLabel: 'Time', yLabel: 'Max drawdown (%)' };
+      if (/sharpe/i.test(k)) return { xLabel: 'Time', yLabel: 'Sharpe ratio' };
+      if (/volatility/i.test(k)) return { xLabel: 'Time', yLabel: 'Historical volatility' };
+      if (/uncertainty/i.test(k)) return { xLabel: 'Time', yLabel: 'Uncertainty' };
+      if (/fair.*price/i.test(k)) return { xLabel: 'Time', yLabel: 'Fair Market Price (USD)' };
+      if (/skew/i.test(k)) return { xLabel: 'Time', yLabel: 'IV Skew' };
+      if (/decay rate/i.test(k)) return { xLabel: 'Time', yLabel: 'Decay rate' };
+      if (/gamma exposure/i.test(k)) return { xLabel: 'Time', yLabel: 'Gamma exposure (GEX)' };
+      if (/volume/i.test(k)) return { xLabel: 'Time', yLabel: 'Volume ratio' };
+      if (/oi ratio/i.test(k)) return { xLabel: 'Time', yLabel: 'Open interest ratio' };
+      if (/decay weight/i.test(k)) return { xLabel: 'Time', yLabel: 'Decay weight' };
+      if (/beta/i.test(k)) return { xLabel: 'Time', yLabel: 'Beta' };
+      if (/delta/i.test(k)) return { xLabel: 'Time', yLabel: 'Delta' };
+      if (/gamma/i.test(k)) return { xLabel: 'Time', yLabel: 'Gamma' };
+      if (/theta/i.test(k)) return { xLabel: 'Time', yLabel: 'Theta' };
+      if (/vega/i.test(k)) return { xLabel: 'Time', yLabel: 'Vega' };
+      if (/rho/i.test(k)) return { xLabel: 'Time', yLabel: 'Rho' };
+      if (/hold time/i.test(k)) return { xLabel: 'Time', yLabel: 'Hold time (s)' };
+      if (/signal/i.test(k)) return { xLabel: 'Time', yLabel: 'Signals' };
 
       return { xLabel: 'Time', yLabel: '' };
     }
@@ -533,7 +565,7 @@
 
         // NEW: seriesMeta is authoritative if provided
         series: [],
-        seriesMeta: null,     // [{t,v,src}]
+        seriesMeta: null,     // [{t,v}]
         isReal: false,
 
         // NEW: entity drilldowns
@@ -550,7 +582,7 @@
         const type = String(typeSel?.value || 'line');
         const smooth = Boolean(smoothEl?.checked);
 
-        // Only generate synthetic series when we *don't* have real series
+        // Only generate fallback series when we don't have published series
         if (!state.isReal) {
           if (!state.series || state.series.length !== points) {
             state.series = genSeries({ points, vol, seed: state.seed });
@@ -600,7 +632,7 @@
         state.subtitle = subtitle || '';
         state.seed = Number.isFinite(seed) ? seed : hashSeedFromString(state.title);
 
-        // Accept published entity series: [{t,v,src}] (already hybrid-filled in your publisher)
+        // Accept published entity series: [{t,v}]
         state.seriesMeta = Array.isArray(series) ? series : null;
         state.isReal = Boolean(state.seriesMeta && state.seriesMeta.length);
 
