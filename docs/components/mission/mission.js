@@ -858,6 +858,121 @@
         ],
       },
     },
+    {
+      key: 'prospect',
+      serviceId: 'haiphen_prospect',
+      tech: {
+        name: 'Prospect Engine',
+        eyebrow: 'Vulnerability Intel',
+        problem: 'Vulnerability leads are scattered across NVD, OSV, GitHub Advisories, and Shodan. Triaging them manually across six analysis dimensions is slow and inconsistent.',
+        solution: 'Automated crawl-to-outreach pipeline. Discovers vulnerability leads from four sources, runs a sequential 6-service investigation (secure \u2192 network \u2192 causal \u2192 risk \u2192 graph \u2192 supply), derives requirements, auto-resolves gaps, and confirms risk reduction with before/after scoring.',
+        steps: [
+          { title: 'Discover', desc: 'Crawl NVD, OSV, GitHub Advisory & Shodan for leads' },
+          { title: 'Investigate', desc: '6-service pipeline with upstream context forwarding' },
+          { title: 'Resolve', desc: 'Auto-fix data gaps, add monitors, confirm risk reduction' },
+        ],
+      },
+      finance: {
+        name: 'Vulnerability Intelligence',
+        eyebrow: 'Vuln Intel',
+        problem: 'Fintech infrastructure vulnerabilities in trading systems, payment gateways, and market data feeds require rapid triage across multiple analysis dimensions.',
+        solution: 'Automated vulnerability intelligence pipeline. Discovers leads from four databases, investigates across six analysis engines with fintech-specific rules, and delivers risk reduction confirmation with measurable before/after scores.',
+        steps: [
+          { title: 'Discover', desc: 'Surface fintech-relevant vulnerabilities from four sources' },
+          { title: 'Investigate', desc: 'Full pipeline analysis with rule-based service matching' },
+          { title: 'Confirm', desc: 'Measure risk reduction and generate outreach reports' },
+        ],
+      },
+      assets: {
+        demo: 'assets/demos/cli-prospect-list.gif',
+        scenario: 'assets/scenarios/scenario-secure.svg',
+        icon: 'assets/mission/secure.svg',
+      },
+      usecases: {
+        tech: [
+          { title: 'Automated Vulnerability Triage', problem: 'Security teams manually correlate CVE feeds with infrastructure inventories. Critical vulnerabilities slip through when volume spikes.', solution: 'Prospect Engine crawls four vulnerability databases, matches leads against your stack using configurable rules, and runs the full 6-service investigation pipeline automatically.' },
+          { title: 'Closed-Loop Risk Reduction', problem: 'After remediating a vulnerability, there is no systematic way to verify the risk actually decreased across all analysis dimensions.', solution: 'Re-investigate after resolving requirements. The engine re-runs all six services and computes a before/after risk delta, providing quantified proof of improvement.' },
+          { title: 'Rule-Based Service Matching', problem: 'Different vulnerability types require different analysis services. Routing decisions are ad-hoc and inconsistent.', solution: 'Configurable use-case rules map lead attributes (severity, entity type, vulnerability class) to specific service configurations and solution templates with priority ordering.' },
+        ],
+        finance: [
+          { title: 'Fintech Vulnerability Monitoring', problem: 'Trading platforms and payment systems face unique vulnerability patterns that generic scanners miss \u2014 FIX protocol flaws, settlement system bugs, API gateway exposures.', solution: 'Fintech-specific crawl rules surface vulnerabilities relevant to trade execution, settlement, broker connectivity, and regulatory systems with industry keyword matching.' },
+          { title: 'Regulatory Vulnerability Reporting', problem: 'Regulators require documented evidence of vulnerability management processes with measurable risk metrics.', solution: 'End-to-end audit trail from discovery through investigation to risk reduction confirmation. Export investigation reports with before/after risk scores.' },
+          { title: 'Proactive Counterparty Risk Intelligence', problem: 'Vulnerabilities in counterparty infrastructure create exposure that is invisible until an incident occurs.', solution: 'Monitor vulnerability feeds for entities in your counterparty network. Automatic regression detection alerts when an entity shows recurring vulnerability patterns.' },
+        ],
+      },
+      installation: {
+        tech: {
+          cloud: {
+            subtitle: 'Prospect Engine runs on Cloudflare Workers + GCP Cloud Run',
+            providers: [
+              { name: 'Cloudflare Workers', icon: 'assets/partners/cloudflare.svg' },
+            ],
+            snippet: 'haiphen prospect list --severity critical',
+            features: ['4-source vulnerability crawling', '6-service investigation pipeline', 'Rule-based matching'],
+          },
+          local: {
+            subtitle: 'Access prospect workflows via CLI',
+            providers: [
+              { name: 'Homebrew', icon: 'assets/partners/homebrew.svg' },
+              { name: 'Docker', icon: 'assets/partners/docker.svg' },
+            ],
+            snippet: 'haiphen prospect investigate --lead <id>',
+            features: ['Full CLI access', 'JSON output', 'Credential vault integration'],
+          },
+        },
+        finance: {
+          cloud: {
+            subtitle: 'Vulnerability Intelligence on Cloudflare Workers + GCP',
+            providers: [
+              { name: 'Cloudflare Workers', icon: 'assets/partners/cloudflare.svg' },
+            ],
+            snippet: 'haiphen prospect list --severity critical',
+            features: ['Fintech-focused rules', 'Automated investigation', 'Risk scoring'],
+          },
+          local: {
+            subtitle: 'Run vulnerability intelligence from your terminal',
+            providers: [
+              { name: 'Homebrew', icon: 'assets/partners/homebrew.svg' },
+              { name: 'Docker', icon: 'assets/partners/docker.svg' },
+            ],
+            snippet: 'haiphen prospect investigate --lead <id>',
+            features: ['Offline triage', 'Audit-ready reports', 'Rule customization'],
+          },
+        },
+      },
+      integration: {
+        tech: {
+          headline: 'Integrate vulnerability intelligence into your security workflow',
+          api: 'curl -X POST https://api.haiphen.io/v1/prospect/investigate \\\n  -H "Authorization: Bearer $TOKEN" \\\n  -d \'{"lead_id":"lead_abc123"}\'',
+          webhookEvents: ['prospect.lead_discovered', 'prospect.investigation_complete', 'prospect.risk_reduced'],
+          channels: [
+            { name: 'Slack', icon: 'assets/partners/slack.svg' },
+            { name: 'Discord', icon: 'assets/partners/discord.svg' },
+            { name: 'Email', icon: 'assets/partners/email-icon.svg' },
+            { name: 'PagerDuty', icon: 'assets/partners/pagerduty.svg' },
+          ],
+          brokers: [],
+        },
+        finance: {
+          headline: 'Connect vulnerability intelligence to your compliance workflow',
+          api: 'curl -X POST https://api.haiphen.io/v1/prospect/investigate \\\n  -H "Authorization: Bearer $TOKEN" \\\n  -d \'{"lead_id":"lead_abc123"}\'',
+          webhookEvents: ['prospect.lead_discovered', 'prospect.investigation_complete', 'prospect.risk_reduced'],
+          channels: [
+            { name: 'Slack', icon: 'assets/partners/slack.svg' },
+            { name: 'Email', icon: 'assets/partners/email-icon.svg' },
+            { name: 'PagerDuty', icon: 'assets/partners/pagerduty.svg' },
+          ],
+          brokers: [],
+        },
+      },
+      subscribe: {
+        faq: [
+          { q: 'Which vulnerability sources are crawled?', a: 'NVD (NIST), OSV (Google), GitHub Advisory Database, and Shodan. Custom source plugins available on Enterprise.' },
+          { q: 'How does the investigation pipeline work?', a: 'Sequential 6-service pipeline: secure \u2192 network \u2192 causal \u2192 risk \u2192 graph \u2192 supply. Each step receives upstream context for progressive enrichment.' },
+          { q: 'What is the re-investigation workflow?', a: 'After resolving requirements, re-investigate re-runs the full pipeline. It compares before/after aggregate risk scores to quantify improvement.' },
+        ],
+      },
+    },
   ];
 
   /* ================================================================
