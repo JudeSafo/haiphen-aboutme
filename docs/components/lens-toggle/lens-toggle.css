@@ -14,16 +14,16 @@
   width: 36px;
   height: 36px;
   border-radius: 9999px;
-  border: 1px solid rgba(15,23,42,0.10);
-  background: rgba(15,23,42,0.04);
+  border: 1px solid rgba(16,185,129,0.30);
+  background: rgba(16,185,129,0.08);
   color: var(--hdr-text, #0f172a);
   cursor: pointer;
   transition: background 0.15s ease, border-color 0.15s ease, transform 0.12s ease, box-shadow 0.15s ease;
 }
 
 .lens-toggle__btn:hover {
-  background: rgba(15,23,42,0.08);
-  border-color: rgba(15,23,42,0.16);
+  background: rgba(16,185,129,0.15);
+  border-color: rgba(16,185,129,0.45);
   transform: translateY(-1px);
 }
 
@@ -143,11 +143,11 @@
 
 /* ---- Flash / pulse animation for first-visit attention ---- */
 @keyframes lens-flash {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(90,155,212,0); }
-  20% { box-shadow: 0 0 0 6px rgba(90,155,212,0.45); }
-  40% { box-shadow: 0 0 0 0 rgba(90,155,212,0); }
-  60% { box-shadow: 0 0 0 4px rgba(90,155,212,0.30); }
-  80% { box-shadow: 0 0 0 0 rgba(90,155,212,0); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(245,158,11,0); }
+  20% { box-shadow: 0 0 0 6px rgba(245,158,11,0.45); }
+  40% { box-shadow: 0 0 0 0 rgba(245,158,11,0); }
+  60% { box-shadow: 0 0 0 4px rgba(245,158,11,0.30); }
+  80% { box-shadow: 0 0 0 0 rgba(245,158,11,0); }
 }
 
 .lens-toggle__btn.is-flashing {
@@ -156,14 +156,14 @@
 
 /* ---- Finance-mode overrides ---- */
 html[data-lens="finance"] .lens-toggle__btn {
-  border-color: rgba(148,163,184,0.30);
+  border-color: rgba(52,211,153,0.35);
   background: #1e293b;
   color: #f8fafc;
 }
 
 html[data-lens="finance"] .lens-toggle__btn:hover {
   background: #334155;
-  border-color: rgba(90,155,212,0.45);
+  border-color: rgba(52,211,153,0.50);
 }
 
 html[data-lens="finance"] .lens-toggle__dropdown {
@@ -188,11 +188,11 @@ html[data-lens="finance"] .lens-toggle__preview {
 }
 
 @keyframes lens-flash-dark {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(90,155,212,0); }
-  20% { box-shadow: 0 0 0 6px rgba(90,155,212,0.55); }
-  40% { box-shadow: 0 0 0 0 rgba(90,155,212,0); }
-  60% { box-shadow: 0 0 0 4px rgba(90,155,212,0.35); }
-  80% { box-shadow: 0 0 0 0 rgba(90,155,212,0); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(251,191,36,0); }
+  20% { box-shadow: 0 0 0 6px rgba(251,191,36,0.55); }
+  40% { box-shadow: 0 0 0 0 rgba(251,191,36,0); }
+  60% { box-shadow: 0 0 0 4px rgba(251,191,36,0.35); }
+  80% { box-shadow: 0 0 0 0 rgba(251,191,36,0); }
 }
 
 html[data-lens="finance"] .lens-toggle__btn.is-flashing {

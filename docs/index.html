@@ -2218,7 +2218,7 @@
 		  wireRevealElements(contentWidget);
 
 		  // Collapse sidebar when viewing API docs or mission to give full width
-		  document.body.classList.toggle('sidebar-collapsed', resolved === 'Docs' || resolved === 'OnePager');
+		  document.body.classList.toggle('sidebar-collapsed', resolved === 'Docs' || resolved === 'OnePager' || resolved === 'GettingStarted');
 
 		  // Dismiss all header dropdowns (prevents them staying visible after nav click)
 		  document.querySelectorAll('.site-header__item').forEach(function(item) {
