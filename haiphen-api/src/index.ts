@@ -1043,6 +1043,277 @@ async function route(req: Request, env: Env): Promise<Response> {
     return okJson(data, requestId, corsHeaders(req, env));
   }
 
+  // ---- PROSPECT: list leads ----
+  // GET /v1/prospect/leads?status=&source=&severity=&limit=
+  if (req.method === "GET" && url.pathname === "/v1/prospect/leads") {
+    const u = await authSessionUser(req, env, requestId);
+
+    const clauses: string[] = [];
+    const params: unknown[] = [];
+
+    const status = url.searchParams.get("status");
+    if (status) { clauses.push("status = ?"); params.push(status); }
+
+    const source = url.searchParams.get("source");
+    if (source) { clauses.push("source_id = ?"); params.push(source); }
+
+    const severity = url.searchParams.get("severity");
+    if (severity) { clauses.push("severity = ?"); params.push(severity); }
+
+    const where = clauses.length > 0 ? `WHERE ${clauses.join(" AND ")}` : "";
+    const limit = Math.min(200, Math.max(1, Number(url.searchParams.get("limit") ?? "50")));
+    params.push(limit);
+
+    const rows = await env.DB.prepare(
+      `SELECT lead_id, source_id, entity_type, entity_name, entity_domain,
+              industry, country, vulnerability_id, severity, cvss_score,
+              summary, services_json, status, created_at, updated_at
+       FROM prospect_leads ${where}
+       ORDER BY created_at DESC LIMIT ?`
+    ).bind(...params).all();
+
+    return okJson({ items: rows.results ?? [] }, requestId, corsHeaders(req, env));
+  }
+
+  // ---- PROSPECT: get lead detail ----
+  // GET /v1/prospect/leads/:id
+  if (req.method === "GET" && url.pathname.match(/^\/v1\/prospect\/leads\/[^/]+$/)) {
+    const u = await authSessionUser(req, env, requestId);
+    const leadId = url.pathname.split("/").pop()!;
+
+    const lead = await env.DB.prepare(
+      `SELECT * FROM prospect_leads WHERE lead_id = ?`
+    ).bind(leadId).first();
+
+    if (!lead) return err("not_found", "Lead not found", requestId, 404, corsHeaders(req, env));
+
+    const analyses = await env.DB.prepare(
+      `SELECT * FROM prospect_analyses WHERE lead_id = ? ORDER BY created_at DESC`
+    ).bind(leadId).all();
+
+    const outreach = await env.DB.prepare(
+      `SELECT * FROM prospect_outreach WHERE lead_id = ? ORDER BY created_at DESC`
+    ).bind(leadId).all();
+
+    return okJson({
+      ...lead,
+      analyses: analyses.results ?? [],
+      outreach: outreach.results ?? [],
+    }, requestId, corsHeaders(req, env));
+  }
+
+  // ---- PROSPECT: trigger analysis ----
+  // POST /v1/prospect/leads/:id/analyze
+  if (req.method === "POST" && url.pathname.match(/^\/v1\/prospect\/leads\/[^/]+\/analyze$/)) {
+    const u = await authSessionUser(req, env, requestId);
+    const parts = url.pathname.split("/");
+    const leadId = parts[parts.length - 2];
+
+    const lead = await env.DB.prepare(
+      `SELECT * FROM prospect_leads WHERE lead_id = ?`
+    ).bind(leadId).first<{
+      lead_id: string; services_json: string | null; entity_name: string;
+      vulnerability_id: string | null; summary: string;
+    }>();
+
+    if (!lead) return err("not_found", "Lead not found", requestId, 404, corsHeaders(req, env));
+
+    const body = await req.json().catch(() => ({})) as { service?: string };
+    let services: string[];
+
+    if (body.service) {
+      const valid = ["secure", "network", "graph", "risk", "causal", "supply"];
+      if (!valid.includes(body.service)) {
+        return err("invalid_request", `Invalid service: ${body.service}`, requestId, 400, corsHeaders(req, env));
+      }
+      services = [body.service];
+    } else {
+      services = lead.services_json ? JSON.parse(lead.services_json) : ["secure"];
+    }
+
+    // Update lead status
+    await env.DB.prepare(
+      `UPDATE prospect_leads SET status = 'analyzing', updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE lead_id = ?`
+    ).bind(leadId).run();
+
+    // Create analysis records and fan out to services
+    const results: Array<{ service: string; analysis_id: string; status: string }> = [];
+
+    for (const svc of services) {
+      const analysisId = uuid();
+
+      await env.DB.prepare(
+        `INSERT INTO prospect_analyses (analysis_id, lead_id, service, status, started_at)
+         VALUES (?, ?, ?, 'running', strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+         ON CONFLICT (lead_id, service) DO UPDATE SET
+           status = 'running',
+           started_at = strftime('%Y-%m-%dT%H:%M:%fZ','now')`
+      ).bind(analysisId, leadId, svc).run();
+
+      // Fan out to scaffold service (best-effort)
+      const serviceOrigins: Record<string, string> = {
+        secure: "https://secure.haiphen.io",
+        network: "https://network.haiphen.io",
+        graph: "https://graph.haiphen.io",
+        risk: "https://risk.haiphen.io",
+        causal: "https://causal.haiphen.io",
+        supply: "https://supply.haiphen.io",
+      };
+
+      try {
+        const origin = serviceOrigins[svc];
+        if (origin && env.INTERNAL_TOKEN) {
+          const svcRes = await fetch(`${origin}/v1/${svc}/analyze`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-Internal-Token": env.INTERNAL_TOKEN,
+            },
+            body: JSON.stringify({
+              lead_id: leadId,
+              entity_name: lead.entity_name,
+              vulnerability_id: lead.vulnerability_id,
+              summary: lead.summary,
+            }),
+          });
+
+          const svcData = await svcRes.json().catch(() => null) as any;
+
+          await env.DB.prepare(
+            `UPDATE prospect_analyses
+             SET status = 'completed',
+                 result_json = ?,
+                 score = ?,
+                 completed_at = strftime('%Y-%m-%dT%H:%M:%fZ','now')
+             WHERE lead_id = ? AND service = ?`
+          ).bind(
+            JSON.stringify(svcData),
+            svcData?.score ?? null,
+            leadId,
+            svc,
+          ).run();
+
+          results.push({ service: svc, analysis_id: analysisId, status: "completed" });
+        } else {
+          results.push({ service: svc, analysis_id: analysisId, status: "running" });
+        }
+      } catch (e: any) {
+        await env.DB.prepare(
+          `UPDATE prospect_analyses SET status = 'failed' WHERE lead_id = ? AND service = ?`
+        ).bind(leadId, svc).run();
+
+        results.push({ service: svc, analysis_id: analysisId, status: "failed" });
+      }
+    }
+
+    // Update lead status to analyzed if all done
+    const pending = await env.DB.prepare(
+      `SELECT COUNT(*) as cnt FROM prospect_analyses WHERE lead_id = ? AND status IN ('pending','running')`
+    ).bind(leadId).first<{ cnt: number }>();
+
+    if (!pending?.cnt) {
+      await env.DB.prepare(
+        `UPDATE prospect_leads SET status = 'analyzed', updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE lead_id = ?`
+      ).bind(leadId).run();
+    }
+
+    return okJson({ ok: true, lead_id: leadId, analyses: results }, requestId, corsHeaders(req, env));
+  }
+
+  // ---- PROSPECT: draft outreach ----
+  // POST /v1/prospect/leads/:id/outreach
+  if (req.method === "POST" && url.pathname.match(/^\/v1\/prospect\/leads\/[^/]+\/outreach$/)) {
+    const u = await authSessionUser(req, env, requestId);
+    const parts = url.pathname.split("/");
+    const leadId = parts[parts.length - 2];
+
+    const lead = await env.DB.prepare(
+      `SELECT * FROM prospect_leads WHERE lead_id = ?`
+    ).bind(leadId).first<{
+      lead_id: string; entity_name: string; entity_domain: string | null;
+      vulnerability_id: string | null; severity: string | null; summary: string;
+    }>();
+
+    if (!lead) return err("not_found", "Lead not found", requestId, 404, corsHeaders(req, env));
+
+    // Get analyses for context
+    const analyses = await env.DB.prepare(
+      `SELECT service, score, result_json FROM prospect_analyses WHERE lead_id = ? AND status = 'completed'`
+    ).bind(leadId).all<{ service: string; score: number | null; result_json: string | null }>();
+
+    const analysisContext = (analyses.results ?? [])
+      .map(a => `${a.service}: score ${a.score ?? "N/A"}`)
+      .join(", ");
+
+    const outreachId = uuid();
+    const subject = `Security Advisory: ${lead.vulnerability_id ?? "Potential Vulnerability"} — ${lead.entity_name}`;
+    const bodyText = [
+      `Dear Security Team,`,
+      ``,
+      `We are writing to inform you of a potential security concern affecting ${lead.entity_name}.`,
+      ``,
+      `Vulnerability: ${lead.vulnerability_id ?? "Identified exposure"}`,
+      `Severity: ${lead.severity ?? "Unknown"}`,
+      `Summary: ${lead.summary}`,
+      ``,
+      analysisContext ? `Analysis Results: ${analysisContext}` : "",
+      ``,
+      `We discovered this through our automated security monitoring platform (Haiphen)`,
+      `and are reaching out as part of responsible disclosure.`,
+      ``,
+      `We would be happy to provide additional technical details or assist with remediation.`,
+      ``,
+      `Best regards,`,
+      `Haiphen Security Research`,
+    ].filter(l => l !== undefined).join("\n");
+
+    await env.DB.prepare(
+      `INSERT INTO prospect_outreach (outreach_id, lead_id, subject, body_text, status)
+       VALUES (?, ?, ?, ?, 'draft')`
+    ).bind(outreachId, leadId, subject, bodyText).run();
+
+    // Update lead status
+    await env.DB.prepare(
+      `UPDATE prospect_leads SET status = 'outreach_drafted', updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE lead_id = ?`
+    ).bind(leadId).run();
+
+    return okJson({
+      ok: true,
+      outreach_id: outreachId,
+      lead_id: leadId,
+      subject,
+      body_text: bodyText,
+      status: "draft",
+    }, requestId, corsHeaders(req, env));
+  }
+
+  // ---- PROSPECT: list sources ----
+  // GET /v1/prospect/sources
+  if (req.method === "GET" && url.pathname === "/v1/prospect/sources") {
+    const u = await authSessionUser(req, env, requestId);
+
+    const rows = await env.DB.prepare(
+      `SELECT source_id, name, api_base_url, rate_limit_rpm, last_crawled_at, enabled, created_at
+       FROM prospect_sources ORDER BY source_id`
+    ).all();
+
+    return okJson({ items: rows.results ?? [] }, requestId, corsHeaders(req, env));
+  }
+
+  // ---- PROSPECT: trigger crawl (admin) ----
+  // POST /v1/prospect/crawl
+  if (req.method === "POST" && url.pathname === "/v1/prospect/crawl") {
+    const tok = req.headers.get("X-Admin-Token") || "";
+    if (!safeEqual(tok, env.ADMIN_TOKEN)) return err("forbidden", "Forbidden", requestId, 403, corsHeaders(req, env));
+
+    // Trigger Cloud Run Job via REST API
+    // In production this would use GCP auth; for now return acknowledgement
+    return okJson({
+      ok: true,
+      message: "Crawl job trigger acknowledged. Use `gcloud run jobs execute haiphen-prospect-crawler` to run manually.",
+    }, requestId, corsHeaders(req, env));
+  }
+
   return err("not_found", "Not found", requestId, 404, corsHeaders(req, env));
 }
 
