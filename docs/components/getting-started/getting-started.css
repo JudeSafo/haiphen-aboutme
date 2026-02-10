@@ -1,13 +1,36 @@
 /* docs/components/getting-started/getting-started.css */
 
+/* ================================================================
+   ROOT CONTAINER — explicit light grey background (fixes pink issue)
+   ================================================================ */
+
 .hp-gs{
   padding: 18px 16px 28px;
   max-width: 900px;
   position: relative;
+  background: #fafbfc;
+  border-radius: 12px;
 }
+
+/* ================================================================
+   HERO
+   ================================================================ */
 
 .hp-gs__hero{
   margin-bottom: 24px;
+}
+
+.hp-gs__eyebrow{
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(90,155,212,.12);
+  color: #5A9BD4;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
 }
 
 .hp-gs__title{
@@ -41,7 +64,10 @@
   border-radius: 14px;
 }
 
-/* Entitlement gate */
+/* ================================================================
+   ENTITLEMENT GATE
+   ================================================================ */
+
 .hp-gs__gate{
   position: relative;
   margin: 20px 0;
@@ -96,7 +122,41 @@
   opacity: 0.5;
 }
 
-/* Sections */
+/* ================================================================
+   STEP SECTIONS (numbered steps layout)
+   ================================================================ */
+
+.hp-gs__step-section{
+  display: grid;
+  grid-template-columns: 40px 1fr;
+  gap: 12px;
+  margin-bottom: 28px;
+  align-items: start;
+}
+
+.hp-gs__step-number{
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #5A9BD4;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.hp-gs__step-body{
+  min-width: 0;
+}
+
+/* ================================================================
+   GENERIC SECTIONS
+   ================================================================ */
+
 .hp-gs__section{
   margin-bottom: 24px;
 }
@@ -115,7 +175,10 @@
   opacity: 0.75;
 }
 
-/* Install grid */
+/* ================================================================
+   INSTALL GRID
+   ================================================================ */
+
 .hp-gs__install-grid{
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -152,7 +215,10 @@
   text-overflow: ellipsis;
 }
 
-/* Quickstart commands */
+/* ================================================================
+   QUICKSTART COMMANDS
+   ================================================================ */
+
 .hp-gs__quickstart{
   display: flex;
   flex-direction: column;
@@ -177,7 +243,316 @@
   font-weight: 800;
 }
 
-/* Services grid */
+/* ================================================================
+   CODE BLOCK (dark terminal style)
+   ================================================================ */
+
+.hp-gs__code-block{
+  margin: 0 0 14px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #0f172a;
+  border: 1px solid rgba(148,163,184,.15);
+}
+
+.hp-gs__code-block pre{
+  margin: 0;
+  padding: 14px 16px;
+  overflow-x: auto;
+}
+
+.hp-gs__code-block code{
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.6;
+  color: #e2e8f0;
+  white-space: pre;
+}
+
+/* ================================================================
+   BROKER GRID (finance lens — 4-col partner logos)
+   ================================================================ */
+
+.hp-gs__broker-grid{
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.hp-gs__broker-card{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 8px;
+  border: 1px solid rgba(15,23,42,.10);
+  border-radius: 12px;
+  background: rgba(255,255,255,.65);
+  text-align: center;
+}
+
+.hp-gs__broker-card img{
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+}
+
+.hp-gs__broker-card span{
+  font-size: 11px;
+  font-weight: 800;
+  opacity: 0.85;
+}
+
+/* ================================================================
+   BROKER MODES (Live / Sandbox cards)
+   ================================================================ */
+
+.hp-gs__broker-modes{
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.hp-gs__broker-mode{
+  padding: 14px;
+  border: 1px solid rgba(15,23,42,.10);
+  border-radius: 12px;
+  background: rgba(255,255,255,.65);
+}
+
+.hp-gs__broker-mode strong{
+  display: block;
+  font-size: 13px;
+  font-weight: 900;
+  margin-bottom: 4px;
+}
+
+.hp-gs__broker-mode p{
+  font-size: 12px;
+  font-weight: 700;
+  opacity: 0.75;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.hp-gs__broker-mode code{
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(31,111,235,.85);
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: rgba(255,255,255,.7);
+  border: 1px solid rgba(15,23,42,.08);
+}
+
+.hp-gs__broker-mode--live{
+  border-left: 3px solid #10B981;
+}
+
+.hp-gs__broker-mode--sandbox{
+  border-left: 3px solid #F59E0B;
+}
+
+/* ================================================================
+   HINT TEXT
+   ================================================================ */
+
+.hp-gs__hint{
+  font-size: 12px;
+  font-weight: 700;
+  font-style: italic;
+  color: #10B981;
+  margin: 8px 0 0;
+  line-height: 1.4;
+}
+
+/* ================================================================
+   SUCCESS GRID (2x2 outcome cards)
+   ================================================================ */
+
+.hp-gs__success-grid{
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.hp-gs__success-card{
+  padding: 14px;
+  border: 1px solid rgba(15,23,42,.10);
+  border-radius: 12px;
+  background: rgba(255,255,255,.65);
+}
+
+.hp-gs__success-card strong{
+  display: block;
+  font-size: 13px;
+  font-weight: 900;
+  margin-bottom: 4px;
+}
+
+.hp-gs__success-card p{
+  font-size: 12px;
+  font-weight: 700;
+  opacity: 0.75;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.hp-gs__success-card code{
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(31,111,235,.85);
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: rgba(255,255,255,.7);
+  border: 1px solid rgba(15,23,42,.08);
+}
+
+/* ================================================================
+   DISCLAIMER BANNER
+   ================================================================ */
+
+.hp-gs__disclaimer{
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 14px 16px;
+  margin-bottom: 20px;
+  border-radius: 12px;
+  border-left: 3px solid #5A9BD4;
+  background: rgba(90,155,212,.06);
+}
+
+.hp-gs__disclaimer-icon{
+  font-size: 18px;
+  line-height: 1;
+  flex-shrink: 0;
+  color: #5A9BD4;
+}
+
+.hp-gs__disclaimer-body strong{
+  display: block;
+  font-size: 13px;
+  font-weight: 900;
+  margin-bottom: 4px;
+}
+
+.hp-gs__disclaimer-body p{
+  font-size: 12px;
+  font-weight: 700;
+  opacity: 0.8;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.hp-gs__disclaimer-body a{
+  color: #5A9BD4;
+  font-weight: 800;
+}
+
+/* ================================================================
+   LENS TOGGLE CALLOUT
+   ================================================================ */
+
+.hp-gs__lens-callout{
+  padding: 14px 16px;
+  margin-bottom: 20px;
+  border-radius: 12px;
+  border-left: 3px solid #8B5CF6;
+  background: rgba(139,92,246,.06);
+}
+
+.hp-gs__lens-callout strong{
+  display: block;
+  font-size: 13px;
+  font-weight: 900;
+  color: #8B5CF6;
+  margin-bottom: 4px;
+}
+
+.hp-gs__lens-callout p{
+  font-size: 12px;
+  font-weight: 700;
+  opacity: 0.8;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.hp-gs__lens-callout em{
+  font-weight: 900;
+}
+
+/* ================================================================
+   COHORT CTA
+   ================================================================ */
+
+.hp-gs__cohort-cta{
+  text-align: center;
+  padding: 28px 20px;
+  margin-bottom: 24px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(90,155,212,.08), rgba(139,92,246,.08));
+  border: 1px solid rgba(90,155,212,.15);
+}
+
+.hp-gs__cohort-badge{
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(245,158,11,.12);
+  color: #d97706;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.hp-gs__cohort-cta h3{
+  margin: 0 0 6px;
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.hp-gs__cohort-cta p{
+  margin: 0 0 16px;
+  font-size: 13px;
+  font-weight: 700;
+  opacity: 0.8;
+  max-width: 480px;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.5;
+}
+
+.hp-gs__cohort-btn{
+  display: inline-block;
+  padding: 10px 24px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #8B5CF6, #7c3aed);
+  color: #fff;
+  font-weight: 800;
+  font-size: 13px;
+  text-decoration: none;
+  box-shadow: 0 8px 20px rgba(139,92,246,.22);
+  transition: transform .12s ease, box-shadow .12s ease;
+}
+
+.hp-gs__cohort-btn:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 12px 28px rgba(139,92,246,.30);
+  text-decoration: none;
+}
+
+/* ================================================================
+   SERVICES GRID
+   ================================================================ */
+
 .hp-gs__services-grid{
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -240,7 +615,10 @@
   border-radius: 10px;
 }
 
-/* Apps grid */
+/* ================================================================
+   APPS GRID (Desktop & Mobile)
+   ================================================================ */
+
 .hp-gs__apps-grid{
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -292,11 +670,203 @@
   text-decoration: none;
 }
 
-/* Mobile responsive */
+/* ================================================================
+   FINANCE LENS — DARK THEME OVERRIDES
+   ================================================================ */
+
+html[data-lens="finance"] .hp-gs{
+  background: #1a2332;
+}
+
+html[data-lens="finance"] .hp-gs__title,
+html[data-lens="finance"] .hp-gs__section-title,
+html[data-lens="finance"] .hp-gs__cohort-cta h3{
+  color: #f8fafc;
+}
+
+html[data-lens="finance"] .hp-gs__sub,
+html[data-lens="finance"] .hp-gs__section-sub,
+html[data-lens="finance"] .hp-gs__cohort-cta p{
+  color: #cbd5e1;
+}
+
+html[data-lens="finance"] .hp-gs__eyebrow{
+  background: rgba(90,155,212,.18);
+  color: #93c5fd;
+}
+
+html[data-lens="finance"] .hp-gs__step-number{
+  background: #3b82f6;
+}
+
+html[data-lens="finance"] .hp-gs__install-card,
+html[data-lens="finance"] .hp-gs__broker-card,
+html[data-lens="finance"] .hp-gs__broker-mode,
+html[data-lens="finance"] .hp-gs__success-card,
+html[data-lens="finance"] .hp-gs__svc-card,
+html[data-lens="finance"] .hp-gs__app-card{
+  background: rgba(30,41,59,.7);
+  border-color: rgba(148,163,184,.18);
+  color: #e2e8f0;
+}
+
+html[data-lens="finance"] .hp-gs__install-card strong,
+html[data-lens="finance"] .hp-gs__broker-card span,
+html[data-lens="finance"] .hp-gs__broker-mode strong,
+html[data-lens="finance"] .hp-gs__success-card strong,
+html[data-lens="finance"] .hp-gs__svc-card summary strong,
+html[data-lens="finance"] .hp-gs__app-card strong{
+  color: #f1f5f9;
+}
+
+html[data-lens="finance"] .hp-gs__install-card code,
+html[data-lens="finance"] .hp-gs__quickstart code,
+html[data-lens="finance"] .hp-gs__svc-card code{
+  background: rgba(15,23,42,.5);
+  border-color: rgba(148,163,184,.12);
+  color: #93c5fd;
+}
+
+html[data-lens="finance"] .hp-gs__broker-mode code,
+html[data-lens="finance"] .hp-gs__success-card code{
+  background: rgba(15,23,42,.5);
+  border-color: rgba(148,163,184,.12);
+  color: #93c5fd;
+}
+
+html[data-lens="finance"] .hp-gs__broker-mode p,
+html[data-lens="finance"] .hp-gs__success-card p,
+html[data-lens="finance"] .hp-gs__svc-card summary span,
+html[data-lens="finance"] .hp-gs__app-card p{
+  color: #94a3b8;
+}
+
+html[data-lens="finance"] .hp-gs__demo{
+  border-color: rgba(148,163,184,.15);
+  background: rgba(15,23,42,.4);
+}
+
+html[data-lens="finance"] .hp-gs__code-block{
+  background: #0c1322;
+  border-color: rgba(148,163,184,.12);
+}
+
+html[data-lens="finance"] .hp-gs__hint{
+  color: #34d399;
+}
+
+html[data-lens="finance"] .hp-gs__disclaimer{
+  background: rgba(90,155,212,.08);
+  border-left-color: #3b82f6;
+}
+
+html[data-lens="finance"] .hp-gs__disclaimer-body strong{
+  color: #f1f5f9;
+}
+
+html[data-lens="finance"] .hp-gs__disclaimer-body p{
+  color: #94a3b8;
+}
+
+html[data-lens="finance"] .hp-gs__disclaimer-body a{
+  color: #93c5fd;
+}
+
+html[data-lens="finance"] .hp-gs__disclaimer-icon{
+  color: #3b82f6;
+}
+
+html[data-lens="finance"] .hp-gs__lens-callout{
+  background: rgba(139,92,246,.08);
+  border-left-color: #a78bfa;
+}
+
+html[data-lens="finance"] .hp-gs__lens-callout strong{
+  color: #c4b5fd;
+}
+
+html[data-lens="finance"] .hp-gs__lens-callout p{
+  color: #94a3b8;
+}
+
+html[data-lens="finance"] .hp-gs__cohort-cta{
+  background: linear-gradient(135deg, rgba(59,130,246,.1), rgba(139,92,246,.1));
+  border-color: rgba(139,92,246,.2);
+}
+
+html[data-lens="finance"] .hp-gs__cohort-badge{
+  background: rgba(245,158,11,.15);
+  color: #fbbf24;
+}
+
+html[data-lens="finance"] .hp-gs__cohort-btn{
+  background: linear-gradient(180deg, #a78bfa, #8B5CF6);
+}
+
+html[data-lens="finance"] .hp-gs__gate{
+  background: rgba(26,35,50,.9);
+  border-color: rgba(90,155,212,.25);
+}
+
+html[data-lens="finance"] .hp-gs__gate-inner h3{
+  color: #f8fafc;
+}
+
+html[data-lens="finance"] .hp-gs__gate-inner p{
+  color: #94a3b8;
+}
+
+html[data-lens="finance"] .hp-gs__svc-card[open] summary{
+  border-bottom-color: rgba(148,163,184,.12);
+}
+
+html[data-lens="finance"] .hp-gs__app-links a{
+  background: rgba(30,41,59,.7);
+  border-color: rgba(148,163,184,.18);
+  color: #e2e8f0;
+}
+
+html[data-lens="finance"] .hp-gs__app-links a:hover{
+  background: rgba(51,65,85,.7);
+}
+
+html[data-lens="finance"] .hp-gs__link-out a{
+  color: #93c5fd;
+}
+
+html[data-lens="finance"] .hp-gs__broker-mode--live{
+  border-left-color: #34d399;
+}
+
+html[data-lens="finance"] .hp-gs__broker-mode--sandbox{
+  border-left-color: #fbbf24;
+}
+
+/* ================================================================
+   RESPONSIVE — MOBILE
+   ================================================================ */
+
 @media (max-width: 680px){
   .hp-gs__install-grid,
   .hp-gs__services-grid,
-  .hp-gs__apps-grid{
+  .hp-gs__apps-grid,
+  .hp-gs__success-grid,
+  .hp-gs__broker-grid{
     grid-template-columns: 1fr;
+  }
+
+  .hp-gs__broker-modes{
+    grid-template-columns: 1fr;
+  }
+
+  .hp-gs__step-section{
+    grid-template-columns: 32px 1fr;
+    gap: 8px;
+  }
+
+  .hp-gs__step-number{
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
   }
 }

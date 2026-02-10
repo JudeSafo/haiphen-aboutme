@@ -284,6 +284,28 @@
         "Zero ops, global low latency from 200+ edge PoPs, built-in resilience, pay-per-use efficiency, and instant global deployment.",
       tags: ["cloud-native", "engineering", "general"],
     },
+    {
+      q: "How do I get started with Haiphen?",
+      aHtml:
+        `Install the CLI (<code>brew install haiphen/tap/haiphen</code>), authenticate with <code>haiphen login</code>, and run <code>haiphen status</code> to verify your entitlement. From there, connect a data source or broker and start exploring services. See the full walkthrough at <a href="#getting-started">Getting Started</a>.`,
+      aText:
+        "Install the CLI via Homebrew, authenticate with haiphen login, and run haiphen status to verify your entitlement. Then connect a data source or broker and start exploring services.",
+      tags: ["services", "cli", "general"],
+    },
+    {
+      q: "Which brokers does Haiphen integrate with?",
+      aHtml:
+        `Haiphen supports integrations with Charles Schwab, Interactive Brokers, Alpaca, Fidelity, Robinhood, E*TRADE, TD Ameritrade, and Merrill. Each broker can be connected in live or sandbox mode. See <a href="#getting-started">Getting Started</a> for setup instructions.`,
+      aText:
+        "Haiphen supports Charles Schwab, Interactive Brokers, Alpaca, Fidelity, Robinhood, E*TRADE, TD Ameritrade, and Merrill in live or sandbox mode.",
+      tags: ["services", "trading"],
+    },
+    {
+      q: "Can I test Haiphen without connecting a live broker?",
+      a:
+        "Yes. Set HAIPHEN_ENV=sandbox in your environment, then run haiphen serve. Sandbox mode uses simulated market data and paper trades so you can verify your pipeline end-to-end without risking real capital or needing live broker credentials.",
+      tags: ["services", "trading", "cli"],
+    },
   ];
 
   function uniq(arr) {
