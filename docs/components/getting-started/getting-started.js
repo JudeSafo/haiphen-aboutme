@@ -83,12 +83,12 @@
       finance: 'Install the Haiphen CLI on any platform, authenticate, and connect to your brokerage in minutes.',
     },
     'broker-title': {
-      tech: 'Connect Your Data Sources',
+      tech: 'Connect to Your Broker',
       finance: 'Connect Your Broker',
     },
     'broker-sub': {
-      tech: 'Configure API keys, webhook endpoints, and environment variables to start ingesting data.',
-      finance: 'Link your brokerage account to see live trade telemetry. Choose between live and sandbox modes.',
+      tech: 'Link your brokerage account to receive trade telemetry. Haiphen provides the signals intelligence pipeline \u2014 you bring the broker connection.',
+      finance: 'Link your brokerage to receive real-time trade signals. Haiphen scans the market, fires entry and exit notifications, and delivers pipeline metrics directly to you.',
     },
     'pipeline-title': {
       tech: 'Verify Your Pipeline',
@@ -179,44 +179,70 @@
     return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
+  var PIPELINE_METRICS = [
+    { label: 'Entries Opened', icon: 'assets/icons/kpi/enter.svg' },
+    { label: 'Exits Closed', icon: 'assets/icons/kpi/exit.svg' },
+    { label: 'Signals Scanned', icon: 'assets/icons/kpi/radar.svg' },
+    { label: 'Daily P&L', icon: 'assets/icons/kpi/dollar.svg' },
+    { label: 'Win Rate', icon: 'assets/icons/kpi/percent.svg' },
+    { label: 'Risk Score', icon: 'assets/icons/kpi/chart.svg' },
+  ];
+
+  function renderMetricsGrid() {
+    var cards = PIPELINE_METRICS.map(function (m) {
+      return '<div class="hp-gs__metric-card">' +
+        '<img class="hp-gs__metric-icon" src="' + esc(m.icon) + '" alt="" width="28" height="28" />' +
+        '<span>' + m.label + '</span>' +
+      '</div>';
+    }).join('');
+    return '<div class="hp-gs__metrics-grid">' + cards + '</div>';
+  }
+
   var RICH_CONTENT = {
     'broker-detail': {
       tech: function () {
-        return '<div class="hp-gs__code-block"><pre><code># .env — configure your data sources\n' +
-          'HAIPHEN_API_KEY=hpn_live_xxxxxxxxxxxxxxxx\n' +
-          'HAIPHEN_WEBHOOK_URL=https://your-app.com/webhooks/haiphen\n' +
-          'HAIPHEN_ENV=production\n' +
-          'HAIPHEN_LOG_LEVEL=info</code></pre></div>' +
-          '<div class="hp-gs__broker-modes">' +
-            '<div class="hp-gs__broker-mode">' +
-              '<strong>API Key Auth</strong>' +
-              '<p>Generate a scoped API key in your <a href="#profile">Profile</a>. Supports metrics:read, rss:read, and webhooks:write scopes.</p>' +
-            '</div>' +
-            '<div class="hp-gs__broker-mode">' +
-              '<strong>Webhook Config</strong>' +
-              '<p>Register an HTTPS endpoint to receive real-time events — service alerts, pipeline completions, and threshold triggers.</p>' +
-            '</div>' +
-            '<div class="hp-gs__broker-mode">' +
-              '<strong>Environment Variables</strong>' +
-              '<p>All configuration is env-driven. Set HAIPHEN_ENV to <em>production</em> or <em>sandbox</em> to control behavior.</p>' +
-            '</div>' +
-          '</div>';
+        var diagramHtml = '<div class="hp-gs__telemetry-diagram">' +
+          '<img src="assets/diagrams/trade-telemetry-flow.svg" alt="Trade telemetry pipeline: trades.json \u2192 MV Tables \u2192 Trigger Engine \u2192 Webhooks" loading="lazy" />' +
+        '</div>';
+        var cards = BROKERS.map(function (b) {
+          return '<a href="#" class="hp-gs__broker-card hp-gs__broker-card--link" onclick="return false"><img src="' + esc(b.icon) + '" alt="' + esc(b.name) + '" /><span>' + esc(b.name) + '</span></a>';
+        }).join('');
+        var brokerGrid = '<div class="hp-gs__broker-grid">' + cards + '</div>';
+        var metricsHeading = '<h4 class="hp-gs__metrics-heading">Pipeline Metrics \u2014 What Haiphen Delivers</h4>';
+        var metricsGrid = renderMetricsGrid();
+        var modes = '<div class="hp-gs__broker-modes">' +
+          '<div class="hp-gs__broker-mode hp-gs__broker-mode--live">' +
+            '<strong>Live Mode</strong>' +
+            '<p>Connect with real broker credentials. Trades execute against live markets. Set <code>HAIPHEN_ENV=production</code>.</p>' +
+          '</div>' +
+          '<div class="hp-gs__broker-mode hp-gs__broker-mode--sandbox">' +
+            '<strong>Sandbox Mode</strong>' +
+            '<p>Paper trading with simulated data. Perfect for testing your pipeline before going live. Set <code>HAIPHEN_ENV=sandbox</code>.</p>' +
+          '</div>' +
+        '</div>';
+        return diagramHtml + brokerGrid + metricsHeading + metricsGrid + modes;
       },
       finance: function () {
+        var diagramHtml = '<div class="hp-gs__telemetry-diagram">' +
+          '<img src="assets/diagrams/trade-telemetry-flow.svg" alt="Trade telemetry pipeline: trades.json \u2192 MV Tables \u2192 Trigger Engine \u2192 Webhooks" loading="lazy" />' +
+        '</div>';
         var cards = BROKERS.map(function (b) {
-          return '<div class="hp-gs__broker-card"><img src="' + esc(b.icon) + '" alt="' + esc(b.name) + '" /><span>' + esc(b.name) + '</span></div>';
+          return '<a href="#" class="hp-gs__broker-card hp-gs__broker-card--link" onclick="return false"><img src="' + esc(b.icon) + '" alt="' + esc(b.name) + '" /><span>' + esc(b.name) + '</span></a>';
         }).join('');
-        return '<div class="hp-gs__broker-grid">' + cards + '</div>' +
-          '<div class="hp-gs__broker-modes">' +
-            '<div class="hp-gs__broker-mode hp-gs__broker-mode--live">' +
-              '<strong>Live Mode</strong>' +
-              '<p>Connect with real broker credentials. Trades execute against live markets. Set <code>HAIPHEN_ENV=production</code>.</p>' +
-            '</div>' +
-            '<div class="hp-gs__broker-mode hp-gs__broker-mode--sandbox">' +
-              '<strong>Sandbox Mode</strong>' +
-              '<p>Paper trading with simulated data. Perfect for testing your pipeline before going live. Set <code>HAIPHEN_ENV=sandbox</code>.</p>' +
-            '</div>' +
-          '</div>';
+        var brokerGrid = '<div class="hp-gs__broker-grid">' + cards + '</div>';
+        var metricsHeading = '<h4 class="hp-gs__metrics-heading">Trade Telemetry Pipeline \u2014 Delivered to You</h4>';
+        var metricsGrid = renderMetricsGrid();
+        var modes = '<div class="hp-gs__broker-modes">' +
+          '<div class="hp-gs__broker-mode hp-gs__broker-mode--live">' +
+            '<strong>Live Mode</strong>' +
+            '<p>Connect with real broker credentials. Trades execute against live markets. Set <code>HAIPHEN_ENV=production</code>.</p>' +
+          '</div>' +
+          '<div class="hp-gs__broker-mode hp-gs__broker-mode--sandbox">' +
+            '<strong>Sandbox Mode</strong>' +
+            '<p>Paper trading with simulated data. Perfect for testing your pipeline before going live. Set <code>HAIPHEN_ENV=sandbox</code>.</p>' +
+          '</div>' +
+        '</div>';
+        return diagramHtml + brokerGrid + metricsHeading + metricsGrid + modes;
       },
     },
 

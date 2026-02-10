@@ -419,6 +419,79 @@
 }
 
 /* ================================================================
+   TELEMETRY DIAGRAM
+   ================================================================ */
+
+.hp-gs__telemetry-diagram{
+  max-width: 480px;
+  margin: 0 0 14px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid rgba(15,23,42,.10);
+}
+
+.hp-gs__telemetry-diagram img{
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* ================================================================
+   PIPELINE METRICS GRID
+   ================================================================ */
+
+.hp-gs__metrics-heading{
+  font-size: 13px;
+  font-weight: 900;
+  margin: 16px 0 8px;
+  letter-spacing: -0.1px;
+}
+
+.hp-gs__metrics-grid{
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.hp-gs__metric-card{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 8px;
+  border: 1px solid rgba(15,23,42,.10);
+  border-radius: 12px;
+  background: rgba(255,255,255,.65);
+  text-align: center;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.hp-gs__metric-icon{
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+/* ================================================================
+   BROKER CARD — LINK VARIANT
+   ================================================================ */
+
+.hp-gs__broker-card--link{
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  transition: transform 120ms ease, box-shadow 120ms ease;
+}
+
+.hp-gs__broker-card--link:hover{
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(15,23,42,.10);
+  text-decoration: none;
+}
+
+/* ================================================================
    BROKER MODES (Live / Sandbox cards)
    ================================================================ */
 
@@ -813,6 +886,24 @@ html[data-lens="finance"] .hp-gs__step-number{
   background: #3b82f6;
 }
 
+html[data-lens="finance"] .hp-gs__telemetry-diagram{
+  border-color: rgba(148,163,184,.15);
+}
+
+html[data-lens="finance"] .hp-gs__metrics-heading{
+  color: #f1f5f9;
+}
+
+html[data-lens="finance"] .hp-gs__metric-card{
+  background: rgba(30,41,59,.7);
+  border-color: rgba(148,163,184,.18);
+  color: #e2e8f0;
+}
+
+html[data-lens="finance"] .hp-gs__broker-card--link:hover{
+  box-shadow: 0 6px 16px rgba(0,0,0,.25);
+}
+
 html[data-lens="finance"] .hp-gs__install-card,
 html[data-lens="finance"] .hp-gs__broker-card,
 html[data-lens="finance"] .hp-gs__broker-mode,
@@ -1048,6 +1139,10 @@ html[data-lens="finance"] .hp-gs__sidebar-input:focus{
   .hp-gs__success-grid,
   .hp-gs__broker-grid{
     grid-template-columns: 1fr;
+  }
+
+  .hp-gs__metrics-grid{
+    grid-template-columns: repeat(2, 1fr);
   }
 
   .hp-gs__broker-modes{

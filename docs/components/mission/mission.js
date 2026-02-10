@@ -32,23 +32,23 @@
       tech: {
         name: 'Trading Telemetry Suite',
         eyebrow: 'Full Platform',
-        problem: 'Building a trading operation means stitching together separate tools for data feeds, risk, compliance, entity research, and post-trade analysis. Each vendor is another integration, another bill, another point of failure.',
-        solution: 'Haiphen is a single platform that covers the entire trading lifecycle: ingest market data, scan your infrastructure for vulnerabilities, map entity relationships for alpha signals, stress-test portfolios with Monte Carlo simulations, trace causal chains across executions, and monitor counterparty exposure. All six services share a unified API, a single CLI, and one authentication layer. Deploy locally for development or cloud-native on Cloudflare Workers for production.',
+        problem: 'Building a trading operation means you need signals intelligence \u2014 knowing when to enter, when to exit, and how every position is performing. Most platforms expect you to bring your own data.',
+        solution: 'Haiphen IS the data provider. Install the CLI and you get the full signals intelligence pipeline: trades.json hydrates daily, MV tables process trigger conditions, and webhook notifications fire when entry and exit signals activate. Entries opened, exits closed, win rate, P&L, risk scores \u2014 all computed and delivered.',
         steps: [
-          { title: 'Ingest', desc: 'Connect market data feeds, import portfolios, and register your infrastructure' },
-          { title: 'Analyze', desc: 'Run security scans, risk simulations, entity graphs, and causal analysis in parallel' },
-          { title: 'Act', desc: 'Generate signals, set alerts, export reports, and integrate via webhooks' },
+          { title: 'Install', desc: 'Install the CLI, authenticate, and connect your broker' },
+          { title: 'Signals Flow', desc: 'trades.json hydrates daily, MV tables fire triggers, webhooks deliver signals' },
+          { title: 'Trade', desc: 'Act on entry/exit signals with full pipeline metrics and risk scores' },
         ],
       },
       finance: {
         name: 'Trading Intelligence Platform',
         eyebrow: 'Full Platform',
-        problem: 'Portfolio managers juggle separate vendors for market data, compliance, risk analytics, research, and post-trade reporting. Fragmented tooling means slower decisions and hidden blind spots.',
-        solution: 'One platform for the full investment lifecycle: real-time market data analysis, regulatory compliance scanning, portfolio risk modeling, corporate entity intelligence, trade chain reconstruction, and counterparty monitoring. Unified API, single CLI, one login. Run locally or deploy cloud-native.',
+        problem: 'Portfolio managers need to know when to enter and exit positions \u2014 but most platforms deliver raw data and expect you to build your own signal processing.',
+        solution: 'Haiphen delivers trade telemetry \u2014 real-time signals intelligence that tells you when to enter and exit positions. The pipeline hydrates daily from trades.json, processes trigger conditions through MV tables, and sends webhook notifications when signals fire.',
         steps: [
-          { title: 'Connect', desc: 'Link market feeds, import portfolios, catalog your infrastructure' },
-          { title: 'Analyze', desc: 'Compliance, risk, entity research, and post-trade analysis from one dashboard' },
-          { title: 'Report', desc: 'Automated alerts, scheduled reports, and API-driven integrations' },
+          { title: 'Connect', desc: 'Link your brokerage and authenticate via the CLI or desktop app' },
+          { title: 'Signals Flow', desc: 'Daily hydration, MV table triggers, and webhook-delivered entry/exit signals' },
+          { title: 'Trade', desc: 'Execute on signals with pipeline metrics, P&L tracking, and risk scores' },
         ],
       },
       assets: {
@@ -58,12 +58,12 @@
       },
       usecases: {
         tech: [
-          { title: 'Quantitative Fund Operations', problem: 'Fund managers run separate dashboards for risk, compliance, market data, and post-trade analysis.', solution: 'One platform covers the full cycle: ingest feeds, run risk sims, check compliance, trace execution chains, and generate reports from a single CLI.' },
+          { title: 'Signals Intelligence for Trading Desks', problem: 'Fund managers run separate dashboards for risk, compliance, market data, and post-trade analysis.', solution: 'One platform covers the full cycle: ingest feeds, run risk sims, check compliance, trace execution chains, and generate reports from a single CLI.' },
           { title: 'Trading Desk Infrastructure', problem: 'Multiple vendor integrations create maintenance burden and latency across the trading stack.', solution: 'Deploy all six services through one authentication layer and unified API. Local dev via CLI, production on Cloudflare Workers.' },
           { title: 'Multi-Strategy Portfolio Management', problem: 'Each strategy team builds its own tooling for data, risk, and research, leading to duplicated effort.', solution: 'Shared platform with per-team API keys, scoped access, and centralized billing. All services available to every desk.' },
         ],
         finance: [
-          { title: 'Investment Office Consolidation', problem: 'Family offices and fund managers subscribe to 5+ vendors for market data, compliance, risk, and research.', solution: 'Replace fragmented vendor stack with one platform. Unified billing, one login, consistent API across all analytics.' },
+          { title: 'Trade Telemetry for Portfolio Managers', problem: 'Family offices and fund managers subscribe to 5+ vendors for market data, compliance, risk, and research.', solution: 'Replace fragmented vendor stack with one platform. Unified billing, one login, consistent API across all analytics.' },
           { title: 'Regulatory Reporting Workflow', problem: 'Compliance teams manually pull data from multiple systems to generate regulatory filings.', solution: 'Automated compliance scanning, risk reporting, and entity research feed directly into reporting templates.' },
           { title: 'RIA Technology Stack', problem: 'Registered Investment Advisors need institutional-grade tools without institutional-grade pricing.', solution: 'Pro-tier access to all six services at a bundled cohort price. API-first architecture integrates with existing custodian platforms.' },
         ],

@@ -453,6 +453,74 @@ curl -sS "https://api.haiphen.io/v1/onboarding/resources" \
           </div>
         </section>
 
+        <!-- Trade Telemetry -->
+        <section class="api-section" id="docs-trade-telemetry" data-api-section>
+          <h3>Trade Telemetry</h3>
+          <p>
+            Haiphen is the data provider. You install the service and receive the full signals intelligence pipeline &mdash;
+            entry signals, exit signals, position metrics, and risk scores delivered via webhooks and API.
+          </p>
+
+          <div class="api-callout">
+            <div class="api-callout-title">Pipeline Architecture</div>
+            <ol class="api-ol">
+              <li><strong>trades.json</strong> &mdash; daily hydration of raw trade and market data</li>
+              <li><strong>MV Tables</strong> &mdash; materialized views process trigger conditions</li>
+              <li><strong>Trigger Engine</strong> &mdash; evaluates entry/exit rules and fires signals</li>
+              <li><strong>Webhooks</strong> &mdash; delivers signal notifications to your registered endpoints</li>
+            </ol>
+          </div>
+
+          <h4>Signal Webhook Events</h4>
+          <p class="api-muted">These events fire automatically when the pipeline detects actionable conditions.</p>
+
+          <div class="api-table-wrap">
+            <table class="api-table">
+              <thead>
+                <tr><th>Event</th><th>Description</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><code>entry.signal</code></td><td>Entry conditions met &mdash; new position opportunity detected</td></tr>
+                <tr><td><code>exit.signal</code></td><td>Exit conditions met &mdash; close or reduce position</td></tr>
+                <tr><td><code>position.opened</code></td><td>Position successfully opened after entry signal</td></tr>
+                <tr><td><code>position.closed</code></td><td>Position fully closed after exit signal</td></tr>
+                <tr><td><code>hedge.triggered</code></td><td>Hedge condition activated for risk mitigation</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h4>Sample Payload</h4>
+          <pre class="api-code"><code data-lang="json">{
+  "event": "entry.signal",
+  "timestamp": "2026-02-10T14:32:00Z",
+  "data": {
+    "symbol": "AAPL",
+    "direction": "long",
+    "confidence": 0.87,
+    "trigger": "mv_momentum_cross",
+    "price_at_signal": 198.45,
+    "stop_loss": 195.20,
+    "take_profit": 204.80,
+    "risk_score": 0.34
+  }
+}</code></pre>
+
+          <h4>Pipeline Output Endpoints</h4>
+          <p class="api-muted">
+            Signal data flows into the standard metrics API. Use
+            <code><a href="#docs-endpoints">/metrics/kpis</a></code> for current pipeline KPIs and
+            <code><a href="#docs-endpoints">/metrics/series</a></code> for historical signal performance.
+          </p>
+
+          <div class="api-callout">
+            <div class="api-callout-title">Non-Advisory Disclaimer</div>
+            <p class="api-muted">
+              Haiphen provides trade telemetry data and signal notifications. This is not investment advice.
+              All trading decisions are made by the user. Past signal performance does not guarantee future results.
+            </p>
+          </div>
+        </section>
+
         <!-- Haiphen Secure -->
         <section class="api-section" id="docs-secure" data-api-section>
           <h3>Haiphen Secure</h3>
@@ -885,13 +953,13 @@ curl http://localhost:8787/supply/v1/supply/alerts   # &rarr; supply.haiphen.io<
           </p>
 
           <div class="api-callout">
-            <div class="api-callout-title">Suggested lineage</div>
+            <div class="api-callout-title">Pipeline lineage</div>
             <ol class="api-ol">
-              <li><strong>Ingest</strong>: market data + signals</li>
-              <li><strong>Score</strong>: opportunity detection + risk filters</li>
-              <li><strong>Execute</strong>: orders + guardrails</li>
-              <li><strong>Monitor</strong>: telemetry + exits</li>
-              <li><strong>Report</strong>: KPIs + series + assets + RSS</li>
+              <li><strong>Hydrate</strong>: trades.json daily ingest of market data and positions</li>
+              <li><strong>Materialize</strong>: MV tables compute trigger conditions and derived metrics</li>
+              <li><strong>Signal</strong>: trigger engine evaluates entry/exit rules and fires events</li>
+              <li><strong>Execute</strong>: signals delivered via webhooks for order placement</li>
+              <li><strong>Report</strong>: KPIs, series, P&amp;L, win rate, and risk scores via API</li>
             </ol>
           </div>
 
@@ -970,8 +1038,13 @@ curl http://localhost:8787/supply/v1/supply/alerts   # &rarr; supply.haiphen.io<
 
           <h4>Event types</h4>
           <ul class="api-ul">
-            <li><code>metrics.published</code> — daily snapshot available</li>
-            <li><code>key.rotated</code> — key lifecycle events (optional)</li>
+            <li><code>metrics.published</code> &mdash; daily snapshot available</li>
+            <li><code>key.rotated</code> &mdash; key lifecycle events (optional)</li>
+            <li><code>entry.signal</code> &mdash; entry conditions met, new position opportunity</li>
+            <li><code>exit.signal</code> &mdash; exit conditions met, close or reduce position</li>
+            <li><code>position.opened</code> &mdash; position successfully opened</li>
+            <li><code>position.closed</code> &mdash; position fully closed</li>
+            <li><code>hedge.triggered</code> &mdash; hedge condition activated</li>
           </ul>
 
           <h4>Signature verification</h4>

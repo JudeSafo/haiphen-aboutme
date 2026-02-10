@@ -10,6 +10,7 @@
     { id: 'docs-rate-limits', label: 'Rate limits' },
     { id: 'docs-data-model', label: 'Data model' },
     { id: 'docs-endpoints', label: 'Endpoints' },
+    { id: 'docs-trade-telemetry', label: 'Trade Telemetry' },
     { id: 'docs-secure', label: 'Secure' },
     { id: 'docs-network', label: 'Network Trace' },
     { id: 'docs-graph', label: 'Knowledge Graph' },

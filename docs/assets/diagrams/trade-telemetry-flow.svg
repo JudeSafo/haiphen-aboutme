@@ -1,0 +1,113 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 240" width="360" height="240">
+  <defs>
+    <linearGradient id="tt-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0b1220"/>
+      <stop offset="100%" stop-color="#0f1b2e"/>
+    </linearGradient>
+    <linearGradient id="tt-blue" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="rgba(90,155,212,0.18)"/>
+      <stop offset="100%" stop-color="rgba(90,155,212,0.06)"/>
+    </linearGradient>
+    <linearGradient id="tt-teal" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="rgba(16,185,129,0.18)"/>
+      <stop offset="100%" stop-color="rgba(16,185,129,0.06)"/>
+    </linearGradient>
+    <linearGradient id="tt-purple" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="rgba(139,92,246,0.22)"/>
+      <stop offset="100%" stop-color="rgba(139,92,246,0.06)"/>
+    </linearGradient>
+    <linearGradient id="tt-amber" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="rgba(245,158,11,0.18)"/>
+      <stop offset="100%" stop-color="rgba(245,158,11,0.06)"/>
+    </linearGradient>
+    <filter id="tt-glow">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <pattern id="tt-dots" width="20" height="20" patternUnits="userSpaceOnUse">
+      <circle cx="10" cy="10" r="0.6" fill="rgba(148,163,184,0.12)"/>
+    </pattern>
+  </defs>
+
+  <!-- Background -->
+  <rect width="360" height="240" rx="14" fill="url(#tt-bg)"/>
+  <rect width="360" height="240" rx="14" fill="url(#tt-dots)"/>
+
+  <!-- Title -->
+  <text x="180" y="24" text-anchor="middle" fill="#e2e8f0" font-family="system-ui,sans-serif" font-size="10" font-weight="700" letter-spacing="0.1em">TRADE TELEMETRY PIPELINE</text>
+
+  <!-- Node 1: trades.json (blue) -->
+  <rect x="14" y="48" width="70" height="62" rx="10" fill="url(#tt-blue)" stroke="#5A9BD4" stroke-width="1"/>
+  <text x="49" y="72" text-anchor="middle" fill="#5A9BD4" font-family="ui-monospace,monospace" font-size="9" font-weight="700">trades</text>
+  <text x="49" y="84" text-anchor="middle" fill="#5A9BD4" font-family="ui-monospace,monospace" font-size="9" font-weight="700">.json</text>
+  <text x="49" y="100" text-anchor="middle" fill="rgba(148,163,184,0.7)" font-family="system-ui,sans-serif" font-size="7">Daily Hydrate</text>
+
+  <!-- Arrow 1→2 -->
+  <line x1="88" y1="79" x2="104" y2="79" stroke="#5A9BD4" stroke-width="1.2" stroke-dasharray="3,2">
+    <animate attributeName="stroke-dashoffset" from="10" to="0" dur="1.5s" repeatCount="indefinite"/>
+  </line>
+  <polygon points="104,76 110,79 104,82" fill="#5A9BD4"/>
+
+  <!-- Node 2: MV Tables (teal) -->
+  <rect x="112" y="48" width="70" height="62" rx="10" fill="url(#tt-teal)" stroke="#10B981" stroke-width="1"/>
+  <text x="147" y="72" text-anchor="middle" fill="#10B981" font-family="ui-monospace,monospace" font-size="9" font-weight="700">MV</text>
+  <text x="147" y="84" text-anchor="middle" fill="#10B981" font-family="ui-monospace,monospace" font-size="9" font-weight="700">Tables</text>
+  <text x="147" y="100" text-anchor="middle" fill="rgba(148,163,184,0.7)" font-family="system-ui,sans-serif" font-size="7">Materialize</text>
+
+  <!-- Arrow 2→3 -->
+  <line x1="186" y1="79" x2="202" y2="79" stroke="#10B981" stroke-width="1.2" stroke-dasharray="3,2">
+    <animate attributeName="stroke-dashoffset" from="10" to="0" dur="1.5s" repeatCount="indefinite"/>
+  </line>
+  <polygon points="202,76 208,79 202,82" fill="#10B981"/>
+
+  <!-- Node 3: Trigger Engine (purple, glow) -->
+  <rect x="210" y="48" width="70" height="62" rx="10" fill="url(#tt-purple)" stroke="#8B5CF6" stroke-width="1.2" filter="url(#tt-glow)"/>
+  <text x="245" y="72" text-anchor="middle" fill="#8B5CF6" font-family="ui-monospace,monospace" font-size="9" font-weight="700">Trigger</text>
+  <text x="245" y="84" text-anchor="middle" fill="#8B5CF6" font-family="ui-monospace,monospace" font-size="9" font-weight="700">Engine</text>
+  <text x="245" y="100" text-anchor="middle" fill="rgba(148,163,184,0.7)" font-family="system-ui,sans-serif" font-size="7">Signal</text>
+
+  <!-- Arrow 3→4 -->
+  <line x1="284" y1="79" x2="300" y2="79" stroke="#8B5CF6" stroke-width="1.2" stroke-dasharray="3,2">
+    <animate attributeName="stroke-dashoffset" from="10" to="0" dur="1.5s" repeatCount="indefinite"/>
+  </line>
+  <polygon points="300,76 306,79 300,82" fill="#8B5CF6"/>
+
+  <!-- Node 4: Webhooks (amber) -->
+  <rect x="308" y="48" width="38" height="62" rx="10" fill="url(#tt-amber)" stroke="#F59E0B" stroke-width="1"/>
+  <text x="327" y="76" text-anchor="middle" fill="#F59E0B" font-family="ui-monospace,monospace" font-size="8" font-weight="700">WH</text>
+  <text x="327" y="100" text-anchor="middle" fill="rgba(148,163,184,0.7)" font-family="system-ui,sans-serif" font-size="7">Deliver</text>
+
+  <!-- Signal output labels -->
+  <text x="49" y="136" text-anchor="middle" fill="#5A9BD4" font-family="ui-monospace,monospace" font-size="8" font-weight="600">entry.signal</text>
+  <text x="147" y="136" text-anchor="middle" fill="#10B981" font-family="ui-monospace,monospace" font-size="8" font-weight="600">exit.signal</text>
+  <text x="245" y="136" text-anchor="middle" fill="#8B5CF6" font-family="ui-monospace,monospace" font-size="8" font-weight="600">hedge.triggered</text>
+
+  <!-- Downward lines from Trigger Engine to signal labels -->
+  <line x1="49" y1="110" x2="49" y2="128" stroke="rgba(90,155,212,0.35)" stroke-width="0.8" stroke-dasharray="2,2"/>
+  <line x1="147" y1="110" x2="147" y2="128" stroke="rgba(16,185,129,0.35)" stroke-width="0.8" stroke-dasharray="2,2"/>
+  <line x1="245" y1="110" x2="245" y2="128" stroke="rgba(139,92,246,0.35)" stroke-width="0.8" stroke-dasharray="2,2"/>
+
+  <!-- Metrics summary section -->
+  <rect x="14" y="156" width="332" height="70" rx="10" fill="rgba(148,163,184,0.04)" stroke="rgba(148,163,184,0.1)" stroke-width="0.8"/>
+  <text x="180" y="174" text-anchor="middle" fill="rgba(148,163,184,0.6)" font-family="system-ui,sans-serif" font-size="8" font-weight="700" letter-spacing="0.08em">PIPELINE METRICS DELIVERED</text>
+
+  <!-- Metric items row 1 -->
+  <circle cx="50" cy="192" r="3" fill="#5A9BD4"/>
+  <text x="58" y="195" fill="#e2e8f0" font-family="system-ui,sans-serif" font-size="8" font-weight="600">Entries Opened</text>
+
+  <circle cx="160" cy="192" r="3" fill="#10B981"/>
+  <text x="168" y="195" fill="#e2e8f0" font-family="system-ui,sans-serif" font-size="8" font-weight="600">Exits Closed</text>
+
+  <circle cx="264" cy="192" r="3" fill="#8B5CF6"/>
+  <text x="272" y="195" fill="#e2e8f0" font-family="system-ui,sans-serif" font-size="8" font-weight="600">Win Rate</text>
+
+  <!-- Metric items row 2 -->
+  <circle cx="50" cy="210" r="3" fill="#F59E0B"/>
+  <text x="58" y="213" fill="#e2e8f0" font-family="system-ui,sans-serif" font-size="8" font-weight="600">Daily P&amp;L</text>
+
+  <circle cx="160" cy="210" r="3" fill="#5A9BD4"/>
+  <text x="168" y="213" fill="#e2e8f0" font-family="system-ui,sans-serif" font-size="8" font-weight="600">Risk Score</text>
+
+  <circle cx="264" cy="210" r="3" fill="#10B981"/>
+  <text x="272" y="213" fill="#e2e8f0" font-family="system-ui,sans-serif" font-size="8" font-weight="600">Signals Scanned</text>
+</svg>
