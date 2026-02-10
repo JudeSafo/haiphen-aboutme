@@ -31,6 +31,15 @@ func cmdProspect(cfg *config.Config, st store.Store) *cobra.Command {
 		cmdProspectSetKey(cfg, st),
 		cmdProspectListKeys(cfg, st),
 		cmdProspectDeleteKey(cfg, st),
+		cmdProspectRules(cfg, st),
+		cmdProspectRegressions(cfg, st),
+		cmdProspectApprove(cfg, st),
+		cmdProspectSend(cfg, st),
+		cmdProspectInvestigate(cfg, st),
+		cmdProspectInvestigation(cfg, st),
+		cmdProspectInvestigations(cfg, st),
+		cmdProspectSolve(cfg, st),
+		cmdProspectReInvestigate(cfg, st),
 	)
 	return cmd
 }
@@ -472,5 +481,578 @@ func cmdProspectDeleteKey(cfg *config.Config, st store.Store) *cobra.Command {
 		},
 	}
 
+	return cmd
+}
+
+// ---- prospect rules ----
+
+func cmdProspectRules(cfg *config.Config, st store.Store) *cobra.Command {
+	var asJSON bool
+
+	cmd := &cobra.Command{
+		Use:   "rules",
+		Short: "List use case rules (ordered by priority)",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			token, err := requireToken(st)
+			if err != nil {
+				return err
+			}
+
+			data, err := util.ServiceGet(cmd.Context(), cfg.APIOrigin, "/v1/prospect/rules", token)
+			if err != nil {
+				return err
+			}
+
+			printOrJSON(data, asJSON, func(b []byte) {
+				var out struct {
+					Items []struct {
+						RuleID       string  `json:"rule_id"`
+						Name         string  `json:"name"`
+						Priority     int     `json:"priority"`
+						Enabled      int     `json:"enabled"`
+						MatchKeywords string `json:"match_keywords"`
+						ServicesJSON string  `json:"services_json"`
+					} `json:"items"`
+				}
+				if json.Unmarshal(b, &out) == nil {
+					fmt.Printf("%-26s %-30s %-6s %-8s %-30s %s\n",
+						"RULE ID", "NAME", "PRI", "ENABLED", "KEYWORDS", "SERVICES")
+					fmt.Println(strings.Repeat("-", 130))
+					for _, r := range out.Items {
+						name := r.Name
+						if len(name) > 30 {
+							name = name[:27] + "..."
+						}
+						kw := r.MatchKeywords
+						if len(kw) > 30 {
+							kw = kw[:27] + "..."
+						}
+						enabled := "yes"
+						if r.Enabled == 0 {
+							enabled = "no"
+						}
+						fmt.Printf("%-26s %-30s %-6d %-8s %-30s %s\n",
+							r.RuleID, name, r.Priority, enabled, kw, r.ServicesJSON)
+					}
+					fmt.Printf("\n%d rules\n", len(out.Items))
+				}
+			})
+			return nil
+		},
+	}
+
+	cmd.Flags().BoolVar(&asJSON, "json", false, "Output as JSON")
+	return cmd
+}
+
+// ---- prospect regressions ----
+
+func cmdProspectRegressions(cfg *config.Config, st store.Store) *cobra.Command {
+	var (
+		asJSON    bool
+		dimension string
+		minCount  int
+		limit     int
+	)
+
+	cmd := &cobra.Command{
+		Use:   "regressions",
+		Short: "List prospect regressions (entity recurrence + vuln class spread)",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			token, err := requireToken(st)
+			if err != nil {
+				return err
+			}
+
+			params := url.Values{}
+			if dimension != "" {
+				params.Set("dimension", dimension)
+			}
+			if minCount > 0 {
+				params.Set("min_count", fmt.Sprintf("%d", minCount))
+			}
+			if limit > 0 {
+				params.Set("limit", fmt.Sprintf("%d", limit))
+			}
+
+			path := "/v1/prospect/regressions"
+			if len(params) > 0 {
+				path += "?" + params.Encode()
+			}
+
+			data, err := util.ServiceGet(cmd.Context(), cfg.APIOrigin, path, token)
+			if err != nil {
+				return err
+			}
+
+			printOrJSON(data, asJSON, func(b []byte) {
+				var out struct {
+					Items []struct {
+						Dimension      string `json:"dimension"`
+						Key            string `json:"key"`
+						OccurrenceCount int   `json:"occurrence_count"`
+						SeverityTrend  string `json:"severity_trend"`
+						FirstSeenAt    string `json:"first_seen_at"`
+						LastSeenAt     string `json:"last_seen_at"`
+					} `json:"items"`
+				}
+				if json.Unmarshal(b, &out) == nil {
+					fmt.Printf("%-12s %-30s %-6s %-12s %-20s %s\n",
+						"DIMENSION", "KEY", "COUNT", "TREND", "FIRST SEEN", "LAST SEEN")
+					fmt.Println(strings.Repeat("-", 100))
+					for _, r := range out.Items {
+						key := r.Key
+						if len(key) > 30 {
+							key = key[:27] + "..."
+						}
+						trend := r.SeverityTrend
+						if trend == "" {
+							trend = "-"
+						}
+						first := r.FirstSeenAt
+						if len(first) > 19 {
+							first = first[:19]
+						}
+						last := r.LastSeenAt
+						if len(last) > 19 {
+							last = last[:19]
+						}
+						fmt.Printf("%-12s %-30s %-6d %-12s %-20s %s\n",
+							r.Dimension, key, r.OccurrenceCount, trend, first, last)
+					}
+					fmt.Printf("\n%d regressions\n", len(out.Items))
+				}
+			})
+			return nil
+		},
+	}
+
+	cmd.Flags().BoolVar(&asJSON, "json", false, "Output as JSON")
+	cmd.Flags().StringVar(&dimension, "dimension", "", "Filter by dimension (entity, vuln_class)")
+	cmd.Flags().IntVar(&minCount, "min-count", 0, "Minimum occurrence count")
+	cmd.Flags().IntVar(&limit, "limit", 0, "Max results")
+	return cmd
+}
+
+// ---- prospect approve ----
+
+func cmdProspectApprove(cfg *config.Config, st store.Store) *cobra.Command {
+	var asJSON bool
+
+	cmd := &cobra.Command{
+		Use:   "approve <lead_id>",
+		Short: "Approve an outreach draft for sending",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			token, err := requireToken(st)
+			if err != nil {
+				return err
+			}
+
+			path := "/v1/prospect/leads/" + args[0] + "/outreach/approve"
+			data, err := util.ServicePost(cmd.Context(), cfg.APIOrigin, path, token, nil)
+			if err != nil {
+				return err
+			}
+
+			printOrJSON(data, asJSON, func(b []byte) {
+				var out struct {
+					OK         bool   `json:"ok"`
+					OutreachID string `json:"outreach_id"`
+					Status     string `json:"status"`
+				}
+				if json.Unmarshal(b, &out) == nil && out.OK {
+					fmt.Printf("Outreach %s approved for sending\n", out.OutreachID)
+				} else {
+					printJSON(b)
+				}
+			})
+			return nil
+		},
+	}
+
+	cmd.Flags().BoolVar(&asJSON, "json", false, "Output as JSON")
+	return cmd
+}
+
+// ---- prospect send ----
+
+func cmdProspectSend(cfg *config.Config, st store.Store) *cobra.Command {
+	var (
+		asJSON         bool
+		recipientEmail string
+		recipientName  string
+	)
+
+	cmd := &cobra.Command{
+		Use:   "send <lead_id>",
+		Short: "Send approved outreach email for a lead",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			token, err := requireToken(st)
+			if err != nil {
+				return err
+			}
+
+			body := map[string]string{}
+			if recipientEmail != "" {
+				body["recipient_email"] = recipientEmail
+			}
+			if recipientName != "" {
+				body["recipient_name"] = recipientName
+			}
+
+			path := "/v1/prospect/leads/" + args[0] + "/outreach/send"
+			data, err := util.ServicePost(cmd.Context(), cfg.APIOrigin, path, token, body)
+			if err != nil {
+				return err
+			}
+
+			printOrJSON(data, asJSON, func(b []byte) {
+				var out struct {
+					OK             bool   `json:"ok"`
+					MessageID      string `json:"message_id"`
+					OutreachID     string `json:"outreach_id"`
+					RecipientEmail string `json:"recipient_email"`
+					Status         string `json:"status"`
+				}
+				if json.Unmarshal(b, &out) == nil && out.OK {
+					fmt.Printf("Outreach %s sent to %s (message: %s)\n", out.OutreachID, out.RecipientEmail, out.MessageID)
+				} else {
+					printJSON(b)
+				}
+			})
+			return nil
+		},
+	}
+
+	cmd.Flags().BoolVar(&asJSON, "json", false, "Output as JSON")
+	cmd.Flags().StringVar(&recipientEmail, "email", "", "Override recipient email address")
+	cmd.Flags().StringVar(&recipientName, "name", "", "Override recipient name")
+	return cmd
+}
+
+// ---- prospect investigate ----
+
+func cmdProspectInvestigate(cfg *config.Config, st store.Store) *cobra.Command {
+	var asJSON bool
+
+	cmd := &cobra.Command{
+		Use:   "investigate <lead_id>",
+		Short: "Run closed-loop investigation pipeline on a lead",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			token, err := requireToken(st)
+			if err != nil {
+				return err
+			}
+
+			path := "/v1/prospect/leads/" + args[0] + "/investigate"
+			data, err := util.ServicePost(cmd.Context(), cfg.APIOrigin, path, token, nil)
+			if err != nil {
+				return err
+			}
+
+			printOrJSON(data, asJSON, func(b []byte) {
+				var out struct {
+					InvestigationID string  `json:"investigation_id"`
+					AggregateScore  float64 `json:"aggregate_score"`
+					BudgetLevel     string  `json:"budget_level"`
+					ClaudeUsed      int     `json:"claude_used"`
+					ClaudeSummary   *struct {
+						Summary         string   `json:"summary"`
+						Impact          string   `json:"impact"`
+						Recommendations []string `json:"recommendations"`
+					} `json:"claude_summary"`
+					Steps []struct {
+						Service        string   `json:"service"`
+						Score          *float64 `json:"score"`
+						Findings       []string `json:"findings"`
+						Recommendation string   `json:"recommendation"`
+						DurationMs     int      `json:"duration_ms"`
+						Status         string   `json:"status"`
+					} `json:"steps"`
+					Requirements []struct {
+						Category    string `json:"category"`
+						Description string `json:"description"`
+					} `json:"requirements"`
+				}
+				if json.Unmarshal(b, &out) == nil {
+					fmt.Printf("Investigation: %s\n", out.InvestigationID)
+					fmt.Printf("Aggregate Score: %.1f  Budget: %s  Claude: %v\n\n", out.AggregateScore, out.BudgetLevel, out.ClaudeUsed == 1)
+
+					fmt.Printf("%-10s %-8s %-6s %s\n", "SERVICE", "STATUS", "SCORE", "FINDINGS")
+					fmt.Println(strings.Repeat("-", 80))
+					for _, s := range out.Steps {
+						scoreStr := "-"
+						if s.Score != nil {
+							scoreStr = fmt.Sprintf("%.0f", *s.Score)
+						}
+						findingsStr := strings.Join(s.Findings, "; ")
+						if len(findingsStr) > 50 {
+							findingsStr = findingsStr[:47] + "..."
+						}
+						fmt.Printf("%-10s %-8s %-6s %s\n", s.Service, s.Status, scoreStr, findingsStr)
+					}
+
+					if len(out.Requirements) > 0 {
+						fmt.Printf("\nRequirements (%d):\n", len(out.Requirements))
+						for _, r := range out.Requirements {
+							fmt.Printf("  [%s] %s\n", r.Category, r.Description)
+						}
+					}
+
+					if out.ClaudeSummary != nil {
+						fmt.Printf("\nClaude Synthesis:\n  %s\n", out.ClaudeSummary.Summary)
+						fmt.Printf("  Impact: %s\n", out.ClaudeSummary.Impact)
+						for _, r := range out.ClaudeSummary.Recommendations {
+							fmt.Printf("  - %s\n", r)
+						}
+					}
+				}
+			})
+			return nil
+		},
+	}
+
+	cmd.Flags().BoolVar(&asJSON, "json", false, "Output as JSON")
+	return cmd
+}
+
+// ---- prospect investigation ----
+
+func cmdProspectInvestigation(cfg *config.Config, st store.Store) *cobra.Command {
+	var asJSON bool
+
+	cmd := &cobra.Command{
+		Use:   "investigation <investigation_id>",
+		Short: "Get full details of an investigation",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			token, err := requireToken(st)
+			if err != nil {
+				return err
+			}
+
+			path := "/v1/prospect/investigations/" + args[0]
+			data, err := util.ServiceGet(cmd.Context(), cfg.APIOrigin, path, token)
+			if err != nil {
+				return err
+			}
+
+			printOrJSON(data, asJSON, func(b []byte) { printJSON(b) })
+			return nil
+		},
+	}
+
+	cmd.Flags().BoolVar(&asJSON, "json", false, "Output as JSON")
+	return cmd
+}
+
+// ---- prospect investigations ----
+
+func cmdProspectInvestigations(cfg *config.Config, st store.Store) *cobra.Command {
+	var (
+		asJSON bool
+		leadID string
+		status string
+	)
+
+	cmd := &cobra.Command{
+		Use:   "investigations",
+		Short: "List investigations with optional filters",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			token, err := requireToken(st)
+			if err != nil {
+				return err
+			}
+
+			params := url.Values{}
+			if leadID != "" {
+				params.Set("lead_id", leadID)
+			}
+			if status != "" {
+				params.Set("status", status)
+			}
+
+			path := "/v1/prospect/investigations"
+			if len(params) > 0 {
+				path += "?" + params.Encode()
+			}
+
+			data, err := util.ServiceGet(cmd.Context(), cfg.APIOrigin, path, token)
+			if err != nil {
+				return err
+			}
+
+			printOrJSON(data, asJSON, func(b []byte) {
+				var out struct {
+					Items []struct {
+						InvestigationID string  `json:"investigation_id"`
+						LeadID          string  `json:"lead_id"`
+						Status          string  `json:"status"`
+						AggregateScore  float64 `json:"aggregate_score"`
+						ClaudeUsed      int     `json:"claude_used"`
+						BudgetLevel     string  `json:"budget_level"`
+						CreatedAt       string  `json:"created_at"`
+					} `json:"items"`
+				}
+				if json.Unmarshal(b, &out) == nil {
+					fmt.Printf("%-38s %-38s %-12s %-8s %-7s %-12s %s\n",
+						"INVESTIGATION", "LEAD", "STATUS", "SCORE", "CLAUDE", "BUDGET", "CREATED")
+					fmt.Println(strings.Repeat("-", 140))
+					for _, item := range out.Items {
+						claude := "no"
+						if item.ClaudeUsed == 1 {
+							claude = "yes"
+						}
+						created := item.CreatedAt
+						if len(created) > 10 {
+							created = created[:10]
+						}
+						fmt.Printf("%-38s %-38s %-12s %-8.1f %-7s %-12s %s\n",
+							item.InvestigationID, item.LeadID, item.Status,
+							item.AggregateScore, claude, item.BudgetLevel, created)
+					}
+					fmt.Printf("\n%d investigations\n", len(out.Items))
+				}
+			})
+			return nil
+		},
+	}
+
+	cmd.Flags().BoolVar(&asJSON, "json", false, "Output as JSON")
+	cmd.Flags().StringVar(&leadID, "lead", "", "Filter by lead ID")
+	cmd.Flags().StringVar(&status, "status", "", "Filter by status")
+	return cmd
+}
+
+// ---- prospect solve ----
+
+func cmdProspectSolve(cfg *config.Config, st store.Store) *cobra.Command {
+	var asJSON bool
+
+	cmd := &cobra.Command{
+		Use:   "solve <investigation_id>",
+		Short: "Auto-resolve investigation requirements (add keywords, monitors, etc.)",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			token, err := requireToken(st)
+			if err != nil {
+				return err
+			}
+
+			path := "/v1/prospect/investigations/" + args[0] + "/solve"
+			data, err := util.ServicePost(cmd.Context(), cfg.APIOrigin, path, token, nil)
+			if err != nil {
+				return err
+			}
+
+			printOrJSON(data, asJSON, func(b []byte) {
+				var out struct {
+					OK              bool     `json:"ok"`
+					InvestigationID string   `json:"investigation_id"`
+					ResolvedCount   int      `json:"resolved_count"`
+					UnresolvedCount int      `json:"unresolved_count"`
+					ActionsTaken    []string `json:"actions_taken"`
+				}
+				if json.Unmarshal(b, &out) == nil {
+					fmt.Printf("Investigation: %s\n", out.InvestigationID)
+					fmt.Printf("Resolved: %d  Unresolved: %d\n\n", out.ResolvedCount, out.UnresolvedCount)
+					if len(out.ActionsTaken) > 0 {
+						fmt.Println("Actions taken:")
+						for _, a := range out.ActionsTaken {
+							fmt.Printf("  - %s\n", a)
+						}
+					}
+					if out.UnresolvedCount > 0 {
+						fmt.Printf("\n%d requirement(s) need manual resolution\n", out.UnresolvedCount)
+					}
+				}
+			})
+			return nil
+		},
+	}
+
+	cmd.Flags().BoolVar(&asJSON, "json", false, "Output as JSON")
+	return cmd
+}
+
+// ---- prospect re-investigate ----
+
+func cmdProspectReInvestigate(cfg *config.Config, st store.Store) *cobra.Command {
+	var asJSON bool
+
+	cmd := &cobra.Command{
+		Use:   "re-investigate <lead_id>",
+		Short: "Re-run investigation pipeline and compare risk scores",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			token, err := requireToken(st)
+			if err != nil {
+				return err
+			}
+
+			path := "/v1/prospect/leads/" + args[0] + "/re-investigate"
+			data, err := util.ServicePost(cmd.Context(), cfg.APIOrigin, path, token, nil)
+			if err != nil {
+				return err
+			}
+
+			printOrJSON(data, asJSON, func(b []byte) {
+				var out struct {
+					InvestigationID string   `json:"investigation_id"`
+					RiskScoreBefore *float64 `json:"risk_score_before"`
+					RiskScoreAfter  float64  `json:"risk_score_after"`
+					RiskReduction   *float64 `json:"risk_reduction"`
+					BudgetLevel     string   `json:"budget_level"`
+					Steps           []struct {
+						Service    string   `json:"service"`
+						Score      *float64 `json:"score"`
+						Findings   []string `json:"findings"`
+						DurationMs int      `json:"duration_ms"`
+						Status     string   `json:"status"`
+					} `json:"steps"`
+				}
+				if json.Unmarshal(b, &out) == nil {
+					fmt.Printf("Re-investigation: %s\n", out.InvestigationID)
+					if out.RiskScoreBefore != nil {
+						fmt.Printf("Risk Before: %.1f  After: %.1f", *out.RiskScoreBefore, out.RiskScoreAfter)
+						if out.RiskReduction != nil {
+							delta := *out.RiskReduction
+							if delta > 0 {
+								fmt.Printf("  Reduction: %.1f (improved)\n", delta)
+							} else if delta < 0 {
+								fmt.Printf("  Change: +%.1f (worsened)\n", -delta)
+							} else {
+								fmt.Printf("  Change: 0 (unchanged)\n")
+							}
+						} else {
+							fmt.Println()
+						}
+					} else {
+						fmt.Printf("Risk Score: %.1f (no prior baseline)\n", out.RiskScoreAfter)
+					}
+
+					fmt.Printf("\n%-10s %-8s %-6s %s\n", "SERVICE", "STATUS", "SCORE", "FINDINGS")
+					fmt.Println(strings.Repeat("-", 70))
+					for _, s := range out.Steps {
+						scoreStr := "-"
+						if s.Score != nil {
+							scoreStr = fmt.Sprintf("%.0f", *s.Score)
+						}
+						findingsStr := strings.Join(s.Findings, "; ")
+						if len(findingsStr) > 45 {
+							findingsStr = findingsStr[:42] + "..."
+						}
+						fmt.Printf("%-10s %-8s %-6s %s\n", s.Service, s.Status, scoreStr, findingsStr)
+					}
+				}
+			})
+			return nil
+		},
+	}
+
+	cmd.Flags().BoolVar(&asJSON, "json", false, "Output as JSON")
 	return cmd
 }

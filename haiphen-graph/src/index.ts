@@ -346,6 +346,89 @@ async function route(req: Request, env: Env): Promise<Response> {
     }
   }
 
+  // ---- POST /v1/graph/prospect-analyze (internal — service-to-service) ----
+  if (req.method === "POST" && url.pathname === "/v1/graph/prospect-analyze") {
+    const tok = req.headers.get("X-Internal-Token") || "";
+    if (!env.INTERNAL_TOKEN || tok !== env.INTERNAL_TOKEN) {
+      return errJson("forbidden", "Forbidden", rid, 403, cors);
+    }
+
+    const body = await req.json().catch(() => null) as null | {
+      lead_id: string; entity_name: string;
+      vulnerability_id?: string; summary: string;
+      upstream_context?: {
+        prior_scores: Record<string, number>;
+        prior_findings: string[];
+        investigation_id: string;
+      };
+    };
+    if (!body?.lead_id) return errJson("invalid_request", "Missing lead_id", rid, 400, cors);
+
+    const findings: string[] = [];
+    let score = 15; // baseline
+
+    // Upstream context: high upstream scores = search related entities more aggressively
+    const uc = body.upstream_context;
+    if (uc && uc.prior_findings && uc.prior_findings.length >= 3) {
+      score += 10;
+      findings.push(`${uc.prior_findings.length} upstream findings — widening graph traversal depth`);
+    }
+    if (uc && uc.prior_scores) {
+      const maxScore = Math.max(...Object.values(uc.prior_scores));
+      if (maxScore >= 60) {
+        score += 10;
+        findings.push(`High upstream score (${maxScore}) — aggressive entity relationship search`);
+      }
+    }
+
+    // Entity relationship density — how connected is this entity to other leads?
+    try {
+      const relatedLeads = await env.DB.prepare(
+        `SELECT COUNT(*) as cnt FROM prospect_leads
+         WHERE entity_name = ? AND status != 'archived'`
+      ).bind(body.entity_name).first<{ cnt: number }>();
+
+      const cnt = relatedLeads?.cnt ?? 0;
+      if (cnt >= 5) {
+        score += 25;
+        findings.push(`Entity "${body.entity_name}" appears in ${cnt} leads — high recurrence density`);
+      } else if (cnt >= 2) {
+        score += 15;
+        findings.push(`Entity "${body.entity_name}" appears in ${cnt} leads — moderate recurrence`);
+      }
+    } catch { /* best-effort */ }
+
+    // Check graph entities for this entity name
+    try {
+      const graphEntities = await env.DB.prepare(
+        `SELECT COUNT(*) as cnt FROM graph_entities
+         WHERE LOWER(label) LIKE LOWER(?)`
+      ).bind(`%${body.entity_name}%`).first<{ cnt: number }>();
+
+      if (graphEntities && graphEntities.cnt > 0) {
+        score += 15;
+        findings.push(`Entity found in knowledge graph with ${graphEntities.cnt} node(s) — relationship mapping available`);
+      }
+    } catch { /* best-effort */ }
+
+    // Keyword density scoring
+    const lower = body.summary.toLowerCase();
+    if (/interconnect|relationship|depend|link|graph/.test(lower)) {
+      score += 10;
+      findings.push("Graph-relevant relationship language detected");
+    }
+
+    score = Math.min(score, 100);
+
+    const recommendation = score >= 60
+      ? "High entity connectivity — recommend full graph traversal to map relationship density and identify systemic risk clusters."
+      : score >= 30
+      ? "Moderate graph relevance — entity has known connections worth investigating."
+      : "Low graph density — entity appears isolated in current data.";
+
+    return okJson({ score, findings, recommendation }, rid, cors);
+  }
+
   // ---- fallback ----
   return errJson("not_found", "Not found", rid, 404, cors);
 }

@@ -386,6 +386,83 @@ async function route(req: Request, env: Env): Promise<Response> {
     return okJson({ items: rows.results, total: countRow?.cnt ?? 0, limit, offset }, rid, cors);
   }
 
+  // POST /v1/supply/prospect-analyze (internal — service-to-service)
+  if (req.method === "POST" && url.pathname === "/v1/supply/prospect-analyze") {
+    const tok = req.headers.get("X-Internal-Token") || "";
+    if (!env.INTERNAL_TOKEN || tok !== env.INTERNAL_TOKEN) {
+      return errJson("forbidden", "Forbidden", rid, 403, cors);
+    }
+
+    const body = await req.json().catch(() => null) as null | {
+      lead_id: string; entity_name: string;
+      vulnerability_id?: string; summary: string;
+      upstream_context?: {
+        prior_scores: Record<string, number>;
+        prior_findings: string[];
+        investigation_id: string;
+      };
+    };
+    if (!body?.lead_id) return errJson("invalid_request", "Missing lead_id", rid, 400, cors);
+
+    const findings: string[] = [];
+    let score = 15; // baseline
+    const lower = body.summary.toLowerCase();
+
+    // Upstream context: graph relationship data + cumulative risk scores deepen vendor scoring
+    const uc = body.upstream_context;
+    if (uc && (uc.prior_scores?.graph ?? 0) > 30) {
+      score += 10;
+      findings.push("Graph relationship data available — enriching vendor dependency depth scoring");
+    }
+    if (uc && (uc.prior_scores?.risk ?? 0) > 50) {
+      score += 10;
+      findings.push("High cumulative risk score — elevated counterparty exposure");
+    }
+
+    // Check entity against known suppliers in D1
+    try {
+      const supplierMatch = await env.DB.prepare(
+        `SELECT supplier_id, name, tier, single_source FROM supply_suppliers
+         WHERE LOWER(name) LIKE LOWER(?) AND status = 'active' LIMIT 5`
+      ).bind(`%${body.entity_name}%`).all<{
+        supplier_id: string; name: string; tier: number; single_source: number;
+      }>();
+
+      if (supplierMatch.results.length > 0) {
+        score += 20;
+        for (const s of supplierMatch.results) {
+          findings.push(`Known supplier: ${s.name} (tier ${s.tier}${s.single_source ? ", SINGLE SOURCE" : ""})`);
+          if (s.single_source) score += 15;
+          if (s.tier === 1) score += 10;
+        }
+      }
+    } catch { /* best-effort */ }
+
+    // Keyword-based scoring
+    if (/vendor|third.?party|outsourc|saas/.test(lower)) {
+      score += 15;
+      findings.push("Third-party/vendor dependency — supply chain exposure");
+    }
+    if (/supply.?chain|dependency|upstream/.test(lower)) {
+      score += 10;
+      findings.push("Supply chain vulnerability — dependency depth risk");
+    }
+    if (/broker|exchange|clearing.?house|custodian/.test(lower)) {
+      score += 10;
+      findings.push("Financial counterparty exposure — trade flow dependency");
+    }
+
+    score = Math.min(score, 100);
+
+    const recommendation = score >= 60
+      ? "Significant counterparty/vendor risk — map dependency graph, assess concentration risk, and identify alternative suppliers."
+      : score >= 30
+      ? "Moderate supply chain concern — verify vendor patching cadence and review SLAs."
+      : "Low supply chain impact — standard vendor monitoring sufficient.";
+
+    return okJson({ score, findings, recommendation }, rid, cors);
+  }
+
   return errJson("not_found", "Not found", rid, 404, cors);
 }
 

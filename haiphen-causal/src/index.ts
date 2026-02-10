@@ -339,6 +339,73 @@ async function route(req: Request, env: Env): Promise<Response> {
     return okJson({ items: rows.results, total: countRow?.cnt ?? 0, limit, offset }, rid, cors);
   }
 
+  // POST /v1/causal/prospect-analyze (internal — service-to-service)
+  if (req.method === "POST" && url.pathname === "/v1/causal/prospect-analyze") {
+    const tok = req.headers.get("X-Internal-Token") || "";
+    if (!env.INTERNAL_TOKEN || tok !== env.INTERNAL_TOKEN) {
+      return errJson("forbidden", "Forbidden", rid, 403, cors);
+    }
+
+    const body = await req.json().catch(() => null) as null | {
+      lead_id: string; entity_name: string;
+      vulnerability_id?: string; summary: string;
+      upstream_context?: {
+        prior_scores: Record<string, number>;
+        prior_findings: string[];
+        investigation_id: string;
+      };
+    };
+    if (!body?.lead_id) return errJson("invalid_request", "Missing lead_id", rid, 400, cors);
+
+    const findings: string[] = [];
+    let score = 15; // baseline
+    const lower = body.summary.toLowerCase();
+
+    // Upstream context: prior findings seed cascade search
+    const uc = body.upstream_context;
+    if (uc && uc.prior_findings && uc.prior_findings.length > 0) {
+      score += Math.min(uc.prior_findings.length * 3, 15);
+      findings.push(`Cascade seeded by ${uc.prior_findings.length} upstream finding(s)`);
+    }
+    // If network flagged protocol issues, deepen cascade search
+    if (uc && (uc.prior_scores?.network ?? 0) > 40) {
+      score += 10;
+      findings.push("Network protocol exposure feeds cascade analysis — deeper propagation search");
+    }
+
+    // Cascade analysis: does this chain into downstream failures?
+    if (/order.*drift|failed.*settlement|settlement.*fail/.test(lower)) {
+      score += 25;
+      findings.push("Direct cascade path to settlement failure — high propagation risk");
+    }
+    if (/data.*feed.*corrupt|price.*manipul|quote.*integrity/.test(lower)) {
+      score += 20;
+      findings.push("Data feed corruption cascade — NAV calculations and downstream pricing affected");
+    }
+    if (/chain|cascade|propagat|downstream|upstream/.test(lower)) {
+      score += 15;
+      findings.push("Explicit cascade/propagation language detected — multi-system impact likely");
+    }
+    if (/authentication|credential|oauth|session/.test(lower)) {
+      score += 10;
+      findings.push("Auth chain vulnerability — potential for privilege escalation across systems");
+    }
+    if (/timeout|latency|delay|queue/.test(lower)) {
+      score += 10;
+      findings.push("Timing/latency impact — may cascade into order timeouts or stale data");
+    }
+
+    score = Math.min(score, 100);
+
+    const recommendation = score >= 60
+      ? "High cascade potential — recommend full causal DAG analysis to map propagation paths and identify circuit breakers."
+      : score >= 30
+      ? "Moderate cascade risk — trace dependency chain and verify isolation boundaries."
+      : "Low propagation risk — unlikely to cascade beyond initial impact scope.";
+
+    return okJson({ score, findings, recommendation }, rid, cors);
+  }
+
   return errJson("not_found", "Not found", rid, 404, cors);
 }
 

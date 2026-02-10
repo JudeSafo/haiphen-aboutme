@@ -38,6 +38,10 @@ id = "7ef6277bfea34ec18fb4b52ceb79aba3"
 binding = "CACHE_KV"
 id = "173c29cd36d0429fa9f7556c5cba334b"
 
+# Secrets (set via `npx wrangler secret put <NAME>`):
+#   JWT_SECRET, API_KEY_PEPPER, ADMIN_TOKEN, INTERNAL_TOKEN, CREDENTIAL_KEY,
+#   WEBHOOK_SALT, ANTHROPIC_API_KEY
+
 [vars]
 ONBOARDING_APP_URL = "https://app.haiphen.io/"
 ONBOARDING_DOCS_URL = "https://haiphen.io/#docs"

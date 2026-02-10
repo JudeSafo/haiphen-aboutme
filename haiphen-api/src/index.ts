@@ -53,6 +53,9 @@ type Env = {
   // Master key for envelope encryption of prospect credentials (hex-encoded 256-bit)
   CREDENTIAL_KEY: string;
 
+  // Anthropic API key for Claude synthesis (optional, set via wrangler secret)
+  ANTHROPIC_API_KEY?: string;
+
   // Optional: for CORS allowlist
   ALLOWED_ORIGINS?: string;
 
@@ -1117,12 +1120,15 @@ async function route(req: Request, env: Env): Promise<Response> {
     ).bind(leadId).first<{
       lead_id: string; services_json: string | null; entity_name: string;
       vulnerability_id: string | null; summary: string;
+      severity: string | null; entity_type: string | null;
+      source_id: string | null; cvss_score: number | null;
     }>();
 
     if (!lead) return err("not_found", "Lead not found", requestId, 404, corsHeaders(req, env));
 
     const body = await req.json().catch(() => ({})) as { service?: string };
     let services: string[];
+    let matchedRuleId: string | null = null;
 
     if (body.service) {
       const valid = ["secure", "network", "graph", "risk", "causal", "supply"];
@@ -1131,7 +1137,36 @@ async function route(req: Request, env: Env): Promise<Response> {
       }
       services = [body.service];
     } else {
-      services = lead.services_json ? JSON.parse(lead.services_json) : ["secure"];
+      // Load enabled rules and match
+      const rules = await env.DB.prepare(
+        `SELECT * FROM use_case_rules WHERE enabled = 1 ORDER BY priority ASC`
+      ).all<{
+        rule_id: string; match_severity: string | null; match_entity_type: string | null;
+        match_keywords: string | null; match_source_id: string | null; match_cvss_min: number | null;
+        services_json: string;
+      }>();
+
+      let matched = false;
+      for (const rule of rules.results ?? []) {
+        if (rule.match_severity && lead.severity !== rule.match_severity) continue;
+        if (rule.match_entity_type && lead.entity_type !== rule.match_entity_type) continue;
+        if (rule.match_source_id && lead.source_id !== rule.match_source_id) continue;
+        if (rule.match_cvss_min && (lead.cvss_score ?? 0) < rule.match_cvss_min) continue;
+        if (rule.match_keywords) {
+          const kws = rule.match_keywords.split(",").map((k: string) => k.trim().toLowerCase());
+          const text = lead.summary.toLowerCase();
+          if (!kws.some((kw: string) => text.includes(kw))) continue;
+        }
+        // Matched!
+        services = JSON.parse(rule.services_json);
+        matchedRuleId = rule.rule_id;
+        matched = true;
+        break;
+      }
+
+      if (!matched) {
+        services = lead.services_json ? JSON.parse(lead.services_json) : ["secure"];
+      }
     }
 
     // Update lead status
@@ -1140,7 +1175,7 @@ async function route(req: Request, env: Env): Promise<Response> {
     ).bind(leadId).run();
 
     // Create analysis records and fan out to services
-    const results: Array<{ service: string; analysis_id: string; status: string }> = [];
+    const results: Array<{ service: string; analysis_id: string; status: string; score?: number }> = [];
 
     for (const svc of services) {
       const analysisId = uuid();
@@ -1166,7 +1201,7 @@ async function route(req: Request, env: Env): Promise<Response> {
       try {
         const origin = serviceOrigins[svc];
         if (origin && env.INTERNAL_TOKEN) {
-          const svcRes = await fetch(`${origin}/v1/${svc}/analyze`, {
+          const svcRes = await fetch(`${origin}/v1/${svc}/prospect-analyze`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -1177,6 +1212,7 @@ async function route(req: Request, env: Env): Promise<Response> {
               entity_name: lead.entity_name,
               vulnerability_id: lead.vulnerability_id,
               summary: lead.summary,
+              cvss_score: lead.cvss_score,
             }),
           });
 
@@ -1196,7 +1232,7 @@ async function route(req: Request, env: Env): Promise<Response> {
             svc,
           ).run();
 
-          results.push({ service: svc, analysis_id: analysisId, status: "completed" });
+          results.push({ service: svc, analysis_id: analysisId, status: "completed", score: svcData?.score });
         } else {
           results.push({ service: svc, analysis_id: analysisId, status: "running" });
         }
@@ -1220,7 +1256,7 @@ async function route(req: Request, env: Env): Promise<Response> {
       ).bind(leadId).run();
     }
 
-    return okJson({ ok: true, lead_id: leadId, analyses: results }, requestId, corsHeaders(req, env));
+    return okJson({ ok: true, lead_id: leadId, matched_rule_id: matchedRuleId, analyses: results }, requestId, corsHeaders(req, env));
   }
 
   // ---- PROSPECT: draft outreach ----
@@ -1235,6 +1271,8 @@ async function route(req: Request, env: Env): Promise<Response> {
     ).bind(leadId).first<{
       lead_id: string; entity_name: string; entity_domain: string | null;
       vulnerability_id: string | null; severity: string | null; summary: string;
+      services_json: string | null; entity_type: string | null;
+      source_id: string | null; cvss_score: number | null;
     }>();
 
     if (!lead) return err("not_found", "Lead not found", requestId, 404, corsHeaders(req, env));
@@ -1248,27 +1286,66 @@ async function route(req: Request, env: Env): Promise<Response> {
       .map(a => `${a.service}: score ${a.score ?? "N/A"}`)
       .join(", ");
 
+    // Try to find a matching rule for template-based composition
+    let bodyText: string;
+    const rules = await env.DB.prepare(
+      `SELECT * FROM use_case_rules WHERE enabled = 1 ORDER BY priority ASC`
+    ).all<{
+      rule_id: string; match_severity: string | null; match_entity_type: string | null;
+      match_keywords: string | null; match_source_id: string | null; match_cvss_min: number | null;
+      services_json: string; solution_template: string;
+    }>();
+
+    let matchedTemplate: string | null = null;
+    for (const rule of rules.results ?? []) {
+      if (rule.match_severity && lead.severity !== rule.match_severity) continue;
+      if (rule.match_entity_type && lead.entity_type !== rule.match_entity_type) continue;
+      if (rule.match_source_id && lead.source_id !== rule.match_source_id) continue;
+      if (rule.match_cvss_min && (lead.cvss_score ?? 0) < rule.match_cvss_min) continue;
+      if (rule.match_keywords) {
+        const kws = rule.match_keywords.split(",").map((k: string) => k.trim().toLowerCase());
+        const text = lead.summary.toLowerCase();
+        if (!kws.some((kw: string) => text.includes(kw))) continue;
+      }
+      matchedTemplate = rule.solution_template;
+      break;
+    }
+
+    if (matchedTemplate) {
+      // Interpolate template variables
+      const svcList = (analyses.results ?? []).map(a => a.service).join(", ") || "pending";
+      bodyText = matchedTemplate
+        .replace(/\{\{entity_name\}\}/g, lead.entity_name)
+        .replace(/\{\{vulnerability_id\}\}/g, lead.vulnerability_id ?? "Identified exposure")
+        .replace(/\{\{severity\}\}/g, lead.severity ?? "Unknown")
+        .replace(/\{\{services\}\}/g, svcList)
+        .replace(/\{\{analysis_summary\}\}/g, analysisContext ? `Analysis Results: ${analysisContext}` : "Analysis pending.");
+      bodyText = `Dear Security Team,\n\n${bodyText}\n\nBest regards,\nHaiphen Security Intelligence`;
+    } else {
+      // Fallback to original boilerplate
+      bodyText = [
+        `Dear Security Team,`,
+        ``,
+        `We are writing to inform you of a potential security concern affecting ${lead.entity_name}.`,
+        ``,
+        `Vulnerability: ${lead.vulnerability_id ?? "Identified exposure"}`,
+        `Severity: ${lead.severity ?? "Unknown"}`,
+        `Summary: ${lead.summary}`,
+        ``,
+        analysisContext ? `Analysis Results: ${analysisContext}` : "",
+        ``,
+        `We discovered this through our automated security monitoring platform (Haiphen)`,
+        `and are reaching out as part of responsible disclosure.`,
+        ``,
+        `We would be happy to provide additional technical details or assist with remediation.`,
+        ``,
+        `Best regards,`,
+        `Haiphen Security Research`,
+      ].filter(l => l !== undefined).join("\n");
+    }
+
     const outreachId = uuid();
     const subject = `Security Advisory: ${lead.vulnerability_id ?? "Potential Vulnerability"} — ${lead.entity_name}`;
-    const bodyText = [
-      `Dear Security Team,`,
-      ``,
-      `We are writing to inform you of a potential security concern affecting ${lead.entity_name}.`,
-      ``,
-      `Vulnerability: ${lead.vulnerability_id ?? "Identified exposure"}`,
-      `Severity: ${lead.severity ?? "Unknown"}`,
-      `Summary: ${lead.summary}`,
-      ``,
-      analysisContext ? `Analysis Results: ${analysisContext}` : "",
-      ``,
-      `We discovered this through our automated security monitoring platform (Haiphen)`,
-      `and are reaching out as part of responsible disclosure.`,
-      ``,
-      `We would be happy to provide additional technical details or assist with remediation.`,
-      ``,
-      `Best regards,`,
-      `Haiphen Security Research`,
-    ].filter(l => l !== undefined).join("\n");
 
     await env.DB.prepare(
       `INSERT INTO prospect_outreach (outreach_id, lead_id, subject, body_text, status)
@@ -1287,6 +1364,7 @@ async function route(req: Request, env: Env): Promise<Response> {
       subject,
       body_text: bodyText,
       status: "draft",
+      template_matched: !!matchedTemplate,
     }, requestId, corsHeaders(req, env));
   }
 
@@ -1399,6 +1477,833 @@ async function route(req: Request, env: Env): Promise<Response> {
       ok: true,
       message: "Crawl job trigger acknowledged. Use `gcloud run jobs execute haiphen-prospect-crawler` to run manually.",
     }, requestId, corsHeaders(req, env));
+  }
+
+  // ---- PROSPECT RULES: list ----
+  // GET /v1/prospect/rules
+  if (req.method === "GET" && url.pathname === "/v1/prospect/rules") {
+    const u = await authSessionUser(req, env, requestId);
+
+    const rows = await env.DB.prepare(
+      `SELECT rule_id, name, description, match_severity, match_entity_type,
+              match_keywords, match_source_id, match_cvss_min, services_json,
+              solution_template, priority, enabled, created_at, updated_at
+       FROM use_case_rules ORDER BY priority ASC`
+    ).all();
+
+    return okJson({ items: rows.results ?? [] }, requestId, corsHeaders(req, env));
+  }
+
+  // ---- PROSPECT RULES: create ----
+  // POST /v1/prospect/rules
+  if (req.method === "POST" && url.pathname === "/v1/prospect/rules") {
+    const u = await authSessionUser(req, env, requestId);
+
+    const body = await req.json().catch(() => null) as null | {
+      name?: string; description?: string;
+      match_severity?: string; match_entity_type?: string;
+      match_keywords?: string; match_source_id?: string; match_cvss_min?: number;
+      services_json?: string; solution_template?: string; priority?: number;
+    };
+    if (!body?.name || !body?.services_json || !body?.solution_template) {
+      return err("invalid_request", "name, services_json, and solution_template are required", requestId, 400, corsHeaders(req, env));
+    }
+
+    const ruleId = uuid();
+    await env.DB.prepare(
+      `INSERT INTO use_case_rules (rule_id, name, description, match_severity, match_entity_type,
+        match_keywords, match_source_id, match_cvss_min, services_json, solution_template, priority)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    ).bind(
+      ruleId, body.name, body.description ?? null,
+      body.match_severity ?? null, body.match_entity_type ?? null,
+      body.match_keywords ?? null, body.match_source_id ?? null, body.match_cvss_min ?? null,
+      body.services_json, body.solution_template, body.priority ?? 100,
+    ).run();
+
+    return okJson({ ok: true, rule_id: ruleId }, requestId, corsHeaders(req, env));
+  }
+
+  // ---- PROSPECT RULES: update ----
+  // PUT /v1/prospect/rules/:id
+  if (req.method === "PUT" && url.pathname.match(/^\/v1\/prospect\/rules\/[^/]+$/)) {
+    const u = await authSessionUser(req, env, requestId);
+    const ruleId = url.pathname.split("/").pop()!;
+
+    const body = await req.json().catch(() => null) as null | Record<string, unknown>;
+    if (!body) return err("invalid_request", "Invalid JSON body", requestId, 400, corsHeaders(req, env));
+
+    const sets: string[] = [];
+    const params: unknown[] = [];
+    const allowed = ["name", "description", "match_severity", "match_entity_type",
+      "match_keywords", "match_source_id", "match_cvss_min", "services_json",
+      "solution_template", "priority", "enabled"];
+
+    for (const key of allowed) {
+      if (key in body) {
+        sets.push(`${key} = ?`);
+        params.push(body[key] ?? null);
+      }
+    }
+    if (sets.length === 0) return err("invalid_request", "No valid fields to update", requestId, 400, corsHeaders(req, env));
+
+    sets.push("updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now')");
+    params.push(ruleId);
+
+    const result = await env.DB.prepare(
+      `UPDATE use_case_rules SET ${sets.join(", ")} WHERE rule_id = ?`
+    ).bind(...params).run();
+
+    if (!result.meta.changes) return err("not_found", "Rule not found", requestId, 404, corsHeaders(req, env));
+    return okJson({ ok: true, rule_id: ruleId }, requestId, corsHeaders(req, env));
+  }
+
+  // ---- PROSPECT RULES: delete ----
+  // DELETE /v1/prospect/rules/:id
+  if (req.method === "DELETE" && url.pathname.match(/^\/v1\/prospect\/rules\/[^/]+$/)) {
+    const u = await authSessionUser(req, env, requestId);
+    const ruleId = url.pathname.split("/").pop()!;
+
+    const result = await env.DB.prepare(
+      `DELETE FROM use_case_rules WHERE rule_id = ?`
+    ).bind(ruleId).run();
+
+    if (!result.meta.changes) return err("not_found", "Rule not found", requestId, 404, corsHeaders(req, env));
+    return okJson({ ok: true, rule_id: ruleId }, requestId, corsHeaders(req, env));
+  }
+
+  // ---- PROSPECT REGRESSIONS: query ----
+  // GET /v1/prospect/regressions
+  if (req.method === "GET" && url.pathname === "/v1/prospect/regressions") {
+    const u = await authSessionUser(req, env, requestId);
+
+    const dimension = url.searchParams.get("dimension");
+    const minCount = Math.max(1, Number(url.searchParams.get("min_count") ?? "2"));
+    const limit = Math.min(200, Math.max(1, Number(url.searchParams.get("limit") ?? "50")));
+
+    const clauses: string[] = ["occurrence_count >= ?"];
+    const params: unknown[] = [minCount];
+    if (dimension) { clauses.push("dimension = ?"); params.push(dimension); }
+    params.push(limit);
+
+    const rows = await env.DB.prepare(
+      `SELECT regression_id, dimension, key, occurrence_count, first_seen_at,
+              last_seen_at, lead_ids_json, severity_trend, updated_at
+       FROM prospect_regressions
+       WHERE ${clauses.join(" AND ")}
+       ORDER BY occurrence_count DESC LIMIT ?`
+    ).bind(...params).all();
+
+    return okJson({ items: rows.results ?? [] }, requestId, corsHeaders(req, env));
+  }
+
+  // ---- PROSPECT REGRESSIONS: detect (internal/admin) ----
+  // POST /v1/prospect/regressions/detect
+  if (req.method === "POST" && url.pathname === "/v1/prospect/regressions/detect") {
+    const tok = req.headers.get("X-Internal-Token") || "";
+    const adminTok = req.headers.get("X-Admin-Token") || "";
+    const authed = (env.INTERNAL_TOKEN && safeEqual(tok, env.INTERNAL_TOKEN))
+      || safeEqual(adminTok, env.ADMIN_TOKEN);
+    if (!authed) return err("forbidden", "Forbidden", requestId, 403, corsHeaders(req, env));
+
+    // Entity dimension: group leads by entity_name
+    const entities = await env.DB.prepare(`
+      SELECT entity_name as key, COUNT(*) as cnt,
+             MIN(created_at) as first_seen, MAX(created_at) as last_seen,
+             json_group_array(lead_id) as lead_ids
+      FROM prospect_leads
+      WHERE status != 'archived'
+      GROUP BY entity_name HAVING cnt >= 2
+    `).all<{ key: string; cnt: number; first_seen: string; last_seen: string; lead_ids: string }>();
+
+    // Vuln class dimension
+    const vulnClasses = await env.DB.prepare(`
+      SELECT CASE
+        WHEN summary LIKE '%trading%' OR summary LIKE '%order%' OR summary LIKE '%execution%' OR summary LIKE '%FIX%' THEN 'trade-execution'
+        WHEN summary LIKE '%settlement%' OR summary LIKE '%clearing%' OR summary LIKE '%reconcil%' THEN 'settlement-clearing'
+        WHEN summary LIKE '%market data%' OR summary LIKE '%price%' OR summary LIKE '%feed%' OR summary LIKE '%quote%' THEN 'market-data-integrity'
+        WHEN summary LIKE '%broker%' OR summary LIKE '%custod%' OR summary LIKE '%portfolio%' THEN 'brokerage-platform'
+        WHEN summary LIKE '%payment%' OR summary LIKE '%ledger%' OR summary LIKE '%ACH%' OR summary LIKE '%SWIFT%' THEN 'payment-ledger'
+        WHEN summary LIKE '%API%' OR summary LIKE '%gateway%' OR summary LIKE '%webhook%' THEN 'api-infrastructure'
+        WHEN summary LIKE '%KYC%' OR summary LIKE '%AML%' OR summary LIKE '%compliance%' OR summary LIKE '%audit%' THEN 'regulatory-compliance'
+        WHEN summary LIKE '%vendor%' OR summary LIKE '%supply chain%' OR summary LIKE '%third-party%' THEN 'counterparty-vendor'
+        WHEN summary LIKE '%authentication%' OR summary LIKE '%credential%' OR summary LIKE '%OAuth%' THEN 'auth-access'
+        ELSE 'general-infrastructure'
+      END as key,
+      COUNT(*) as cnt,
+      MIN(created_at) as first_seen, MAX(created_at) as last_seen,
+      json_group_array(lead_id) as lead_ids
+      FROM prospect_leads
+      WHERE status != 'archived'
+      GROUP BY key HAVING cnt >= 3
+    `).all<{ key: string; cnt: number; first_seen: string; last_seen: string; lead_ids: string }>();
+
+    // Upsert entity regressions
+    let entityCount = 0;
+    for (const row of entities.results ?? []) {
+      await env.DB.prepare(`
+        INSERT INTO prospect_regressions (regression_id, dimension, key, occurrence_count, first_seen_at, last_seen_at, lead_ids_json)
+        VALUES (?, 'entity', ?, ?, ?, ?, ?)
+        ON CONFLICT (dimension, key) DO UPDATE SET
+          occurrence_count = excluded.occurrence_count,
+          last_seen_at = excluded.last_seen_at,
+          lead_ids_json = excluded.lead_ids_json,
+          updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now')
+      `).bind(uuid(), row.key, row.cnt, row.first_seen, row.last_seen, row.lead_ids).run();
+      entityCount++;
+    }
+
+    // Upsert vuln_class regressions
+    let vulnCount = 0;
+    for (const row of vulnClasses.results ?? []) {
+      await env.DB.prepare(`
+        INSERT INTO prospect_regressions (regression_id, dimension, key, occurrence_count, first_seen_at, last_seen_at, lead_ids_json)
+        VALUES (?, 'vuln_class', ?, ?, ?, ?, ?)
+        ON CONFLICT (dimension, key) DO UPDATE SET
+          occurrence_count = excluded.occurrence_count,
+          last_seen_at = excluded.last_seen_at,
+          lead_ids_json = excluded.lead_ids_json,
+          updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now')
+      `).bind(uuid(), row.key, row.cnt, row.first_seen, row.last_seen, row.lead_ids).run();
+      vulnCount++;
+    }
+
+    return okJson({ ok: true, entity_regressions: entityCount, vuln_class_regressions: vulnCount }, requestId, corsHeaders(req, env));
+  }
+
+  // ---- PROSPECT OUTREACH: approve ----
+  // POST /v1/prospect/leads/:id/outreach/approve
+  if (req.method === "POST" && url.pathname.match(/^\/v1\/prospect\/leads\/[^/]+\/outreach\/approve$/)) {
+    const u = await authSessionUser(req, env, requestId);
+    const parts = url.pathname.split("/");
+    const leadId = parts[parts.length - 3];
+
+    const outreach = await env.DB.prepare(
+      `SELECT outreach_id, status FROM prospect_outreach WHERE lead_id = ? ORDER BY created_at DESC LIMIT 1`
+    ).bind(leadId).first<{ outreach_id: string; status: string }>();
+
+    if (!outreach) return err("not_found", "No outreach found for this lead", requestId, 404, corsHeaders(req, env));
+    if (outreach.status !== "draft") return err("invalid_request", `Outreach is ${outreach.status}, not draft`, requestId, 400, corsHeaders(req, env));
+
+    await env.DB.prepare(
+      `UPDATE prospect_outreach SET status = 'approved' WHERE outreach_id = ?`
+    ).bind(outreach.outreach_id).run();
+
+    return okJson({ ok: true, outreach_id: outreach.outreach_id, status: "approved" }, requestId, corsHeaders(req, env));
+  }
+
+  // ---- PROSPECT OUTREACH: send ----
+  // POST /v1/prospect/leads/:id/outreach/send
+  if (req.method === "POST" && url.pathname.match(/^\/v1\/prospect\/leads\/[^/]+\/outreach\/send$/)) {
+    const u = await authSessionUser(req, env, requestId);
+    const parts = url.pathname.split("/");
+    const leadId = parts[parts.length - 3];
+
+    const outreach = await env.DB.prepare(
+      `SELECT outreach_id, subject, body_text, status FROM prospect_outreach WHERE lead_id = ? ORDER BY created_at DESC LIMIT 1`
+    ).bind(leadId).first<{ outreach_id: string; subject: string; body_text: string; status: string }>();
+
+    if (!outreach) return err("not_found", "No outreach found for this lead", requestId, 404, corsHeaders(req, env));
+    if (outreach.status !== "approved") return err("invalid_request", `Outreach must be approved before sending (current: ${outreach.status})`, requestId, 400, corsHeaders(req, env));
+
+    const lead = await env.DB.prepare(
+      `SELECT entity_name, entity_domain FROM prospect_leads WHERE lead_id = ?`
+    ).bind(leadId).first<{ entity_name: string; entity_domain: string | null }>();
+
+    const body = await req.json().catch(() => ({})) as { recipient_email?: string; recipient_name?: string };
+    const recipientEmail = body.recipient_email || (lead?.entity_domain ? `security@${lead.entity_domain}` : null);
+    if (!recipientEmail) return err("invalid_request", "recipient_email required (no domain to derive from)", requestId, 400, corsHeaders(req, env));
+    const recipientName = body.recipient_name || lead?.entity_name || "Security Team";
+
+    // HMAC-sign and send to haiphen-contact
+    const messageId = uuid();
+    const payload = JSON.stringify({
+      outreach_id: outreach.outreach_id,
+      recipient_email: recipientEmail,
+      recipient_name: recipientName,
+      subject: outreach.subject,
+      body_text: outreach.body_text,
+    });
+
+    const ts = String(Date.now());
+    const sig = await hmacSha256Hex(env.INTERNAL_TOKEN, `${ts}.${payload}`);
+
+    try {
+      const contactRes = await fetch("https://contact.haiphen.io/api/prospect/outreach/send", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-haiphen-ts": ts,
+          "x-haiphen-sig": sig,
+        },
+        body: payload,
+      });
+
+      const contactData = await contactRes.json().catch(() => ({})) as { ok?: boolean; messageId?: string };
+
+      // Record delivery
+      await env.DB.prepare(
+        `INSERT INTO prospect_outreach_messages (message_id, outreach_id, sendgrid_msg_id, status, sent_at)
+         VALUES (?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%fZ','now'))`
+      ).bind(messageId, outreach.outreach_id, contactData.messageId ?? null, contactRes.ok ? "sent" : "failed").run();
+
+      if (contactRes.ok) {
+        // Update outreach and lead status
+        await env.DB.prepare(
+          `UPDATE prospect_outreach SET status = 'sent', sent_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE outreach_id = ?`
+        ).bind(outreach.outreach_id).run();
+        await env.DB.prepare(
+          `UPDATE prospect_leads SET status = 'contacted', updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE lead_id = ?`
+        ).bind(leadId).run();
+      }
+
+      return okJson({
+        ok: contactRes.ok,
+        message_id: messageId,
+        outreach_id: outreach.outreach_id,
+        recipient_email: recipientEmail,
+        status: contactRes.ok ? "sent" : "failed",
+      }, requestId, corsHeaders(req, env));
+    } catch (e: any) {
+      await env.DB.prepare(
+        `INSERT INTO prospect_outreach_messages (message_id, outreach_id, status, error_detail)
+         VALUES (?, ?, 'failed', ?)`
+      ).bind(messageId, outreach.outreach_id, String(e.message ?? e)).run();
+
+      return err("internal", "Failed to send outreach email", requestId, 500, corsHeaders(req, env));
+    }
+  }
+
+  // ==============================================================
+  // INVESTIGATION ENGINE — Closed-loop Detect → Analyze → Solve → Confirm
+  // ==============================================================
+
+  const SERVICE_PIPELINE = ["secure", "network", "causal", "risk", "graph", "supply"] as const;
+  const SERVICE_WEIGHTS: Record<string, number> = {
+    secure: 0.20, network: 0.15, causal: 0.20, risk: 0.20, graph: 0.10, supply: 0.15,
+  };
+  const SERVICE_ORIGINS: Record<string, string> = {
+    secure: "https://secure.haiphen.io",
+    network: "https://network.haiphen.io",
+    graph: "https://graph.haiphen.io",
+    risk: "https://risk.haiphen.io",
+    causal: "https://causal.haiphen.io",
+    supply: "https://supply.haiphen.io",
+  };
+
+  // ---- Helper: check budget via watchdog status ----
+  async function checkBudget(): Promise<{ allowed: boolean; level: string; detail?: string }> {
+    try {
+      let cached = await env.CACHE_KV.get("watchdog:status");
+      if (!cached) {
+        const wdAc = new AbortController();
+        const wdTimer = setTimeout(() => wdAc.abort(), 5000);
+        const res = await fetch("https://watchdog.haiphen.io/v1/watchdog/status", {
+          signal: wdAc.signal,
+          headers: env.INTERNAL_TOKEN ? { "X-Internal-Token": env.INTERNAL_TOKEN } : {},
+        });
+        clearTimeout(wdTimer);
+        if (res.ok) {
+          cached = await res.text();
+          await env.CACHE_KV.put("watchdog:status", cached, { expirationTtl: 300 });
+        }
+      }
+      if (cached) {
+        const wd = JSON.parse(cached);
+        const resources = wd.resources || wd.usage || {};
+        const maxPct = Math.max(...Object.values(resources).map((v: any) => typeof v === "number" ? v : (v?.pct ?? 0)));
+        if (maxPct >= 80) return { allowed: false, level: "exceeded", detail: `Resource usage at ${maxPct}%` };
+        if (maxPct >= 60) return { allowed: true, level: "constrained" };
+      }
+    } catch { /* fail-open: allow investigation */ }
+    return { allowed: true, level: "normal" };
+  }
+
+  // ---- Helper: run sequential pipeline ----
+  async function runPipeline(
+    investigationId: string,
+    lead: { lead_id: string; entity_name: string; vulnerability_id: string | null; summary: string; cvss_score: number | null; source_id: string | null },
+  ): Promise<{ steps: Array<{ service: string; step_id: string; score: number | null; findings: string[]; recommendation: string | null; duration_ms: number; status: string }>; aggregateScore: number }> {
+    const upstreamContext: { prior_scores: Record<string, number>; prior_findings: string[]; investigation_id: string } = {
+      prior_scores: {},
+      prior_findings: [],
+      investigation_id: investigationId,
+    };
+
+    const steps: Array<{ service: string; step_id: string; score: number | null; findings: string[]; recommendation: string | null; duration_ms: number; status: string }> = [];
+
+    for (let i = 0; i < SERVICE_PIPELINE.length; i++) {
+      const svc = SERVICE_PIPELINE[i];
+      const stepId = uuid();
+
+      await env.DB.prepare(
+        `INSERT INTO investigation_steps (step_id, investigation_id, service, step_order, status, input_context_json)
+         VALUES (?, ?, ?, ?, 'running', ?)`
+      ).bind(stepId, investigationId, svc, i, JSON.stringify(upstreamContext)).run();
+
+      const t0 = Date.now();
+      try {
+        const origin = SERVICE_ORIGINS[svc];
+        if (!origin || !env.INTERNAL_TOKEN) throw new Error("Service not configured");
+
+        const ac = new AbortController();
+        const timer = setTimeout(() => ac.abort(), 10000);
+        const svcRes = await fetch(`${origin}/v1/${svc}/prospect-analyze`, {
+          method: "POST",
+          signal: ac.signal,
+          headers: { "Content-Type": "application/json", "X-Internal-Token": env.INTERNAL_TOKEN },
+          body: JSON.stringify({
+            lead_id: lead.lead_id,
+            entity_name: lead.entity_name,
+            vulnerability_id: lead.vulnerability_id,
+            summary: lead.summary,
+            cvss_score: lead.cvss_score,
+            upstream_context: upstreamContext,
+          }),
+        });
+        clearTimeout(timer);
+
+        const svcData = await svcRes.json().catch(() => null) as any;
+        const durationMs = Date.now() - t0;
+        const score: number | null = svcData?.score ?? null;
+        const findings: string[] = Array.isArray(svcData?.findings) ? svcData.findings : [];
+        const recommendation: string | null = svcData?.recommendation ?? null;
+
+        await env.DB.prepare(
+          `UPDATE investigation_steps SET status = 'completed', score = ?, findings_json = ?, recommendation = ?, duration_ms = ? WHERE step_id = ?`
+        ).bind(score, JSON.stringify(findings), recommendation, durationMs, stepId).run();
+
+        // Update upstream context for next service
+        if (score !== null) upstreamContext.prior_scores[svc] = score;
+        upstreamContext.prior_findings.push(...findings);
+
+        steps.push({ service: svc, step_id: stepId, score, findings, recommendation, duration_ms: durationMs, status: "completed" });
+      } catch (e: any) {
+        const durationMs = Date.now() - t0;
+        await env.DB.prepare(
+          `UPDATE investigation_steps SET status = 'failed', duration_ms = ? WHERE step_id = ?`
+        ).bind(durationMs, stepId).run();
+        steps.push({ service: svc, step_id: stepId, score: null, findings: [], recommendation: null, duration_ms: durationMs, status: "failed" });
+      }
+    }
+
+    // Compute weighted aggregate, redistributing weights for failed steps
+    let totalWeight = 0;
+    let weightedSum = 0;
+    for (const step of steps) {
+      if (step.status === "completed" && step.score !== null) {
+        const w = SERVICE_WEIGHTS[step.service] ?? 0;
+        totalWeight += w;
+        weightedSum += step.score * w;
+      }
+    }
+    const aggregateScore = totalWeight > 0 ? Math.round((weightedSum / totalWeight) * 100) / 100 : 0;
+
+    return { steps, aggregateScore };
+  }
+
+  // ---- Helper: derive requirements ----
+  function deriveRequirements(
+    steps: Array<{ service: string; score: number | null; findings: string[] }>,
+    lead: { entity_name: string; source_id: string | null },
+  ): Array<{ category: string; description: string }> {
+    const reqs: Array<{ category: string; description: string }> = [];
+    const scores: Record<string, { score: number | null; findings: string[] }> = {};
+    for (const s of steps) scores[s.service] = s;
+
+    if ((scores.secure?.score ?? 0) > 50) {
+      reqs.push({ category: "data_gap", description: `Entity "${lead.entity_name}" scored high on security scan — ensure crawler tracks this entity` });
+    }
+    if ((scores.causal?.score ?? 0) > 40 && (scores.graph?.score ?? 0) < 20) {
+      reqs.push({ category: "capability_gap", description: "Cascade risk detected but no entity relationship data — need vendor/counterparty mapping" });
+    }
+    if ((scores.risk?.score ?? 0) > 60) {
+      reqs.push({ category: "monitor_needed", description: `High risk score (${scores.risk!.score}) — add continuous monitoring for ${lead.entity_name}` });
+    }
+    if (scores.supply?.findings?.some(f => f.toLowerCase().includes("dependency")) && lead.source_id !== "shodan") {
+      reqs.push({ category: "integration_needed", description: "Deep supply chain exposure — Shodan reconnaissance recommended for network surface" });
+    }
+    if ((scores.network?.score ?? 0) > 50 && (scores.secure?.score ?? 0) < 30) {
+      reqs.push({ category: "data_gap", description: "Network protocol exposure without matching CVE data — expand vulnerability keyword scope" });
+    }
+    if ((scores.risk?.score ?? 0) > 50 && (scores.causal?.score ?? 0) < 20) {
+      reqs.push({ category: "capability_gap", description: "High business risk without cascade mapping — causal chain analysis needed" });
+    }
+    if ((scores.secure?.score ?? 0) > 60 && (scores.supply?.score ?? 0) < 25) {
+      reqs.push({ category: "data_gap", description: "Security vulnerability confirmed but no supply chain context — vendor mapping needed" });
+    }
+    if ((scores.graph?.score ?? 0) > 50 && (scores.supply?.score ?? 0) > 50) {
+      reqs.push({ category: "monitor_needed", description: "Both graph and supply chain show elevated risk — set up cross-entity monitoring" });
+    }
+
+    return reqs;
+  }
+
+  // ---- Helper: Claude API synthesis ----
+  async function callClaudeForSynthesis(
+    lead: { entity_name: string; vulnerability_id: string | null; summary: string; cvss_score: number | null },
+    steps: Array<{ service: string; score: number | null; findings: string[] }>,
+  ): Promise<{ summary: string; impact: string; recommendations: string[] } | null> {
+    if (!env.ANTHROPIC_API_KEY) return null;
+
+    try {
+      const response = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {
+          "x-api-key": env.ANTHROPIC_API_KEY,
+          "anthropic-version": "2023-06-01",
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-5-20250929",
+          max_tokens: 1024,
+          messages: [{
+            role: "user",
+            content: `You are a fintech security analyst. Synthesize this investigation for ${lead.entity_name} (${lead.vulnerability_id ?? "no CVE"}).
+Summary: ${lead.summary}
+CVSS: ${lead.cvss_score ?? "N/A"}
+Service results:
+${steps.filter(s => s.score !== null).map(s => `${s.service}(score ${s.score}): ${s.findings.join("; ")}`).join("\n")}
+
+Return ONLY valid JSON: {"summary":"...","impact":"...","recommendations":["..."]}`
+          }],
+        }),
+      });
+
+      // Increment daily counter
+      const dateKey = `claude:calls:${new Date().toISOString().split("T")[0]}`;
+      const current = parseInt(await env.CACHE_KV.get(dateKey) ?? "0");
+      await env.CACHE_KV.put(dateKey, String(current + 1), { expirationTtl: 86400 });
+
+      if (!response.ok) return null;
+      const data = await response.json() as any;
+      const text = data?.content?.[0]?.text ?? "";
+      return JSON.parse(text);
+    } catch {
+      return null;
+    }
+  }
+
+  // ---- POST /v1/prospect/leads/:id/investigate ----
+  if (req.method === "POST" && url.pathname.match(/^\/v1\/prospect\/leads\/[^/]+\/investigate$/)) {
+    const u = await authSessionUser(req, env, requestId);
+    const parts = url.pathname.split("/");
+    const leadId = parts[parts.length - 2];
+
+    const lead = await env.DB.prepare(
+      `SELECT lead_id, entity_name, vulnerability_id, summary, cvss_score, source_id, severity, entity_type, services_json FROM prospect_leads WHERE lead_id = ?`
+    ).bind(leadId).first<{
+      lead_id: string; entity_name: string; vulnerability_id: string | null;
+      summary: string; cvss_score: number | null; source_id: string | null;
+      severity: string | null; entity_type: string | null; services_json: string | null;
+    }>();
+    if (!lead) return err("not_found", "Lead not found", requestId, 404, corsHeaders(req, env));
+
+    // Budget gate
+    const budget = await checkBudget();
+    if (!budget.allowed) {
+      return err("rate_limited", `Budget exceeded — investigation deferred. ${budget.detail ?? ""}`, requestId, 503, corsHeaders(req, env));
+    }
+
+    const investigationId = uuid();
+    const startedAt = new Date().toISOString();
+
+    await env.DB.prepare(
+      `INSERT INTO investigations (investigation_id, lead_id, user_id, status, budget_level, started_at)
+       VALUES (?, ?, ?, 'running', ?, ?)`
+    ).bind(investigationId, leadId, u.user_login, budget.level, startedAt).run();
+
+    await env.DB.prepare(
+      `UPDATE prospect_leads SET investigation_status = 'investigating', updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE lead_id = ?`
+    ).bind(leadId).run();
+
+    // Run sequential pipeline
+    const { steps, aggregateScore } = await runPipeline(investigationId, lead);
+
+    // Claude API triple-gate
+    let claudeSummary: { summary: string; impact: string; recommendations: string[] } | null = null;
+    let claudeUsed = 0;
+    const maxStepScore = Math.max(...steps.filter(s => s.score !== null).map(s => s.score!), 0);
+    const gate1 = aggregateScore >= 60 || maxStepScore >= 80;
+    const gate2 = budget.level === "normal";
+    const dateKey = `claude:calls:${new Date().toISOString().split("T")[0]}`;
+    const dailyCalls = parseInt(await env.CACHE_KV.get(dateKey) ?? "0");
+    const gate3 = dailyCalls < 50;
+
+    if (gate1 && gate2 && gate3) {
+      claudeSummary = await callClaudeForSynthesis(lead, steps);
+      if (claudeSummary) claudeUsed = 1;
+    }
+
+    // Derive requirements
+    const requirements = deriveRequirements(steps, lead);
+    for (const rq of requirements) {
+      await env.DB.prepare(
+        `INSERT INTO investigation_requirements (requirement_id, investigation_id, category, description)
+         VALUES (?, ?, ?, ?)`
+      ).bind(uuid(), investigationId, rq.category, rq.description).run();
+    }
+
+    const completedAt = new Date().toISOString();
+    await env.DB.prepare(
+      `UPDATE investigations SET status = 'completed', aggregate_score = ?, risk_score_before = ?,
+       claude_used = ?, claude_summary = ?, requirements_json = ?, completed_at = ?,
+       updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now')
+       WHERE investigation_id = ?`
+    ).bind(
+      aggregateScore, aggregateScore, claudeUsed,
+      claudeSummary ? JSON.stringify(claudeSummary) : null,
+      JSON.stringify(requirements), completedAt, investigationId,
+    ).run();
+
+    await env.DB.prepare(
+      `UPDATE prospect_leads SET investigation_status = 'investigated', updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE lead_id = ?`
+    ).bind(leadId).run();
+
+    return okJson({
+      investigation_id: investigationId,
+      lead_id: leadId,
+      status: "completed",
+      aggregate_score: aggregateScore,
+      budget_level: budget.level,
+      claude_used: claudeUsed,
+      claude_summary: claudeSummary,
+      steps: steps.map(s => ({ service: s.service, score: s.score, findings: s.findings, recommendation: s.recommendation, duration_ms: s.duration_ms, status: s.status })),
+      requirements,
+      started_at: startedAt,
+      completed_at: completedAt,
+    }, requestId, corsHeaders(req, env));
+  }
+
+  // ---- POST /v1/prospect/investigations/:id/solve ----
+  if (req.method === "POST" && url.pathname.match(/^\/v1\/prospect\/investigations\/[^/]+\/solve$/)) {
+    const u = await authSessionUser(req, env, requestId);
+    const parts = url.pathname.split("/");
+    const investigationId = parts[parts.length - 2];
+
+    const inv = await env.DB.prepare(
+      `SELECT investigation_id, lead_id, user_id, status FROM investigations WHERE investigation_id = ? AND user_id = ?`
+    ).bind(investigationId, u.user_login).first<{ investigation_id: string; lead_id: string; user_id: string; status: string }>();
+    if (!inv) return err("not_found", "Investigation not found", requestId, 404, corsHeaders(req, env));
+
+    const reqs = await env.DB.prepare(
+      `SELECT requirement_id, category, description, resolved FROM investigation_requirements WHERE investigation_id = ? AND resolved = 0`
+    ).bind(investigationId).all<{ requirement_id: string; category: string; description: string; resolved: number }>();
+
+    const actionsTaken: string[] = [];
+    let resolvedCount = 0;
+
+    for (const r of reqs.results ?? []) {
+      let action: string | null = null;
+
+      if (r.category === "data_gap") {
+        // Add entity keywords to NVD source config
+        try {
+          const entityName = r.description.match(/"([^"]+)"/)?.[1];
+          if (entityName) {
+            const src = await env.DB.prepare(`SELECT source_id, config_json FROM prospect_sources WHERE source_id = 'nvd'`).first<{ source_id: string; config_json: string | null }>();
+            if (src?.config_json) {
+              const cfg = JSON.parse(src.config_json);
+              const keywords: string[] = cfg.keywords ?? [];
+              if (!keywords.includes(entityName.toLowerCase())) {
+                keywords.push(entityName.toLowerCase());
+                cfg.keywords = keywords;
+                await env.DB.prepare(`UPDATE prospect_sources SET config_json = ? WHERE source_id = 'nvd'`).bind(JSON.stringify(cfg)).run();
+                action = `Added "${entityName}" to NVD source keywords`;
+              } else {
+                action = `Entity "${entityName}" already in NVD keywords`;
+              }
+            }
+          }
+        } catch { action = "Data gap flagged — manual review needed"; }
+      } else if (r.category === "monitor_needed") {
+        // Add proactive regression entry
+        try {
+          const lead = await env.DB.prepare(`SELECT entity_name FROM prospect_leads WHERE lead_id = ?`).bind(inv.lead_id).first<{ entity_name: string }>();
+          if (lead) {
+            await env.DB.prepare(
+              `INSERT OR IGNORE INTO prospect_regressions (regression_id, dimension, key, occurrence_count, severity_trend, first_seen_at, last_seen_at)
+               VALUES (?, 'entity', ?, 1, 'watching', strftime('%Y-%m-%dT%H:%M:%fZ','now'), strftime('%Y-%m-%dT%H:%M:%fZ','now'))`
+            ).bind(uuid(), lead.entity_name).run();
+            action = `Added "${lead.entity_name}" to regression watchlist`;
+          }
+        } catch { action = "Monitor flagged — manual review needed"; }
+      } else if (r.category === "integration_needed") {
+        // Add Shodan query to source config
+        try {
+          const src = await env.DB.prepare(`SELECT source_id, config_json FROM prospect_sources WHERE source_id = 'shodan'`).first<{ source_id: string; config_json: string | null }>();
+          if (src?.config_json) {
+            const cfg = JSON.parse(src.config_json);
+            const queries: string[] = cfg.queries ?? [];
+            const lead = await env.DB.prepare(`SELECT entity_name FROM prospect_leads WHERE lead_id = ?`).bind(inv.lead_id).first<{ entity_name: string }>();
+            if (lead && !queries.some(q => q.includes(lead.entity_name.toLowerCase()))) {
+              queries.push(`org:"${lead.entity_name}"`);
+              cfg.queries = queries;
+              await env.DB.prepare(`UPDATE prospect_sources SET config_json = ? WHERE source_id = 'shodan'`).bind(JSON.stringify(cfg)).run();
+              action = `Added Shodan query for "${lead.entity_name}"`;
+            }
+          }
+        } catch { action = "Integration flagged — manual review needed"; }
+      } else {
+        // capability_gap: human action needed
+        action = null;
+      }
+
+      if (action) {
+        await env.DB.prepare(
+          `UPDATE investigation_requirements SET resolved = 1, resolution_action = ? WHERE requirement_id = ?`
+        ).bind(action, r.requirement_id).run();
+        actionsTaken.push(action);
+        resolvedCount++;
+      }
+    }
+
+    const unresolvedCount = (reqs.results?.length ?? 0) - resolvedCount;
+    await env.DB.prepare(
+      `UPDATE investigations SET solutions_json = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE investigation_id = ?`
+    ).bind(JSON.stringify(actionsTaken), investigationId).run();
+
+    return okJson({ ok: true, investigation_id: investigationId, resolved_count: resolvedCount, unresolved_count: unresolvedCount, actions_taken: actionsTaken }, requestId, corsHeaders(req, env));
+  }
+
+  // ---- POST /v1/prospect/leads/:id/re-investigate ----
+  if (req.method === "POST" && url.pathname.match(/^\/v1\/prospect\/leads\/[^/]+\/re-investigate$/)) {
+    const u = await authSessionUser(req, env, requestId);
+    const parts = url.pathname.split("/");
+    const leadId = parts[parts.length - 2];
+
+    const lead = await env.DB.prepare(
+      `SELECT lead_id, entity_name, vulnerability_id, summary, cvss_score, source_id FROM prospect_leads WHERE lead_id = ?`
+    ).bind(leadId).first<{
+      lead_id: string; entity_name: string; vulnerability_id: string | null;
+      summary: string; cvss_score: number | null; source_id: string | null;
+    }>();
+    if (!lead) return err("not_found", "Lead not found", requestId, 404, corsHeaders(req, env));
+
+    // Find most recent completed investigation
+    const prevInv = await env.DB.prepare(
+      `SELECT investigation_id, aggregate_score, risk_score_before FROM investigations
+       WHERE lead_id = ? AND status = 'completed' ORDER BY created_at DESC LIMIT 1`
+    ).bind(leadId).first<{ investigation_id: string; aggregate_score: number | null; risk_score_before: number | null }>();
+
+    const riskScoreBefore = prevInv?.risk_score_before ?? prevInv?.aggregate_score ?? null;
+
+    // Budget gate
+    const budget = await checkBudget();
+    if (!budget.allowed) {
+      return err("rate_limited", `Budget exceeded — re-investigation deferred. ${budget.detail ?? ""}`, requestId, 503, corsHeaders(req, env));
+    }
+
+    const investigationId = uuid();
+    const startedAt = new Date().toISOString();
+
+    await env.DB.prepare(
+      `INSERT INTO investigations (investigation_id, lead_id, user_id, status, budget_level, risk_score_before, started_at)
+       VALUES (?, ?, ?, 're_investigating', ?, ?, ?)`
+    ).bind(investigationId, leadId, u.user_login, budget.level, riskScoreBefore, startedAt).run();
+
+    await env.DB.prepare(
+      `UPDATE prospect_leads SET investigation_status = 're_investigating', updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE lead_id = ?`
+    ).bind(leadId).run();
+
+    const { steps, aggregateScore } = await runPipeline(investigationId, lead);
+
+    const riskReduction = riskScoreBefore !== null ? Math.round((riskScoreBefore - aggregateScore) * 100) / 100 : null;
+
+    const completedAt = new Date().toISOString();
+    await env.DB.prepare(
+      `UPDATE investigations SET status = 'completed', aggregate_score = ?, risk_score_after = ?,
+       completed_at = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now')
+       WHERE investigation_id = ?`
+    ).bind(aggregateScore, aggregateScore, completedAt, investigationId).run();
+
+    await env.DB.prepare(
+      `UPDATE prospect_leads SET investigation_status = 'investigated', updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE lead_id = ?`
+    ).bind(leadId).run();
+
+    return okJson({
+      investigation_id: investigationId,
+      lead_id: leadId,
+      status: "completed",
+      risk_score_before: riskScoreBefore,
+      risk_score_after: aggregateScore,
+      risk_reduction: riskReduction,
+      budget_level: budget.level,
+      steps: steps.map(s => ({ service: s.service, score: s.score, findings: s.findings, recommendation: s.recommendation, duration_ms: s.duration_ms, status: s.status })),
+      started_at: startedAt,
+      completed_at: completedAt,
+    }, requestId, corsHeaders(req, env));
+  }
+
+  // ---- GET /v1/prospect/investigations ----
+  if (req.method === "GET" && url.pathname === "/v1/prospect/investigations") {
+    const u = await authSessionUser(req, env, requestId);
+    const leadFilter = url.searchParams.get("lead_id");
+    const statusFilter = url.searchParams.get("status");
+    const limit = Math.min(parseInt(url.searchParams.get("limit") || "20", 10), 100);
+
+    let query = `SELECT investigation_id, lead_id, status, aggregate_score, claude_used, budget_level, created_at FROM investigations WHERE user_id = ?`;
+    const binds: unknown[] = [u.user_login];
+    if (leadFilter) { query += ` AND lead_id = ?`; binds.push(leadFilter); }
+    if (statusFilter) { query += ` AND status = ?`; binds.push(statusFilter); }
+    query += ` ORDER BY created_at DESC LIMIT ?`;
+    binds.push(limit);
+
+    const rows = await env.DB.prepare(query).bind(...binds).all();
+    return okJson({ items: rows.results ?? [] }, requestId, corsHeaders(req, env));
+  }
+
+  // ---- GET /v1/prospect/investigations/:id ----
+  const invDetailMatch = url.pathname.match(/^\/v1\/prospect\/investigations\/([a-f0-9-]+)$/);
+  if (req.method === "GET" && invDetailMatch) {
+    const u = await authSessionUser(req, env, requestId);
+    const investigationId = invDetailMatch[1];
+
+    const inv = await env.DB.prepare(
+      `SELECT * FROM investigations WHERE investigation_id = ? AND user_id = ?`
+    ).bind(investigationId, u.user_login).first();
+    if (!inv) return err("not_found", "Investigation not found", requestId, 404, corsHeaders(req, env));
+
+    const steps = await env.DB.prepare(
+      `SELECT step_id, service, step_order, status, score, findings_json, recommendation, duration_ms, input_context_json FROM investigation_steps WHERE investigation_id = ? ORDER BY step_order ASC`
+    ).bind(investigationId).all();
+
+    const reqs = await env.DB.prepare(
+      `SELECT requirement_id, category, description, resolved, resolution_action FROM investigation_requirements WHERE investigation_id = ?`
+    ).bind(investigationId).all();
+
+    return okJson({
+      ...inv,
+      claude_summary: inv.claude_summary ? JSON.parse(inv.claude_summary as string) : null,
+      requirements_json: inv.requirements_json ? JSON.parse(inv.requirements_json as string) : null,
+      solutions_json: inv.solutions_json ? JSON.parse(inv.solutions_json as string) : null,
+      steps: (steps.results ?? []).map((s: any) => ({
+        ...s,
+        findings: s.findings_json ? JSON.parse(s.findings_json) : [],
+        input_context: s.input_context_json ? JSON.parse(s.input_context_json) : null,
+        findings_json: undefined,
+        input_context_json: undefined,
+      })),
+      requirements: (reqs.results ?? []),
+    }, requestId, corsHeaders(req, env));
+  }
+
+  // ---- GET /v1/prospect/investigations/:id/requirements ----
+  const invReqMatch = url.pathname.match(/^\/v1\/prospect\/investigations\/([a-f0-9-]+)\/requirements$/);
+  if (req.method === "GET" && invReqMatch) {
+    const u = await authSessionUser(req, env, requestId);
+    const investigationId = invReqMatch[1];
+
+    const inv = await env.DB.prepare(
+      `SELECT investigation_id FROM investigations WHERE investigation_id = ? AND user_id = ?`
+    ).bind(investigationId, u.user_login).first();
+    if (!inv) return err("not_found", "Investigation not found", requestId, 404, corsHeaders(req, env));
+
+    const reqs = await env.DB.prepare(
+      `SELECT requirement_id, category, description, resolved, resolution_action, created_at FROM investigation_requirements WHERE investigation_id = ?`
+    ).bind(investigationId).all();
+
+    return okJson({ items: reqs.results ?? [] }, requestId, corsHeaders(req, env));
   }
 
   return err("not_found", "Not found", requestId, 404, corsHeaders(req, env));

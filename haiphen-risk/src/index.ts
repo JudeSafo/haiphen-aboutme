@@ -515,6 +515,74 @@ async function route(req: Request, env: Env): Promise<Response> {
     }, rid, cors);
   }
 
+  // POST /v1/risk/prospect-analyze (internal — service-to-service)
+  if (req.method === "POST" && url.pathname === "/v1/risk/prospect-analyze") {
+    const tok = req.headers.get("X-Internal-Token") || "";
+    if (!env.INTERNAL_TOKEN || tok !== env.INTERNAL_TOKEN) {
+      return errJson("forbidden", "Forbidden", rid, 403, cors);
+    }
+
+    const body = await req.json().catch(() => null) as null | {
+      lead_id: string; entity_name: string;
+      vulnerability_id?: string; summary: string;
+      cvss_score?: number;
+      upstream_context?: {
+        prior_scores: Record<string, number>;
+        prior_findings: string[];
+        investigation_id: string;
+      };
+    };
+    if (!body?.lead_id) return errJson("invalid_request", "Missing lead_id", rid, 400, cors);
+
+    const findings: string[] = [];
+    let score = 20; // baseline
+    const lower = body.summary.toLowerCase();
+
+    // Upstream context: aggregate prior scores into business impact baseline
+    const uc = body.upstream_context;
+    if (uc && uc.prior_scores) {
+      const priorVals = Object.values(uc.prior_scores);
+      if (priorVals.length > 0) {
+        const avgPrior = priorVals.reduce((a, b) => a + b, 0) / priorVals.length;
+        const boost = Math.min(Math.round(avgPrior * 0.15), 15);
+        score += boost;
+        findings.push(`Upstream average score ${avgPrior.toFixed(0)} feeds business impact (+${boost})`);
+      }
+    }
+
+    // CVSS-weighted business impact
+    const cvss = body.cvss_score ?? 0;
+    if (cvss >= 9.0) { score += 35; findings.push(`Critical CVSS ${cvss} — extreme business impact potential`); }
+    else if (cvss >= 7.0) { score += 25; findings.push(`High CVSS ${cvss} — significant business risk`); }
+    else if (cvss >= 4.0) { score += 10; findings.push(`Medium CVSS ${cvss} — moderate risk`); }
+
+    // Trade execution disruption
+    if (/trading|execution|order|matching engine/.test(lower)) {
+      score += 15;
+      findings.push("Trade execution disruption risk — potential for order loss or fill delay");
+    }
+    // Settlement delay
+    if (/settlement|clearing|reconcil/.test(lower)) {
+      score += 15;
+      findings.push("Settlement delay risk — position drift and failed trades possible");
+    }
+    // Client data exposure
+    if (/client|customer|account|pii|kyc/.test(lower)) {
+      score += 10;
+      findings.push("Client data exposure risk — regulatory and reputational impact");
+    }
+
+    score = Math.min(score, 100);
+
+    const recommendation = score >= 70
+      ? "High business impact — quantitative risk assessment recommended. Potential for significant financial loss or regulatory action."
+      : score >= 40
+      ? "Moderate business risk — include in next risk review cycle. Monitor for severity escalation."
+      : "Low quantitative risk — standard risk monitoring sufficient.";
+
+    return okJson({ score, findings, recommendation }, rid, cors);
+  }
+
   return errJson("not_found", "Not found", rid, 404, cors);
 }
 

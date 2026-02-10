@@ -258,6 +258,55 @@ async function route(req: Request, env: Env): Promise<Response> {
     }, requestId, cors);
   }
 
+  // POST /v1/secure/prospect-analyze (internal — service-to-service)
+  if (req.method === "POST" && url.pathname === "/v1/secure/prospect-analyze") {
+    const tok = req.headers.get("X-Internal-Token") || "";
+    if (!env.INTERNAL_TOKEN || tok !== env.INTERNAL_TOKEN) {
+      return errJson("forbidden", "Forbidden", requestId, 403, cors);
+    }
+
+    const body = await req.json().catch(() => null) as null | {
+      lead_id: string; entity_name: string;
+      vulnerability_id?: string; summary: string;
+      upstream_context?: {
+        prior_scores: Record<string, number>;
+        prior_findings: string[];
+        investigation_id: string;
+      };
+    };
+    if (!body?.lead_id) return errJson("invalid_request", "Missing lead_id", requestId, 400, cors);
+
+    const findings: string[] = [];
+    let score = 30; // baseline — secure is first in pipeline, no upstream adjustments
+
+    // Run CVE correlation if vulnerability_id provided
+    if (body.vulnerability_id) {
+      try {
+        const { findings: cveFindings } = await matchCves(env.DB, body.entity_name, {});
+        if (cveFindings.length > 0) {
+          score += Math.min(cveFindings.length * 10, 40);
+          findings.push(...cveFindings.slice(0, 5).map((f: any) => f.cve_id ?? f.description ?? String(f)));
+        }
+      } catch { /* best-effort */ }
+    }
+
+    // Weight higher for trade-execution/brokerage keywords
+    const lower = body.summary.toLowerCase();
+    if (/trading|execution|order|fix protocol|matching engine/.test(lower)) score += 15;
+    if (/broker|custodian|portfolio/.test(lower)) score += 10;
+    if (/payment|ledger|settlement/.test(lower)) score += 10;
+
+    score = Math.min(score, 100);
+
+    const recommendation = score >= 70
+      ? "High-priority security exposure — recommend immediate vulnerability assessment and patch verification."
+      : score >= 40
+      ? "Moderate security concern — schedule vulnerability scan and review affected components."
+      : "Low immediate risk — monitor for escalation and include in next periodic review.";
+
+    return okJson({ score, findings, recommendation }, requestId, cors);
+  }
+
   return errJson("not_found", "Not found", requestId, 404, cors);
 }
 

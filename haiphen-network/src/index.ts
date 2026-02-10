@@ -265,6 +265,64 @@ async function route(req: Request, env: Env): Promise<Response> {
     }, rid, cors);
   }
 
+  // POST /v1/network/prospect-analyze (internal — service-to-service)
+  if (req.method === "POST" && url.pathname === "/v1/network/prospect-analyze") {
+    const tok = req.headers.get("X-Internal-Token") || "";
+    if (!env.INTERNAL_TOKEN || tok !== env.INTERNAL_TOKEN) {
+      return errJson("forbidden", "Forbidden", rid, 403, cors);
+    }
+
+    const body = await req.json().catch(() => null) as null | {
+      lead_id: string; entity_name: string;
+      vulnerability_id?: string; summary: string;
+      upstream_context?: {
+        prior_scores: Record<string, number>;
+        prior_findings: string[];
+        investigation_id: string;
+      };
+    };
+    if (!body?.lead_id) return errJson("invalid_request", "Missing lead_id", rid, 400, cors);
+
+    const findings: string[] = [];
+    let score = 20; // baseline
+    const lower = body.summary.toLowerCase();
+
+    // Upstream context: if secure confirmed a vulnerability, boost network score
+    const uc = body.upstream_context;
+    if (uc && (uc.prior_scores?.secure ?? 0) > 50) {
+      score += 10;
+      findings.push("Confirmed vulnerability in network path (upstream secure score > 50)");
+    }
+
+    // Score by protocol risk to trade flow
+    if (/fix\b|fix protocol|websocket/.test(lower)) {
+      score += 25;
+      findings.push("FIX/WebSocket protocol exposure — critical for trade order flow");
+    }
+    if (/market data|price feed|quote|ticker/.test(lower)) {
+      score += 20;
+      findings.push("Market data feed integrity risk — pricing accuracy may be affected");
+    }
+    if (/api|gateway|rest|webhook/.test(lower)) {
+      score += 15;
+      findings.push("API/gateway exposure — client integrations and webhook delivery at risk");
+    }
+    if (/modbus|mqtt|opcua|dnp3|bacnet/.test(lower)) {
+      score += 10;
+      findings.push("Industrial protocol exposure detected");
+    }
+
+    score = Math.min(score, 100);
+
+    const recommendation = score >= 60
+      ? "Significant protocol-level exposure to trade flow infrastructure — recommend deep packet analysis and protocol hardening."
+      : score >= 35
+      ? "Moderate network risk — review protocol configurations and access controls."
+      : "Low network impact — standard monitoring recommended.";
+
+    return okJson({ score, findings, recommendation }, rid, cors);
+  }
+
   return errJson("not_found", "Not found", rid, 404, cors);
 }
 
