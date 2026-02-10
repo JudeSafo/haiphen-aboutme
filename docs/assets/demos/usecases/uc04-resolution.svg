@@ -1,0 +1,114 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 600" width="960" height="600">
+<defs>
+  <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#0b1220"/><stop offset="100%" stop-color="#0f1b2e"/></linearGradient>
+  <pattern id="grid" width="24" height="24" patternUnits="userSpaceOnUse"><circle cx="12" cy="12" r=".5" fill="rgba(226,232,240,.06)"/></pattern>
+  <clipPath id="vp"><rect width="960" height="600" rx="10"/></clipPath>
+  <!-- Typewriter clips -->
+  <clipPath id="t1"><rect x="55" y="54" height="22" width="0"><animate attributeName="width" dur="20s" repeatCount="indefinite" values="0;0;130;130;0" keyTimes="0;.015;.06;.96;1"/></rect></clipPath>
+  <clipPath id="t2"><rect x="55" y="444" height="22" width="0"><animate attributeName="width" dur="20s" repeatCount="indefinite" values="0;0;370;370;0" keyTimes="0;.43;.47;.96;1"/></rect></clipPath>
+  <clipPath id="t3"><rect x="55" y="724" height="22" width="0"><animate attributeName="width" dur="20s" repeatCount="indefinite" values="0;0;252;252;0" keyTimes="0;.63;.665;.96;1"/></rect></clipPath>
+</defs>
+<style>
+  .cam{animation:cam 20s ease-in-out infinite}
+  @keyframes cam{
+    0%,18%{transform:translate(0,0) scale(1)}
+    22%,38%{transform:translate(-144px,-108px) scale(1.3)}
+    42%,58%{transform:translate(-120px,-412px) scale(1.25)}
+    62%,78%{transform:translate(-96px,-672px) scale(1.2)}
+    82%,96%{transform:translate(-168px,-1063px) scale(1.35)}
+    100%{transform:translate(0,0) scale(1)}
+  }
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+  .m{font-family:"SF Mono","Fira Code","Cascadia Code",monospace;font-size:14px}
+  .m2{font-family:"SF Mono","Fira Code","Cascadia Code",monospace;font-size:12px}
+  .ml{font-family:"SF Mono","Fira Code","Cascadia Code",monospace;font-size:20px}
+  .mx{font-family:"SF Mono","Fira Code","Cascadia Code",monospace;font-size:28px}
+  .c1{fill:#e2e8f0}.c2{fill:rgba(226,232,240,.45)}.cg{fill:#10B981}
+  .cb{fill:#5A9BD4}.ca{fill:#F59E0B}.cr{fill:#EF4444}.cp{fill:#8B5CF6}
+  .cur{animation:blink 1s step-end infinite}
+</style>
+<g clip-path="url(#vp)">
+<g class="cam">
+  <!-- BG -->
+  <rect x="-600" y="-600" width="2200" height="2200" fill="url(#bg)"/>
+  <rect x="-600" y="-600" width="2200" height="2200" fill="url(#grid)"/>
+
+  <!-- Terminal chrome -->
+  <rect x="20" y="12" width="920" height="30" rx="8" fill="rgba(255,255,255,.06)"/>
+  <circle cx="40" cy="27" r="5" fill="#EF4444" opacity=".8"/>
+  <circle cx="56" cy="27" r="5" fill="#F59E0B" opacity=".8"/>
+  <circle cx="72" cy="27" r="5" fill="#10B981" opacity=".8"/>
+  <text x="480" y="31" text-anchor="middle" class="m2 c2">Chapter 4: Resolution</text>
+
+  <!-- ═══ SCENE 1: Welcome (y=50..200) ═══ -->
+  <g clip-path="url(#t1)">
+    <text x="55" y="68" class="m cb">$ haiphen</text>
+  </g>
+  <rect class="cur" x="186" y="55" width="2" height="16" fill="#5A9BD4" fill-opacity="0">
+    <animate attributeName="fill-opacity" dur="20s" repeatCount="indefinite" values="0;0;1;1;0;0" keyTimes="0;.06;.065;.18;.185;1"/>
+  </rect>
+
+  <text x="55" y="100" class="m c1" opacity="0">Hey there! Welcome to Haiphen<animate attributeName="opacity" dur="20s" repeatCount="indefinite" values="0;0;1;1;0" keyTimes="0;.07;.075;.96;1"/></text>
+  <text x="55" y="124" class="m cp" opacity="0">Semantic Edge Protocol Intelligence<animate attributeName="opacity" dur="20s" repeatCount="indefinite" values="0;0;1;1;0" keyTimes="0;.09;.095;.96;1"/></text>
+  <text x="55" y="158" class="m c2" opacity="0">Parse industrial IoT, edge protocol, and OT traffic data.<animate attributeName="opacity" dur="20s" repeatCount="indefinite" values="0;0;1;1;0" keyTimes="0;.11;.115;.96;1"/></text>
+  <text x="55" y="178" class="m c2" opacity="0">Deliver normalized APIs to every team in your org.<animate attributeName="opacity" dur="20s" repeatCount="indefinite" values="0;0;1;1;0" keyTimes="0;.13;.135;.96;1"/></text>
+
+  <!-- ═══ SCENE 2: Chapter intro (y=220..420) ═══ -->
+  <text x="55" y="230" class="m c2" opacity="0">----------------------------------------------<animate attributeName="opacity" dur="20s" repeatCount="indefinite" values="0;0;1;1;0" keyTimes="0;.225;.23;.96;1"/></text>
+  <text x="55" y="256" class="m ca" opacity="0">Chapter 4: Resolution<animate attributeName="opacity" dur="20s" repeatCount="indefinite" values="0;0;1;1;0" keyTimes="0;.245;.25;.96;1"/></text>
+
+  <text x="75" y="286" class="m c1" opacity="0">Automated requirement resolution. The solve<animate attributeName="opacity" dur="20s" repeatCount="indefinite" values="0;0;1;1;0" keyTimes="0;.265;.27;.96;1"/></text>
+  <text x="75" y="306" class="m c1" opacity="0">engine handles data gaps, monitoring needs,<animate attributeName="opacity" dur="20s" repeatCount="indefinite" values="0;0;1;1;0" keyTimes="0;.28;.285;.96;1"/></text>
+  <text x="75" y="326" class="m c1" opacity="0">and integration needs without manual work.<animate attributeName="opacity" dur="20s" repeatCount="indefinite" values="0;0;1;1;0" keyTimes="0;.295;.30;.96;1"/></text>
+
+  <text x="75" y="356" class="m c2" opacity="0">Actions: add keywords, create regressions,<animate attributeName="opacity" dur="20s" repeatCount="indefinite" values="0;0;1;1;0" keyTimes="0;.31;.315;.96;1"/></text>
+  <text x="75" y="376" class="m c2" opacity="0">configure Shodan queries, update sources.<animate attributeName="opacity" dur="20s" repeatCount="indefinite" values="0;0;1;1;0" keyTimes="0;.325;.33;.96;1"/></text>
+
+  <text x="55" y="416" class="m c2" opacity="0">----------------------------------------------<animate attributeName="opacity" dur="20s" repeatCount="indefinite" values="0;0;1;1;0" keyTimes="0;.36;.365;.96;1"/></text>
+
+  <!-- ═══ SCENE 3: Solve command (y=440..700) ═══ -->
+  <g clip-path="url(#t2)">
+    <text x="55" y="458" class="m cb">$ haiphen prospect solve --investigation 7</text>
+  </g>
+  <rect class="cur" x="425" y="445" width="2" height="16" fill="#5A9BD4" fill-opacity="0">
+    <animate attributeName="fill-opacity" dur="20s" repeatCount="indefinite" values="0;0;1;1;0;0" keyTimes="0;.47;.475;.58;.585;1"/>
+  </rect>
+
+  <text x="55" y="490" class="m c1" opacity="0">Solving requirements for investigation #7...<animate attributeName="opacity" dur="20s" repeatCount="indefinite" values="0;0;1;1;0" keyTimes="0;.49;.495;.96;1"/></text>
+
+  <text x="55" y="520" class="m ca" opacity="0">REQ   TYPE              ACTION           RESULT<animate attributeName="opacity" dur="20s" repeatCount="indefinite" values="0;0;1;1;0" keyTimes="0;.505;.51;.96;1"/></text>
+  <text x="55" y="540" class="m c2" opacity="0">-------------------------------------------------<animate attributeName="opacity" dur="20s" repeatCount="indefinite" values="0;0;1;1;0" keyTimes="0;.505;.51;.96;1"/></text>
+  <text x="55" y="560" class="m c1" opacity="0">1     data_gap          add keywords     <tspan class="cg">resolved</tspan><animate attributeName="opacity" dur="20s" repeatCount="indefinite" values="0;0;1;1;0" keyTimes="0;.52;.525;.96;1"/></text>
+  <text x="75" y="580" class="m c2" opacity="0">-&gt; Added: "finserv", "openssl", "trading"<animate attributeName="opacity" dur="20s" repeatCount="indefinite" values="0;0;1;1;0" keyTimes="0;.535;.54;.96;1"/></text>
+  <text x="55" y="600" class="m c1" opacity="0">2     monitor_needed    add regression   <tspan class="cg">resolved</tspan><animate attributeName="opacity" dur="20s" repeatCount="indefinite" values="0;0;1;1;0" keyTimes="0;.55;.555;.96;1"/></text>
+  <text x="75" y="620" class="m c2" opacity="0">-&gt; Created regression: entity:FinServ Corp<animate attributeName="opacity" dur="20s" repeatCount="indefinite" values="0;0;1;1;0" keyTimes="0;.565;.57;.96;1"/></text>
+  <text x="55" y="640" class="m c1" opacity="0">3     integration_need  add shodan qry   <tspan class="cg">resolved</tspan><animate attributeName="opacity" dur="20s" repeatCount="indefinite" values="0;0;1;1;0" keyTimes="0;.58;.585;.96;1"/></text>
+  <text x="75" y="660" class="m c2" opacity="0">-&gt; Query: org:"FinServ" port:502,443<animate attributeName="opacity" dur="20s" repeatCount="indefinite" values="0;0;1;1;0" keyTimes="0;.595;.60;.96;1"/></text>
+
+  <text x="55" y="694" class="m cg" opacity="0">All 3/3 requirements resolved.<animate attributeName="opacity" dur="20s" repeatCount="indefinite" values="0;0;1;1;0" keyTimes="0;.61;.615;.96;1"/></text>
+
+  <!-- ═══ SCENE 4: Regressions command (y=720..900) ═══ -->
+  <g clip-path="url(#t3)">
+    <text x="55" y="738" class="m cb">$ haiphen prospect regressions</text>
+  </g>
+  <rect class="cur" x="307" y="725" width="2" height="16" fill="#5A9BD4" fill-opacity="0">
+    <animate attributeName="fill-opacity" dur="20s" repeatCount="indefinite" values="0;0;1;1;0;0" keyTimes="0;.665;.67;.78;.785;1"/>
+  </rect>
+
+  <text x="55" y="770" class="m ca" opacity="0">REGRESSION PATTERNS:<animate attributeName="opacity" dur="20s" repeatCount="indefinite" values="0;0;1;1;0" keyTimes="0;.69;.695;.96;1"/></text>
+  <text x="75" y="794" class="m c2" opacity="0">TYPE      DIMENSION     COUNT  THRESHOLD<animate attributeName="opacity" dur="20s" repeatCount="indefinite" values="0;0;1;1;0" keyTimes="0;.71;.715;.96;1"/></text>
+  <text x="55" y="814" class="m c2" opacity="0">----------------------------------------------<animate attributeName="opacity" dur="20s" repeatCount="indefinite" values="0;0;1;1;0" keyTimes="0;.71;.715;.96;1"/></text>
+  <text x="75" y="834" class="m c1" opacity="0">entity    FinServ Corp  3      &gt;= 2<animate attributeName="opacity" dur="20s" repeatCount="indefinite" values="0;0;1;1;0" keyTimes="0;.73;.735;.96;1"/></text>
+  <text x="75" y="854" class="m c1" opacity="0">entity    ClearSettle   2      &gt;= 2<animate attributeName="opacity" dur="20s" repeatCount="indefinite" values="0;0;1;1;0" keyTimes="0;.745;.75;.96;1"/></text>
+  <text x="75" y="874" class="m c1" opacity="0">vuln      trade-exec    4      &gt;= 3<animate attributeName="opacity" dur="20s" repeatCount="indefinite" values="0;0;1;1;0" keyTimes="0;.76;.765;.96;1"/></text>
+  <text x="75" y="894" class="m c1" opacity="0">vuln      settlement    3      &gt;= 3<animate attributeName="opacity" dur="20s" repeatCount="indefinite" values="0;0;1;1;0" keyTimes="0;.775;.78;.96;1"/></text>
+
+  <text x="55" y="924" class="m cg" opacity="0">4 active regressions. Monitoring enabled.<animate attributeName="opacity" dur="20s" repeatCount="indefinite" values="0;0;1;1;0" keyTimes="0;.79;.795;.96;1"/></text>
+
+  <!-- ═══ SCENE 5: Endcard (y=950..1080) ═══ -->
+  <text x="480" y="990" text-anchor="middle" class="mx cb" opacity="0" letter-spacing="12">HAIPHEN<animate attributeName="opacity" dur="20s" repeatCount="indefinite" values="0;0;1;1;0" keyTimes="0;.84;.85;.96;1"/></text>
+  <text x="480" y="1030" text-anchor="middle" class="m cp" opacity="0">API Everything<animate attributeName="opacity" dur="20s" repeatCount="indefinite" values="0;0;1;1;0" keyTimes="0;.865;.875;.96;1"/></text>
+  <text x="480" y="1060" text-anchor="middle" class="m2 c2" opacity="0">haiphen.io<animate attributeName="opacity" dur="20s" repeatCount="indefinite" values="0;0;1;1;0" keyTimes="0;.89;.90;.96;1"/></text>
+</g>
+</g>
+</svg>
