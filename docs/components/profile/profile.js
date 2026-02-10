@@ -395,6 +395,18 @@
     await injectCssOnce('assets/base.css');
     await injectCssOnce('components/profile/profile.css');
 
+    // Auth gate: verify session BEFORE rendering any profile content
+    let me;
+    try {
+      me = await getJson(`${API_ORIGIN}/v1/me`);
+    } catch (e) {
+      if (e && (e.status === 401 || e.status === 403)) {
+        redirectToLogin();
+        return;
+      }
+      throw e;
+    }
+
     // Validate DOM: if flag says mounted but .hp-profile is gone, reset
     if (mount.__haiphenProfileMounted && !mount.querySelector('.hp-profile')) {
       mount.__haiphenProfileMounted = false;
@@ -408,7 +420,7 @@
       mount.__haiphenProfileMounted = true;
     }
 
-    await hydrate(mount);
+    await hydrate(mount, me);
 
     // Switch to requested tab if specified
     const tab = String(opts?.tab || '').trim();
@@ -455,21 +467,23 @@
     }
   }
 
-  async function hydrate(root) {
+  async function hydrate(root, prefetchedMe) {
     setStatus(root, '', '');
 
     // 1) cookie-auth user + plan + active key metadata
-    let me;
-    try {
-      me = await getJson(`${API_ORIGIN}/v1/me`);
-    } catch (e) {
-      if (e && (e.status === 401 || e.status === 403)) {
-        redirectToLogin();
-        return;
+    let me = prefetchedMe || null;
+    if (!me) {
+      try {
+        me = await getJson(`${API_ORIGIN}/v1/me`);
+      } catch (e) {
+        if (e && (e.status === 401 || e.status === 403)) {
+          redirectToLogin();
+          return;
+        }
+        console.warn(LOG, 'failed to load /v1/me', e);
+        setStatus(root, `Unable to load profile data: ${e?.message || e}`, 'warn');
+        throw e;
       }
-      console.warn(LOG, 'failed to load /v1/me', e);
-      setStatus(root, `Unable to load profile data: ${e?.message || e}`, 'warn');
-      throw e;
     }
 
     setText(qs('[data-profile-user]', root), me?.user_login || '—');

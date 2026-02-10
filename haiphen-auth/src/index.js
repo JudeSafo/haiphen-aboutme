@@ -1144,8 +1144,8 @@ function safeReturnToWithNative(raw) {
       return u.toString();
     }
 
-    // existing rule for browser targets
-    if (/^https:\/\/[^ ]+haiphen\.io(\/|$)/i.test(cand)) return cand;
+    // existing rule for browser targets (bare haiphen.io + subdomains)
+    if (/^https:\/\/([a-z0-9-]+\.)*haiphen\.io(\/|#|$)/i.test(cand)) return cand;
   } catch (_) {}
 
   return fallback;
