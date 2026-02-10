@@ -6,32 +6,33 @@
 (function () {
   'use strict';
 
-  const NS = (window.HAIPHEN = window.HAIPHEN || {});
-  const LOG = '[getting-started]';
+  var NS = (window.HAIPHEN = window.HAIPHEN || {});
+  var LOG = '[getting-started]';
 
-  const AUTH_ORIGIN = 'https://auth.haiphen.io';
-  const MOUNT_ID = 'content-widget';
+  var AUTH_ORIGIN = 'https://auth.haiphen.io';
+  var MOUNT_ID = 'content-widget';
 
-  let _lensListenerWired = false;
+  var _lensListenerWired = false;
+  var _sidebarObserver = null;
 
   function qs(sel, root) {
     return (root || document).querySelector(sel);
   }
 
   function qa(sel, root) {
-    return [...(root || document).querySelectorAll(sel)];
+    return [].slice.call((root || document).querySelectorAll(sel));
   }
 
   async function fetchText(url) {
-    const r = await fetch(url, { cache: 'no-store' });
-    if (!r.ok) throw new Error(`HTTP ${r.status} for ${url}`);
+    var r = await fetch(url, { cache: 'no-store' });
+    if (!r.ok) throw new Error('HTTP ' + r.status + ' for ' + url);
     return await r.text();
   }
 
   async function injectCssOnce(href) {
-    const already = document.querySelector(`link[rel="stylesheet"][href="${href}"]`);
+    var already = document.querySelector('link[rel="stylesheet"][href="' + href + '"]');
     if (already) return;
-    const link = document.createElement('link');
+    var link = document.createElement('link');
     link.rel = 'stylesheet';
     link.href = href;
     document.head.appendChild(link);
@@ -47,10 +48,24 @@
   }
 
   /* ================================================================
+     SECTIONS — sidebar pill data
+     ================================================================ */
+
+  var SECTIONS = [
+    { id: 'gs-overview', label: 'Overview' },
+    { id: 'gs-install',  label: 'Install' },
+    { id: 'gs-connect',  label: 'Connect' },
+    { id: 'gs-verify',   label: 'Verify' },
+    { id: 'gs-success',  label: 'Success' },
+    { id: 'gs-services', label: 'Services' },
+    { id: 'gs-apps',     label: 'Apps' },
+  ];
+
+  /* ================================================================
      CONTENT — flat map of data-gs-lens keys → { tech, finance }
      ================================================================ */
 
-  const CONTENT = {
+  var CONTENT = {
     'hero-eyebrow': {
       tech: 'Developer Quick Start',
       finance: 'Trader Quick Start',
@@ -149,7 +164,7 @@
      RICH CONTENT — keys whose values are functions returning HTML
      ================================================================ */
 
-  const BROKERS = [
+  var BROKERS = [
     { name: 'Charles Schwab', icon: 'assets/partners/schwab.svg' },
     { name: 'Interactive Brokers', icon: 'assets/partners/interactive-brokers.svg' },
     { name: 'Alpaca', icon: 'assets/partners/alpaca.svg' },
@@ -164,118 +179,84 @@
     return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
-  const RICH_CONTENT = {
+  var RICH_CONTENT = {
     'broker-detail': {
       tech: function () {
-        return `
-          <div class="hp-gs__code-block"><pre><code># .env — configure your data sources
-HAIPHEN_API_KEY=hpn_live_xxxxxxxxxxxxxxxx
-HAIPHEN_WEBHOOK_URL=https://your-app.com/webhooks/haiphen
-HAIPHEN_ENV=production
-HAIPHEN_LOG_LEVEL=info</code></pre></div>
-          <div class="hp-gs__broker-modes">
-            <div class="hp-gs__broker-mode">
-              <strong>API Key Auth</strong>
-              <p>Generate a scoped API key in your <a href="#profile">Profile</a>. Supports metrics:read, rss:read, and webhooks:write scopes.</p>
-            </div>
-            <div class="hp-gs__broker-mode">
-              <strong>Webhook Config</strong>
-              <p>Register an HTTPS endpoint to receive real-time events — service alerts, pipeline completions, and threshold triggers.</p>
-            </div>
-            <div class="hp-gs__broker-mode">
-              <strong>Environment Variables</strong>
-              <p>All configuration is env-driven. Set HAIPHEN_ENV to <em>production</em> or <em>sandbox</em> to control behavior.</p>
-            </div>
-          </div>`;
+        return '<div class="hp-gs__code-block"><pre><code># .env — configure your data sources\n' +
+          'HAIPHEN_API_KEY=hpn_live_xxxxxxxxxxxxxxxx\n' +
+          'HAIPHEN_WEBHOOK_URL=https://your-app.com/webhooks/haiphen\n' +
+          'HAIPHEN_ENV=production\n' +
+          'HAIPHEN_LOG_LEVEL=info</code></pre></div>' +
+          '<div class="hp-gs__broker-modes">' +
+            '<div class="hp-gs__broker-mode">' +
+              '<strong>API Key Auth</strong>' +
+              '<p>Generate a scoped API key in your <a href="#profile">Profile</a>. Supports metrics:read, rss:read, and webhooks:write scopes.</p>' +
+            '</div>' +
+            '<div class="hp-gs__broker-mode">' +
+              '<strong>Webhook Config</strong>' +
+              '<p>Register an HTTPS endpoint to receive real-time events — service alerts, pipeline completions, and threshold triggers.</p>' +
+            '</div>' +
+            '<div class="hp-gs__broker-mode">' +
+              '<strong>Environment Variables</strong>' +
+              '<p>All configuration is env-driven. Set HAIPHEN_ENV to <em>production</em> or <em>sandbox</em> to control behavior.</p>' +
+            '</div>' +
+          '</div>';
       },
       finance: function () {
         var cards = BROKERS.map(function (b) {
           return '<div class="hp-gs__broker-card"><img src="' + esc(b.icon) + '" alt="' + esc(b.name) + '" /><span>' + esc(b.name) + '</span></div>';
         }).join('');
-        return `
-          <div class="hp-gs__broker-grid">${cards}</div>
-          <div class="hp-gs__broker-modes">
-            <div class="hp-gs__broker-mode hp-gs__broker-mode--live">
-              <strong>Live Mode</strong>
-              <p>Connect with real broker credentials. Trades execute against live markets. Set <code>HAIPHEN_ENV=production</code>.</p>
-            </div>
-            <div class="hp-gs__broker-mode hp-gs__broker-mode--sandbox">
-              <strong>Sandbox Mode</strong>
-              <p>Paper trading with simulated data. Perfect for testing your pipeline before going live. Set <code>HAIPHEN_ENV=sandbox</code>.</p>
-            </div>
-          </div>`;
+        return '<div class="hp-gs__broker-grid">' + cards + '</div>' +
+          '<div class="hp-gs__broker-modes">' +
+            '<div class="hp-gs__broker-mode hp-gs__broker-mode--live">' +
+              '<strong>Live Mode</strong>' +
+              '<p>Connect with real broker credentials. Trades execute against live markets. Set <code>HAIPHEN_ENV=production</code>.</p>' +
+            '</div>' +
+            '<div class="hp-gs__broker-mode hp-gs__broker-mode--sandbox">' +
+              '<strong>Sandbox Mode</strong>' +
+              '<p>Paper trading with simulated data. Perfect for testing your pipeline before going live. Set <code>HAIPHEN_ENV=sandbox</code>.</p>' +
+            '</div>' +
+          '</div>';
       },
     },
 
     'pipeline-detail': {
       tech: function () {
-        return `
-          <div class="hp-gs__code-block"><pre><code># Health check
-haiphen status --verbose
-
-# Tail service logs
-haiphen logs --follow --service secure
-
-# Connectivity test
-haiphen ping --all-services</code></pre></div>
-          <p class="hp-gs__hint">All services should return 200 OK. If a service shows degraded, check your API key scopes in Profile.</p>`;
+        return '<div class="hp-gs__code-block"><pre><code># Health check\n' +
+          'haiphen status --verbose\n\n' +
+          '# Tail service logs\n' +
+          'haiphen logs --follow --service secure\n\n' +
+          '# Connectivity test\n' +
+          'haiphen ping --all-services</code></pre></div>' +
+          '<p class="hp-gs__hint">All services should return 200 OK. If a service shows degraded, check your API key scopes in Profile.</p>';
       },
       finance: function () {
-        return `
-          <div class="hp-gs__code-block"><pre><code># Start sandbox gateway
-HAIPHEN_ENV=sandbox haiphen serve
-
-# Execute a test trade
-haiphen trade --symbol AAPL --qty 10 --side buy --sandbox
-
-# Verify pipeline received the trade
-haiphen trades --last 1 --format json</code></pre></div>
-          <p class="hp-gs__hint">You should see your test trade appear in the telemetry dashboard within seconds. No real capital is at risk in sandbox mode.</p>`;
+        return '<div class="hp-gs__code-block"><pre><code># Start sandbox gateway\n' +
+          'HAIPHEN_ENV=sandbox haiphen serve\n\n' +
+          '# Execute a test trade\n' +
+          'haiphen trade --symbol AAPL --qty 10 --side buy --sandbox\n\n' +
+          '# Verify pipeline received the trade\n' +
+          'haiphen trades --last 1 --format json</code></pre></div>' +
+          '<p class="hp-gs__hint">You should see your test trade appear in the telemetry dashboard within seconds. No real capital is at risk in sandbox mode.</p>';
       },
     },
 
     'success-detail': {
       tech: function () {
-        return `
-          <div class="hp-gs__success-grid">
-            <div class="hp-gs__success-card">
-              <strong>CLI Authenticated</strong>
-              <p><code>haiphen status</code> returns your plan tier and active services.</p>
-            </div>
-            <div class="hp-gs__success-card">
-              <strong>Services Responding</strong>
-              <p>All six intelligence endpoints return 200 OK on health checks.</p>
-            </div>
-            <div class="hp-gs__success-card">
-              <strong>Data Flowing</strong>
-              <p>Webhooks fire, logs stream, and metrics appear in the dashboard.</p>
-            </div>
-            <div class="hp-gs__success-card">
-              <strong>Pipeline Verified</strong>
-              <p>End-to-end test passes: ingest &rarr; process &rarr; publish &rarr; alert.</p>
-            </div>
-          </div>`;
+        return '<div class="hp-gs__success-grid">' +
+          '<div class="hp-gs__success-card"><strong>CLI Authenticated</strong><p><code>haiphen status</code> returns your plan tier and active services.</p></div>' +
+          '<div class="hp-gs__success-card"><strong>Services Responding</strong><p>All six intelligence endpoints return 200 OK on health checks.</p></div>' +
+          '<div class="hp-gs__success-card"><strong>Data Flowing</strong><p>Webhooks fire, logs stream, and metrics appear in the dashboard.</p></div>' +
+          '<div class="hp-gs__success-card"><strong>Pipeline Verified</strong><p>End-to-end test passes: ingest &rarr; process &rarr; publish &rarr; alert.</p></div>' +
+        '</div>';
       },
       finance: function () {
-        return `
-          <div class="hp-gs__success-grid">
-            <div class="hp-gs__success-card">
-              <strong>Broker Connected</strong>
-              <p>Your brokerage account is linked and showing account status.</p>
-            </div>
-            <div class="hp-gs__success-card">
-              <strong>Sandbox Trade Executed</strong>
-              <p>A test trade flows through the pipeline and appears in telemetry.</p>
-            </div>
-            <div class="hp-gs__success-card">
-              <strong>KPIs Populating</strong>
-              <p>Daily metrics cards show volume, P&amp;L, stability, and risk scores.</p>
-            </div>
-            <div class="hp-gs__success-card">
-              <strong>Alerts Configured</strong>
-              <p>Threshold triggers and trade notifications are active and delivering.</p>
-            </div>
-          </div>`;
+        return '<div class="hp-gs__success-grid">' +
+          '<div class="hp-gs__success-card"><strong>Broker Connected</strong><p>Your brokerage account is linked and showing account status.</p></div>' +
+          '<div class="hp-gs__success-card"><strong>Sandbox Trade Executed</strong><p>A test trade flows through the pipeline and appears in telemetry.</p></div>' +
+          '<div class="hp-gs__success-card"><strong>KPIs Populating</strong><p>Daily metrics cards show volume, P&amp;L, stability, and risk scores.</p></div>' +
+          '<div class="hp-gs__success-card"><strong>Alerts Configured</strong><p>Threshold triggers and trade notifications are active and delivering.</p></div>' +
+        '</div>';
       },
     },
   };
@@ -291,7 +272,6 @@ haiphen trades --last 1 --format json</code></pre></div>
     qa('[data-gs-lens]', root).forEach(function (el) {
       var key = el.getAttribute('data-gs-lens');
 
-      // Check RICH_CONTENT first (returns HTML)
       if (RICH_CONTENT[key]) {
         var fn = RICH_CONTENT[key][lens] || RICH_CONTENT[key].tech;
         if (typeof fn === 'function') {
@@ -300,7 +280,6 @@ haiphen trades --last 1 --format json</code></pre></div>
         return;
       }
 
-      // Plain text content
       if (CONTENT[key]) {
         var val = CONTENT[key][lens] || CONTENT[key].tech;
         el.textContent = val;
@@ -341,6 +320,119 @@ haiphen trades --last 1 --format json</code></pre></div>
   }
 
   /* ================================================================
+     SIDEBAR — render, clicks, search, scroll tracking
+     ================================================================ */
+
+  function renderSidebar(root) {
+    var nav = qs('.hp-gs__sidebar', root);
+    if (!nav) return;
+
+    var pills = SECTIONS.map(function (sec) {
+      return '<button class="hp-gs__pill" data-section="' + esc(sec.id) + '">' +
+        '<span class="hp-gs__pill-label">' + esc(sec.label) + '</span>' +
+      '</button>';
+    }).join('');
+
+    var search = '<div class="hp-gs__sidebar-search">' +
+      '<input class="hp-gs__sidebar-input" type="text" placeholder="Search sections\u2026" aria-label="Search sections" />' +
+    '</div>';
+
+    nav.innerHTML = pills + search;
+  }
+
+  function wireSidebarClicks(root) {
+    var nav = qs('.hp-gs__sidebar', root);
+    if (!nav) return;
+
+    nav.addEventListener('click', function (e) {
+      var pill = e.target.closest('.hp-gs__pill');
+      if (!pill) return;
+
+      var sectionId = pill.getAttribute('data-section');
+      var target = document.getElementById(sectionId);
+      if (!target) return;
+
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+      // Update active state immediately on click
+      qa('.hp-gs__pill', nav).forEach(function (p) {
+        p.classList.toggle('is-active', p === pill);
+      });
+    });
+  }
+
+  function wireSidebarSearch(root) {
+    var input = qs('.hp-gs__sidebar-input', root);
+    if (!input) return;
+
+    input.addEventListener('input', function () {
+      var query = input.value.trim().toLowerCase();
+      var pills = qa('.hp-gs__pill', root);
+
+      pills.forEach(function (pill) {
+        var sectionId = pill.getAttribute('data-section');
+        var sec = SECTIONS.find(function (s) { return s.id === sectionId; });
+        if (!sec) return;
+
+        if (!query) {
+          pill.classList.remove('is-dimmed');
+          return;
+        }
+
+        var match = sec.label.toLowerCase().indexOf(query) !== -1 ||
+          sec.id.toLowerCase().indexOf(query) !== -1;
+
+        pill.classList.toggle('is-dimmed', !match);
+      });
+    });
+
+    // Clicking a dimmed pill clears search and undims all
+    var nav = qs('.hp-gs__sidebar', root);
+    if (nav) {
+      nav.addEventListener('click', function (e) {
+        var pill = e.target.closest('.hp-gs__pill');
+        if (pill && pill.classList.contains('is-dimmed')) {
+          input.value = '';
+          qa('.hp-gs__pill', root).forEach(function (p) {
+            p.classList.remove('is-dimmed');
+          });
+        }
+      });
+    }
+  }
+
+  function wireSidebarScrollTracking(root) {
+    // Disconnect any previous observer
+    if (_sidebarObserver) {
+      _sidebarObserver.disconnect();
+      _sidebarObserver = null;
+    }
+
+    var nav = qs('.hp-gs__sidebar', root);
+    if (!nav) return;
+
+    _sidebarObserver = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) return;
+        var id = entry.target.id;
+        if (!id) return;
+
+        qa('.hp-gs__pill', nav).forEach(function (pill) {
+          pill.classList.toggle('is-active', pill.getAttribute('data-section') === id);
+        });
+      });
+    }, {
+      rootMargin: '-80px 0px -60% 0px',
+      threshold: 0,
+    });
+
+    SECTIONS.forEach(function (sec) {
+      var el = document.getElementById(sec.id);
+      if (el) _sidebarObserver.observe(el);
+    });
+  }
+
+  /* ================================================================
      ENTITLEMENT CHECK
      ================================================================ */
 
@@ -377,6 +469,12 @@ haiphen trades --last 1 --format json</code></pre></div>
 
     var root = qs('.hp-gs', mount);
     if (!root) return;
+
+    // Render sidebar and wire interactions
+    renderSidebar(root);
+    wireSidebarClicks(root);
+    wireSidebarSearch(root);
+    wireSidebarScrollTracking(root);
 
     // Apply lens content
     refreshForLens(getLens());

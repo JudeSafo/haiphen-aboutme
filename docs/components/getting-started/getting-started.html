@@ -1,181 +1,194 @@
 <!-- docs/components/getting-started/getting-started.html -->
 <section class="hp-gs" aria-label="Getting Started">
 
-  <!-- Hero -->
-  <div class="hp-gs__hero">
-    <span class="hp-gs__eyebrow" data-gs-lens="hero-eyebrow"></span>
-    <h2 class="hp-gs__title" data-gs-lens="hero-title"></h2>
-    <p class="hp-gs__sub" data-gs-lens="hero-sub"></p>
-    <div class="hp-gs__demo">
-      <img class="hp-gs__gif" data-src="assets/demos/cli-workflow.gif" alt="Haiphen CLI workflow demo" loading="lazy" />
-    </div>
-  </div>
+  <div class="hp-gs__body">
 
-  <!-- Entitlement gate overlay for free users -->
-  <div class="hp-gs__gate" data-gs-gate hidden>
-    <div class="hp-gs__gate-inner">
-      <h3>Upgrade to Pro</h3>
-      <p>Full getting-started guides, demo GIFs, and installation walkthroughs are available for Pro and Enterprise users.</p>
-      <a class="hp-gs__gate-btn" href="#subscribe">Upgrade Now</a>
-    </div>
-  </div>
+    <!-- Sidebar — JS renders pills + search here -->
+    <nav class="hp-gs__sidebar" role="navigation" aria-label="Section navigation"></nav>
 
-  <!-- Step 1: Install -->
-  <div class="hp-gs__step-section" data-gs-gated>
-    <div class="hp-gs__step-number">1</div>
-    <div class="hp-gs__step-body">
-      <h3 class="hp-gs__section-title">Install the CLI</h3>
-      <p class="hp-gs__section-sub" data-gs-lens="install-sub"></p>
+    <div class="hp-gs__main">
 
-      <div class="hp-gs__install-grid">
-        <div class="hp-gs__install-card">
-          <strong>macOS (Homebrew)</strong>
-          <code>brew install haiphen/tap/haiphen</code>
+      <!-- Hero -->
+      <div class="hp-gs__hero" id="gs-overview">
+        <div class="hp-gs__hero-text">
+          <span class="hp-gs__eyebrow" data-gs-lens="hero-eyebrow"></span>
+          <h2 class="hp-gs__title" data-gs-lens="hero-title"></h2>
+          <p class="hp-gs__sub" data-gs-lens="hero-sub"></p>
         </div>
-        <div class="hp-gs__install-card">
-          <strong>Linux / macOS (curl)</strong>
-          <code>curl -fsSL https://get.haiphen.io | sh</code>
-        </div>
-        <div class="hp-gs__install-card">
-          <strong>Windows (Scoop)</strong>
-          <code>scoop install haiphen</code>
-        </div>
-        <div class="hp-gs__install-card">
-          <strong>Docker</strong>
-          <code>docker pull ghcr.io/haiphen/cli:latest</code>
+        <div class="hp-gs__demo">
+          <img class="hp-gs__gif" data-src="assets/demos/cli-workflow.gif" alt="Haiphen CLI workflow demo" loading="lazy" />
         </div>
       </div>
 
-      <div class="hp-gs__quickstart">
-        <code>haiphen login</code>
-        <code>haiphen status</code>
-        <code>haiphen serve</code>
-      </div>
-
-      <p class="hp-gs__link-out">
-        <a href="install.html" target="_blank" rel="noopener">Full installation docs &rarr;</a>
-      </p>
-    </div>
-  </div>
-
-  <!-- Step 2: Connect -->
-  <div class="hp-gs__step-section" data-gs-gated>
-    <div class="hp-gs__step-number">2</div>
-    <div class="hp-gs__step-body">
-      <h3 class="hp-gs__section-title" data-gs-lens="broker-title"></h3>
-      <p class="hp-gs__section-sub" data-gs-lens="broker-sub"></p>
-      <div data-gs-lens="broker-detail"></div>
-    </div>
-  </div>
-
-  <!-- Step 3: Verify -->
-  <div class="hp-gs__step-section" data-gs-gated>
-    <div class="hp-gs__step-number">3</div>
-    <div class="hp-gs__step-body">
-      <h3 class="hp-gs__section-title" data-gs-lens="pipeline-title"></h3>
-      <p class="hp-gs__section-sub" data-gs-lens="pipeline-sub"></p>
-      <div data-gs-lens="pipeline-detail"></div>
-    </div>
-  </div>
-
-  <!-- What Success Looks Like -->
-  <div class="hp-gs__section" data-gs-gated>
-    <h3 class="hp-gs__section-title" data-gs-lens="success-title"></h3>
-    <div data-gs-lens="success-detail"></div>
-  </div>
-
-  <!-- Disclaimer Banner -->
-  <div class="hp-gs__disclaimer" data-gs-gated>
-    <div class="hp-gs__disclaimer-icon">&#9432;</div>
-    <div class="hp-gs__disclaimer-body">
-      <strong>Important Disclaimer</strong>
-      <p>Haiphen is a technology provider &mdash; not a broker-dealer, investment adviser, or financial institution. Nothing on this platform constitutes investment advice. Trading involves risk and may result in loss of capital. See <a href="#terms">Terms of Service &sect;4</a> for details.</p>
-    </div>
-  </div>
-
-  <!-- Lens Toggle Callout -->
-  <div class="hp-gs__lens-callout" data-gs-gated>
-    <strong>This page adapts to your perspective.</strong>
-    <p>Toggle between <em>Finance</em> and <em>Tech</em> views using the lens switcher in the header. Content, examples, and terminology shift to match your workflow &mdash; trader or developer.</p>
-  </div>
-
-  <!-- Cohort CTA -->
-  <div class="hp-gs__cohort-cta" data-gs-gated>
-    <span class="hp-gs__cohort-badge">Limited Enrollment</span>
-    <h3 data-gs-lens="cohort-title"></h3>
-    <p data-gs-lens="cohort-sub"></p>
-    <a class="hp-gs__cohort-btn" href="#cohort">Join the Cohort Program</a>
-  </div>
-
-  <!-- Intelligence Services -->
-  <div class="hp-gs__section" data-gs-gated>
-    <h3 class="hp-gs__section-title">Intelligence Services</h3>
-    <p class="hp-gs__section-sub">Six production-ready analysis engines, each with a CLI command and demo.</p>
-
-    <div class="hp-gs__services-grid">
-      <details class="hp-gs__svc-card">
-        <summary><strong data-gs-lens="svc-secure-name"></strong> <span data-gs-lens="svc-secure-desc"></span></summary>
-        <code>haiphen secure scan --target &lt;target&gt;</code>
-        <img class="hp-gs__gif" data-src="assets/demos/cli-secure.gif" alt="Secure demo" loading="lazy" />
-      </details>
-
-      <details class="hp-gs__svc-card">
-        <summary><strong data-gs-lens="svc-network-name"></strong> <span data-gs-lens="svc-network-desc"></span></summary>
-        <code>haiphen network trace --target &lt;target&gt;</code>
-        <img class="hp-gs__gif" data-src="assets/demos/cli-network.gif" alt="Network demo" loading="lazy" />
-      </details>
-
-      <details class="hp-gs__svc-card">
-        <summary><strong data-gs-lens="svc-graph-name"></strong> <span data-gs-lens="svc-graph-desc"></span></summary>
-        <code>haiphen graph query --q &lt;query&gt;</code>
-        <img class="hp-gs__gif" data-src="assets/demos/cli-graph.gif" alt="Graph demo" loading="lazy" />
-      </details>
-
-      <details class="hp-gs__svc-card">
-        <summary><strong data-gs-lens="svc-risk-name"></strong> <span data-gs-lens="svc-risk-desc"></span></summary>
-        <code>haiphen risk assess --scenario &lt;scenario&gt;</code>
-        <img class="hp-gs__gif" data-src="assets/demos/cli-risk.gif" alt="Risk demo" loading="lazy" />
-      </details>
-
-      <details class="hp-gs__svc-card">
-        <summary><strong data-gs-lens="svc-causal-name"></strong> <span data-gs-lens="svc-causal-desc"></span></summary>
-        <code>haiphen causal analyze --events &lt;file&gt;</code>
-        <img class="hp-gs__gif" data-src="assets/demos/cli-causal.gif" alt="Causal demo" loading="lazy" />
-      </details>
-
-      <details class="hp-gs__svc-card">
-        <summary><strong data-gs-lens="svc-supply-name"></strong> <span data-gs-lens="svc-supply-desc"></span></summary>
-        <code>haiphen supply assess --supplier &lt;name&gt;</code>
-        <img class="hp-gs__gif" data-src="assets/demos/cli-supply.gif" alt="Supply demo" loading="lazy" />
-      </details>
-    </div>
-  </div>
-
-  <!-- Desktop & Mobile -->
-  <div class="hp-gs__section" data-gs-gated>
-    <h3 class="hp-gs__section-title">Desktop &amp; Mobile</h3>
-    <p class="hp-gs__section-sub">Access Haiphen from any device with native apps.</p>
-
-    <div class="hp-gs__apps-grid">
-      <div class="hp-gs__app-card">
-        <strong>Desktop App</strong>
-        <p>Full dashboard, service panels, and API key management.</p>
-        <div class="hp-gs__app-links">
-          <a href="install.html#desktop" target="_blank" rel="noopener">.dmg (macOS)</a>
-          <a href="install.html#desktop" target="_blank" rel="noopener">.msi (Windows)</a>
-          <a href="install.html#desktop" target="_blank" rel="noopener">.AppImage (Linux)</a>
+      <!-- Entitlement gate overlay for free users -->
+      <div class="hp-gs__gate" data-gs-gate hidden>
+        <div class="hp-gs__gate-inner">
+          <h3>Upgrade to Pro</h3>
+          <p>Full getting-started guides, demo GIFs, and installation walkthroughs are available for Pro and Enterprise users.</p>
+          <a class="hp-gs__gate-btn" href="#services">Upgrade Now</a>
         </div>
       </div>
 
-      <div class="hp-gs__app-card">
-        <strong>Mobile App</strong>
-        <p>Dashboards, alerts, and service access on the go.</p>
-        <div class="hp-gs__app-links">
-          <a href="install.html#mobile" target="_blank" rel="noopener">TestFlight (iOS)</a>
-          <a href="install.html#mobile" target="_blank" rel="noopener">Play Store (Android)</a>
+      <!-- Step 1: Install -->
+      <div class="hp-gs__step-section" id="gs-install" data-gs-gated>
+        <div class="hp-gs__step-number">1</div>
+        <div class="hp-gs__step-body">
+          <h3 class="hp-gs__section-title">Install the CLI</h3>
+          <p class="hp-gs__section-sub" data-gs-lens="install-sub"></p>
+
+          <div class="hp-gs__install-grid">
+            <div class="hp-gs__install-card">
+              <strong>macOS (Homebrew)</strong>
+              <code>brew install haiphen/tap/haiphen</code>
+            </div>
+            <div class="hp-gs__install-card">
+              <strong>Linux / macOS (curl)</strong>
+              <code>curl -fsSL https://get.haiphen.io | sh</code>
+            </div>
+            <div class="hp-gs__install-card">
+              <strong>Windows (Scoop)</strong>
+              <code>scoop install haiphen</code>
+            </div>
+            <div class="hp-gs__install-card">
+              <strong>Docker</strong>
+              <code>docker pull ghcr.io/haiphen/cli:latest</code>
+            </div>
+          </div>
+
+          <div class="hp-gs__quickstart">
+            <code>haiphen login</code>
+            <code>haiphen status</code>
+            <code>haiphen serve</code>
+          </div>
+
+          <p class="hp-gs__link-out">
+            <a href="install.html" target="_blank" rel="noopener">Full installation docs &rarr;</a>
+          </p>
         </div>
       </div>
-    </div>
-  </div>
+
+      <!-- Step 2: Connect -->
+      <div class="hp-gs__step-section" id="gs-connect" data-gs-gated>
+        <div class="hp-gs__step-number">2</div>
+        <div class="hp-gs__step-body">
+          <h3 class="hp-gs__section-title" data-gs-lens="broker-title"></h3>
+          <p class="hp-gs__section-sub" data-gs-lens="broker-sub"></p>
+          <div data-gs-lens="broker-detail"></div>
+        </div>
+      </div>
+
+      <!-- Step 3: Verify -->
+      <div class="hp-gs__step-section" id="gs-verify" data-gs-gated>
+        <div class="hp-gs__step-number">3</div>
+        <div class="hp-gs__step-body">
+          <h3 class="hp-gs__section-title" data-gs-lens="pipeline-title"></h3>
+          <p class="hp-gs__section-sub" data-gs-lens="pipeline-sub"></p>
+          <div data-gs-lens="pipeline-detail"></div>
+        </div>
+      </div>
+
+      <!-- What Success Looks Like -->
+      <div class="hp-gs__section" id="gs-success" data-gs-gated>
+        <h3 class="hp-gs__section-title" data-gs-lens="success-title"></h3>
+        <div data-gs-lens="success-detail"></div>
+      </div>
+
+      <!-- Disclaimer Banner -->
+      <div class="hp-gs__disclaimer" data-gs-gated>
+        <div class="hp-gs__disclaimer-icon">&#9432;</div>
+        <div class="hp-gs__disclaimer-body">
+          <strong>Important Disclaimer</strong>
+          <p>Haiphen is a technology provider &mdash; not a broker-dealer, investment adviser, or financial institution. Nothing on this platform constitutes investment advice. Trading involves risk and may result in loss of capital. See <a href="#terms">Terms of Service &sect;4</a> for details.</p>
+        </div>
+      </div>
+
+      <!-- Lens Toggle Callout -->
+      <div class="hp-gs__lens-callout" data-gs-gated>
+        <strong>This page adapts to your perspective.</strong>
+        <p>Toggle between <em>Finance</em> and <em>Tech</em> views using the lens switcher in the header. Content, examples, and terminology shift to match your workflow &mdash; trader or developer.</p>
+      </div>
+
+      <!-- Cohort CTA -->
+      <div class="hp-gs__cohort-cta" data-gs-gated>
+        <span class="hp-gs__cohort-badge">Limited Enrollment</span>
+        <h3 data-gs-lens="cohort-title"></h3>
+        <p data-gs-lens="cohort-sub"></p>
+        <a class="hp-gs__cohort-btn" href="#cohort">Join the Cohort Program</a>
+      </div>
+
+      <!-- Intelligence Services -->
+      <div class="hp-gs__section" id="gs-services" data-gs-gated>
+        <h3 class="hp-gs__section-title">Intelligence Services</h3>
+        <p class="hp-gs__section-sub">Six production-ready analysis engines, each with a CLI command and demo.</p>
+
+        <div class="hp-gs__services-grid">
+          <details class="hp-gs__svc-card">
+            <summary><strong data-gs-lens="svc-secure-name"></strong> <span data-gs-lens="svc-secure-desc"></span></summary>
+            <code>haiphen secure scan --target &lt;target&gt;</code>
+            <img class="hp-gs__gif" data-src="assets/demos/cli-secure.gif" alt="Secure demo" loading="lazy" />
+          </details>
+
+          <details class="hp-gs__svc-card">
+            <summary><strong data-gs-lens="svc-network-name"></strong> <span data-gs-lens="svc-network-desc"></span></summary>
+            <code>haiphen network trace --target &lt;target&gt;</code>
+            <img class="hp-gs__gif" data-src="assets/demos/cli-network.gif" alt="Network demo" loading="lazy" />
+          </details>
+
+          <details class="hp-gs__svc-card">
+            <summary><strong data-gs-lens="svc-graph-name"></strong> <span data-gs-lens="svc-graph-desc"></span></summary>
+            <code>haiphen graph query --q &lt;query&gt;</code>
+            <img class="hp-gs__gif" data-src="assets/demos/cli-graph.gif" alt="Graph demo" loading="lazy" />
+          </details>
+
+          <details class="hp-gs__svc-card">
+            <summary><strong data-gs-lens="svc-risk-name"></strong> <span data-gs-lens="svc-risk-desc"></span></summary>
+            <code>haiphen risk assess --scenario &lt;scenario&gt;</code>
+            <img class="hp-gs__gif" data-src="assets/demos/cli-risk.gif" alt="Risk demo" loading="lazy" />
+          </details>
+
+          <details class="hp-gs__svc-card">
+            <summary><strong data-gs-lens="svc-causal-name"></strong> <span data-gs-lens="svc-causal-desc"></span></summary>
+            <code>haiphen causal analyze --events &lt;file&gt;</code>
+            <img class="hp-gs__gif" data-src="assets/demos/cli-causal.gif" alt="Causal demo" loading="lazy" />
+          </details>
+
+          <details class="hp-gs__svc-card">
+            <summary><strong data-gs-lens="svc-supply-name"></strong> <span data-gs-lens="svc-supply-desc"></span></summary>
+            <code>haiphen supply assess --supplier &lt;name&gt;</code>
+            <img class="hp-gs__gif" data-src="assets/demos/cli-supply.gif" alt="Supply demo" loading="lazy" />
+          </details>
+        </div>
+      </div>
+
+      <!-- Desktop & Mobile -->
+      <div class="hp-gs__section" id="gs-apps" data-gs-gated>
+        <h3 class="hp-gs__section-title">Desktop &amp; Mobile</h3>
+        <p class="hp-gs__section-sub">Access Haiphen from any device with native apps.</p>
+
+        <div class="hp-gs__apps-grid">
+          <div class="hp-gs__app-card">
+            <strong>Desktop App</strong>
+            <p>Full dashboard, service panels, and API key management.</p>
+            <div class="hp-gs__app-links">
+              <a href="install.html#desktop" target="_blank" rel="noopener">.dmg (macOS)</a>
+              <a href="install.html#desktop" target="_blank" rel="noopener">.msi (Windows)</a>
+              <a href="install.html#desktop" target="_blank" rel="noopener">.AppImage (Linux)</a>
+            </div>
+          </div>
+
+          <div class="hp-gs__app-card">
+            <strong>Mobile App</strong>
+            <p>Dashboards, alerts, and service access on the go.</p>
+            <div class="hp-gs__app-links">
+              <a href="install.html#mobile" target="_blank" rel="noopener">TestFlight (iOS)</a>
+              <a href="install.html#mobile" target="_blank" rel="noopener">Play Store (Android)</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /.hp-gs__main -->
+
+  </div><!-- /.hp-gs__body -->
 
 </section>
