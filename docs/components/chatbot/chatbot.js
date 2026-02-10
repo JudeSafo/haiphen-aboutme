@@ -187,7 +187,7 @@
         peekTimer = setTimeout(() => {
           panel.classList.remove('is-peek');
           peekTimer = null;
-        }, 8000);
+        }, 4000);
       };
 
       const showTransit = (section) => {
