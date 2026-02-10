@@ -4,9 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
+	"os"
 	"strings"
 
 	"github.com/spf13/cobra"
+	"golang.org/x/term"
 
 	"github.com/haiphen/haiphen-cli/internal/config"
 	"github.com/haiphen/haiphen-cli/internal/store"
@@ -26,6 +28,9 @@ func cmdProspect(cfg *config.Config, st store.Store) *cobra.Command {
 		cmdProspectOutreach(cfg, st),
 		cmdProspectSources(cfg, st),
 		cmdProspectCrawl(cfg, st),
+		cmdProspectSetKey(cfg, st),
+		cmdProspectListKeys(cfg, st),
+		cmdProspectDeleteKey(cfg, st),
 	)
 	return cmd
 }
@@ -307,5 +312,165 @@ func cmdProspectCrawl(cfg *config.Config, st store.Store) *cobra.Command {
 
 	cmd.Flags().BoolVar(&asJSON, "json", false, "Output as JSON")
 	cmd.Flags().StringVar(&source, "source", "", "Crawl specific source only")
+	return cmd
+}
+
+// ---- prospect set-key ----
+
+func cmdProspectSetKey(cfg *config.Config, st store.Store) *cobra.Command {
+	var (
+		usePrompt bool
+		label     string
+	)
+
+	cmd := &cobra.Command{
+		Use:   "set-key <provider>",
+		Short: "Store an API key for a prospect data source (nvd, github, shodan)",
+		Long: `Opens your browser to the Haiphen profile credentials page where you can
+securely enter your API key. Use --prompt to enter the key directly in the
+terminal (input is masked). Keys are never passed as CLI arguments to avoid
+leaking them into shell history.`,
+		Args: cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			provider := args[0]
+			valid := map[string]bool{"nvd": true, "github": true, "shodan": true}
+			if !valid[provider] {
+				return fmt.Errorf("invalid provider %q; must be one of: nvd, github, shodan", provider)
+			}
+
+			// Default: open browser to profile credentials tab
+			if !usePrompt {
+				profileURL := "https://haiphen.io/#profile/credentials"
+				fmt.Printf("Opening browser to manage %s credential...\n", provider)
+				if err := util.OpenBrowser(profileURL); err != nil {
+					fmt.Printf("Could not open browser: %v\n", err)
+					fmt.Println("Falling back to terminal prompt.")
+				} else {
+					fmt.Println("Enter your API key in the browser form.")
+					fmt.Println("Use --prompt to enter it directly in the terminal instead.")
+					return nil
+				}
+			}
+
+			// Secure stdin prompt (--prompt flag or browser fallback)
+			token, err := requireToken(st)
+			if err != nil {
+				return err
+			}
+
+			fmt.Printf("Enter %s API key (input hidden): ", provider)
+			keyBytes, err := term.ReadPassword(int(os.Stdin.Fd()))
+			fmt.Println() // newline after hidden input
+			if err != nil {
+				return fmt.Errorf("failed to read key: %w", err)
+			}
+
+			key := strings.TrimSpace(string(keyBytes))
+			if key == "" {
+				return fmt.Errorf("API key cannot be empty")
+			}
+
+			body := map[string]string{"api_key": key}
+			if label != "" {
+				body["label"] = label
+			}
+
+			path := "/v1/prospect/credentials/" + provider
+			_, err = util.ServicePut(cmd.Context(), cfg.APIOrigin, path, token, body)
+			if err != nil {
+				return err
+			}
+
+			fmt.Printf("Credential stored for %s\n", provider)
+			return nil
+		},
+	}
+
+	cmd.Flags().BoolVar(&usePrompt, "prompt", false, "Enter key via secure terminal prompt instead of browser")
+	cmd.Flags().StringVar(&label, "label", "", "Optional label for this key")
+	return cmd
+}
+
+// ---- prospect list-keys ----
+
+func cmdProspectListKeys(cfg *config.Config, st store.Store) *cobra.Command {
+	var asJSON bool
+
+	cmd := &cobra.Command{
+		Use:   "list-keys",
+		Short: "List stored prospect API keys (metadata only, no secrets)",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			token, err := requireToken(st)
+			if err != nil {
+				return err
+			}
+
+			data, err := util.ServiceGet(cmd.Context(), cfg.APIOrigin, "/v1/prospect/credentials", token)
+			if err != nil {
+				return err
+			}
+
+			printOrJSON(data, asJSON, func(b []byte) {
+				var out struct {
+					Items []struct {
+						Provider  string `json:"provider"`
+						Label     string `json:"label"`
+						UpdatedAt string `json:"updated_at"`
+					} `json:"items"`
+				}
+				if json.Unmarshal(b, &out) == nil {
+					if len(out.Items) == 0 {
+						fmt.Println("No stored credentials")
+						return
+					}
+					fmt.Printf("%-12s %-30s %s\n", "PROVIDER", "LABEL", "UPDATED")
+					fmt.Println(strings.Repeat("-", 60))
+					for _, item := range out.Items {
+						lbl := item.Label
+						if lbl == "" {
+							lbl = "-"
+						}
+						fmt.Printf("%-12s %-30s %s\n", item.Provider, lbl, item.UpdatedAt[:19])
+					}
+				}
+			})
+			return nil
+		},
+	}
+
+	cmd.Flags().BoolVar(&asJSON, "json", false, "Output as JSON")
+	return cmd
+}
+
+// ---- prospect delete-key ----
+
+func cmdProspectDeleteKey(cfg *config.Config, st store.Store) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "delete-key <provider>",
+		Short: "Delete a stored prospect API key (nvd, github, shodan)",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			provider := args[0]
+			valid := map[string]bool{"nvd": true, "github": true, "shodan": true}
+			if !valid[provider] {
+				return fmt.Errorf("invalid provider %q; must be one of: nvd, github, shodan", provider)
+			}
+
+			token, err := requireToken(st)
+			if err != nil {
+				return err
+			}
+
+			path := "/v1/prospect/credentials/" + provider
+			_, err = util.ServiceDelete(cmd.Context(), cfg.APIOrigin, path, token)
+			if err != nil {
+				return err
+			}
+
+			fmt.Printf("Credential deleted for %s\n", provider)
+			return nil
+		},
+	}
+
 	return cmd
 }

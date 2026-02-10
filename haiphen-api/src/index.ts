@@ -1,5 +1,5 @@
 import { buildRss } from "./rss";
-import { hmacSha256Hex, json, safeEqual, sha256Hex, uuid } from "./crypto";
+import { hmacSha256Hex, json, safeEqual, sha256Hex, uuid, importMasterKey, encryptCredential, decryptCredential } from "./crypto";
 import { RateLimiterDO, RateLimitPlan } from "./rate_limit_do";
 import { QuotaDO } from "./quota_do";
 import { normalizeTradesJson, upsertMetricsDaily } from "./ingest";
@@ -50,6 +50,9 @@ type Env = {
   // Webhook signing: optional global secret salt (per-hook secret is stored anyway)
   WEBHOOK_SALT?: string;
 
+  // Master key for envelope encryption of prospect credentials (hex-encoded 256-bit)
+  CREDENTIAL_KEY: string;
+
   // Optional: for CORS allowlist
   ALLOWED_ORIGINS?: string;
 
@@ -92,7 +95,7 @@ function corsHeaders(req: Request, env: Env) {
     "Access-Control-Allow-Origin": o,
     "Access-Control-Allow-Credentials": "true",
     "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Admin-Token",
-    "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+    "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS",
     "Vary": "Origin"
   };
 }
@@ -1298,6 +1301,90 @@ async function route(req: Request, env: Env): Promise<Response> {
     ).all();
 
     return okJson({ items: rows.results ?? [] }, requestId, corsHeaders(req, env));
+  }
+
+  // ---- PROSPECT CREDENTIALS: upsert ----
+  // PUT /v1/prospect/credentials/:provider
+  if (req.method === "PUT" && url.pathname.match(/^\/v1\/prospect\/credentials\/(nvd|github|shodan)$/)) {
+    const u = await authSessionUser(req, env, requestId);
+    const provider = url.pathname.split("/").pop()!;
+
+    const body = await req.json().catch(() => null) as null | { api_key?: string; label?: string };
+    if (!body?.api_key || typeof body.api_key !== "string" || body.api_key.length < 1) {
+      return err("invalid_request", "api_key is required", requestId, 400, corsHeaders(req, env));
+    }
+    if (body.api_key.length > 512) {
+      return err("invalid_request", "api_key too long", requestId, 400, corsHeaders(req, env));
+    }
+
+    const masterKey = await importMasterKey(env.CREDENTIAL_KEY);
+    const encrypted = await encryptCredential(masterKey, body.api_key);
+
+    await env.DB.prepare(`
+      INSERT INTO prospect_credentials (user_id, provider, encrypted_key, label)
+      VALUES (?, ?, ?, ?)
+      ON CONFLICT (user_id, provider) DO UPDATE SET
+        encrypted_key = excluded.encrypted_key,
+        label = COALESCE(excluded.label, prospect_credentials.label),
+        updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now')
+    `).bind(u.user_login, provider, encrypted, body.label ?? null).run();
+
+    return okJson({ ok: true, provider, label: body.label ?? null }, requestId, corsHeaders(req, env));
+  }
+
+  // ---- PROSPECT CREDENTIALS: list ----
+  // GET /v1/prospect/credentials
+  if (req.method === "GET" && url.pathname === "/v1/prospect/credentials") {
+    const u = await authSessionUser(req, env, requestId);
+
+    const rows = await env.DB.prepare(
+      `SELECT provider, label, updated_at FROM prospect_credentials WHERE user_id = ? ORDER BY provider`
+    ).bind(u.user_login).all<{ provider: string; label: string | null; updated_at: string }>();
+
+    return okJson({ items: rows.results ?? [] }, requestId, corsHeaders(req, env));
+  }
+
+  // ---- PROSPECT CREDENTIALS: delete ----
+  // DELETE /v1/prospect/credentials/:provider
+  if (req.method === "DELETE" && url.pathname.match(/^\/v1\/prospect\/credentials\/(nvd|github|shodan)$/)) {
+    const u = await authSessionUser(req, env, requestId);
+    const provider = url.pathname.split("/").pop()!;
+
+    const result = await env.DB.prepare(
+      `DELETE FROM prospect_credentials WHERE user_id = ? AND provider = ?`
+    ).bind(u.user_login, provider).run();
+
+    if (!result.meta.changes) {
+      return err("not_found", "Credential not found", requestId, 404, corsHeaders(req, env));
+    }
+
+    return okJson({ ok: true, provider }, requestId, corsHeaders(req, env));
+  }
+
+  // ---- PROSPECT CREDENTIALS: decrypt (internal) ----
+  // POST /v1/prospect/credentials/:provider/decrypt
+  if (req.method === "POST" && url.pathname.match(/^\/v1\/prospect\/credentials\/(nvd|github|shodan)\/decrypt$/)) {
+    const tok = req.headers.get("X-Internal-Token") || "";
+    if (!env.INTERNAL_TOKEN || !safeEqual(tok, env.INTERNAL_TOKEN)) {
+      return err("forbidden", "Forbidden", requestId, 403, corsHeaders(req, env));
+    }
+
+    const parts = url.pathname.split("/");
+    const provider = parts[parts.length - 2];
+
+    const body = await req.json().catch(() => null) as null | { user_id?: string };
+    if (!body?.user_id) return err("invalid_request", "user_id required", requestId, 400, corsHeaders(req, env));
+
+    const row = await env.DB.prepare(
+      `SELECT encrypted_key FROM prospect_credentials WHERE user_id = ? AND provider = ?`
+    ).bind(body.user_id, provider).first<{ encrypted_key: string }>();
+
+    if (!row) return err("not_found", "Credential not found", requestId, 404, corsHeaders(req, env));
+
+    const masterKey = await importMasterKey(env.CREDENTIAL_KEY);
+    const apiKey = await decryptCredential(masterKey, row.encrypted_key);
+
+    return okJson({ ok: true, provider, api_key: apiKey }, requestId, corsHeaders(req, env));
   }
 
   // ---- PROSPECT: trigger crawl (admin) ----

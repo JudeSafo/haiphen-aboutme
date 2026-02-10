@@ -22,6 +22,7 @@
   <div class="hp-profile__tabs" role="tablist" aria-label="Profile sections">
     <button class="hp-tab" role="tab" aria-selected="true" data-profile-tab="overview">Overview</button>
     <button class="hp-tab" role="tab" aria-selected="false" data-profile-tab="apikeys">API Keys</button>
+    <button class="hp-tab" role="tab" aria-selected="false" data-profile-tab="credentials">Credentials</button>
     <button class="hp-tab" role="tab" aria-selected="false" data-profile-tab="settings">Settings</button>
     <button class="hp-tab" role="tab" aria-selected="false" data-profile-tab="billing">Billing</button>
   </div>
@@ -319,6 +320,86 @@
 
         <div class="hp-note hp-note--danger">
           Never paste API keys into public Slack channels or GitHub issues. Revoke immediately if exposed.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab: Credentials -->
+  <div class="hp-profile__panel" data-profile-panel="credentials" hidden>
+    <div class="hp-card">
+      <div class="hp-card__hd">
+        <div>
+          <div class="hp-card__title">Prospect Credentials</div>
+          <div class="hp-card__sub">
+            Store API keys for third-party vulnerability data sources. Keys are encrypted at rest
+            using envelope encryption (AES-256-GCM). They are never displayed after saving.
+          </div>
+        </div>
+      </div>
+
+      <div class="hp-card__bd">
+        <div class="hp-status" data-cred-status hidden></div>
+
+        <!-- Stored credentials list -->
+        <div class="hp-cred-list" data-cred-list>
+          <div class="hp-muted">Loading...</div>
+        </div>
+
+        <div class="hp-divider"></div>
+
+        <!-- Add / update credential form -->
+        <div class="hp-cred-form">
+          <div class="hp-card__title hp-card__title--sm">Add or Update Credential</div>
+
+          <form data-cred-form>
+            <div class="hp-form-row">
+              <label class="hp-form-label" for="cred-provider">Provider</label>
+              <select class="hp-form-select" id="cred-provider" name="provider" required>
+                <option value="">Select provider...</option>
+                <option value="github">GitHub (Advisory Database)</option>
+                <option value="shodan">Shodan (Internet Search)</option>
+                <option value="nvd">NVD (National Vulnerability Database)</option>
+              </select>
+            </div>
+
+            <div class="hp-form-row">
+              <label class="hp-form-label" for="cred-apikey">API Key</label>
+              <input
+                class="hp-form-input"
+                id="cred-apikey"
+                name="api_key"
+                type="password"
+                autocomplete="off"
+                placeholder="Paste your API key here"
+                required
+              />
+            </div>
+
+            <div class="hp-form-row">
+              <label class="hp-form-label" for="cred-label">Label <span class="hp-muted">(optional)</span></label>
+              <input
+                class="hp-form-input"
+                id="cred-label"
+                name="label"
+                type="text"
+                autocomplete="off"
+                placeholder="e.g. My Shodan key"
+              />
+            </div>
+
+            <div class="hp-form-actions">
+              <button class="hp-profile__btn hp-profile__btn--primary" type="submit" data-cred-save>
+                Save Credential
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <div class="hp-note">
+          Keys entered here are encrypted before storage and can only be decrypted server-side
+          for crawl operations. Use <code>haiphen prospect set-key &lt;provider&gt;</code> in the CLI
+          to open this page directly.
         </div>
       </div>
     </div>

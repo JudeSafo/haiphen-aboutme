@@ -33,12 +33,64 @@ const CRAWLERS: Record<string, CrawlFn> = {
 };
 
 // ---------------------------------------------------------------------------
+// Credential resolution: D1 (via internal decrypt endpoint) → env var
+// ---------------------------------------------------------------------------
+
+const PROVIDER_ENV_MAP: Record<string, string> = {
+  nvd: "NVD_API_KEY",
+  github: "GITHUB_TOKEN",
+  shodan: "SHODAN_API_KEY",
+};
+
+async function resolveCredentials(): Promise<void> {
+  const apiOrigin = process.env.HAIPHEN_API_ORIGIN ?? "https://api.haiphen.io";
+  const internalToken = process.env.INTERNAL_TOKEN ?? "";
+  const userId = process.env.CREDENTIAL_USER_ID ?? "";
+
+  if (!internalToken || !userId) {
+    console.log("[prospect-crawler] No INTERNAL_TOKEN or CREDENTIAL_USER_ID set, using env vars only");
+    return;
+  }
+
+  for (const [provider, envVar] of Object.entries(PROVIDER_ENV_MAP)) {
+    // Skip if env var is already set
+    if (process.env[envVar]) continue;
+
+    try {
+      const res = await fetch(`${apiOrigin}/v1/prospect/credentials/${provider}/decrypt`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Internal-Token": internalToken,
+        },
+        body: JSON.stringify({ user_id: userId }),
+      });
+
+      if (res.ok) {
+        const data = (await res.json()) as { ok: boolean; api_key?: string };
+        if (data.ok && data.api_key) {
+          process.env[envVar] = data.api_key;
+          console.log(`[prospect-crawler] Resolved ${provider} credential from vault`);
+        }
+      } else if (res.status !== 404) {
+        console.warn(`[prospect-crawler] Failed to resolve ${provider} credential (${res.status})`);
+      }
+    } catch (err) {
+      console.warn(`[prospect-crawler] Error resolving ${provider} credential:`, err);
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
 
 async function main(): Promise<void> {
   const start = Date.now();
   console.log("[prospect-crawler] Starting crawl pipeline...");
+
+  // Resolve user-stored credentials before crawling
+  await resolveCredentials();
 
   // Read enabled sources from D1
   let sources: ProspectSource[];

@@ -13,7 +13,7 @@ export function corsHeaders(req: Request, allowedOriginsCsv?: string): Headers {
 
   h.set("Vary", "Origin");
   h.set("Access-Control-Allow-Credentials", "true");
-  h.set("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
+  h.set("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
   h.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
   h.set("Access-Control-Max-Age", "86400");
   return h;

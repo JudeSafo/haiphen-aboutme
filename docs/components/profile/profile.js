@@ -206,6 +206,59 @@
     return data;
   }
 
+  async function putJson(url, body) {
+    const r = await fetch(url, {
+      method: 'PUT',
+      credentials: 'include',
+      cache: 'no-store',
+      headers: { 'content-type': 'application/json', accept: 'application/json' },
+      body: JSON.stringify(body || {}),
+    });
+
+    const text = await r.text();
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch {
+      data = { raw: text };
+    }
+
+    if (!r.ok) {
+      const msg = data?.error?.message || data?.error || `HTTP ${r.status}`;
+      const err = new Error(msg);
+      err.status = r.status;
+      err.data = data;
+      throw err;
+    }
+    return data;
+  }
+
+  async function deleteJson(url) {
+    const r = await fetch(url, {
+      method: 'DELETE',
+      credentials: 'include',
+      cache: 'no-store',
+      headers: { accept: 'application/json' },
+    });
+
+    const text = await r.text();
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch {
+      data = { raw: text };
+    }
+
+    if (!r.ok) {
+      const msg = data?.error?.message || data?.error || `HTTP ${r.status}`;
+      const err = new Error(msg);
+      err.status = r.status;
+      err.data = data;
+      throw err;
+    }
+    return data;
+  }
+
   function redirectToLogin() {
     const here = window.location.href;
     const u = new URL(`${AUTH_ORIGIN}/login`);
@@ -448,6 +501,9 @@
 
     // 2d) billing tab
     await hydrateBillingTab(root, me);
+
+    // 2e) prospect credentials tab
+    await hydrateCredentials(root);
 
     // 3) render sticky reveal (if present)
     renderReveal(root);
@@ -823,6 +879,111 @@
     }
   }
 
+  // ---- Prospect Credentials ----
+
+  const PROVIDER_LABELS = {
+    github: 'GitHub',
+    shodan: 'Shodan',
+    nvd: 'NVD',
+  };
+
+  function setCredStatus(root, msg, kind) {
+    const el = qs('[data-cred-status]', root);
+    if (!el) return;
+    if (!msg) { el.hidden = true; el.textContent = ''; el.classList.remove('hp-status--ok', 'hp-status--warn'); return; }
+    el.hidden = false;
+    el.textContent = String(msg);
+    el.classList.remove('hp-status--ok', 'hp-status--warn');
+    if (kind === 'ok') el.classList.add('hp-status--ok');
+    if (kind === 'warn') el.classList.add('hp-status--warn');
+  }
+
+  async function hydrateCredentials(root) {
+    const listEl = qs('[data-cred-list]', root);
+    if (!listEl) return;
+
+    listEl.innerHTML = '<div class="hp-muted">Loading...</div>';
+
+    let items = [];
+    try {
+      const data = await getJson(`${API_ORIGIN}/v1/prospect/credentials`);
+      items = Array.isArray(data?.items) ? data.items : [];
+    } catch (e) {
+      if (e && (e.status === 401 || e.status === 403)) {
+        listEl.innerHTML = '<div class="hp-muted">Log in to manage credentials.</div>';
+        return;
+      }
+      listEl.innerHTML = '<div class="hp-muted">Unable to load credentials.</div>';
+      return;
+    }
+
+    if (items.length === 0) {
+      listEl.innerHTML = '<div class="hp-muted">No stored credentials. Use the form below to add one.</div>';
+      return;
+    }
+
+    listEl.innerHTML = items.map((c) => {
+      const provider = escapeHtml(PROVIDER_LABELS[c.provider] || c.provider);
+      const label = escapeHtml(c.label || '—');
+      const updated = escapeHtml(fmtIso(c.updated_at));
+      return `
+        <div class="hp-cred-item">
+          <div class="hp-cred-item__info">
+            <strong>${provider}</strong>
+            <span class="hp-muted">${label}</span>
+            <span class="hp-muted">Updated: ${updated}</span>
+          </div>
+          <div class="hp-cred-item__actions">
+            <span class="hp-badge hp-badge--active">Stored</span>
+            <button class="hp-rowBtn" type="button" data-cred-delete="${escapeAttr(c.provider)}">Delete</button>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  async function saveCredential(root) {
+    const form = qs('[data-cred-form]', root);
+    if (!form) return;
+
+    const provider = form.querySelector('[name="provider"]')?.value;
+    const apiKey = form.querySelector('[name="api_key"]')?.value;
+    const label = form.querySelector('[name="label"]')?.value || undefined;
+
+    if (!provider) { setCredStatus(root, 'Select a provider.', 'warn'); return; }
+    if (!apiKey) { setCredStatus(root, 'Enter an API key.', 'warn'); return; }
+
+    const btn = qs('[data-cred-save]', root);
+    if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
+    setCredStatus(root, 'Encrypting and saving...', '');
+
+    try {
+      await putJson(`${API_ORIGIN}/v1/prospect/credentials/${provider}`, { api_key: apiKey, label });
+      setCredStatus(root, `${PROVIDER_LABELS[provider] || provider} credential saved.`, 'ok');
+      form.reset();
+      await hydrateCredentials(root);
+    } catch (e) {
+      setCredStatus(root, `Save failed: ${e?.message || e}`, 'warn');
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = 'Save Credential'; }
+    }
+  }
+
+  async function deleteCredential(root, provider) {
+    if (!provider) return;
+    const name = PROVIDER_LABELS[provider] || provider;
+    const ok = window.confirm(`Delete ${name} credential? The crawler will fall back to environment variables.`);
+    if (!ok) return;
+
+    setCredStatus(root, `Deleting ${name} credential...`, '');
+    try {
+      await deleteJson(`${API_ORIGIN}/v1/prospect/credentials/${provider}`);
+      setCredStatus(root, `${name} credential deleted.`, 'ok');
+      await hydrateCredentials(root);
+    } catch (e) {
+      setCredStatus(root, `Delete failed: ${e?.message || e}`, 'warn');
+    }
+  }
+
   function wire(root) {
     if (root.__haiphenProfileWired) return;
     root.__haiphenProfileWired = true;
@@ -963,6 +1124,25 @@
         await savePreferences(root);
       });
     }
+
+    // Credential form
+    const credForm = qs('[data-cred-form]', root);
+    if (credForm) {
+      credForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        await saveCredential(root);
+      });
+    }
+
+    // Credential delete buttons (delegated)
+    root.addEventListener('click', async (e) => {
+      const delBtn = e.target?.closest?.('[data-cred-delete]');
+      if (delBtn) {
+        e.preventDefault();
+        const provider = delBtn.getAttribute('data-cred-delete');
+        await deleteCredential(root, provider);
+      }
+    });
   }
 
   async function showProfile(opts = {}) {
@@ -1020,7 +1200,7 @@
   window.addEventListener('haiphen:session:navigate', (ev) => {
     const page = ev?.detail?.page;
     const tab = ev?.detail?.tab || null;
-    const profilePages = ['profile', 'settings', 'billing', 'quota', 'apikeys'];
+    const profilePages = ['profile', 'settings', 'billing', 'quota', 'apikeys', 'credentials'];
     if (profilePages.includes(page)) {
       ensureContentWidgetVisible();
       if (typeof window.showSection === 'function') window.showSection('Profile');

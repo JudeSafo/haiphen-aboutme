@@ -745,3 +745,58 @@
   .hp-activeKey__actions{ flex-wrap: wrap; }
   .hp-pref__actions{ flex-direction: column; align-items: flex-start; }
 }
+
+/* ---- Prospect Credentials ---- */
+.hp-cred-list{ display: flex; flex-direction: column; gap: 8px; }
+
+.hp-cred-item{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border: 1px solid var(--border, #e2e8f0);
+  border-radius: 8px;
+  background: var(--card-bg, #fff);
+}
+.hp-cred-item__info{ display: flex; flex-direction: column; gap: 2px; }
+.hp-cred-item__info strong{ font-size: .95rem; }
+.hp-cred-item__actions{ display: flex; align-items: center; gap: 8px; }
+
+.hp-cred-form{ margin-top: 12px; }
+
+.hp-form-row{
+  margin-bottom: 12px;
+}
+.hp-form-label{
+  display: block;
+  font-weight: 600;
+  font-size: .85rem;
+  margin-bottom: 4px;
+  color: var(--text-secondary, #475569);
+}
+.hp-form-input,
+.hp-form-select{
+  width: 100%;
+  padding: 8px 12px;
+  font-size: .9rem;
+  border: 1px solid var(--border, #cbd5e1);
+  border-radius: 6px;
+  background: var(--input-bg, #fff);
+  color: var(--text-primary, #1e293b);
+  font-family: inherit;
+}
+.hp-form-input:focus,
+.hp-form-select:focus{
+  outline: 2px solid var(--accent, #5A9BD4);
+  outline-offset: -1px;
+  border-color: var(--accent, #5A9BD4);
+}
+.hp-form-actions{
+  margin-top: 16px;
+}
+
+.hp-card__title--sm{
+  font-size: .95rem;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
