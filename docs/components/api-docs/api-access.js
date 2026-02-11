@@ -587,7 +587,7 @@
       await startCanonicalCheckout({
         // Default plan for “Request access” CTA.
         // If you want to force plan selection instead, remove this and routeToServices().
-        priceId: 'price_1SmGzEJRL3AYFpZZIjsqhB1T',
+        priceId: 'price_1SvljOJRL3AYFpZZNOL2ggfI',
         plan: 'fintech_pro',
         tosVersion: 'sla_v0.2_2026-01-22',
         checkoutOrigin: 'https://checkout.haiphen.io',
