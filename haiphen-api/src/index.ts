@@ -2405,10 +2405,35 @@ Return ONLY valid JSON: {"summary":"...","impact":"...","recommendations":["..."
     const u = await authSessionUser(req, env, requestId);
     const broker = brokerPutMatch[1];
 
+    // Rate limit: hash user_login as key, free tier default
+    const brokerRlKey = await sha256Hex(u.user_login + ":broker");
+    const brokerRl = await consumeRateLimit(env, brokerRlKey, "free", 1);
+    if (!brokerRl.allowed) return err("rate_limited", "Rate limit exceeded", requestId, 429, corsHeaders(req, env));
+
     const body = await req.json().catch(() => null) as null | {
       account_id?: string;
       constraints_json?: string;
     };
+
+    // Validate constraints_json: max 10KB, must be valid JSON if provided
+    if (body?.constraints_json != null) {
+      if (body.constraints_json.length > 10240) {
+        return err("invalid_request", "constraints_json exceeds 10KB limit", requestId, 400, corsHeaders(req, env));
+      }
+      try { JSON.parse(body.constraints_json); } catch {
+        return err("invalid_request", "constraints_json must be valid JSON", requestId, 400, corsHeaders(req, env));
+      }
+    }
+
+    // Encrypt account_id at rest (envelope encryption, same pattern as prospect credentials)
+    let encryptedAccountId: string | null = null;
+    if (body?.account_id) {
+      if (body.account_id.length > 256) {
+        return err("invalid_request", "account_id too long", requestId, 400, corsHeaders(req, env));
+      }
+      const masterKey = await importMasterKey(env.CREDENTIAL_KEY);
+      encryptedAccountId = await encryptCredential(masterKey, body.account_id);
+    }
 
     await env.DB.prepare(`
       INSERT INTO broker_connections (user_id, broker, account_id, constraints_json)
@@ -2421,7 +2446,7 @@ Return ONLY valid JSON: {"summary":"...","impact":"...","recommendations":["..."
     `).bind(
       u.user_login,
       broker,
-      body?.account_id ?? null,
+      encryptedAccountId,
       body?.constraints_json ?? null
     ).run();
 
@@ -2434,12 +2459,28 @@ Return ONLY valid JSON: {"summary":"...","impact":"...","recommendations":["..."
     const u = await authSessionUser(req, env, requestId);
     const broker = brokerGetMatch[1];
 
+    // Rate limit
+    const brokerRlKey = await sha256Hex(u.user_login + ":broker");
+    const brokerRl = await consumeRateLimit(env, brokerRlKey, "free", 1);
+    if (!brokerRl.allowed) return err("rate_limited", "Rate limit exceeded", requestId, 429, corsHeaders(req, env));
+
     const row = await env.DB.prepare(
       `SELECT broker, account_id, account_type, status, constraints_json, connected_at, last_sync_at, updated_at
        FROM broker_connections WHERE user_id = ? AND broker = ?`
-    ).bind(u.user_login, broker).first();
+    ).bind(u.user_login, broker).first<Record<string, unknown>>();
 
     if (!row) return err("not_found", "No connection found", requestId, 404, corsHeaders(req, env));
+
+    // Decrypt account_id before returning
+    if (row.account_id && typeof row.account_id === "string") {
+      try {
+        const masterKey = await importMasterKey(env.CREDENTIAL_KEY);
+        row.account_id = await decryptCredential(masterKey, row.account_id);
+      } catch {
+        row.account_id = null; // graceful fallback if decryption fails (legacy plaintext row)
+      }
+    }
+
     return okJson(row, requestId, corsHeaders(req, env));
   }
 
@@ -2448,6 +2489,11 @@ Return ONLY valid JSON: {"summary":"...","impact":"...","recommendations":["..."
   if (req.method === "DELETE" && brokerDelMatch) {
     const u = await authSessionUser(req, env, requestId);
     const broker = brokerDelMatch[1];
+
+    // Rate limit
+    const brokerRlKey = await sha256Hex(u.user_login + ":broker");
+    const brokerRl = await consumeRateLimit(env, brokerRlKey, "free", 1);
+    if (!brokerRl.allowed) return err("rate_limited", "Rate limit exceeded", requestId, 429, corsHeaders(req, env));
 
     await env.DB.prepare(
       `UPDATE broker_connections SET status = 'disconnected', updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now')
@@ -2461,6 +2507,11 @@ Return ONLY valid JSON: {"summary":"...","impact":"...","recommendations":["..."
   if (req.method === "POST" && url.pathname === "/v1/broker/sync") {
     const u = await authSessionUser(req, env, requestId);
 
+    // Rate limit
+    const brokerRlKey = await sha256Hex(u.user_login + ":broker");
+    const brokerRl = await consumeRateLimit(env, brokerRlKey, "free", 1);
+    if (!brokerRl.allowed) return err("rate_limited", "Rate limit exceeded", requestId, 429, corsHeaders(req, env));
+
     const body = await req.json().catch(() => null) as null | {
       broker?: string;
       source?: string;
@@ -2470,6 +2521,29 @@ Return ONLY valid JSON: {"summary":"...","impact":"...","recommendations":["..."
     };
     if (!body?.broker || !body?.kpis) {
       return err("invalid_request", "broker and kpis are required", requestId, 400, corsHeaders(req, env));
+    }
+
+    // Validate broker connection exists and is active
+    const conn = await env.DB.prepare(
+      `SELECT broker FROM broker_connections WHERE user_id = ? AND broker = ? AND status = 'active'`
+    ).bind(u.user_login, body.broker).first();
+    if (!conn) return err("not_found", "No active broker connection found", requestId, 404, corsHeaders(req, env));
+
+    // Validate KPIs: count cap + name/unit format
+    if (body.kpis.length > 100) {
+      return err("invalid_request", "kpis array exceeds 100 items", requestId, 400, corsHeaders(req, env));
+    }
+    const KPI_RE = /^[\w\s.:/%()+-]{1,100}$/;
+    for (const kpi of body.kpis) {
+      if (!kpi.name || !KPI_RE.test(kpi.name)) {
+        return err("invalid_request", "Invalid KPI name format", requestId, 400, corsHeaders(req, env));
+      }
+      if (kpi.unit && !KPI_RE.test(kpi.unit)) {
+        return err("invalid_request", "Invalid KPI unit format", requestId, 400, corsHeaders(req, env));
+      }
+      if (typeof kpi.value !== "number" || !isFinite(kpi.value)) {
+        return err("invalid_request", "KPI value must be a finite number", requestId, 400, corsHeaders(req, env));
+      }
     }
 
     const syncId = uuid();

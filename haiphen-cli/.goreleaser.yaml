@@ -39,9 +39,16 @@ changelog:
       - "^test:"
       - "^chore:"
 
+release:
+  github:
+    owner: JudeSafo
+    name: haiphen-aboutme
+  draft: true
+  prerelease: auto
+
 brews:
   - repository:
-      owner: haiphenAI
+      owner: JudeSafo
       name: homebrew-tap
       token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
     directory: Formula
