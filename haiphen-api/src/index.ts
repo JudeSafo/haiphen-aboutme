@@ -175,9 +175,9 @@ async function getPlan(env: Env, userLogin: string): Promise<"free" | "pro" | "e
 }
 
 function planToRateLimit(plan: "free" | "pro" | "enterprise"): RateLimitPlan {
-  if (plan === "pro") return { limitPerMinute: 600, burst: 60 };
-  if (plan === "enterprise") return { limitPerMinute: 6000, burst: 600 };
-  return { limitPerMinute: 60, burst: 10 };
+  if (plan === "pro") return { limitPerMinute: 30, burst: 20 };
+  if (plan === "enterprise") return { limitPerMinute: 120, burst: 60 };
+  return { limitPerMinute: 12, burst: 8 };
 }
 
 function planToEntitlements(plan: "free" | "pro" | "enterprise") {

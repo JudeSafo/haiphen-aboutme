@@ -2,18 +2,18 @@
 // Firestore-backed quota tracker — replaces QuotaDO for GCP failover.
 //
 // Uses Firestore atomic increments keyed by date + user. Limits match
-// haiphen-api/src/quota_do.ts: free=200, pro=10k, enterprise=50k, ceiling=95k.
+// haiphen-api/src/quota_do.ts: free=1k, pro=10k, enterprise=50k, ceiling=333k.
 // ---------------------------------------------------------------------------
 
 import { Firestore, FieldValue } from "@google-cloud/firestore";
 
 const PLAN_DAILY_LIMITS: Record<string, number> = {
-  free: 200,
+  free: 1_000,
   pro: 10_000,
   enterprise: 50_000,
 };
-const GLOBAL_CEILING = 95_000;
-const DEFAULT_LIMIT = 200;
+const GLOBAL_CEILING = 333_000;
+const DEFAULT_LIMIT = 1_000;
 
 export class FirestoreQuotaStub {
   private db: Firestore;

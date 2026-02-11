@@ -112,7 +112,9 @@
 
   function setActiveNav(nav, id) {
     qsa(nav, 'a[data-doc-id]').forEach((a) => {
-      a.classList.toggle('is-active', a.getAttribute('data-doc-id') === id);
+      const active = a.getAttribute('data-doc-id') === id;
+      a.classList.toggle('is-active', active);
+      if (active) a.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     });
   }
 
@@ -146,12 +148,10 @@
       setActiveNav(nav, id);
       scrollToId(id);
 
+      // Update the URL hash without triggering the SPA router (which would
+      // re-mount the entire Docs section and scroll to the top).
       try {
-        if (typeof window.setHashForSection === 'function') {
-          window.setHashForSection('Docs', id, { replace: false });
-        } else {
-          window.location.hash = `#docs:${id}`;
-        }
+        history.replaceState(null, '', `#docs:${id}`);
       } catch {}
     });
 
@@ -229,16 +229,35 @@
     });
   }
 
+  function buildFilterIndex(root) {
+    var nav = qs(root, '[data-api-nav]');
+    if (!nav) return {};
+    var idx = {};
+    qsa(nav, 'a[data-doc-id]').forEach(function (a) {
+      var id = a.getAttribute('data-doc-id');
+      var label = (a.textContent || '').trim().toLowerCase();
+      var sec = id && root.querySelector('#' + id);
+      var body = sec ? (sec.textContent || '').toLowerCase() : '';
+      idx[id] = label + ' ' + body;
+    });
+    root.__filterIndex = idx;
+    return idx;
+  }
+
   function wireFilter(root) {
     const input = qs(root, '[data-api-filter]');
     const nav = qs(root, '[data-api-nav]');
     if (!input || !nav) return;
 
+    buildFilterIndex(root);
+
     input.addEventListener('input', () => {
       const q = String(input.value || '').trim().toLowerCase();
+      const idx = root.__filterIndex || {};
       qsa(nav, 'a[data-doc-id]').forEach((a) => {
-        const label = a.textContent.trim().toLowerCase();
-        a.style.display = q && !label.includes(q) ? 'none' : '';
+        var id = a.getAttribute('data-doc-id');
+        var haystack = idx[id] || '';
+        a.style.display = q && !haystack.includes(q) ? 'none' : '';
       });
     });
   }
@@ -553,5 +572,8 @@
       });
       pre.appendChild(btn);
     });
+
+    // Rebuild filter index so body-text search reflects swapped content
+    buildFilterIndex(root);
   }
 })();

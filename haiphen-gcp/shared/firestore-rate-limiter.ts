@@ -8,13 +8,13 @@
 
 import { Firestore, FieldValue } from "@google-cloud/firestore";
 
-/** Plan tier limits (requests per minute) — must match haiphen-api/src/rate_limit_do.ts */
+/** Plan tier limits (requests per minute) — must match haiphen-api/src/index.ts planToRateLimit() */
 const PLAN_LIMITS: Record<string, number> = {
-  free: 60,
-  pro: 600,
-  enterprise: 6000,
+  free: 12,
+  pro: 30,
+  enterprise: 120,
 };
-const DEFAULT_LIMIT = 60;
+const DEFAULT_LIMIT = 12;
 const WINDOW_MS = 60_000;
 
 interface RateBucket {

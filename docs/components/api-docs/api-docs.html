@@ -42,6 +42,11 @@
     <aside class="api-sidebar" aria-label="Documentation navigation">
       <div class="api-sidebar-head">
         <div class="api-sidebar-title">Contents</div>
+      </div>
+
+      <nav class="api-nav" data-api-nav><!-- injected --></nav>
+
+      <div class="api-sidebar-foot">
         <input
           class="api-filter"
           type="search"
@@ -49,11 +54,6 @@
           aria-label="Filter documentation sections"
           data-api-filter
         />
-      </div>
-
-      <nav class="api-nav" data-api-nav><!-- injected --></nav>
-
-      <div class="api-sidebar-foot">
         <div class="api-muted">Tip: Share a deep link via <code>#docs:section-id</code>.</div>
       </div>
     </aside>
@@ -237,19 +237,6 @@ api_get() {
             Exceeding your per-minute rate or daily quota returns HTTP <code>429</code>.
           </p>
 
-          <div class="api-callout">
-            <div class="api-callout-title">Capacity planning</div>
-            <p class="api-muted">
-              Limits are derived from the platform&rsquo;s infrastructure budget of
-              <strong>10&thinsp;M worker requests/month</strong> shared across a target cohort of
-              <strong>50 users</strong>. That gives each user a fair-share budget of
-              <strong>200&thinsp;K requests/month</strong> (~9&thinsp;K/trading day, ~19&thinsp;req/min sustained
-              over 8 active hours &times; 22 trading days). Free-tier limits keep aggregate usage under 60%
-              of capacity; Pro-tier represents a full fair share. When total platform usage exceeds 80%,
-              overflow traffic is routed to GCP failover automatically.
-            </p>
-          </div>
-
           <h4>Per-minute rate</h4>
           <div class="api-table" role="table" aria-label="Per-minute rate limits">
             <div class="api-row api-head" role="row">
@@ -309,19 +296,6 @@ X-RateLimit-Reset: 1707580800
 X-DailyQuota-Limit: 10000
 X-DailyQuota-Remaining: 8743</code></pre>
 
-          <div class="api-callout">
-            <div class="api-callout-title">Why these numbers?</div>
-            <p class="api-muted">
-              <strong>Free 12&thinsp;req/min</strong> &mdash; 50 free users at max rate during trading hours
-              (12 &times; 60 &times; 8h &times; 22d &times; 50) = 6.3&thinsp;M/month, under the 60% warning
-              threshold (6&thinsp;M of 10&thinsp;M).<br>
-              <strong>Pro 30&thinsp;req/min</strong> &mdash; allows 3&times; burst above the sustained fair-share
-              rate of ~19/min. Daily quota of 10&thinsp;K acts as the real monthly cap
-              (10&thinsp;K &times; 22d &asymp; 200&thinsp;K/month = full fair share).<br>
-              <strong>Enterprise 120&thinsp;req/min</strong> &mdash; dedicated capacity, custom daily quota,
-              billed per overage at $0.30/M requests + $0.15/M Durable Object calls.
-            </p>
-          </div>
         </section>
 
         <!-- Data model -->

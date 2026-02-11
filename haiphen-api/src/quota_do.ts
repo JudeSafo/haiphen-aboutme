@@ -10,18 +10,19 @@
 type Plan = "free" | "pro" | "enterprise";
 
 const DAILY_LIMITS: Record<Plan, number> = {
-  free: 200,
+  free: 1_000,
   pro: 10_000,
   enterprise: 50_000,
 };
 
+// 10M req/month ÷ 30 days ≈ 333K/day total capacity (CF $5 tier)
 const GLOBAL_THRESHOLDS: Record<Plan, number> = {
-  free: 60_000,
-  pro: 85_000,
-  enterprise: 95_000,
+  free: 200_000,       // 60% — watchdog WARNING
+  pro: 267_000,        // 80% — watchdog FAILOVER
+  enterprise: 300_000, // 90% — watchdog CRITICAL
 };
 
-const HARD_CEILING = 95_000;
+const HARD_CEILING = 333_000;
 
 type ConsumeRequest = {
   user_id: string;
