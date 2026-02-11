@@ -37,17 +37,37 @@
     return data;
   }
 
+  // Stash the overlay's original parent so we can return it on close.
+  let _overlayOriginalParent = null;
+
   function setOverlayOpen(root, open) {
-    const overlay = q(root, "[data-cohort-overlay]");
+    const overlay = q(root, "[data-cohort-overlay]") ||
+                    document.querySelector("[data-cohort-overlay]");
     if (!overlay) return;
+
+    if (open) {
+      // Hoist overlay to <body> so no ancestor transform constrains
+      // position:fixed (CSS spec: transform creates a new containing block).
+      if (overlay.parentNode !== document.body) {
+        _overlayOriginalParent = overlay.parentNode;
+        document.body.appendChild(overlay);
+      }
+    }
 
     overlay.hidden = !open;
     overlay.setAttribute("aria-hidden", open ? "false" : "true");
     document.documentElement.style.overflow = open ? "hidden" : "";
+
+    if (!open && _overlayOriginalParent) {
+      // Return overlay to its original location in the DOM tree.
+      _overlayOriginalParent.appendChild(overlay);
+      _overlayOriginalParent = null;
+    }
   }
 
   function isOverlayOpen(root) {
-    const overlay = q(root, "[data-cohort-overlay]");
+    const overlay = q(root, "[data-cohort-overlay]") ||
+                    document.querySelector("[data-cohort-overlay]");
     if (!overlay) return false;
     return !overlay.hidden;
   }
@@ -93,18 +113,26 @@
     });
   }
 
+  function getOverlayEl() {
+    return document.querySelector("[data-cohort-overlay]");
+  }
+
   function openOverlay(root) {
     const r = root || lastRoot || document;
     setOverlayOpen(r, true);
-    showForm(r);
-    const first = q(r, 'input[name="email"]');
+    // After hoist the overlay is on body — use it as query root for children.
+    const ov = getOverlayEl();
+    if (ov) showForm(ov);
+    const first = (ov || r).querySelector('input[name="email"]');
     if (first) first.focus();
   }
 
   function closeOverlay(root) {
     const r = root || lastRoot || document;
+    // Overlay is still on body at this point — query it for child reset.
+    const ov = getOverlayEl();
+    if (ov) showForm(ov);
     setOverlayOpen(r, false);
-    showForm(r);
   }
 
   function wireMenuOpeners(root) {
@@ -139,15 +167,17 @@
       }
     });
 
-    // Progress wiring
+    // Progress wiring — use live overlay ref so it works after hoist to body.
+    const ctx = () => getOverlayEl() || root;
     renderProgress(root, form);
 
-    const onInput = () => renderProgress(root, form);
+    const onInput = () => renderProgress(ctx(), form);
     form.addEventListener("input", onInput, { passive: true });
     form.addEventListener("change", onInput, { passive: true });
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
-      setStatus(root, "");
+      const c = ctx();
+      setStatus(c, "");
 
       const fd = new FormData(form);
       const email = String(fd.get("email") || "").trim();
@@ -173,22 +203,22 @@
       };
 
       if (!payload.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.email)) {
-        setStatus(root, "Please enter a valid email.");
+        setStatus(c, "Please enter a valid email.");
         return;
       }
 
-      disableForm(root, true);
-      setStatus(root, "Submitting…");
+      disableForm(c, true);
+      setStatus(c, "Submitting…");
 
       try {
         const data = await postJson(ENDPOINT, payload);
-        setStatus(root, "");
-        showReceipt(root, data, email);
+        setStatus(c, "");
+        showReceipt(c, data, email);
       } catch (err) {
         console.warn(LOG, "submit failed", err);
-        setStatus(root, err?.message || "Submit failed. Try again.");
+        setStatus(c, err?.message || "Submit failed. Try again.");
       } finally {
-        disableForm(root, false);
+        disableForm(c, false);
       }
     });
 
