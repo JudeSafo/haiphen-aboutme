@@ -1,19 +1,25 @@
 import { Client } from "pg";
+import { createHmac } from "crypto";
 
 // ---- Environment ----
 const DATABASE_URL = process.env.DATABASE_URL || "";
 const HAIPHEN_API_URL = (process.env.HAIPHEN_API_URL || "https://api.haiphen.io").replace(/\/$/, "");
 const SNAPSHOT_ENDPOINT = process.env.SNAPSHOT_ENDPOINT || "/v1/internal/trades/snapshot";
 const INTERNAL_TOKEN = process.env.INTERNAL_TOKEN || "";
+const SIGNING_SECRET = process.env.SIGNING_SECRET || "";
 
-const MV_KPI_TABLE = process.env.MV_KPI_TABLE || "utils_statistics.trades_kpi_summary_mv";
-const MV_SERIES_TABLE = process.env.MV_SERIES_TABLE || "utils_statistics.trades_kpi_series_mv";
-const MV_EXTREMES_TABLE = process.env.MV_EXTREMES_TABLE || "utils_statistics.trades_contract_extremes_by_kpi_mv";
-const MV_PORTFOLIO_TABLE = process.env.MV_PORTFOLIO_TABLE || "utils_statistics.trades_portfolio_assets_mv";
+const MV_KPI_TABLE = process.env.MV_KPI_TABLE || "utils_statistics.daily_trade_kpis_mv";
+const MV_SERIES_TABLE = process.env.MV_SERIES_TABLE || "utils_statistics.daily_trade_series_mv";
+const MV_EXTREMES_TABLE = process.env.MV_EXTREMES_TABLE || "utils_statistics.daily_trade_extremes_mv";
+const MV_PORTFOLIO_TABLE = process.env.MV_PORTFOLIO_TABLE || "utils_statistics.daily_trade_portfolio_mv";
 
 function todayYYYYMMDD(): string {
   const d = new Date();
   return d.toISOString().slice(0, 10);
+}
+
+function hmacSign(secret: string, payload: string): string {
+  return createHmac("sha256", secret).update(payload).digest("hex");
 }
 
 async function main() {
@@ -126,18 +132,21 @@ async function main() {
     const totalItems = rows.length + seriesRes.rows.length + extremesRes.rows.length + portfolioAssets.length;
     console.log(`[trades-sync] Payload assembled: ${totalItems} total items`);
 
-    // 6) POST to haiphen-api
+    // 6) POST to haiphen-api with HMAC signature
     const url = `${HAIPHEN_API_URL}${SNAPSHOT_ENDPOINT}`;
     console.log(`[trades-sync] POSTing to ${url}`);
 
-    const resp = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Internal-Token": INTERNAL_TOKEN,
-      },
-      body: JSON.stringify(payload),
-    });
+    const body = JSON.stringify(payload);
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+      "X-Internal-Token": INTERNAL_TOKEN,
+    };
+
+    if (SIGNING_SECRET) {
+      headers["X-Signature"] = hmacSign(SIGNING_SECRET, body);
+    }
+
+    const resp = await fetch(url, { method: "POST", headers, body });
 
     const respBody = await resp.text();
     if (!resp.ok) {

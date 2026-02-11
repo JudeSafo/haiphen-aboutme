@@ -2,7 +2,35 @@
 
 This document describes the GKE → D1 trades pipeline so that a remote AI agent (or engineer) on the GKE cluster can configure and operate the sync job.
 
-## 1. D1 Target Schema
+## 1. Authentication: Token + HMAC Signature
+
+The API endpoint requires **dual auth**:
+
+1. **X-Internal-Token** header — must match the `INTERNAL_TOKEN` wrangler secret on haiphen-api
+2. **X-Signature** header — HMAC-SHA256 of the raw JSON request body, signed with `SIGNING_SECRET`
+
+### Signing the request
+
+```javascript
+const crypto = require("crypto");
+
+const body = JSON.stringify(payload);
+const signature = crypto.createHmac("sha256", SIGNING_SECRET).update(body).digest("hex");
+
+fetch(url, {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    "X-Internal-Token": INTERNAL_TOKEN,
+    "X-Signature": signature,
+  },
+  body,
+});
+```
+
+The API verifies: `HMAC-SHA256(SIGNING_SECRET, rawBody) === X-Signature` using timing-safe comparison.
+
+## 2. D1 Target Schema
 
 The sync job writes to these D1 tables (all created in migrations 0001/0004):
 
@@ -16,24 +44,24 @@ The sync job writes to these D1 tables (all created in migrations 0001/0004):
 
 The API endpoint handles all normalization and D1 upsert logic — the sync job just needs to POST the payload.
 
-## 2. Materialized Views to Query
+## 3. Materialized Views to Query
 
 These PostgreSQL materialized views on the GKE cluster provide the source data:
 
 | ConfigMap Key | MV Table | Columns Used |
 |---|---|---|
-| `MV_KPI_TABLE` | `utils_statistics.trades_kpi_summary_mv` | `kpi_name, display_value, sort_order, report_date` |
-| `MV_SERIES_TABLE` | `utils_statistics.trades_kpi_series_mv` | `kpi_name, ts, value, source, report_date` |
-| `MV_EXTREMES_TABLE` | `utils_statistics.trades_contract_extremes_by_kpi_mv` | `kpi_name, side, rank, trade_id, symbol, contract_name, metric_raw, metric_abs, individual_pnl, abs_individual_pnl, percent_change, cost_basis, qty, bid_price, ask_price, mid_price, mid_ts, mid_mark_pnl, liquidity_drag, report_date` |
-| `MV_PORTFOLIO_TABLE` | `utils_statistics.trades_portfolio_assets_mv` | `trade_id, symbol, contract_name, report_date` |
+| `MV_KPI_TABLE` | `utils_statistics.daily_trade_kpis_mv` | `kpi_name, display_value, sort_order, report_date` |
+| `MV_SERIES_TABLE` | `utils_statistics.daily_trade_series_mv` | `kpi_name, ts, value, source, report_date` |
+| `MV_EXTREMES_TABLE` | `utils_statistics.daily_trade_extremes_mv` | `kpi_name, side, rank, trade_id, symbol, contract_name, metric_raw, metric_abs, individual_pnl, abs_individual_pnl, percent_change, cost_basis, qty, bid_price, ask_price, mid_price, mid_ts, mid_mark_pnl, liquidity_drag, report_date` |
+| `MV_PORTFOLIO_TABLE` | `utils_statistics.daily_trade_portfolio_mv` | `trade_id, symbol, contract_name, report_date` |
 
 All views are filtered by `WHERE report_date = $1` using today's date (YYYY-MM-DD).
 
-## 3. API Contract
+## 4. API Contract
 
 ### `POST /v1/internal/trades/snapshot`
 
-**Auth:** `X-Internal-Token` header (must match haiphen-api `INTERNAL_TOKEN` secret)
+**Auth:** `X-Internal-Token` + `X-Signature` headers (see Section 1)
 
 **Request body (JSON):**
 
@@ -89,7 +117,7 @@ All views are filtered by `WHERE report_date = $1` using today's date (YYYY-MM-D
 - Series points: `t`/`time`/`ts` for time, `v`/`value` for value
 - `overlay.portfolioAssets` or `overlay.assets`
 
-## 4. K8s Deploy Instructions
+## 5. K8s Deploy Instructions
 
 ```bash
 # Apply all manifests
@@ -108,21 +136,21 @@ kubectl logs -n haiphen -l job-name=trades-sync-test --tail=50
 kubectl delete job trades-sync-test -n haiphen
 ```
 
-## 5. Data Volume Expectations
+## 6. Data Volume Expectations
 
 Per snapshot (typical trading day):
 
 | Table | Row Count | Notes |
 |---|---|---|
-| KPIs | 15-25 | One per trading metric |
-| Series points | 2,000-6,000 | ~10-15 KPIs x 200-400 time points |
-| Extremes | 100-400 | ~10-15 KPIs x hi/lo x 5-10 items |
-| Portfolio assets | 50-200 | Active positions |
-| **Total** | **~3,000-8,000** | Fits comfortably in D1 batch limits |
+| KPIs | 15-26 | One per trading metric |
+| Series points | 26-6,000 | Per KPI time-series |
+| Extremes | 0-400 | Hi/lo items per KPI |
+| Portfolio assets | 24-200 | Active positions |
+| **Total** | **~100-8,000** | Fits comfortably in D1 batch limits |
 
 The API processes in chunks of 200 D1 statements per batch.
 
-## 6. Build & Push
+## 7. Build & Push
 
 ```bash
 cd haiphen-gcp/jobs/haiphen-trades-sync
@@ -132,15 +160,16 @@ docker build -t gcr.io/united-lane-361102/haiphen-trades-sync:latest .
 docker push gcr.io/united-lane-361102/haiphen-trades-sync:latest
 ```
 
-## 7. Secrets Setup
+## 8. Secrets Setup
 
 Fill `k8s/trades-sync/secret.yaml` with real values before applying:
 
 - `INTERNAL_TOKEN`: Must match the `INTERNAL_TOKEN` secret in haiphen-api (Cloudflare Worker)
+- `SIGNING_SECRET`: HMAC-SHA256 key — must match `SIGNING_SECRET` in haiphen-api
 - `DATABASE_URL`: PostgreSQL connection string (e.g., `postgresql://user:pass@host:5432/dbname`)
 - `CLOUDFLARE_API_TOKEN`: Optional, only needed for direct `wrangler d1 execute` fallback
 
-## 8. Fallback: Direct D1 Access
+## 9. Fallback: Direct D1 Access
 
 If the API endpoint is unreachable, the container can write directly to D1:
 
@@ -156,7 +185,7 @@ wrangler d1 execute haiphen_api \
 
 The preferred path is always the API endpoint (handles normalization, caching, derived table rebuild).
 
-## 9. Schedule
+## 10. Schedule
 
 | CronJob | UTC Schedule | ET Equivalent |
 |---|---|---|

@@ -53,6 +53,9 @@ type Env = {
   // Master key for envelope encryption of prospect credentials (hex-encoded 256-bit)
   CREDENTIAL_KEY: string;
 
+  // HMAC signing secret for GKE trades sync job (hex-encoded)
+  SIGNING_SECRET?: string;
+
   // Anthropic API key for Claude synthesis (optional, set via wrangler secret)
   ANTHROPIC_API_KEY?: string;
 
@@ -759,12 +762,22 @@ async function route(req: Request, env: Env): Promise<Response> {
 
   // ---- INTERNAL: trades snapshot write (cross-worker / GKE sync job) ----
   // POST /v1/internal/trades/snapshot
-  // headers: X-Internal-Token
+  // Auth: X-Internal-Token header AND optional X-Signature HMAC-SHA256 verification
   if (req.method === "POST" && url.pathname === "/v1/internal/trades/snapshot") {
     const tok = req.headers.get("X-Internal-Token") || "";
     if (!safeEqual(tok, env.INTERNAL_TOKEN)) return err("forbidden", "Forbidden", requestId, 403, corsHeaders(req, env));
 
-    const body = await req.json().catch(() => null) as any;
+    const rawBody = await req.text();
+
+    // HMAC signature verification (when SIGNING_SECRET is configured)
+    if (env.SIGNING_SECRET) {
+      const sig = req.headers.get("X-Signature") || "";
+      if (!sig) return err("forbidden", "Missing X-Signature header", requestId, 403, corsHeaders(req, env));
+      const expected = await hmacSha256Hex(env.SIGNING_SECRET, rawBody);
+      if (!safeEqual(sig, expected)) return err("forbidden", "Invalid signature", requestId, 403, corsHeaders(req, env));
+    }
+
+    const body = (() => { try { return JSON.parse(rawBody); } catch { return null; } })();
     if (!body) return err("invalid_request", "Invalid JSON body", requestId, 400, corsHeaders(req, env));
 
     const normalized = normalizeTradesJson(body);
