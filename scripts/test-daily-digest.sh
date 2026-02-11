@@ -44,7 +44,7 @@ declare -A TPL_DATA=(
 )
 
 declare -A TPL_SUBJECTS=(
-  [digest]="Haiphen Daily — 2026-02-08 (test)"
+  [digest]="Haiphen Daily — 2026-02-10 (test)"
   [purchase]="Purchase Confirmed (test)"
   [onboarding]="Your Service Is Ready (test)"
   [trial]="Trial Ending Soon (test)"

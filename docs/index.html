@@ -1733,7 +1733,27 @@
 			    const day = window.HAIPHEN?.CurrentTradesDay;
 			    const overlay = day?.overlay || {};
 
-			    const series = overlay?.seriesByKpi?.[title] || null;
+			    // Parse numeric value from KPI tile for chart seeding
+			    const kpiHintValue = parseFloat(
+			      String(card.getAttribute('data-value') || '')
+			        .replace(/[$%,sm]/g, '').trim()
+			    );
+
+			    // Filter out synthetic series points — only use real data
+			    let series = overlay?.seriesByKpi?.[title] || null;
+			    if (Array.isArray(series)) {
+			      series = series.filter(p => p.src !== 'synthetic');
+			      if (series.length === 0) series = null;
+			    }
+
+			    // If real series direction conflicts with headline value, discard it
+			    // (e.g. individual trade PnLs are positive but cumulative is negative)
+			    if (Array.isArray(series) && series.length > 0 &&
+			        Number.isFinite(kpiHintValue) && kpiHintValue < 0) {
+			      const avg = series.reduce((s, p) => s + Number(p.v || 0), 0) / series.length;
+			      if (avg > 0) series = null;
+			    }
+
 			    const hasSeries = Array.isArray(series) && series.length > 0;
 
 			    const subtitle = `Current: ${value} • ${hasSeries ? 'Live data' : 'Options day trading'}`;
@@ -1750,6 +1770,7 @@
 			        series,
 			        extremes,
 			        portfolioAssets,
+			        kpiHintValue,
 			      });
 			    } else {
 			      console.warn('[kpi] overlay not loaded yet');

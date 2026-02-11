@@ -71,6 +71,9 @@ export interface Env {
   // Digest (you already created the secret)
   DIGEST_HMAC_SECRET: string;
 
+  // Prospect outreach HMAC (shared with haiphen-api INTERNAL_TOKEN)
+  PROSPECT_HMAC_SECRET?: string;
+
   // Digest template + config
   SENDGRID_TEMPLATE_ID_DAILY?: string; // add as [vars]
   DAILY_FROM_NAME?: string;
@@ -353,6 +356,8 @@ export default {
         res = await handleTrialExpiring(request, env);
       } else if (request.method === "POST" && path === "/api/usage/alert") {
         res = await handleUsageAlert(request, env);
+      } else if (request.method === "POST" && path === "/api/prospect/outreach/send") {
+        res = await handleProspectOutreachSend(request, env);
       } else {
         res = debugNotFound(request, url, path);
       }
@@ -1543,6 +1548,80 @@ async function handleUsageAlert(request: Request, env: Env): Promise<Response> {
   return json({ ok: true, messageId: sgResp.messageId ?? undefined }, 200);
 }
 
+// ---- Prospect outreach email send ----
+
+interface ProspectOutreachPayload {
+  outreach_id: string;
+  recipient_email: string;
+  recipient_name?: string;
+  subject: string;
+  body_text: string;
+  from_name?: string;
+  reply_to?: string;
+}
+
+async function handleProspectOutreachSend(request: Request, env: Env): Promise<Response> {
+  const raw = await request.text();
+
+  // HMAC verify — uses PROSPECT_HMAC_SECRET (falls back to WELCOME_HMAC_SECRET)
+  const secret = env.PROSPECT_HMAC_SECRET ?? env.WELCOME_HMAC_SECRET;
+  const sigOk = await verifyHmacRequest(request, secret, raw);
+  if (!sigOk) return json({ ok: false, error: "unauthorized" }, 401);
+
+  let body: ProspectOutreachPayload | null = null;
+  try {
+    body = raw ? (JSON.parse(raw) as ProspectOutreachPayload) : null;
+  } catch {
+    body = null;
+  }
+  if (!body) return json({ ok: false, error: "Invalid JSON" }, 400);
+
+  const outreachId = String(body.outreach_id ?? "").trim();
+  const recipientEmail = String(body.recipient_email ?? "").trim();
+  const subject = String(body.subject ?? "").trim();
+  const bodyText = String(body.body_text ?? "").trim();
+
+  if (!outreachId || !recipientEmail || !subject || !bodyText) {
+    return json({ ok: false, error: "Missing required fields: outreach_id, recipient_email, subject, body_text" }, 400);
+  }
+
+  // Basic email validation
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipientEmail)) {
+    return json({ ok: false, error: "Invalid recipient_email format" }, 400);
+  }
+
+  const fromName = String(body.from_name ?? env.FROM_NAME ?? "Haiphen Security Intelligence").trim();
+  const fromEmail = env.FROM_EMAIL;
+  const replyTo = body.reply_to || (env.WELCOME_SUPPORT_EMAIL ?? "pi@haiphenai.com");
+  const recipientName = String(body.recipient_name ?? "").trim() || undefined;
+
+  const sgResp = await sendSendGrid(env.SENDGRID_API_KEY, {
+    from: { email: fromEmail, name: fromName },
+    reply_to: { email: replyTo },
+    personalizations: [
+      {
+        to: [{ email: recipientEmail, name: recipientName }],
+        subject,
+      },
+    ],
+    content: [
+      { type: "text/plain", value: bodyText },
+    ],
+  });
+
+  if (!sgResp.ok) {
+    console.error("[prospect-outreach] SendGrid send failed", {
+      outreachId,
+      recipientEmail,
+      details: sgResp.details ?? null,
+    });
+    return json({ ok: false, error: "SendGrid send failed", details: sgResp.details }, 502);
+  }
+
+  console.log("[prospect-outreach] sent", { outreachId, recipientEmail, messageId: sgResp.messageId ?? null });
+  return json({ ok: true, messageId: sgResp.messageId ?? undefined }, 200);
+}
+
 function corsHeaders(req: Request, env: Env): Record<string, string> {
   const origin = req.headers.get("Origin") || "";
   const allowed = (env.ALLOWED_ORIGINS || "")
@@ -1896,13 +1975,26 @@ function formatDateLabel(d: Date): string {
   return `${ymd} (${day})`;
 }
 
-function pickTopRows(rows: TradesJson["rows"], max = 10): Array<{ kpi: string; value: string }> {
+/** KPIs to feature in the digest — ordered by importance. */
+const DIGEST_KPI_PRIORITY = [
+  "Daily PnL",
+  "Win rate",
+  "Sharpe ratio",
+  "Max drawdown",
+  "Avg hold time",
+  "Entries opened",
+  "Exits closed",
+];
+
+function pickDigestKpis(rows: TradesJson["rows"]): Array<{ kpi: string; value: string }> {
   const arr = Array.isArray(rows) ? rows : [];
-  // Keep ordering from file (it’s your “dashboard priority”)
-  return arr.slice(0, Math.max(1, max)).map(r => ({
-    kpi: String(r.kpi ?? "").trim(),
-    value: String(r.value ?? "").trim(),
-  })).filter(r => r.kpi && r.value);
+  const byName = new Map(arr.map(r => [String(r.kpi ?? "").trim(), String(r.value ?? "").trim()]));
+  const out: Array<{ kpi: string; value: string }> = [];
+  for (const k of DIGEST_KPI_PRIORITY) {
+    const v = byName.get(k);
+    if (v) out.push({ kpi: k, value: v });
+  }
+  return out;
 }
 
 function buildEntities(trades: TradesJson): Array<{
@@ -1926,6 +2018,69 @@ const ENTITIES_FALLBACK = [
   { symbol: "QQQ", contract_name: "QQQ260320P00500000", trade_id: 0, contract_qs: "QQQ260320P00500000" },
   { symbol: "AAPL", contract_name: "AAPL260618C00250000", trade_id: 0, contract_qs: "AAPL260618C00250000" },
 ];
+
+function buildScreenshotUrl(trades: TradesJson): string {
+  const date = trades.date || "";
+  // Current day screenshot lives at the root; archive days get dated PNGs
+  return `https://haiphen.io/assets/trades/alpaca_screenshot.png`;
+}
+
+/** Rotating CTA — one feature spotlight per weekday. */
+const DIGEST_CTAS: Array<{
+  feature: string;
+  scenario: string;
+  description: string;
+  demo_url: string;
+  cta_text: string;
+  cta_url: string;
+}> = [
+  { // Monday
+    feature: "Prospect Investigation",
+    scenario: "A critical settlement gateway vulnerability just hit the NVD.",
+    description: "Haiphen's 6-engine investigation pipeline scored 3 fintech leads at 85+ severity overnight — and auto-drafted outreach before the market opened.",
+    demo_url: "https://haiphen.io/assets/demos/cli-prospect-investigate.gif",
+    cta_text: "See how investigations work",
+    cta_url: "https://haiphen.io/#getting-started:prospect-investigate",
+  },
+  { // Tuesday
+    feature: "Risk Simulation",
+    scenario: "Your OT gateway went offline during peak trading hours.",
+    description: "Run a Monte Carlo simulation to estimate PnL impact across 10,000 scenarios — Haiphen quantified a $340K tail risk in under 2 seconds.",
+    demo_url: "https://haiphen.io/assets/demos/cli-risk.gif",
+    cta_text: "Try risk simulation",
+    cta_url: "https://haiphen.io/#getting-started:svc-risk",
+  },
+  { // Wednesday
+    feature: "Supply Chain Intelligence",
+    scenario: "A critical vendor just disclosed CVE-2026-1847 in their edge firmware.",
+    description: "Haiphen's supply chain scorer flagged 4 downstream counterparties with exposure, weighted by contract value and data dependency depth.",
+    demo_url: "https://haiphen.io/assets/demos/cli-supply.gif",
+    cta_text: "Explore supply chain analysis",
+    cta_url: "https://haiphen.io/#getting-started:svc-supply",
+  },
+  { // Thursday
+    feature: "Causal Inference",
+    scenario: "Three seemingly unrelated trade failures hit your book this morning.",
+    description: "Haiphen's DAG builder traced all three to a single misconfigured load balancer — root cause identified in 800ms across 12 upstream services.",
+    demo_url: "https://haiphen.io/assets/demos/cli-causal.gif",
+    cta_text: "See causal analysis in action",
+    cta_url: "https://haiphen.io/#getting-started:svc-causal",
+  },
+  { // Friday
+    feature: "Network Protocol Analysis",
+    scenario: "Unusual latency spikes are appearing on your Modbus/TCP edge nodes.",
+    description: "Haiphen decoded 14,000 protocol frames and isolated a rogue polling interval — fix deployed before it cascaded to the order router.",
+    demo_url: "https://haiphen.io/assets/demos/cli-network.gif",
+    cta_text: "Try network analysis",
+    cta_url: "https://haiphen.io/#getting-started:svc-network",
+  },
+];
+
+function pickCta(when: Date) {
+  // Mon=0 .. Fri=4 (getUTCDay: Mon=1..Fri=5)
+  const dayIdx = Math.max(0, when.getUTCDay() - 1);
+  return DIGEST_CTAS[dayIdx % DIGEST_CTAS.length];
+}
 
 function safeParseJson<T>(s: string | null): T | null {
   if (!s) return null;
@@ -2024,17 +2179,9 @@ async function runDailyDigest(env: Env, when: Date): Promise<{
 
   // Build shared template data from trades.json
   const entities = buildEntities(trades);
-  const kpis = pickTopRows(trades.rows, 8);
-  const top = pickTopRows(trades.rows, 12);
-  const sections = [
-    {
-      title: trades.headline ? String(trades.headline) : `Daily snapshot — ${sendDate}`,
-      bullets: [
-        trades.summary ? String(trades.summary) : "",
-        ...top.map(r => `${r.kpi}: ${r.value}`),
-      ].filter(Boolean),
-    },
-  ];
+  const kpis = pickDigestKpis(trades.rows);
+  const screenshotUrl = buildScreenshotUrl(trades);
+  const cta = pickCta(when);
 
   const emailOnly = await env.DB.prepare(
     `
@@ -2101,14 +2248,14 @@ async function runDailyDigest(env: Env, when: Date): Promise<{
       headline: trades.headline ?? `Daily snapshot — ${sendDate}`,
       date_label: formatDateLabel(when),
       summary: trades.summary ?? "",
+      screenshot_url: screenshotUrl,
       kpis,
       entities: entities.length ? entities : undefined,
       entities_fallback: entities.length ? undefined : ENTITIES_FALLBACK,
       list_id: "daily_digest",
-      sections,
+      cta,
       subscriptions,
       manage_url: manageUrl,
-      source: trades.source ?? "",
       updated_at: trades.updated_at ?? "",
     };
 

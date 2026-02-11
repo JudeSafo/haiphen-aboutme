@@ -53,16 +53,16 @@
       return out;
     }
 
-    function genSeries({ points, vol, seed }) {
+    function genSeries({ points, vol, seed, center }) {
       const rand = mulberry32(seed);
       const arr = [];
-      let v = 50 + rand() * 50;
+      const c = Number.isFinite(center) ? center : (50 + rand() * 50);
+      const amplitude = Math.max(Math.abs(c) * 0.15, 1);
+      let v = c + (rand() - 0.5) * amplitude * 0.3;
       for (let i = 0; i < points; i++) {
-        // random walk with gentle mean reversion + shocks
-        const shock = (rand() - 0.5) * 10 * vol;
-        const drift = (50 - v) * 0.015; // pull toward 50
+        const shock = (rand() - 0.5) * 2 * vol * amplitude;
+        const drift = (c - v) * 0.02;
         v = v + drift + shock;
-        v = clamp(v, -50, 150);
         arr.push(v);
       }
       return arr;
@@ -563,12 +563,11 @@
         subtitle: '—',
         seed: 12345,
 
-        // NEW: seriesMeta is authoritative if provided
         series: [],
         seriesMeta: null,     // [{t,v}]
         isReal: false,
+        kpiHintValue: NaN,    // numeric center for generated charts
 
-        // NEW: entity drilldowns
         extremes: { hi: [], lo: [] },
         portfolioAssets: [],
       };
@@ -585,7 +584,7 @@
         // Only generate fallback series when we don't have published series
         if (!state.isReal) {
           if (!state.series || state.series.length !== points) {
-            state.series = genSeries({ points, vol, seed: state.seed });
+            state.series = genSeries({ points, vol, seed: state.seed, center: state.kpiHintValue });
           }
         } else {
           // Keep the real series aligned to the slider
@@ -627,10 +626,11 @@
         if (statDelta) statDelta.textContent = formatNumForKpi(state.title, delta);
       }
 
-      function open({ title, subtitle, screenshotUrl, seed, series, extremes, portfolioAssets } = {}) {
+      function open({ title, subtitle, screenshotUrl, seed, series, extremes, portfolioAssets, kpiHintValue } = {}) {
         state.title = title || 'Metric';
         state.subtitle = subtitle || '';
         state.seed = Number.isFinite(seed) ? seed : hashSeedFromString(state.title);
+        state.kpiHintValue = Number.isFinite(kpiHintValue) ? kpiHintValue : NaN;
 
         // Accept published entity series: [{t,v}]
         state.seriesMeta = Array.isArray(series) ? series : null;
@@ -682,7 +682,7 @@
             computeSeriesSourceBadge(meta);
           } else {
             const vol = Number(volEl?.value || 0.65);
-            state.series = genSeries({ points, vol, seed: state.seed });
+            state.series = genSeries({ points, vol, seed: state.seed, center: state.kpiHintValue });
             computeSeriesSourceBadge([]);
           }
         } else {
@@ -741,7 +741,7 @@
           computeSeriesSourceBadge(meta);
         } else {
           const vol = Number(volEl?.value || 0.65);
-          state.series = genSeries({ points, vol, seed: state.seed });
+          state.series = genSeries({ points, vol, seed: state.seed, center: state.kpiHintValue });
           computeSeriesSourceBadge([]);
         }
 

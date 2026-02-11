@@ -1,47 +1,38 @@
 {
-  "headline": "Haiphen day trading snapshot ($29,615.00 on 2026-02-06)",
-  "date_label": "2026-02-06 (Thu)",
+  "headline": "Haiphen day trading snapshot (-$85,980.00 on 2026-02-10)",
+  "date_label": "2026-02-10 (Mon)",
   "name": "Jude",
-  "summary": "197,663 signals scanned \u2022 25,192 opportunities flagged \u2022 3,728 entries opened \u2022 165 exits closed \u2022 $29,615.00 pnl.",
+  "summary": "4,896 entries opened • 1,101 exits closed • -$85,980.00 daily PnL • 1.48% win rate.",
+  "screenshot_url": "https://haiphen.io/assets/trades/alpaca_screenshot.png",
   "manage_url": "https://haiphen.io/#profile",
   "list_id": "daily_digest",
   "kpis": [
-    { "kpi": "Signals scanned", "value": "197,663" },
-    { "kpi": "Opportunities flagged", "value": "25,192" },
-    { "kpi": "Entries opened", "value": "3,728" },
-    { "kpi": "Exits closed", "value": "165" },
-    { "kpi": "Daily PnL", "value": "$29,615.00" },
-    { "kpi": "Win rate", "value": "70.27%" },
-    { "kpi": "Max drawdown", "value": "7.39%" },
-    { "kpi": "Sharpe ratio", "value": "1.22" }
+    { "kpi": "Daily PnL", "value": "-$85,980.00" },
+    { "kpi": "Win rate", "value": "1.48%" },
+    { "kpi": "Sharpe ratio", "value": "-12.13" },
+    { "kpi": "Max drawdown", "value": "100.00%" },
+    { "kpi": "Avg hold time", "value": "2414s" },
+    { "kpi": "Entries opened", "value": "4,896" },
+    { "kpi": "Exits closed", "value": "1,101" }
   ],
   "entities": [
     { "symbol": "ASTS", "contract_name": "ASTS270115P00090000", "trade_id": 840799, "contract_qs": "ASTS270115P00090000" },
     { "symbol": "DKNG", "contract_name": "DKNG260220P00029500", "trade_id": 840830, "contract_qs": "DKNG260220P00029500" },
-    { "symbol": "HII", "contract_name": "HII260618C00390000", "trade_id": 840186, "contract_qs": "HII260618C00390000" },
-    { "symbol": "MRVL", "contract_name": "MRVL260220C00095000", "trade_id": 797864, "contract_qs": "MRVL260220C00095000" },
-    { "symbol": "MP", "contract_name": "MP260515C00065000", "trade_id": 840139, "contract_qs": "MP260515C00065000" }
+    { "symbol": "HII", "contract_name": "HII260618C00390000", "trade_id": 840186, "contract_qs": "HII260618C00390000" }
   ],
+  "cta": {
+    "feature": "Prospect Investigation",
+    "scenario": "A critical settlement gateway vulnerability just hit the NVD.",
+    "description": "Haiphen's 6-engine investigation pipeline scored 3 fintech leads at 85+ severity overnight — and auto-drafted outreach before the market opened.",
+    "demo_url": "https://haiphen.io/assets/demos/cli-prospect-investigate.gif",
+    "cta_text": "See how investigations work",
+    "cta_url": "https://haiphen.io/#getting-started:prospect-investigate"
+  },
   "subscriptions": [
     { "list_id": "daily_digest", "label": "Daily Market Digest", "active": true },
     { "list_id": "weekly_summary", "label": "Weekly Performance Summary", "active": true },
     { "list_id": "product_updates", "label": "Product Updates & Announcements", "active": false },
     { "list_id": "cohort_comms", "label": "Cohort Program Communications", "active": true }
   ],
-  "sections": [
-    {
-      "title": "Haiphen day trading snapshot ($29,615.00 on 2026-02-06)",
-      "bullets": [
-        "197,663 signals scanned \u2022 25,192 opportunities flagged \u2022 3,728 entries opened \u2022 165 exits closed \u2022 $29,615.00 pnl.",
-        "Signals scanned: 197,663",
-        "Opportunities flagged: 25,192",
-        "Entries opened: 3,728",
-        "Exits closed: 165",
-        "Daily PnL: $29,615.00",
-        "Win rate: 70.27%"
-      ]
-    }
-  ],
-  "source": "trades.json",
-  "updated_at": "2026-02-06T21:30:00Z"
+  "updated_at": "2026-02-10T22:44:07Z"
 }
