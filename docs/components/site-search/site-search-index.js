@@ -28,13 +28,13 @@
       { label: "Portfolio • ZeroDays Follina", section: "Trades", elementId: "portfolio-follina", keywords: ["follina", "confluence", "security"] },
 
       // --- Services section (snap stack)
-      { label: "Services", section: "Services", elementId: "services-plans-mount", keywords: ["services", "plans", "pricing"] },
-      { label: "Services • Cohort Checkout", section: "Services", elementId: "services-subscribe-banner", keywords: ["subscribe", "checkout", "cohort", "onboarding"] },
-      { label: "Services • Plans", section: "Services", elementId: "services-plans-mount", keywords: ["plans", "pricing", "tiers"] },
-      { label: "Services • Tech", section: "Services", elementId: "services-plans-mount", keywords: ["security", "network", "graph", "risk", "supply chain"] },
+      { label: "Pricing", section: "Services", elementId: "services-plans-mount", keywords: ["services", "plans", "pricing"] },
+      { label: "Pricing • Cohort Checkout", section: "Services", elementId: "services-subscribe-banner", keywords: ["subscribe", "checkout", "cohort", "onboarding"] },
+      { label: "Pricing • Plans", section: "Services", elementId: "services-plans-mount", keywords: ["plans", "pricing", "tiers"] },
+      { label: "Pricing • Tech", section: "Services", elementId: "services-plans-mount", keywords: ["security", "network", "graph", "risk", "supply chain"] },
 
       // --- OnePager / Mission (your “Collaborate” section)
-      { label: "Mission", section: "OnePager", elementId: "mission-top", keywords: ["mission", "about", "haiphen"] },
+      { label: "Platform", section: "OnePager", elementId: "mission-top", keywords: ["mission", "platform", "about", "haiphen"] },
       { label: "OnePager", section: "OnePager", elementId: "onepager-top", keywords: ["onepager", "genomics", "zerodays"] },
       { label: "How it works", section: "OnePager", elementId: "how-it-works", keywords: ["pipeline", "ingest", "score", "execute", "monitor"] },
       { label: "Signals", section: "OnePager", elementId: "services-signals", keywords: ["signals", "decision engines", "risk"] },
@@ -43,7 +43,7 @@
 
       // --- FAQ / Contact
       { label: "FAQ", section: "FAQ", elementId: "faq-mount", keywords: ["faq", "questions", "help"] },
-      { label: "Contact", section: "Contact", elementId: "contact-us", keywords: ["contact", "email", "calendar"] },
+      { label: "Support", section: "Contact", elementId: "contact-us", keywords: ["contact", "support", "email", "calendar"] },
       { label: "Cohort Program", section: "Trades", elementId: "cohort", keywords: ["cohort", "onboarding", "program", "signals"] },
       { label: "Cohort Briefing Video", section: "Trades", elementId: "cohort-video", keywords: ["cohort", "video", "briefing"] },
       { label: "Profile", section: "Profile", elementId: "profile", keywords: ["profile", "account", "keys"] },

@@ -164,8 +164,8 @@
     root.innerHTML = results
       .map((it, i) => {
         const SECTION_LABELS = {
-          Trades: "Trades", OnePager: "Mission", Services: "Services",
-          FAQ: "FAQ", Contact: "Contact", Profile: "Profile",
+          Trades: "Signals", OnePager: "Platform", Services: "Pricing",
+          FAQ: "FAQ", Contact: "Support", Profile: "Profile",
           Onboarding: "Onboarding", Docs: "Docs"
         };
         const friendlySection = it.section ? (SECTION_LABELS[it.section] || it.section) : "";
