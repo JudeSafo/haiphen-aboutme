@@ -1574,21 +1574,63 @@
 		}
 
 		async function loadTradesData() {
-		  // Static file is primary until the live trades pipeline is operational.
-		  // Once the GKE sync job is running, swap to API-first.
-		  await loadTradesByJsonUrl(
-		    'assets/trades/trades.json',
-		    'assets/trades/alpaca_screenshot.png',
-		    null
-		  );
+		  // Fetch API and static in parallel; use whichever has the more recent date.
+		  // This ensures stale D1 data never overrides a fresher static file,
+		  // and the live pipeline wins once it's producing current snapshots.
+		  const [apiRes, staticRes] = await Promise.allSettled([
+		    fetchJson('https://api.haiphen.io/v1/trades/latest').catch(() => null),
+		    fetchJson('assets/trades/trades.json').catch(() => null),
+		  ]);
 
-		  // If Trades section isn't mounted yet, bail quietly
+		  const apiData = apiRes.status === 'fulfilled' ? apiRes.value : null;
+		  const staticData = staticRes.status === 'fulfilled' ? staticRes.value : null;
+
+		  let data = staticData; // default to static
+		  if (apiData && (!staticData || String(apiData.date || '') >= String(staticData.date || ''))) {
+		    data = apiData;
+		  }
+
+		  if (data) {
+		    window.HAIPHEN = window.HAIPHEN || {};
+		    window.HAIPHEN.CurrentTradesDay = data;
+		    renderTradesKpiGrid(data.rows);
+
+		    const dateEl = document.getElementById('trades-date');
+		    const updatedEl = document.getElementById('trades-updated');
+		    const headlineEl = document.getElementById('trades-headline');
+		    const summaryEl = document.getElementById('trades-summary');
+		    const img = document.getElementById('trades-img');
+
+		    if (dateEl) dateEl.textContent = data.date || '—';
+		    if (updatedEl) updatedEl.textContent = data.updated_at || '—';
+		    if (headlineEl) headlineEl.textContent = data.headline || '—';
+		    if (summaryEl) summaryEl.textContent = data.summary || '—';
+
+		    if (img) {
+		      img.style.display = '';
+		      const missingEl = document.getElementById('trades-img-missing');
+		      if (missingEl) missingEl.style.display = 'none';
+		      img.src = 'assets/trades/alpaca_screenshot.png';
+		    }
+		  }
+
+		  // Archive index: try API first, fall back to static if empty or failed
 		  const track = document.getElementById('trades-archive-track');
 		  if (!track) return;
 
 		  try {
-		    const idx = await fetchJson('assets/trades/trades_index.json');
-		    const items = Array.isArray(idx.items) ? idx.items : [];
+		    let items = [];
+
+		    try {
+		      const idx = await fetchJson('https://api.haiphen.io/v1/trades/dates?limit=50');
+		      items = Array.isArray(idx.items) ? idx.items : [];
+		    } catch (_) { /* fall through */ }
+
+		    // If API returned nothing (empty D1), fall back to static index
+		    if (items.length === 0) {
+		      const idx = await fetchJson('assets/trades/trades_index.json');
+		      items = Array.isArray(idx.items) ? idx.items : [];
+		    }
 
 		    if (items.length === 0) {
 		      track.innerHTML = `<div class="trades-muted">No archive yet.</div>`;
@@ -1599,7 +1641,7 @@
 		    renderArchive(items);
 
 		  } catch (err) {
-		    console.warn('[trades] failed to load trades_index.json', err);
+		    console.warn('[trades] failed to load archive index', err);
 		    track.innerHTML = `<div class="trades-muted">Archive unavailable.</div>`;
 		  }
 		}

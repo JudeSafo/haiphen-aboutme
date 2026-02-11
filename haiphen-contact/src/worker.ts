@@ -2104,13 +2104,29 @@ function safeParseJson<T>(s: string | null): T | null {
 }
 
 async function fetchTradesJson(env: Env): Promise<TradesJson> {
-  // Static file is primary until the live trades pipeline is operational.
-  // Once GKE sync job runs, swap to API-first (https://api.haiphen.io/v1/trades/latest).
-  const url = (env.TRADES_JSON_URL || "https://haiphen.io/assets/trades/trades.json").trim();
-  const resp = await fetch(url, { cf: { cacheTtl: 60, cacheEverything: true } as any });
-  if (!resp.ok) throw new Error(`[digest] trades.json fetch failed: HTTP ${resp.status}`);
-  const data = (await resp.json()) as TradesJson;
-  return data;
+  // Try live API first; fall back to static file if API is down or stale
+  const staticUrl = (env.TRADES_JSON_URL || "https://haiphen.io/assets/trades/trades.json").trim();
+
+  let apiData: TradesJson | null = null;
+  try {
+    const apiResp = await fetch("https://api.haiphen.io/v1/trades/latest", { cf: { cacheTtl: 60, cacheEverything: true } as any });
+    if (apiResp.ok) apiData = (await apiResp.json()) as TradesJson;
+  } catch (_) { /* fall through */ }
+
+  let staticData: TradesJson | null = null;
+  try {
+    const staticResp = await fetch(staticUrl, { cf: { cacheTtl: 60, cacheEverything: true } as any });
+    if (staticResp.ok) staticData = (await staticResp.json()) as TradesJson;
+  } catch (_) { /* fall through */ }
+
+  // Use whichever has the more recent date; prefer static if API is stale
+  if (apiData && staticData) {
+    return String(apiData.date || "") >= String(staticData.date || "") ? apiData : staticData;
+  }
+  if (apiData) return apiData;
+  if (staticData) return staticData;
+
+  throw new Error("[digest] trades.json fetch failed from both API and static");
 }
 
 /**
