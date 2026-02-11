@@ -1492,7 +1492,7 @@
 		  track.innerHTML = carouselItems.map(it => `
 		    <div class="trades-thumb" data-date="${escapeHtml(it.date)}" tabindex="0">
 		      <div class="trades-thumb-date">${escapeHtml(it.date)}</div>
-		      <img src="${escapeHtml(it.screenshot)}" alt="">
+		      <img src="${escapeHtml(deriveTradesScreenshotUrl(it))}" alt="">
 		    </div>
 		  `).join('');
 
@@ -1614,23 +1614,32 @@
 		    }
 		  }
 
-		  // Archive index: try API first, fall back to static if empty or failed
+		  // Archive index: load both API and static in parallel, merge them.
+		  // Static index has the full history with screenshots; API may add new D1-only dates.
 		  const track = document.getElementById('trades-archive-track');
 		  if (!track) return;
 
 		  try {
-		    let items = [];
+		    const [apiIdx, staticIdx] = await Promise.allSettled([
+		      fetchJson('https://api.haiphen.io/v1/trades/dates?limit=50').catch(() => null),
+		      fetchJson('assets/trades/trades_index.json').catch(() => null),
+		    ]);
 
-		    try {
-		      const idx = await fetchJson('https://api.haiphen.io/v1/trades/dates?limit=50');
-		      items = Array.isArray(idx.items) ? idx.items : [];
-		    } catch (_) { /* fall through */ }
+		    const apiItems = (apiIdx.status === 'fulfilled' && apiIdx.value && Array.isArray(apiIdx.value.items))
+		      ? apiIdx.value.items : [];
+		    const staticItems = (staticIdx.status === 'fulfilled' && staticIdx.value && Array.isArray(staticIdx.value.items))
+		      ? staticIdx.value.items : [];
 
-		    // If API returned nothing (empty D1), fall back to static index
-		    if (items.length === 0) {
-		      const idx = await fetchJson('assets/trades/trades_index.json');
-		      items = Array.isArray(idx.items) ? idx.items : [];
+		    // Merge: static items are the base (rich metadata with screenshots).
+		    // API items fill in any dates not already in static.
+		    const byDate = new Map();
+		    for (const it of staticItems) byDate.set(String(it.date), it);
+		    for (const it of apiItems) {
+		      const d = String(it.date);
+		      if (!byDate.has(d)) byDate.set(d, it);
 		    }
+
+		    const items = Array.from(byDate.values());
 
 		    if (items.length === 0) {
 		      track.innerHTML = `<div class="trades-muted">No archive yet.</div>`;
