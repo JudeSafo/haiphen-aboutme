@@ -2104,15 +2104,8 @@ function safeParseJson<T>(s: string | null): T | null {
 }
 
 async function fetchTradesJson(env: Env): Promise<TradesJson> {
-  // Primary: live API endpoint
-  try {
-    const apiResp = await fetch("https://api.haiphen.io/v1/trades/latest", { cf: { cacheTtl: 60, cacheEverything: true } as any });
-    if (apiResp.ok) {
-      return (await apiResp.json()) as TradesJson;
-    }
-  } catch (_) { /* fall through to static */ }
-
-  // Fallback: static file
+  // Static file is primary until the live trades pipeline is operational.
+  // Once GKE sync job runs, swap to API-first (https://api.haiphen.io/v1/trades/latest).
   const url = (env.TRADES_JSON_URL || "https://haiphen.io/assets/trades/trades.json").trim();
   const resp = await fetch(url, { cf: { cacheTtl: 60, cacheEverything: true } as any });
   if (!resp.ok) throw new Error(`[digest] trades.json fetch failed: HTTP ${resp.status}`);
