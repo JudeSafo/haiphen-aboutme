@@ -400,6 +400,58 @@ async function route(req: Request, env: Env): Promise<Response> {
     );
   }
 
+  // ---- GET /v1/trades/latest (public, no auth) ----
+  if (req.method === "GET" && url.pathname === "/v1/trades/latest") {
+    const dateParam = parseDateParam(url.searchParams.get("date"));
+    const cacheKey = dateParam ? `trades:${dateParam}:json` : "trades:latest:json";
+
+    // Check KV cache first (5-min TTL)
+    const cached = await env.CACHE_KV.get(cacheKey);
+    if (cached) {
+      const h = new Headers({
+        "Content-Type": "application/json",
+        "Cache-Control": "public, max-age=60",
+        ...corsHeaders(req, env),
+      });
+      withReqId(h, requestId);
+      return new Response(cached, { status: 200, headers: h });
+    }
+
+    const date = dateParam ?? (await latestDate(env));
+    if (!date) return err("not_found", "No trades data available", requestId, 404, corsHeaders(req, env));
+
+    const daily = await getDaily(env, date);
+    if (!daily) return err("not_found", `No trades data for ${date}`, requestId, 404, corsHeaders(req, env));
+
+    const body = JSON.stringify(daily);
+    await env.CACHE_KV.put(cacheKey, body, { expirationTtl: 300 }).catch(() => {});
+
+    const h = new Headers({
+      "Content-Type": "application/json",
+      "Cache-Control": "public, max-age=60",
+      ...corsHeaders(req, env),
+    });
+    withReqId(h, requestId);
+    return new Response(body, { status: 200, headers: h });
+  }
+
+  // ---- GET /v1/trades/dates (public, no auth) ----
+  if (req.method === "GET" && url.pathname === "/v1/trades/dates") {
+    const limit = Math.min(100, Math.max(1, parseInt(url.searchParams.get("limit") ?? "50", 10) || 50));
+    const rows = await env.DB.prepare(
+      `SELECT date, updated_at, headline FROM metrics_daily ORDER BY date DESC LIMIT ?`
+    ).bind(limit).all<{ date: string; updated_at: string; headline: string }>();
+
+    const items = (rows.results ?? []).map(r => ({
+      date: r.date,
+      updated_at: r.updated_at,
+      headline: r.headline,
+      json: `https://api.haiphen.io/v1/trades/latest?date=${r.date}`,
+    }));
+
+    return okJson({ items }, requestId, corsHeaders(req, env));
+  }
+
   // ---- whoami / me (cookie auth) ----
   if (req.method === "GET" && (url.pathname === "/v1/whoami" || url.pathname === "/v1/me")) {
     const u = await authCookieUser(req, env, requestId);
@@ -704,6 +756,30 @@ async function route(req: Request, env: Env): Promise<Response> {
 
     return okJson({ ok: true, date: normalized.date, updated_at: normalized.updated_at }, requestId, corsHeaders(req, env));
   }
+
+  // ---- INTERNAL: trades snapshot write (cross-worker / GKE sync job) ----
+  // POST /v1/internal/trades/snapshot
+  // headers: X-Internal-Token
+  if (req.method === "POST" && url.pathname === "/v1/internal/trades/snapshot") {
+    const tok = req.headers.get("X-Internal-Token") || "";
+    if (!safeEqual(tok, env.INTERNAL_TOKEN)) return err("forbidden", "Forbidden", requestId, 403, corsHeaders(req, env));
+
+    const body = await req.json().catch(() => null) as any;
+    if (!body) return err("invalid_request", "Invalid JSON body", requestId, 400, corsHeaders(req, env));
+
+    const normalized = normalizeTradesJson(body);
+    await upsertMetricsDaily(env, normalized);
+
+    // Bust caches so GET endpoints serve fresh data
+    await Promise.all([
+      env.CACHE_KV.delete("trades:latest:json").catch(() => {}),
+      env.CACHE_KV.delete(`trades:${normalized.date}:json`).catch(() => {}),
+      env.CACHE_KV.delete("metrics:latest").catch(() => {}),
+    ]);
+
+    return okJson({ ok: true, date: normalized.date, updated_at: normalized.updated_at }, requestId, corsHeaders(req, env));
+  }
+
   // ---- webhooks ----
   if (req.method === "POST" && url.pathname === "/v1/webhooks") {
     const auth = await authApiKey(req, env, requestId);

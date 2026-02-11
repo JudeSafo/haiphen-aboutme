@@ -157,6 +157,7 @@ type CohortPayload = {
 
   // answers
   financial_affiliation?: string; // multiple choice-ish
+  broker?: string;
   entrepreneurial_background?: string;
   sigint_familiarity?: string;
   trading_experience?: string;
@@ -206,7 +207,7 @@ type AuthedUser = {
   email?: string | null;
 };
 
-const COHORT_SCHEMA_VERSION = "v1_2026-01-23";
+const COHORT_SCHEMA_VERSION = "v2_2026-02-11";
 
 type SendGridRequest = {
   from: { email: string; name?: string };
@@ -458,6 +459,7 @@ async function handleCohortSubmit(request: Request, env: Env): Promise<Response>
 
   const answers = {
     financial_affiliation: String(payload.financial_affiliation ?? "").trim(),
+    broker: String(payload.broker ?? "").trim(),
     entrepreneurial_background: String(payload.entrepreneurial_background ?? "").trim(),
     sigint_familiarity: String(payload.sigint_familiarity ?? "").trim(),
     trading_experience: String(payload.trading_experience ?? "").trim(),
@@ -541,12 +543,13 @@ async function handleCohortSubmit(request: Request, env: Env): Promise<Response>
     "",
     "Answers:",
     `1) Financial background: ${answers.financial_affiliation || "(empty)"}`,
-    `2) Entrepreneurial background: ${answers.entrepreneurial_background || "(empty)"}`,
-    `3) Signals intelligence familiarity: ${answers.sigint_familiarity || "(empty)"}`,
-    `4) Trading experience: ${answers.trading_experience || "(empty)"}`,
-    `5) Retirement/portfolio: ${answers.retirement_portfolio || "(empty)"}`,
-    `6) Tech background: ${answers.tech_background || "(empty)"}`,
-    `7) Macro/banking interest: ${answers.macro_interest || "(empty)"}`,
+    `2) Broker: ${answers.broker || "(empty)"}`,
+    `3) Entrepreneurial background: ${answers.entrepreneurial_background || "(empty)"}`,
+    `4) Signals intelligence familiarity: ${answers.sigint_familiarity || "(empty)"}`,
+    `5) Trading experience: ${answers.trading_experience || "(empty)"}`,
+    `6) Retirement/portfolio: ${answers.retirement_portfolio || "(empty)"}`,
+    `7) Tech background: ${answers.tech_background || "(empty)"}`,
+    `8) Macro/banking interest: ${answers.macro_interest || "(empty)"}`,
   ];
 
   const ownerText = lines.join("\n");
@@ -607,6 +610,7 @@ ${escapeHtml(lines.slice(lines.indexOf("Answers:") + 1).join("\n"))}
       },
       responses: [
         { q: "Financial background/affiliation/literacy", a: answers.financial_affiliation || "" },
+        { q: "What broker do you use?", a: answers.broker || "" },
         { q: "Entrepreneurial background", a: answers.entrepreneurial_background || "" },
         { q: "Familiarity with signals intelligence companies", a: answers.sigint_familiarity || "" },
         { q: "Trading experience", a: answers.trading_experience || "" },
@@ -2005,12 +2009,24 @@ function buildEntities(trades: TradesJson): Array<{
 }> {
   const assets = trades.overlay?.portfolioAssets;
   if (!Array.isArray(assets) || !assets.length) return [];
-  return assets.map(a => ({
+  const all = assets.map(a => ({
     symbol: String(a.symbol ?? ""),
     contract_name: String(a.contract_name ?? ""),
     trade_id: Number(a.trade_id ?? 0),
     contract_qs: encodeURIComponent(String(a.contract_name ?? "")),
   })).filter(a => a.symbol && a.contract_name);
+
+  // Deduplicate by symbol — keep first contract per symbol, cap at 8
+  const seen = new Set<string>();
+  const deduped: typeof all = [];
+  for (const a of all) {
+    if (!seen.has(a.symbol)) {
+      seen.add(a.symbol);
+      deduped.push(a);
+    }
+    if (deduped.length >= 8) break;
+  }
+  return deduped;
 }
 
 const ENTITIES_FALLBACK = [
@@ -2088,6 +2104,15 @@ function safeParseJson<T>(s: string | null): T | null {
 }
 
 async function fetchTradesJson(env: Env): Promise<TradesJson> {
+  // Primary: live API endpoint
+  try {
+    const apiResp = await fetch("https://api.haiphen.io/v1/trades/latest", { cf: { cacheTtl: 60, cacheEverything: true } as any });
+    if (apiResp.ok) {
+      return (await apiResp.json()) as TradesJson;
+    }
+  } catch (_) { /* fall through to static */ }
+
+  // Fallback: static file
   const url = (env.TRADES_JSON_URL || "https://haiphen.io/assets/trades/trades.json").trim();
   const resp = await fetch(url, { cf: { cacheTtl: 60, cacheEverything: true } as any });
   if (!resp.ok) throw new Error(`[digest] trades.json fetch failed: HTTP ${resp.status}`);

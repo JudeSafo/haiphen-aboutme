@@ -1574,38 +1574,49 @@
 		}
 
 		async function loadTradesData() {
-		  // Always load “latest” first
-		  await loadTradesByJsonUrl(
-		    'assets/trades/trades.json',
-		    'assets/trades/alpaca_screenshot.png',
-		    null
-		  );
+		  // Primary: fetch from API; fallback: static file
+		  let latestLoaded = false;
+		  try {
+		    await loadTradesByJsonUrl(
+		      'https://api.haiphen.io/v1/trades/latest',
+		      'assets/trades/alpaca_screenshot.png',
+		      null
+		    );
+		    latestLoaded = true;
+		  } catch (apiErr) {
+		    console.warn('[trades] API fetch failed, falling back to static file', apiErr);
+		    await loadTradesByJsonUrl(
+		      'assets/trades/trades.json',
+		      'assets/trades/alpaca_screenshot.png',
+		      null
+		    );
+		  }
 
 		  // If Trades section isn't mounted yet, bail quietly
 		  const track = document.getElementById('trades-archive-track');
 		  if (!track) return;
 
 		  try {
-		    const idx = await fetchJson('assets/trades/trades_index.json');
-		    const items = Array.isArray(idx.items) ? idx.items : [];
+		    // Primary: API archive index; fallback: static file
+		    let items;
+		    try {
+		      const idx = await fetchJson('https://api.haiphen.io/v1/trades/dates?limit=50');
+		      items = Array.isArray(idx.items) ? idx.items : [];
+		    } catch (_) {
+		      const idx = await fetchJson('assets/trades/trades_index.json');
+		      items = Array.isArray(idx.items) ? idx.items : [];
+		    }
 
 		    if (items.length === 0) {
 		      track.innerHTML = `<div class="trades-muted">No archive yet.</div>`;
 		      return;
 		    }
 
-		    // Optional: sort newest first if dates are YYYY-MM-DD
 		    items.sort((a, b) => String(b.date).localeCompare(String(a.date)));
-
-		    // ✅ THIS WAS MISSING
 		    renderArchive(items);
 
-		    // Optional: auto-load newest archive item immediately (instead of leaving “latest”)
-		    // const first = items[0];
-		    // if (first) loadTradesByJsonUrl(first.json, deriveTradesScreenshotUrl(first), first.date);
-
 		  } catch (err) {
-		    console.warn('[trades] failed to load trades_index.json', err);
+		    console.warn('[trades] failed to load archive index', err);
 		    track.innerHTML = `<div class="trades-muted">Archive unavailable.</div>`;
 		  }
 		}

@@ -158,6 +158,7 @@
         education: String(fd.get("education") || "").trim(),
         linkedin: String(fd.get("linkedin") || "").trim(),
         financial_affiliation: String(fd.get("financial_affiliation") || "").trim(),
+        broker: String(fd.get("broker") || "").trim(),
         entrepreneurial_background: String(fd.get("entrepreneurial_background") || "").trim(),
         sigint_familiarity: String(fd.get("sigint_familiarity") || "").trim(),
         trading_experience: String(fd.get("trading_experience") || "").trim(),
@@ -253,6 +254,7 @@
     const keys = [
       "email",
       "financial_affiliation",
+      "broker",
       "entrepreneurial_background",
       "sigint_familiarity",
       "trading_experience",

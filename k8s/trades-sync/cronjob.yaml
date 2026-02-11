@@ -1,0 +1,113 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: trades-sync-premarket
+  namespace: haiphen
+  labels:
+    app: trades-sync
+    window: premarket
+spec:
+  schedule: "0 14 * * 1-5"       # 9:00 AM ET = 14:00 UTC
+  timeZone: "America/New_York"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      activeDeadlineSeconds: 300
+      template:
+        spec:
+          serviceAccountName: trades-sync-sa
+          restartPolicy: Never
+          containers:
+            - name: trades-sync
+              image: gcr.io/united-lane-361102/haiphen-trades-sync:latest
+              envFrom:
+                - configMapRef:
+                    name: trades-sync-config
+                - secretRef:
+                    name: trades-sync-secret
+              resources:
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
+                limits:
+                  cpu: 500m
+                  memory: 256Mi
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: trades-sync-midday
+  namespace: haiphen
+  labels:
+    app: trades-sync
+    window: midday
+spec:
+  schedule: "30 17 * * 1-5"      # 12:30 PM ET = 17:30 UTC
+  timeZone: "America/New_York"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      activeDeadlineSeconds: 300
+      template:
+        spec:
+          serviceAccountName: trades-sync-sa
+          restartPolicy: Never
+          containers:
+            - name: trades-sync
+              image: gcr.io/united-lane-361102/haiphen-trades-sync:latest
+              envFrom:
+                - configMapRef:
+                    name: trades-sync-config
+                - secretRef:
+                    name: trades-sync-secret
+              resources:
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
+                limits:
+                  cpu: 500m
+                  memory: 256Mi
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: trades-sync-postmarket
+  namespace: haiphen
+  labels:
+    app: trades-sync
+    window: postmarket
+spec:
+  schedule: "30 21 * * 1-5"      # 4:30 PM ET = 21:30 UTC
+  timeZone: "America/New_York"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      activeDeadlineSeconds: 300
+      template:
+        spec:
+          serviceAccountName: trades-sync-sa
+          restartPolicy: Never
+          containers:
+            - name: trades-sync
+              image: gcr.io/united-lane-361102/haiphen-trades-sync:latest
+              envFrom:
+                - configMapRef:
+                    name: trades-sync-config
+                - secretRef:
+                    name: trades-sync-secret
+              resources:
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
+                limits:
+                  cpu: 500m
+                  memory: 256Mi

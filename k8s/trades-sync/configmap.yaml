@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: trades-sync-config
+  namespace: haiphen
+data:
+  HAIPHEN_API_URL: "https://api.haiphen.io"
+  SNAPSHOT_ENDPOINT: "/v1/internal/trades/snapshot"
+  CF_ACCOUNT_ID: "307a5117867a624064b8ec44fb1bac76"
+  CF_D1_DATABASE_ID: "9a26fb67-b6e5-4d5f-8e62-3ecfde5ee8c2"
+  MV_KPI_TABLE: "utils_statistics.trades_kpi_summary_mv"
+  MV_SERIES_TABLE: "utils_statistics.trades_kpi_series_mv"
+  MV_EXTREMES_TABLE: "utils_statistics.trades_contract_extremes_by_kpi_mv"
+  MV_PORTFOLIO_TABLE: "utils_statistics.trades_portfolio_assets_mv"
+  TZ: "America/New_York"
