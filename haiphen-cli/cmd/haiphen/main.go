@@ -66,6 +66,7 @@ func main() {
 	root.AddCommand(cmdCausal(cfg, st))
 	root.AddCommand(cmdSupply(cfg, st))
 	root.AddCommand(cmdProspect(cfg, st))
+	root.AddCommand(cmdBroker(cfg, st))
 
 	if err := root.Execute(); err != nil {
 		os.Exit(1)

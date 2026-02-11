@@ -2395,6 +2395,108 @@ Return ONLY valid JSON: {"summary":"...","impact":"...","recommendations":["..."
     return okJson({ items: reqs.results ?? [] }, requestId, corsHeaders(req, env));
   }
 
+  // ======================================================================
+  // BROKER CONNECTIONS
+  // ======================================================================
+
+  // ---- PUT /v1/broker/connections/:broker ----
+  const brokerPutMatch = url.pathname.match(/^\/v1\/broker\/connections\/(alpaca|schwab)$/);
+  if (req.method === "PUT" && brokerPutMatch) {
+    const u = await authSessionUser(req, env, requestId);
+    const broker = brokerPutMatch[1];
+
+    const body = await req.json().catch(() => null) as null | {
+      account_id?: string;
+      constraints_json?: string;
+    };
+
+    await env.DB.prepare(`
+      INSERT INTO broker_connections (user_id, broker, account_id, constraints_json)
+      VALUES (?, ?, ?, ?)
+      ON CONFLICT (user_id, broker) DO UPDATE SET
+        account_id = COALESCE(excluded.account_id, broker_connections.account_id),
+        constraints_json = COALESCE(excluded.constraints_json, broker_connections.constraints_json),
+        status = 'active',
+        updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now')
+    `).bind(
+      u.user_login,
+      broker,
+      body?.account_id ?? null,
+      body?.constraints_json ?? null
+    ).run();
+
+    return okJson({ ok: true, broker, status: "active" }, requestId, corsHeaders(req, env));
+  }
+
+  // ---- GET /v1/broker/connections/:broker ----
+  const brokerGetMatch = url.pathname.match(/^\/v1\/broker\/connections\/(alpaca|schwab)$/);
+  if (req.method === "GET" && brokerGetMatch) {
+    const u = await authSessionUser(req, env, requestId);
+    const broker = brokerGetMatch[1];
+
+    const row = await env.DB.prepare(
+      `SELECT broker, account_id, account_type, status, constraints_json, connected_at, last_sync_at, updated_at
+       FROM broker_connections WHERE user_id = ? AND broker = ?`
+    ).bind(u.user_login, broker).first();
+
+    if (!row) return err("not_found", "No connection found", requestId, 404, corsHeaders(req, env));
+    return okJson(row, requestId, corsHeaders(req, env));
+  }
+
+  // ---- DELETE /v1/broker/connections/:broker ----
+  const brokerDelMatch = url.pathname.match(/^\/v1\/broker\/connections\/(alpaca|schwab)$/);
+  if (req.method === "DELETE" && brokerDelMatch) {
+    const u = await authSessionUser(req, env, requestId);
+    const broker = brokerDelMatch[1];
+
+    await env.DB.prepare(
+      `UPDATE broker_connections SET status = 'disconnected', updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now')
+       WHERE user_id = ? AND broker = ?`
+    ).bind(u.user_login, broker).run();
+
+    return okJson({ ok: true, broker, status: "disconnected" }, requestId, corsHeaders(req, env));
+  }
+
+  // ---- POST /v1/broker/sync ----
+  if (req.method === "POST" && url.pathname === "/v1/broker/sync") {
+    const u = await authSessionUser(req, env, requestId);
+
+    const body = await req.json().catch(() => null) as null | {
+      broker?: string;
+      source?: string;
+      date?: string;
+      kpis?: Array<{ name: string; value: number; unit: string; source: string }>;
+      positions?: Array<{ symbol: string; qty: number; side: string; entry_price: number; current_price: number; market_value: number; unrealized_pl: number }>;
+    };
+    if (!body?.broker || !body?.kpis) {
+      return err("invalid_request", "broker and kpis are required", requestId, 400, corsHeaders(req, env));
+    }
+
+    const syncId = uuid();
+    const now = new Date().toISOString();
+
+    // Log the sync
+    await env.DB.prepare(`
+      INSERT INTO broker_sync_log (sync_id, user_id, broker, sync_type, records_count, status, created_at)
+      VALUES (?, ?, ?, 'kpis', ?, 'success', ?)
+    `).bind(syncId, u.user_login, body.broker, body.kpis.length, now).run();
+
+    // Update last_sync_at
+    await env.DB.prepare(`
+      UPDATE broker_connections SET last_sync_at = ?, updated_at = ?
+      WHERE user_id = ? AND broker = ?
+    `).bind(now, now, u.user_login, body.broker).run();
+
+    return okJson({
+      ok: true,
+      sync_id: syncId,
+      broker: body.broker,
+      kpis_count: body.kpis.length,
+      positions_count: body.positions?.length ?? 0,
+      source: body.source ?? "paper:" + body.broker,
+    }, requestId, corsHeaders(req, env));
+  }
+
   return err("not_found", "Not found", requestId, 404, corsHeaders(req, env));
 }
 

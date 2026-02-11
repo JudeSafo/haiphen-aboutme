@@ -20,6 +20,12 @@ type Config struct {
 	RiskOrigin    string
 	CausalOrigin  string
 	SupplyOrigin  string
+
+	// Broker safety defaults
+	BrokerMaxOrderQty    int
+	BrokerMaxOrderValue  float64
+	BrokerDailyLossLimit float64
+	BrokerConfirmOrders  bool
 }
 
 func Default() *Config {
@@ -37,5 +43,9 @@ func Default() *Config {
 		RiskOrigin:                "https://risk.haiphen.io",
 		CausalOrigin:              "https://causal.haiphen.io",
 		SupplyOrigin:              "https://supply.haiphen.io",
+		BrokerMaxOrderQty:         1000,
+		BrokerMaxOrderValue:       50000.0,
+		BrokerDailyLossLimit:      10000.0,
+		BrokerConfirmOrders:       true,
 	}
 }
