@@ -1443,7 +1443,18 @@
 		  const img = document.getElementById('trades-img');
 
 		  try {
-		    const data = await fetchJson(jsonUrl);
+		    let data;
+		    try {
+		      data = await fetchJson(jsonUrl);
+		    } catch (primaryErr) {
+		      // If local JSON fails and we have a dateKey, try the D1 API as fallback
+		      if (dateKey && !jsonUrl.startsWith('http')) {
+		        const apiUrl = `https://api.haiphen.io/v1/trades/latest?date=${dateKey}`;
+		        data = await fetchJson(apiUrl);
+		      } else {
+		        throw primaryErr;
+		      }
+		    }
 
 		    window.HAIPHEN = window.HAIPHEN || {};
 		    window.HAIPHEN.CurrentTradesDay = data; // ✅ after fetch
@@ -1632,11 +1643,17 @@
 
 		    // Merge: static items are the base (rich metadata with screenshots).
 		    // API items fill in any dates not already in static.
+		    // When a static item has a screenshot but no local JSON (screenshot-only run),
+		    // adopt the API's json URL so archive clicks can still load data from D1.
 		    const byDate = new Map();
 		    for (const it of staticItems) byDate.set(String(it.date), it);
 		    for (const it of apiItems) {
 		      const d = String(it.date);
-		      if (!byDate.has(d)) byDate.set(d, it);
+		      if (!byDate.has(d)) {
+		        byDate.set(d, it);
+		      } else if (it.json && byDate.get(d).has_json === false) {
+		        byDate.get(d).json = it.json;
+		      }
 		    }
 
 		    const items = Array.from(byDate.values());

@@ -1,7 +1,18 @@
 {
-  "updated_at": "2026-02-10T22:44:08.138Z",
+  "updated_at": "2026-02-11T14:32:53.354Z",
   "max_days": null,
   "items": [
+    {
+      "date": "2026-02-11",
+      "screenshot": "assets/trades/archive/2026-02-11.png",
+      "balance_screenshot": "assets/trades/archive/balance_2026-02-11.png",
+      "json": "https://api.haiphen.io/v1/trades/latest?date=2026-02-11",
+      "updated_at": "2026-02-11T14:32:53.233Z",
+      "headline": "Haiphen day trading snapshot (2026-02-11)",
+      "has_screenshot": true,
+      "has_balance_screenshot": true,
+      "has_json": false
+    },
     {
       "date": "2026-02-10",
       "screenshot": "assets/trades/archive/2026-02-10.png",
