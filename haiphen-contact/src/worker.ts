@@ -2119,9 +2119,13 @@ async function fetchTradesJson(env: Env): Promise<TradesJson> {
     if (staticResp.ok) staticData = (await staticResp.json()) as TradesJson;
   } catch (_) { /* fall through */ }
 
-  // Use whichever has the more recent date; prefer static if API is stale
+  // Use whichever is fresher: compare date first, then updated_at when dates match.
+  // The local cron script may refresh trades.json more frequently than the GKE pipeline refreshes D1.
   if (apiData && staticData) {
-    return String(apiData.date || "") >= String(staticData.date || "") ? apiData : staticData;
+    const ad = String(apiData.date || ""), sd = String(staticData.date || "");
+    if (ad !== sd) return ad > sd ? apiData : staticData;
+    // Same date — compare updated_at (ISO 8601 strings sort correctly)
+    return String(apiData.updated_at || "") >= String(staticData.updated_at || "") ? apiData : staticData;
   }
   if (apiData) return apiData;
   if (staticData) return staticData;

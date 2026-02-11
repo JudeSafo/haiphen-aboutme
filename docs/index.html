@@ -1585,9 +1585,10 @@
 		}
 
 		async function loadTradesData() {
-		  // Fetch API and static in parallel; use whichever has the more recent date.
-		  // This ensures stale D1 data never overrides a fresher static file,
-		  // and the live pipeline wins once it's producing current snapshots.
+		  // Fetch API (D1) and static file in parallel; use whichever is fresher.
+		  // Compare by date first, then by updated_at when dates match.
+		  // The local cron script refreshes trades.json more frequently than
+		  // the GKE pipeline refreshes D1, so updated_at breaks the tie.
 		  const [apiRes, staticRes] = await Promise.allSettled([
 		    fetchJson('https://api.haiphen.io/v1/trades/latest').catch(() => null),
 		    fetchJson('assets/trades/trades.json').catch(() => null),
@@ -1596,10 +1597,16 @@
 		  const apiData = apiRes.status === 'fulfilled' ? apiRes.value : null;
 		  const staticData = staticRes.status === 'fulfilled' ? staticRes.value : null;
 
-		  let data = staticData; // default to static
-		  if (apiData && (!staticData || String(apiData.date || '') >= String(staticData.date || ''))) {
-		    data = apiData;
+		  function pickFresher(a, b) {
+		    if (!a) return b;
+		    if (!b) return a;
+		    const ad = String(a.date || ''), bd = String(b.date || '');
+		    if (ad !== bd) return ad > bd ? a : b;
+		    // Same date — compare updated_at (ISO 8601 strings sort correctly)
+		    return String(a.updated_at || '') >= String(b.updated_at || '') ? a : b;
 		  }
+
+		  const data = pickFresher(apiData, staticData);
 
 		  if (data) {
 		    window.HAIPHEN = window.HAIPHEN || {};
