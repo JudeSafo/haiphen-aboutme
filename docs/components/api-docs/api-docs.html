@@ -108,15 +108,15 @@
           </p>
 
           <h4 id="docs-install-brew">macOS (Homebrew)</h4>
-          <pre class="api-code"><code data-lang="bash">brew tap JudeSafo/tap
+          <pre class="api-code"><code data-lang="bash">brew tap haiphenAI/tap
 brew install haiphen
 
 # Verify
 haiphen --help</code></pre>
 
           <h4>From source (Go 1.24+)</h4>
-          <pre class="api-code"><code data-lang="bash">git clone https://github.com/JudeSafo/haiphen-aboutme.git
-cd haiphen-aboutme/haiphen-cli
+          <pre class="api-code"><code data-lang="bash">git clone https://github.com/haiphenAI/haiphen-cli.git
+cd haiphen-cli
 
 # Build
 make build
@@ -129,18 +129,18 @@ make build
           <h4>Prebuilt binaries</h4>
           <p class="api-muted">
             Cross-platform archives (darwin/linux &times; amd64/arm64) are available from
-            <a href="https://github.com/JudeSafo/haiphen-aboutme/releases">GitHub Releases</a>.
+            <a href="https://github.com/haiphenAI/haiphen-cli/releases">GitHub Releases</a>.
           </p>
 
           <pre class="api-code"><code data-lang="bash"># macOS Apple Silicon
 curl -fsSL -o haiphen.tar.gz \
-  "https://github.com/JudeSafo/haiphen-aboutme/releases/latest/download/haiphen_darwin_arm64.tar.gz"
+  "https://github.com/haiphenAI/haiphen-cli/releases/latest/download/haiphen_darwin_arm64.tar.gz"
 tar -xzf haiphen.tar.gz
 sudo install -m 0755 haiphen /usr/local/bin/haiphen
 
 # Linux amd64
 curl -fsSL -o haiphen.tar.gz \
-  "https://github.com/JudeSafo/haiphen-aboutme/releases/latest/download/haiphen_linux_amd64.tar.gz"
+  "https://github.com/haiphenAI/haiphen-cli/releases/latest/download/haiphen_linux_amd64.tar.gz"
 tar -xzf haiphen.tar.gz
 sudo install -m 0755 haiphen /usr/local/bin/haiphen</code></pre>
         </section>

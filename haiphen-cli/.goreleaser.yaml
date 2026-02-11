@@ -41,14 +41,14 @@ changelog:
 
 release:
   github:
-    owner: JudeSafo
-    name: haiphen-aboutme
+    owner: haiphenAI
+    name: haiphen-cli
   draft: true
   prerelease: auto
 
 brews:
   - repository:
-      owner: JudeSafo
+      owner: haiphenAI
       name: homebrew-tap
       token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
     directory: Formula
