@@ -108,38 +108,41 @@
           </p>
 
           <h4 id="docs-install-brew">macOS (Homebrew)</h4>
-          <pre class="api-code"><code data-lang="bash">brew tap haiphenAI/tap
-        brew install haiphen
+          <pre class="api-code"><code data-lang="bash">brew tap JudeSafo/tap
+brew install haiphen
 
-        # Verify
-        haiphen --help</code></pre>
+# Verify
+haiphen --help</code></pre>
 
-          <h4>From source (GitHub)</h4>
-          <pre class="api-code"><code data-lang="bash">git clone https://github.com/haiphenAI/haiphen-cli.git
-        cd haiphen-cli
+          <h4>From source (Go 1.24+)</h4>
+          <pre class="api-code"><code data-lang="bash">git clone https://github.com/JudeSafo/haiphen-aboutme.git
+cd haiphen-aboutme/haiphen-cli
 
-        # Build (Go toolchain required)
-        go build -o haiphen ./cmd/haiphen
+# Build
+make build
+# or: go build -o haiphen ./cmd/haiphen
 
-        # Run
-        ./haiphen --help</code></pre>
+# Verify
+./haiphen --help
+./haiphen broker --help</code></pre>
 
-          <h4>Prebuilt binaries (Linux / Windows)</h4>
+          <h4>Prebuilt binaries</h4>
           <p class="api-muted">
-            Download the latest release artifact for your OS/arch from GitHub Releases, then place it on your <code>PATH</code>.
+            Cross-platform archives (darwin/linux &times; amd64/arm64) are available from
+            <a href="https://github.com/JudeSafo/haiphen-aboutme/releases">GitHub Releases</a>.
           </p>
 
-          <pre class="api-code"><code data-lang="bash"># Linux example (adjust artifact name to your release)
-        curl -fsSL -o haiphen.tar.gz "https://github.com/haiphenAI/haiphen-cli/releases/latest/download/&lt;artifact&gt;.tar.gz"
-        tar -xzf haiphen.tar.gz
-        sudo install -m 0755 haiphen /usr/local/bin/haiphen
-        haiphen --help</code></pre>
+          <pre class="api-code"><code data-lang="bash"># macOS Apple Silicon
+curl -fsSL -o haiphen.tar.gz \
+  "https://github.com/JudeSafo/haiphen-aboutme/releases/latest/download/haiphen_darwin_arm64.tar.gz"
+tar -xzf haiphen.tar.gz
+sudo install -m 0755 haiphen /usr/local/bin/haiphen
 
-          <pre class="api-code"><code data-lang="powershell"># Windows example (adjust artifact name to your release)
-        Invoke-WebRequest -Uri "https://github.com/haiphenAI/haiphen-cli/releases/latest/download/&lt;artifact&gt;.zip" -OutFile "haiphen.zip"
-        Expand-Archive .\haiphen.zip -DestinationPath .\haiphen
-        # Put haiphen.exe somewhere on PATH, then:
-        haiphen.exe --help</code></pre>
+# Linux amd64
+curl -fsSL -o haiphen.tar.gz \
+  "https://github.com/JudeSafo/haiphen-aboutme/releases/latest/download/haiphen_linux_amd64.tar.gz"
+tar -xzf haiphen.tar.gz
+sudo install -m 0755 haiphen /usr/local/bin/haiphen</code></pre>
         </section>
 
         <!-- Quickstart -->
@@ -981,6 +984,134 @@ haiphen secure scan --target "192.168.1.0/24" --type vulnerability</code></pre>
           </details>
         </section>
 
+        <!-- Broker Integration -->
+        <section class="api-section" id="docs-broker" data-api-section>
+          <h3>Broker Integration</h3>
+          <p>
+            Connect your brokerage account to sync paper trading data into the Haiphen trades pipeline.
+            Currently supports <strong>Alpaca</strong> paper trading (live trading is permanently disabled).
+          </p>
+          <p class="api-muted">Base URL: <code>https://api.haiphen.io/v1</code> &mdash; All broker endpoints require session auth (JWT).</p>
+
+          <div class="api-callout">
+            <div class="api-callout-title">Paper Trading Only</div>
+            <p class="api-muted">
+              Broker integration is restricted to paper trading accounts. The CLI enforces this at compile time &mdash;
+              all API calls are routed exclusively to <code>paper-api.alpaca.markets</code>. Live trading URLs are
+              rejected at the URL validation layer. All credentials are encrypted at rest (AES-256-GCM) both locally and in D1.
+            </p>
+          </div>
+
+          <h4>Setup Flow</h4>
+          <ol class="api-ol">
+            <li><strong>Install CLI</strong> &mdash; <a href="#docs:docs-install">see Installation</a></li>
+            <li><strong>Authenticate</strong> &mdash; <code>haiphen login</code> (GitHub OAuth)</li>
+            <li><strong>Connect broker</strong> &mdash; <code>haiphen broker init</code> (interactive wizard)</li>
+            <li><strong>Trade</strong> &mdash; <code>haiphen broker trade --symbol AAPL --qty 5 --side buy --type market</code></li>
+            <li><strong>Sync</strong> &mdash; <code>haiphen broker sync</code> (pushes KPIs to trades pipeline)</li>
+          </ol>
+
+          <h4>REST Endpoints</h4>
+          <div class="api-endpoints">
+            <div class="api-endpoint">
+              <div class="api-method-row">
+                <span class="api-method put">PUT</span>
+                <code>/v1/broker/connections/:broker</code>
+              </div>
+              <p class="api-muted">
+                Register or update a broker connection. The <code>account_id</code> is encrypted server-side via envelope encryption before storage.
+              </p>
+              <pre class="api-code"><code data-lang="bash">curl -X PUT https://api.haiphen.io/v1/broker/connections/alpaca \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "account_id": "your-paper-account-id",
+    "account_type": "paper",
+    "constraints_json": "{\"pdt_restricted\":false}"
+  }'</code></pre>
+            </div>
+
+            <div class="api-endpoint">
+              <div class="api-method-row">
+                <span class="api-method get">GET</span>
+                <code>/v1/broker/connections/:broker</code>
+              </div>
+              <p class="api-muted">
+                Retrieve your broker connection details. The <code>account_id</code> is decrypted on read.
+              </p>
+            </div>
+
+            <div class="api-endpoint">
+              <div class="api-method-row">
+                <span class="api-method delete">DELETE</span>
+                <code>/v1/broker/connections/:broker</code>
+              </div>
+              <p class="api-muted">
+                Disconnect a broker. Sets connection status to <code>disconnected</code>.
+              </p>
+            </div>
+
+            <div class="api-endpoint">
+              <div class="api-method-row">
+                <span class="api-method post">POST</span>
+                <code>/v1/broker/sync</code>
+              </div>
+              <p class="api-muted">
+                Push paper trading KPIs to the trades pipeline. Validates KPI names (regex <code>[\w\s.:/%()+-]</code>, max 100 entries)
+                and requires an active broker connection.
+              </p>
+              <pre class="api-code"><code data-lang="json">{
+  "broker": "alpaca",
+  "kpis": [
+    { "name": "Portfolio Value", "value": 102450.00, "unit": "USD" },
+    { "name": "Cash", "value": 48200.00, "unit": "USD" },
+    { "name": "Buying Power", "value": 196400.00, "unit": "USD" },
+    { "name": "Unrealized P&L", "value": 2450.00, "unit": "USD" },
+    { "name": "Open Positions", "value": 3, "unit": "count" },
+    { "name": "Exits Closed", "value": 5, "unit": "count" },
+    { "name": "Day Trade Count", "value": 1, "unit": "count" }
+  ]
+}</code></pre>
+            </div>
+          </div>
+
+          <h4>Security Model</h4>
+          <div class="api-table-wrap">
+            <table class="api-table">
+              <thead>
+                <tr><th>Layer</th><th>Protection</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>CLI credentials</td><td>AES-256-GCM, PBKDF2-derived key bound to machine identity</td></tr>
+                <tr><td>D1 account_id</td><td>Envelope encryption (per-row DEK wrapped by master key)</td></tr>
+                <tr><td>API rate limiting</td><td>60 req/min (free), 600 req/min (pro) per user</td></tr>
+                <tr><td>URL validation</td><td>Compile-time constant; rejects non-paper API URLs</td></tr>
+                <tr><td>Order safety rails</td><td>Max 1,000 shares, $50k value, $10k daily loss limit</td></tr>
+                <tr><td>Input validation</td><td>KPI name regex, JSON schema validation, size caps</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h4>Safety Limits</h4>
+          <p class="api-muted">
+            These defaults protect against accidental over-exposure in paper trading.
+            Adjust via <code>haiphen broker config</code>.
+          </p>
+          <div class="api-table-wrap">
+            <table class="api-table">
+              <thead>
+                <tr><th>Limit</th><th>Default</th><th>Override flag</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>Max shares per order</td><td>1,000</td><td><code>--max-order-qty</code></td></tr>
+                <tr><td>Max order value</td><td>$50,000</td><td><code>--max-order-value</code></td></tr>
+                <tr><td>Daily loss halt</td><td>$10,000</td><td><code>--daily-loss-limit</code></td></tr>
+                <tr><td>Order confirmation</td><td>Enabled</td><td><code>--yes</code> to skip</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
         <!-- CLI Command Reference -->
         <section class="api-section" id="docs-cli-commands" data-api-section>
           <h3>CLI Command Center</h3>
@@ -1022,6 +1153,24 @@ haiphen secure scan --target "192.168.1.0/24" --type vulnerability</code></pre>
             <div class="api-row" role="row"><div role="cell"><code>haiphen prospect investigate --lead &lt;id&gt;</code></div><div role="cell">Run 6-service investigation pipeline</div></div>
             <div class="api-row" role="row"><div role="cell"><code>haiphen prospect solve --investigation &lt;id&gt;</code></div><div role="cell">Auto-resolve requirements</div></div>
             <div class="api-row" role="row"><div role="cell"><code>haiphen prospect re-investigate --investigation &lt;id&gt;</code></div><div role="cell">Confirm risk reduction</div></div>
+          </div>
+
+          <h4>Broker commands</h4>
+          <div class="api-table" role="table" aria-label="CLI broker commands">
+            <div class="api-row api-head" role="row">
+              <div role="columnheader">Command</div>
+              <div role="columnheader">Description</div>
+            </div>
+            <div class="api-row" role="row"><div role="cell"><code>haiphen broker init</code></div><div role="cell">Interactive broker setup wizard (Alpaca paper trading)</div></div>
+            <div class="api-row" role="row"><div role="cell"><code>haiphen broker status</code></div><div role="cell">Account dashboard &mdash; balance, buying power, P&amp;L</div></div>
+            <div class="api-row" role="row"><div role="cell"><code>haiphen broker trade --symbol &lt;s&gt; --qty &lt;n&gt; --side &lt;buy|sell&gt; --type &lt;market|limit&gt;</code></div><div role="cell">Submit a paper trade</div></div>
+            <div class="api-row" role="row"><div role="cell"><code>haiphen broker positions</code></div><div role="cell">List open positions</div></div>
+            <div class="api-row" role="row"><div role="cell"><code>haiphen broker orders</code></div><div role="cell">List orders (filter with <code>--status</code>)</div></div>
+            <div class="api-row" role="row"><div role="cell"><code>haiphen broker sync</code></div><div role="cell">Push 7 KPIs to the <a href="#docs:docs-broker">trades pipeline</a></div></div>
+            <div class="api-row" role="row"><div role="cell"><code>haiphen broker watch</code></div><div role="cell">Live WebSocket trade updates (Ctrl+C to stop)</div></div>
+            <div class="api-row" role="row"><div role="cell"><code>haiphen broker halt --yes</code></div><div role="cell">Kill switch &mdash; cancel all open orders</div></div>
+            <div class="api-row" role="row"><div role="cell"><code>haiphen broker disconnect</code></div><div role="cell">Remove credentials and server-side connection</div></div>
+            <div class="api-row" role="row"><div role="cell"><code>haiphen broker config</code></div><div role="cell">Show or adjust safety limits</div></div>
           </div>
 
           <h4>Local gateway proxy</h4>

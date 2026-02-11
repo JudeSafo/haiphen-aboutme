@@ -132,9 +132,9 @@ func StatusIcon(status string) string {
 // FormatMoney formats a float as a dollar amount.
 func FormatMoney(amount float64) string {
 	if amount >= 0 {
-		return C(Green, fmt.Sprintf("$%,.2f", amount))
+		return C(Green, fmt.Sprintf("$%.2f", amount))
 	}
-	return C(Red, fmt.Sprintf("-$%,.2f", -amount))
+	return C(Red, fmt.Sprintf("-$%.2f", -amount))
 }
 
 // FormatMoneyPlain formats a float as a dollar amount without color.

@@ -1,6 +1,31 @@
 {
   "services": [
     {
+      "id": "haiphen_platform",
+      "name": "Trading Intelligence Platform",
+      "tagline": "Full-Stack Trading Telemetry",
+      "description": "Broker integration, trade signals, pipeline KPIs, and risk analytics in one platform.",
+      "category": "featured",
+      "status": "available",
+      "docs_section": "docs-broker",
+      "pricing": {
+        "free": { "label": "Free", "requests": 100 },
+        "professional": { "price": 2500, "label": "Professional", "lookup_key": "haiphen_cohort_professional" },
+        "enterprise": { "price": 5000, "label": "Enterprise", "lookup_key": "haiphen_cohort_enterprise" }
+      },
+      "trial": { "type": "requests", "limit": 100 },
+      "features": [
+        "Alpaca paper trading integration",
+        "7 KPIs synced to pipeline",
+        "WebSocket live trade updates",
+        "Entry/exit signal webhooks",
+        "Safety rails (position limits, daily loss halt)",
+        "AES-256-GCM encrypted credentials"
+      ],
+      "cta": { "primary": "Get Started", "secondary": "View Docs" },
+      "icon": "device/terminal"
+    },
+    {
       "id": "haiphen_cli",
       "name": "Haiphen CLI",
       "tagline": "Command Center for Edge Intelligence",

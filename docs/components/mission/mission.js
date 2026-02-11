@@ -80,13 +80,13 @@
             features: ['Global edge network', 'Zero cold starts', 'Auto-scaling'],
           },
           local: {
-            subtitle: 'Run locally via CLI or container',
+            subtitle: 'Install the CLI and connect your broker in 3 commands',
             providers: [
               { name: 'Homebrew', icon: 'assets/partners/homebrew.svg' },
-              { name: 'Docker', icon: 'assets/partners/docker.svg' },
+              { name: 'Go', icon: 'assets/partners/go.svg' },
             ],
-            snippet: 'brew install haiphen/tap/haiphen && haiphen serve',
-            features: ['Local development', 'Air-gapped deployments', 'Full CLI access'],
+            snippet: 'brew tap JudeSafo/tap && brew install haiphen\nhaiphen login\nhaiphen broker init',
+            features: ['Paper trading via Alpaca', 'Encrypted local credentials (AES-256-GCM)', '7 KPIs synced to pipeline', 'WebSocket live trade streaming'],
           },
         },
         finance: {
@@ -100,21 +100,21 @@
             features: ['Global edge network', 'Zero cold starts', 'Auto-scaling'],
           },
           local: {
-            subtitle: 'Run locally via CLI or container',
+            subtitle: 'Connect your brokerage and start receiving trade signals',
             providers: [
               { name: 'Homebrew', icon: 'assets/partners/homebrew.svg' },
-              { name: 'Docker', icon: 'assets/partners/docker.svg' },
+              { name: 'Go', icon: 'assets/partners/go.svg' },
             ],
-            snippet: 'brew install haiphen/tap/haiphen && haiphen serve',
-            features: ['Local development', 'Air-gapped deployments', 'Full CLI access'],
+            snippet: 'brew tap JudeSafo/tap && brew install haiphen\nhaiphen login\nhaiphen broker init',
+            features: ['Paper trading via Alpaca (live coming soon)', 'Encrypted credentials at rest and in transit', 'Automatic KPI sync to portfolio dashboard', 'Safety rails: position limits, daily loss halt'],
           },
         },
       },
       integration: {
         tech: {
-          headline: 'Connect your entire trading stack to Haiphen in minutes',
-          api: 'curl -H "Authorization: Bearer $TOKEN" \\\n  https://api.haiphen.io/v1/services',
-          webhookEvents: ['scan.complete', 'risk.alert', 'graph.updated', 'supply.breach'],
+          headline: 'Connect your broker, sync KPIs, and receive trade signals via webhook',
+          api: '# Connect broker and sync paper trading KPIs\nhaiphen broker init          # interactive setup\nhaiphen broker trade --symbol AAPL --qty 5 --side buy --type market\nhaiphen broker sync          # pushes 7 KPIs to pipeline\n\n# Or call the API directly\ncurl -X POST https://api.haiphen.io/v1/broker/sync \\\n  -H "Authorization: Bearer $TOKEN" \\\n  -d \'{"broker":"alpaca","kpis":[...]}\'',
+          webhookEvents: ['entry.signal', 'exit.signal', 'position.opened', 'risk.alert', 'scan.complete'],
           channels: [
             { name: 'Slack', icon: 'assets/partners/slack.svg' },
             { name: 'Discord', icon: 'assets/partners/discord.svg' },
@@ -133,9 +133,9 @@
           ],
         },
         finance: {
-          headline: 'Connect your investment office to Haiphen in minutes',
-          api: 'curl -H "Authorization: Bearer $TOKEN" \\\n  https://api.haiphen.io/v1/services',
-          webhookEvents: ['compliance.alert', 'risk.breach', 'graph.updated', 'supply.exposure'],
+          headline: 'Link your brokerage, track portfolio KPIs, and receive trade signals automatically',
+          api: '# Connect your broker (paper trading)\nhaiphen broker init\nhaiphen broker trade --symbol AAPL --qty 5 --side buy --type market\nhaiphen broker sync    # syncs Portfolio Value, P&L, positions\n\n# Query your pipeline data\ncurl https://api.haiphen.io/v1/trades/latest',
+          webhookEvents: ['entry.signal', 'exit.signal', 'compliance.alert', 'risk.breach', 'supply.exposure'],
           channels: [
             { name: 'Slack', icon: 'assets/partners/slack.svg' },
             { name: 'Discord', icon: 'assets/partners/discord.svg' },
