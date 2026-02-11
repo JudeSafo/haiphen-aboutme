@@ -189,6 +189,13 @@ The following documents in the project root provide authoritative content and br
 - Fall back to localStorage for anonymous users
 - Sync to server when user logs in
 
+### Air-Gap Architecture (INVIOLABLE)
+- This repository (haiphen-aboutme) must NEVER have direct access to the GKE cluster, its databases, or any Kubernetes resources
+- The GKE cluster pushes data TO Cloudflare Workers (haiphen-api) via authenticated HTTPS endpoints; this repo reads FROM D1 via wrangler
+- No `kubectl`, `k8s/` manifests, Kubernetes secrets, or GKE connection strings may exist in this repo
+- The purpose of the GKE → Cloudflare Worker → D1 hop is to air-gap this project from the upstream cluster, preventing injection attacks
+- Any future pipeline that requires GKE data must flow through the existing `POST /v1/internal/trades/snapshot` (or similar) authenticated API endpoint — never via direct database or cluster access
+
 ### API Design
 - All new endpoints under `/v1/` prefix
 - Consistent error format: `{ "error": { "code": "string", "message": "string" } }`
