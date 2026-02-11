@@ -2,27 +2,28 @@
   'use strict';
 
   const DEFAULT_SECTIONS = [
-    { id: 'docs-overview', label: 'Overview' },
-    { id: 'docs-quickstart', label: 'Quickstart' },
-    { id: 'docs-install', label: 'Download' },
-    { id: 'docs-try', label: 'Try it' },
-    { id: 'docs-auth', label: 'Authentication' },
-    { id: 'docs-rate-limits', label: 'Rate limits' },
-    { id: 'docs-data-model', label: 'Data model' },
-    { id: 'docs-endpoints', label: 'Endpoints' },
-    { id: 'docs-trade-telemetry', label: 'Trade Telemetry' },
-    { id: 'docs-secure', label: 'Secure' },
-    { id: 'docs-network', label: 'Network Trace' },
-    { id: 'docs-graph', label: 'Knowledge Graph' },
-    { id: 'docs-risk', label: 'Risk Analysis' },
-    { id: 'docs-causal', label: 'Causal Chain' },
-    { id: 'docs-supply', label: 'Supply Chain' },
-    { id: 'docs-cli-commands', label: 'CLI Commands' },
-    { id: 'docs-errors', label: 'Errors' },
-    { id: 'docs-lineage', label: 'Lineage' },
-    { id: 'docs-changelog', label: 'Changelog' },
-    { id: 'docs-rss-overview', label: 'RSS / Atom' },
-    { id: 'docs-webhooks', label: 'Webhooks' },
+    { id: 'docs-overview', label: 'Overview', financeLabel: 'Overview' },
+    { id: 'docs-install', label: 'Install', financeLabel: 'Install' },
+    { id: 'docs-quickstart', label: 'Quickstart', financeLabel: 'Quickstart' },
+    { id: 'docs-try', label: 'Try it', financeLabel: 'Try it' },
+    { id: 'docs-auth', label: 'Authentication', financeLabel: 'Authentication' },
+    { id: 'docs-rate-limits', label: 'Rate limits', financeLabel: 'Rate limits' },
+    { id: 'docs-data-model', label: 'Data model', financeLabel: 'Data model' },
+    { id: 'docs-endpoints', label: 'Endpoints', financeLabel: 'Endpoints' },
+    { id: 'docs-trade-telemetry', label: 'Trade Telemetry', financeLabel: 'Trade Signals' },
+    { id: 'docs-secure', label: 'Secure', financeLabel: 'Compliance' },
+    { id: 'docs-network', label: 'Network Trace', financeLabel: 'Market Data' },
+    { id: 'docs-graph', label: 'Knowledge Graph', financeLabel: 'Entity Intel' },
+    { id: 'docs-risk', label: 'Risk Analysis', financeLabel: 'Portfolio Risk' },
+    { id: 'docs-causal', label: 'Causal Chain', financeLabel: 'Trade Chains' },
+    { id: 'docs-supply', label: 'Supply Chain', financeLabel: 'Counterparty' },
+    { id: 'docs-prospect', label: 'Prospect Engine', financeLabel: 'Vuln Intel' },
+    { id: 'docs-cli-commands', label: 'CLI Commands', financeLabel: 'CLI Commands' },
+    { id: 'docs-errors', label: 'Errors', financeLabel: 'Errors' },
+    { id: 'docs-lineage', label: 'Lineage', financeLabel: 'Data Lineage' },
+    { id: 'docs-changelog', label: 'Changelog', financeLabel: 'Changelog' },
+    { id: 'docs-rss-overview', label: 'RSS / Atom', financeLabel: 'RSS / Atom' },
+    { id: 'docs-webhooks', label: 'Webhooks', financeLabel: 'Webhooks' },
   ];
 
   const TRY_STORAGE = {
@@ -497,6 +498,20 @@
     });
   }
 
+  function refreshNavLabels(root) {
+    var lens = document.documentElement.getAttribute('data-lens') || 'tech';
+    var nav = qs(root, '[data-api-nav]');
+    if (!nav) return;
+
+    DEFAULT_SECTIONS.forEach(function (s) {
+      var a = nav.querySelector('a[data-doc-id="' + s.id + '"]');
+      if (!a) return;
+      var label = (lens === 'finance' && s.financeLabel) ? s.financeLabel : s.label;
+      a.textContent = label;
+      a.setAttribute('aria-label', 'Jump to ' + label);
+    });
+  }
+
   function applyLensToApiDocs(root) {
     if (!_financeTemplates || !_techOriginals) return;
     var lens = document.documentElement.getAttribute('data-lens') || 'tech';
@@ -513,6 +528,30 @@
         var orig = _techOriginals.get(id);
         if (orig) target.replaceWith(orig.cloneNode(true));
       }
+    });
+
+    // Update nav labels to match current lens
+    refreshNavLabels(root);
+
+    // Re-wire code copy buttons on swapped sections (skip already-wired pre blocks)
+    qsa(root, 'pre.api-code').forEach(function (pre) {
+      if (pre.classList.contains('api-try-out')) return;
+      if (pre.querySelector('.api-code-copy')) return;
+      var btn = document.createElement('button');
+      btn.className = 'api-code-copy';
+      btn.type = 'button';
+      btn.textContent = 'Copy';
+      btn.addEventListener('click', async function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var code = pre.querySelector('code');
+        var text = code ? code.textContent : pre.textContent;
+        var ok = await copyText(text.trim());
+        setToast(root, ok ? 'Copied' : 'Copy failed');
+        btn.textContent = 'Copied';
+        setTimeout(function () { btn.textContent = 'Copy'; }, 1200);
+      });
+      pre.appendChild(btn);
     });
   }
 })();

@@ -491,3 +491,263 @@
 @media (max-width: 920px){
   .api-try-row{ grid-template-columns: 1fr; }
 }
+
+/* ── Finance lens (dark theme) ── */
+
+html[data-lens="finance"] .api-docs{
+  color: #f8fafc;
+}
+
+html[data-lens="finance"] .api-pill{
+  background: rgba(90,155,212,0.15);
+  border-color: rgba(90,155,212,0.30);
+  color: #5A9BD4;
+}
+
+html[data-lens="finance"] .api-subtitle{
+  color: #94a3b8;
+}
+
+html[data-lens="finance"] .api-btn{
+  background: rgba(30,41,59,0.85);
+  color: #e2e8f0;
+  border-color: rgba(148,163,184,0.20);
+}
+html[data-lens="finance"] .api-btn:hover{
+  box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+}
+html[data-lens="finance"] .api-btn-primary{
+  background: #5A9BD4;
+  color: #fff;
+  border-color: #5A9BD4;
+}
+html[data-lens="finance"] .api-btn-primary:hover{
+  background: #3c7fb8;
+}
+html[data-lens="finance"] .api-btn-ghost{
+  background: rgba(30,41,59,0.85);
+}
+
+html[data-lens="finance"] .api-card{
+  background: rgba(30,41,59,0.85);
+  border-color: rgba(148,163,184,0.18);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.20);
+}
+html[data-lens="finance"] .api-card-k{
+  color: #94a3b8;
+}
+html[data-lens="finance"] .api-card-v{
+  color: #f8fafc;
+}
+html[data-lens="finance"] .api-card-v code{
+  color: #c8ddf0;
+}
+html[data-lens="finance"] .api-card-s{
+  color: #94a3b8;
+}
+
+html[data-lens="finance"] .api-copy{
+  background: rgba(51,65,85,0.80);
+  border-color: rgba(148,163,184,0.20);
+  color: #e2e8f0;
+}
+html[data-lens="finance"] .api-copy:hover{
+  box-shadow: 0 6px 18px rgba(0,0,0,0.20);
+}
+
+html[data-lens="finance"] .api-sidebar{
+  background: rgba(15,23,42,0.98);
+  border-color: rgba(148,163,184,0.18);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.25);
+}
+html[data-lens="finance"] .api-sidebar-title{
+  color: #f8fafc;
+}
+html[data-lens="finance"] .api-sidebar-foot{
+  border-top-color: rgba(148,163,184,0.15);
+}
+
+html[data-lens="finance"] .api-filter{
+  background: rgba(30,41,59,0.80);
+  border-color: rgba(148,163,184,0.20);
+  color: #f8fafc;
+}
+html[data-lens="finance"] .api-filter::placeholder{
+  color: #64748b;
+}
+
+html[data-lens="finance"] .api-nav a{
+  color: #e2e8f0;
+}
+html[data-lens="finance"] .api-nav a:hover{
+  background: rgba(90,155,212,0.12);
+  border-color: rgba(90,155,212,0.25);
+}
+html[data-lens="finance"] .api-nav a.is-active{
+  background: rgba(90,155,212,0.18);
+  border-color: rgba(90,155,212,0.40);
+  color: #fff;
+}
+
+html[data-lens="finance"] .api-main{
+  background: rgba(30,41,59,0.85);
+  border-color: rgba(148,163,184,0.18);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.25);
+  color: #f8fafc;
+}
+
+html[data-lens="finance"] .api-tab{
+  background: rgba(51,65,85,0.60);
+  border-color: rgba(148,163,184,0.18);
+  color: #e2e8f0;
+}
+html[data-lens="finance"] .api-tab.is-active{
+  background: rgba(90,155,212,0.18);
+  border-color: rgba(90,155,212,0.45);
+  color: #fff;
+}
+
+html[data-lens="finance"] .api-section{
+  border-bottom-color: rgba(148,163,184,0.12);
+}
+html[data-lens="finance"] .api-section h3,
+html[data-lens="finance"] .api-section h4{
+  color: #f8fafc;
+}
+
+html[data-lens="finance"] .api-muted{
+  color: #94a3b8;
+}
+
+html[data-lens="finance"] .api-callout{
+  background: rgba(90,155,212,0.06);
+  border-color: rgba(148,163,184,0.15);
+  border-left-color: #5A9BD4;
+}
+html[data-lens="finance"] .api-callout-title{
+  color: #f8fafc;
+}
+
+html[data-lens="finance"] .api-code{
+  border-color: rgba(148,163,184,0.12);
+}
+
+html[data-lens="finance"] .api-grid2 .api-mini,
+html[data-lens="finance"] .api-mini{
+  background: rgba(30,41,59,0.90);
+  border-color: rgba(148,163,184,0.15);
+}
+html[data-lens="finance"] .api-mini-k{
+  color: #94a3b8;
+}
+html[data-lens="finance"] .api-mini-v{
+  color: #f8fafc;
+}
+html[data-lens="finance"] .api-mini-v code{
+  color: #c8ddf0;
+}
+html[data-lens="finance"] .api-mini-s{
+  color: #94a3b8;
+}
+
+html[data-lens="finance"] .api-table{
+  border-color: rgba(148,163,184,0.15);
+}
+html[data-lens="finance"] .api-row{
+  border-top-color: rgba(148,163,184,0.10);
+  color: #e2e8f0;
+}
+html[data-lens="finance"] .api-head{
+  background: rgba(51,65,85,0.60);
+  color: #f8fafc;
+}
+
+html[data-lens="finance"] .api-table-wrap table.api-table{
+  border-color: rgba(148,163,184,0.15);
+}
+html[data-lens="finance"] .api-table-wrap table.api-table thead{
+  background: rgba(51,65,85,0.60);
+}
+html[data-lens="finance"] .api-table-wrap table.api-table th{
+  color: #f8fafc;
+  border-bottom-color: rgba(148,163,184,0.15);
+}
+html[data-lens="finance"] .api-table-wrap table.api-table td{
+  color: #e2e8f0;
+  border-bottom-color: rgba(148,163,184,0.08);
+}
+
+html[data-lens="finance"] .api-endpoint{
+  background: rgba(30,41,59,0.80);
+  border-color: rgba(148,163,184,0.15);
+}
+html[data-lens="finance"] .api-method{
+  background: rgba(90,155,212,0.15);
+  border-color: rgba(90,155,212,0.35);
+  color: #5A9BD4;
+}
+html[data-lens="finance"] .api-path{
+  color: #c8ddf0;
+}
+html[data-lens="finance"] .api-endpoint-desc{
+  color: #94a3b8;
+}
+html[data-lens="finance"] .api-endpoint-meta{
+  color: #94a3b8;
+}
+
+html[data-lens="finance"] .api-ul,
+html[data-lens="finance"] .api-ol{
+  color: #94a3b8;
+}
+
+html[data-lens="finance"] .api-changelog-item{
+  background: rgba(30,41,59,0.80);
+  border-color: rgba(148,163,184,0.15);
+}
+html[data-lens="finance"] .api-changelog-title{
+  color: #f8fafc;
+}
+
+html[data-lens="finance"] .api-try{
+  background: rgba(30,41,59,0.85);
+  border-color: rgba(148,163,184,0.15);
+}
+html[data-lens="finance"] .api-try-label{
+  color: #e2e8f0;
+}
+html[data-lens="finance"] .api-try-input{
+  background: rgba(51,65,85,0.70);
+  border-color: rgba(148,163,184,0.20);
+  color: #f8fafc;
+}
+html[data-lens="finance"] .api-try-input::placeholder{
+  color: #64748b;
+}
+
+html[data-lens="finance"] .api-demo-block{
+  background: rgba(0,0,0,0.10);
+  border-color: rgba(148,163,184,0.15);
+}
+html[data-lens="finance"] .api-demo-block summary{
+  color: #5A9BD4;
+}
+
+html[data-lens="finance"] .api-section p{
+  color: #e2e8f0;
+}
+html[data-lens="finance"] .api-section a{
+  color: #5A9BD4;
+}
+html[data-lens="finance"] .api-section a:hover{
+  color: #8bb8e0;
+}
+html[data-lens="finance"] .api-section code{
+  color: #c8ddf0;
+}
+html[data-lens="finance"] .api-code code{
+  color: #e8eefc;
+}
+html[data-lens="finance"] .api-section strong{
+  color: #f8fafc;
+}

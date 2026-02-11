@@ -1,66 +1,889 @@
 <!-- docs/components/api-docs/api-docs-finance.html
      Finance-lens override blocks for API docs.
-     Each [data-finance-override] replaces the matching id in the tech docs. -->
+     Each [data-finance-override] replaces the matching id in the tech docs.
+     13 templates covering the full finance documentation experience. -->
 
+<!-- T1: Hero -->
 <template data-finance-override="api-hero">
-  <div class="api-hero" id="api-hero">
-    <h1 class="api-hero__title">Haiphen Portfolio API</h1>
-    <p class="api-hero__sub">
-      Programmatic access to trade signals, portfolio analytics, risk metrics,
-      and real-time market data. Built for quantitative traders, portfolio managers,
-      and compliance teams.
-    </p>
-  </div>
+  <header class="api-hero" id="api-hero">
+    <div class="api-hero-top">
+      <div class="api-hero-title">
+        <div class="api-pill">Docs / Portfolio Analytics</div>
+        <h2>Haiphen Portfolio API</h2>
+        <p class="api-subtitle">
+          Trade signals, risk analytics, compliance scanning, entity intelligence, and counterparty monitoring &mdash;
+          delivered as <strong>REST</strong> endpoints with <strong>CLI</strong> access.
+        </p>
+      </div>
+
+      <div class="api-hero-actions">
+        <a class="api-btn api-btn-primary" href="javascript:void(0)" data-api-action="request-access">Request access</a>
+        <a class="api-btn api-btn-ghost" href="javascript:void(0)" data-api-action="view-changelog">Changelog</a>
+      </div>
+    </div>
+
+    <div class="api-hero-cards" role="region" aria-label="API quick facts">
+      <div class="api-card">
+        <div class="api-card-k">Base URL</div>
+        <div class="api-card-v">
+          <code data-copy="https://api.haiphen.io/v1">https://api.haiphen.io/v1</code>
+          <button class="api-copy" type="button" data-copy-btn="https://api.haiphen.io/v1" aria-label="Copy base URL">
+            Copy
+          </button>
+        </div>
+        <div class="api-card-s">All endpoints below are relative to this base.</div>
+      </div>
+
+      <div class="api-card">
+        <div class="api-card-k">Auth</div>
+        <div class="api-card-v"><code>Authorization: Bearer &lt;API_KEY&gt;</code></div>
+        <div class="api-card-s">Per-user keys. Rotate anytime. Least-privilege scopes.</div>
+      </div>
+
+      <div class="api-card">
+        <div class="api-card-k">Data ingest</div>
+        <div class="api-card-v"><code>X-Admin-Token: &lt;ADMIN_TOKEN&gt;</code></div>
+        <div class="api-card-s">Privileged upsert for daily portfolio data hydration.</div>
+      </div>
+    </div>
+  </header>
 </template>
 
+<!-- T2: Overview -->
 <template data-finance-override="docs-overview">
-  <section class="api-section" id="docs-overview">
-    <h2>Overview</h2>
+  <section class="api-section" id="docs-overview" data-api-section>
+    <h3>Overview</h3>
     <p>
-      The Haiphen Portfolio API exposes a RESTful interface for querying
-      trade execution history, daily P&amp;L breakdowns, risk-adjusted returns,
-      and portfolio composition. All endpoints return JSON and support pagination.
+      The Haiphen Portfolio API exposes a RESTful interface for querying trade execution history,
+      daily P&amp;L breakdowns, risk-adjusted returns, and portfolio composition.
+      All endpoints return JSON, support pagination, and are designed for integration with
+      quantitative trading platforms and compliance systems.
     </p>
-    <h3>Key Capabilities</h3>
-    <ul>
+
+    <div class="api-callout">
+      <div class="api-callout-title">Non-advisory disclaimer</div>
+      <p class="api-muted">
+        This API provides portfolio telemetry, not trade instructions. Treat outputs as informational
+        signals and diagnostics &mdash; not financial advice. Past signal performance does not guarantee
+        future results.
+      </p>
+    </div>
+
+    <h4>Key Capabilities</h4>
+    <ul class="api-ul">
       <li><strong>Trade History</strong> &mdash; Query executed trades with fill prices, slippage, and strategy tags</li>
       <li><strong>Portfolio Snapshots</strong> &mdash; Daily AUM, sector allocation, and concentration metrics</li>
       <li><strong>Risk Analytics</strong> &mdash; VaR, CVaR, Sharpe, Sortino, max drawdown, and custom risk factors</li>
-      <li><strong>Signal Feed</strong> &mdash; Real-time buy/sell/hold signals with confidence scores</li>
+      <li><strong>Signal Feed</strong> &mdash; Real-time entry/exit signals with confidence scores</li>
       <li><strong>Compliance Export</strong> &mdash; Audit-ready trade logs with timestamps and counterparty data</li>
     </ul>
-    <h3>Authentication</h3>
-    <p>
-      All requests require a valid API key passed via the <code>Authorization: Bearer &lt;key&gt;</code> header.
-      Keys are scoped per service and can be rotated from your
-      <a href="#profile/apikeys">API Keys</a> dashboard.
-    </p>
+
+    <div class="api-grid2">
+      <div class="api-mini">
+        <div class="api-mini-k">Primary resources</div>
+        <div class="api-mini-v">KPIs &bull; Series &bull; Portfolio Assets</div>
+        <div class="api-mini-s">KPIs are the index. Series + assets are the drill-down.</div>
+      </div>
+      <div class="api-mini">
+        <div class="api-mini-k">Correlation</div>
+        <div class="api-mini-v"><code>X-Request-Id</code></div>
+        <div class="api-mini-s">Every response returns a request id for debugging across infra.</div>
+      </div>
+    </div>
   </section>
 </template>
 
+<!-- T3: Quickstart -->
 <template data-finance-override="docs-quickstart">
-  <section class="api-section" id="docs-quickstart">
-    <h2>Quickstart</h2>
+  <section class="api-section" id="docs-quickstart" data-api-section>
+    <h3>Quickstart</h3>
     <p>Get up and running in under 60 seconds:</p>
 
-    <h3>1. Get Your API Key</h3>
+    <h4>1. Get Your API Key</h4>
     <p>Navigate to <a href="#profile/apikeys">Profile &rarr; API Keys</a> and click <strong>Rotate key</strong>.</p>
 
-    <h3>2. Fetch Today's P&amp;L</h3>
-    <pre class="api-code"><code>curl -s https://api.haiphen.io/v1/metrics/kpi \
+    <h4>2. Fetch Today's P&amp;L</h4>
+    <pre class="api-code"><code data-lang="bash">curl -s https://api.haiphen.io/v1/metrics/kpis \
   -H "Authorization: Bearer YOUR_KEY" | jq .</code></pre>
 
-    <h3>3. Query Recent Trades</h3>
-    <pre class="api-code"><code>curl -s "https://api.haiphen.io/v1/metrics/trades?limit=10" \
-  -H "Authorization: Bearer YOUR_KEY" | jq '.trades[:3]'</code></pre>
+    <h4>3. Query Portfolio Holdings</h4>
+    <pre class="api-code"><code data-lang="bash">curl -s "https://api.haiphen.io/v1/metrics/portfolio-assets?limit=10" \
+  -H "Authorization: Bearer YOUR_KEY" | jq '.items[:3]'</code></pre>
 
-    <h3>4. Check Portfolio Risk</h3>
-    <pre class="api-code"><code>curl -s https://api.haiphen.io/v1/risk/portfolio \
-  -H "Authorization: Bearer YOUR_KEY" | jq '{var,sharpe,beta}'</code></pre>
+    <h4>4. Check Portfolio Risk</h4>
+    <pre class="api-code"><code data-lang="bash">curl -s -X POST https://risk.haiphen.io/v1/risk/assess \
+  -H "Authorization: Bearer YOUR_KEY" \
+  -H "Content-Type: application/json" \
+  --data '{"scenario":"Portfolio stress test","model":"monte_carlo"}' | jq '{risk_score,value_at_risk}'</code></pre>
 
     <p>
       See the <a href="#docs:docs-endpoints">Endpoints</a> reference for the full catalogue,
       or explore interactively in the <a href="#docs:docs-try">Try&nbsp;it</a> console.
+    </p>
+  </section>
+</template>
+
+<!-- T4: Trade Signals (was Trade Telemetry) -->
+<template data-finance-override="docs-trade-telemetry">
+  <section class="api-section" id="docs-trade-telemetry" data-api-section>
+    <h3>Trade Signals</h3>
+    <p>
+      Actionable trade signals delivered to your portfolio workflow. Haiphen processes raw market data,
+      evaluates entry/exit conditions, and delivers signals via webhooks and API &mdash;
+      so you can focus on execution.
+    </p>
+
+    <div class="api-callout">
+      <div class="api-callout-title">Signal Pipeline</div>
+      <ol class="api-ol">
+        <li><strong>Market Data</strong> &mdash; daily ingest of prices, volume, and options flow</li>
+        <li><strong>Signal Processing</strong> &mdash; materialized views compute momentum, mean-reversion, and volatility triggers</li>
+        <li><strong>Signal Generation</strong> &mdash; entry/exit rules fire when conditions are met</li>
+        <li><strong>Delivery</strong> &mdash; webhooks push signal events to your registered endpoints</li>
+      </ol>
+    </div>
+
+    <h4>Signal Webhook Events</h4>
+    <p class="api-muted">These events fire automatically when the pipeline detects actionable conditions.</p>
+
+    <div class="api-table-wrap">
+      <table class="api-table">
+        <thead>
+          <tr><th>Event</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>entry.signal</code></td><td>Entry conditions met &mdash; new position opportunity detected</td></tr>
+          <tr><td><code>exit.signal</code></td><td>Exit conditions met &mdash; close or reduce position</td></tr>
+          <tr><td><code>position.opened</code></td><td>Position successfully opened after entry signal</td></tr>
+          <tr><td><code>position.closed</code></td><td>Position fully closed after exit signal</td></tr>
+          <tr><td><code>hedge.triggered</code></td><td>Hedge condition activated for risk mitigation</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4>Sample Payload</h4>
+    <pre class="api-code"><code data-lang="json">{
+  "event": "entry.signal",
+  "timestamp": "2026-02-10T14:32:00Z",
+  "data": {
+    "symbol": "AAPL",
+    "direction": "long",
+    "confidence": 0.87,
+    "trigger": "mv_momentum_cross",
+    "price_at_signal": 198.45,
+    "stop_loss": 195.20,
+    "take_profit": 204.80,
+    "risk_score": 0.34
+  }
+}</code></pre>
+
+    <h4>Consuming Signals</h4>
+    <p class="api-muted">
+      Signal data flows into the standard metrics API. Use
+      <code><a href="#docs:docs-endpoints">/metrics/kpis</a></code> for current signal KPIs and
+      <code><a href="#docs:docs-endpoints">/metrics/series</a></code> for historical signal performance.
+    </p>
+
+    <div class="api-callout">
+      <div class="api-callout-title">Non-Advisory Disclaimer</div>
+      <p class="api-muted">
+        Haiphen provides trade signal data and notifications. This is not investment advice.
+        All trading decisions are made by the user. Past signal performance does not guarantee future results.
+      </p>
+    </div>
+  </section>
+</template>
+
+<!-- T5: Compliance Scanner (was Secure) -->
+<template data-finance-override="docs-secure">
+  <section class="api-section" id="docs-secure" data-api-section>
+    <h3>Compliance Scanner</h3>
+    <p>
+      Continuous compliance monitoring across regulatory frameworks relevant to trading operations.
+      Scan execution gateways, order management systems, and data infrastructure against
+      SOC 2, MiFID II, SEC 15c3-5, and PCI DSS requirements.
+    </p>
+    <p class="api-muted">Base URL: <code>https://secure.haiphen.io/v1</code></p>
+
+    <div class="api-endpoints">
+      <div class="api-endpoint">
+        <div class="api-endpoint-top">
+          <span class="api-method api-method--post">POST</span>
+          <code class="api-path">/secure/scan</code>
+        </div>
+        <div class="api-endpoint-desc">Run a compliance assessment against a specific framework.</div>
+        <div class="api-endpoint-meta">
+          <div><strong>Auth:</strong> Session JWT (cookie or bearer)</div>
+          <div><strong>Body:</strong> <code>{ "target": "execution-gateway", "framework": "soc2" }</code></div>
+          <div><strong>Returns:</strong> <code>{ scan_id, target, type, status, estimated_duration_seconds }</code></div>
+        </div>
+        <pre class="api-code"><code data-lang="bash">curl -sS -X POST "https://secure.haiphen.io/v1/secure/scan" \
+  -H "Authorization: Bearer $JWT" \
+  -H "Content-Type: application/json" \
+  --data '{"target":"execution-gateway","framework":"soc2"}' | jq .
+
+# CLI equivalent:
+haiphen secure scan --target "execution-gateway" --framework soc2</code></pre>
+      </div>
+
+      <div class="api-endpoint">
+        <div class="api-endpoint-top">
+          <span class="api-method">GET</span>
+          <code class="api-path">/secure/scan/:id</code>
+        </div>
+        <div class="api-endpoint-desc">Get assessment results including compliance findings, gaps, and remediation steps.</div>
+        <div class="api-endpoint-meta">
+          <div><strong>Auth:</strong> Session JWT</div>
+          <div><strong>Returns:</strong> <code>{ scan_id, findings[], summary }</code></div>
+        </div>
+      </div>
+
+      <div class="api-endpoint">
+        <div class="api-endpoint-top">
+          <span class="api-method">GET</span>
+          <code class="api-path">/secure/scans</code>
+        </div>
+        <div class="api-endpoint-desc">List all compliance assessments for the authenticated user.</div>
+        <pre class="api-code"><code data-lang="bash">haiphen secure scans --json</code></pre>
+      </div>
+
+      <div class="api-endpoint">
+        <div class="api-endpoint-top">
+          <span class="api-method">GET</span>
+          <code class="api-path">/secure/status</code>
+        </div>
+        <div class="api-endpoint-desc">Service status and supported compliance frameworks (public).</div>
+        <pre class="api-code"><code data-lang="bash">haiphen secure status</code></pre>
+      </div>
+    </div>
+
+    <h4>Supported Frameworks</h4>
+    <div class="api-table-wrap">
+      <table class="api-table">
+        <thead>
+          <tr><th>Framework</th><th>Scope</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>soc2</code></td><td>SOC 2 Type II &mdash; security, availability, processing integrity</td></tr>
+          <tr><td><code>mifid2</code></td><td>MiFID II &mdash; best execution, transaction reporting, record keeping</td></tr>
+          <tr><td><code>sec15c3</code></td><td>SEC 15c3-5 &mdash; market access risk controls, pre-trade checks</td></tr>
+          <tr><td><code>pcidss</code></td><td>PCI DSS &mdash; payment card data protection</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <details class="api-demo-block" open>
+      <summary>See demo</summary>
+      <img src="assets/demos/cli-secure.gif" alt="Compliance scanner demo" loading="lazy" decoding="async" />
+    </details>
+  </section>
+</template>
+
+<!-- T6: Market Data Analyzer (was Network Trace) -->
+<template data-finance-override="docs-network">
+  <section class="api-section" id="docs-network" data-api-section>
+    <h3>Market Data Analyzer</h3>
+    <p>
+      FIX session decoding, ITCH/OUCH order book reconstruction, and tick-to-trade latency measurement
+      for exchange feeds and dark pools. Monitor feed quality, detect gaps, and benchmark execution timing.
+    </p>
+    <p class="api-muted">Base URL: <code>https://network.haiphen.io/v1</code></p>
+
+    <div class="api-endpoints">
+      <div class="api-endpoint">
+        <div class="api-endpoint-top">
+          <span class="api-method api-method--post">POST</span>
+          <code class="api-path">/network/trace</code>
+        </div>
+        <div class="api-endpoint-desc">Start a market data capture on a feed endpoint with protocol filtering.</div>
+        <div class="api-endpoint-meta">
+          <div><strong>Auth:</strong> Session JWT</div>
+          <div><strong>Body:</strong> <code>{ "target": "nyse-itch-feed:8101", "protocol": "itch" }</code></div>
+          <div><strong>Returns:</strong> <code>{ trace_id, status, duration_seconds }</code></div>
+        </div>
+        <pre class="api-code"><code data-lang="bash">haiphen network trace --target "nyse-itch-feed:8101" --protocol itch</code></pre>
+      </div>
+
+      <div class="api-endpoint">
+        <div class="api-endpoint-top">
+          <span class="api-method">GET</span>
+          <code class="api-path">/network/trace/:id</code>
+        </div>
+        <div class="api-endpoint-desc">Get capture results: sessions, messages decoded, gaps detected, and latency metrics.</div>
+      </div>
+
+      <div class="api-endpoint">
+        <div class="api-endpoint-top">
+          <span class="api-method">GET</span>
+          <code class="api-path">/network/traces</code>
+        </div>
+        <div class="api-endpoint-desc">List recent market data captures.</div>
+        <pre class="api-code"><code data-lang="bash">haiphen network traces --json</code></pre>
+      </div>
+
+      <div class="api-endpoint">
+        <div class="api-endpoint-top">
+          <span class="api-method">GET</span>
+          <code class="api-path">/network/protocols</code>
+        </div>
+        <div class="api-endpoint-desc">List supported financial protocols and their ports (public).</div>
+        <pre class="api-code"><code data-lang="bash">haiphen network protocols --json</code></pre>
+      </div>
+    </div>
+
+    <h4>Supported Protocols</h4>
+    <div class="api-table-wrap">
+      <table class="api-table">
+        <thead>
+          <tr><th>Protocol</th><th>Use Case</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>fix42</code> / <code>fix44</code> / <code>fix50</code></td><td>FIX &mdash; order routing, execution reports, market data</td></tr>
+          <tr><td><code>itch</code></td><td>NASDAQ ITCH &mdash; full depth-of-book, trade messages</td></tr>
+          <tr><td><code>ouch</code></td><td>NASDAQ OUCH &mdash; order entry and execution</td></tr>
+          <tr><td><code>sbe</code></td><td>Simple Binary Encoding &mdash; low-latency exchange messaging</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <details class="api-demo-block" open>
+      <summary>See demo</summary>
+      <img src="assets/demos/cli-network.gif" alt="Market data analyzer demo" loading="lazy" decoding="async" />
+    </details>
+  </section>
+</template>
+
+<!-- T7: Entity Intelligence (was Knowledge Graph) -->
+<template data-finance-override="docs-graph">
+  <section class="api-section" id="docs-graph" data-api-section>
+    <h3>Entity Intelligence</h3>
+    <p>
+      Corporate structure mapping from SEC filings, beneficial ownership chains, board interlocks,
+      and subsidiary hierarchies. Build a queryable graph of entities and their relationships for
+      research, compliance, and risk assessment.
+    </p>
+    <p class="api-muted">Base URL: <code>https://graph.haiphen.io/v1</code></p>
+
+    <div class="api-endpoints">
+      <div class="api-endpoint">
+        <div class="api-endpoint-top">
+          <span class="api-method api-method--post">POST</span>
+          <code class="api-path">/graph/query</code>
+        </div>
+        <div class="api-endpoint-desc">Query the entity graph. Returns matching nodes and edges.</div>
+        <div class="api-endpoint-meta">
+          <div><strong>Auth:</strong> Session JWT</div>
+          <div><strong>Body:</strong> <code>{ "q": "AAPL ownership chain", "depth": 3 }</code></div>
+          <div><strong>Returns:</strong> <code>{ nodes[], edges[], total_nodes, total_edges }</code></div>
+        </div>
+        <pre class="api-code"><code data-lang="bash">haiphen graph query --q "AAPL ownership chain" --depth 3 --json</code></pre>
+      </div>
+
+      <div class="api-endpoint">
+        <div class="api-endpoint-top">
+          <span class="api-method api-method--post">POST</span>
+          <code class="api-path">/graph/entities</code>
+        </div>
+        <div class="api-endpoint-desc">Bulk ingest entities into the intelligence graph.</div>
+        <div class="api-endpoint-meta">
+          <div><strong>Body:</strong> <code>{ "entities": [{ "type": "company", "label": "Apple Inc.", ... }] }</code></div>
+          <div><strong>Returns:</strong> <code>{ ingested, created, updated }</code></div>
+        </div>
+      </div>
+
+      <div class="api-endpoint">
+        <div class="api-endpoint-top">
+          <span class="api-method">GET</span>
+          <code class="api-path">/graph/entities</code>
+        </div>
+        <div class="api-endpoint-desc">List entities. Filter with <code>?type=company</code> or <code>?type=fund</code>.</div>
+        <pre class="api-code"><code data-lang="bash">haiphen graph entities --json</code></pre>
+      </div>
+
+      <div class="api-endpoint">
+        <div class="api-endpoint-top">
+          <span class="api-method">GET</span>
+          <code class="api-path">/graph/schema</code>
+        </div>
+        <div class="api-endpoint-desc">Graph schema: entity types and relationship types (public).</div>
+        <pre class="api-code"><code data-lang="bash">haiphen graph schema --json</code></pre>
+      </div>
+    </div>
+
+    <h4>Entity &amp; Relationship Types</h4>
+    <div class="api-grid2">
+      <div class="api-mini">
+        <div class="api-mini-k">Entity types</div>
+        <div class="api-mini-v"><code>company</code>, <code>fund</code>, <code>person</code>, <code>subsidiary</code></div>
+      </div>
+      <div class="api-mini">
+        <div class="api-mini-k">Relationship types</div>
+        <div class="api-mini-v"><code>owns</code>, <code>board_member</code>, <code>subsidiary_of</code></div>
+      </div>
+    </div>
+
+    <details class="api-demo-block" open>
+      <summary>See demo</summary>
+      <img src="assets/demos/cli-graph.gif" alt="Entity intelligence query demo" loading="lazy" decoding="async" />
+    </details>
+  </section>
+</template>
+
+<!-- T8: Portfolio Risk Engine (was Risk Analysis) -->
+<template data-finance-override="docs-risk">
+  <section class="api-section" id="docs-risk" data-api-section>
+    <h3>Portfolio Risk Engine</h3>
+    <p>
+      Monte Carlo simulation, Value-at-Risk, CVaR, Sharpe ratio, Sortino ratio, and max drawdown
+      computation for portfolio stress testing and scenario analysis.
+    </p>
+    <p class="api-muted">Base URL: <code>https://risk.haiphen.io/v1</code></p>
+
+    <div class="api-endpoints">
+      <div class="api-endpoint">
+        <div class="api-endpoint-top">
+          <span class="api-method api-method--post">POST</span>
+          <code class="api-path">/risk/assess</code>
+        </div>
+        <div class="api-endpoint-desc">Run a portfolio risk assessment with a specified model and scenario.</div>
+        <div class="api-endpoint-meta">
+          <div><strong>Auth:</strong> Session JWT</div>
+          <div><strong>Body:</strong> <code>{ "scenario": "2008 Financial Crisis", "model": "monte_carlo" }</code></div>
+          <div><strong>Returns:</strong> <code>{ assess_id, results: { risk_score, value_at_risk, recommendations[] } }</code></div>
+        </div>
+        <pre class="api-code"><code data-lang="bash">curl -sS -X POST "https://risk.haiphen.io/v1/risk/assess" \
+  -H "Authorization: Bearer $JWT" \
+  -H "Content-Type: application/json" \
+  --data '{"scenario":"2008 Financial Crisis","model":"monte_carlo"}' | jq .
+
+# CLI equivalent:
+haiphen risk assess --scenario "2008 Financial Crisis" --model monte_carlo --json</code></pre>
+      </div>
+
+      <div class="api-endpoint">
+        <div class="api-endpoint-top">
+          <span class="api-method">GET</span>
+          <code class="api-path">/risk/assess/:id</code>
+        </div>
+        <div class="api-endpoint-desc">Retrieve a specific assessment result including VaR, CVaR, and drawdown metrics.</div>
+      </div>
+
+      <div class="api-endpoint">
+        <div class="api-endpoint-top">
+          <span class="api-method">GET</span>
+          <code class="api-path">/risk/models</code>
+        </div>
+        <div class="api-endpoint-desc">List available risk models (public).</div>
+        <pre class="api-code"><code data-lang="bash">haiphen risk models --json</code></pre>
+      </div>
+
+      <div class="api-endpoint">
+        <div class="api-endpoint-top">
+          <span class="api-method">GET</span>
+          <code class="api-path">/risk/assessments</code>
+        </div>
+        <div class="api-endpoint-desc">List past assessments.</div>
+        <pre class="api-code"><code data-lang="bash">haiphen risk assessments --json</code></pre>
+      </div>
+    </div>
+
+    <h4>Available Models</h4>
+    <div class="api-table-wrap">
+      <table class="api-table">
+        <thead>
+          <tr><th>Model</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>monte_carlo</code></td><td>10,000-path simulation &mdash; VaR, CVaR, expected shortfall</td></tr>
+          <tr><td><code>parametric_var</code></td><td>Variance-covariance method &mdash; fast, assumes normal returns</td></tr>
+          <tr><td><code>historical_var</code></td><td>Uses actual return distribution &mdash; no distributional assumptions</td></tr>
+          <tr><td><code>stress_test</code></td><td>Named scenarios (2008 Crisis, COVID, rate shock) applied to current portfolio</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <details class="api-demo-block" open>
+      <summary>See demo</summary>
+      <img src="assets/demos/cli-risk.gif" alt="Portfolio risk assessment demo" loading="lazy" decoding="async" />
+    </details>
+  </section>
+</template>
+
+<!-- T9: Trade Chain Analysis (was Causal Chain) -->
+<template data-finance-override="docs-causal">
+  <section class="api-section" id="docs-causal" data-api-section>
+    <h3>Trade Chain Analysis</h3>
+    <p>
+      Post-trade causal inference engine. Submit a sequence of trade events and receive
+      propagation paths, root cause attribution, and counterfactual P&amp;L analysis &mdash;
+      answering "what caused this loss?" and "what if we hadn't entered that position?"
+    </p>
+    <p class="api-muted">Base URL: <code>https://causal.haiphen.io/v1</code></p>
+
+    <div class="api-endpoints">
+      <div class="api-endpoint">
+        <div class="api-endpoint-top">
+          <span class="api-method api-method--post">POST</span>
+          <code class="api-path">/causal/analyze</code>
+        </div>
+        <div class="api-endpoint-desc">Submit trade events for causal analysis. Returns root causes, propagation chain, and counterfactual P&amp;L.</div>
+        <div class="api-endpoint-meta">
+          <div><strong>Auth:</strong> Session JWT</div>
+          <div><strong>Body:</strong> <code>{ "events": [{"type":"fill","symbol":"AAPL","ts":"..."}], "window_hours": 4 }</code></div>
+          <div><strong>Returns:</strong> <code>{ analysis_id, causal_graph, counterfactuals[] }</code></div>
+        </div>
+        <pre class="api-code"><code data-lang="bash">haiphen causal analyze --events '[{"type":"fill","symbol":"AAPL","ts":"2026-02-10T14:32:00Z","pnl":-1240}]' --window 4 --json</code></pre>
+      </div>
+
+      <div class="api-endpoint">
+        <div class="api-endpoint-top">
+          <span class="api-method">GET</span>
+          <code class="api-path">/causal/analyze/:id</code>
+        </div>
+        <div class="api-endpoint-desc">Retrieve a specific trade chain analysis result.</div>
+      </div>
+
+      <div class="api-endpoint">
+        <div class="api-endpoint-top">
+          <span class="api-method">GET</span>
+          <code class="api-path">/causal/analyses</code>
+        </div>
+        <div class="api-endpoint-desc">List past trade chain analyses.</div>
+        <pre class="api-code"><code data-lang="bash">haiphen causal analyses --json</code></pre>
+      </div>
+    </div>
+
+    <h4>Analysis Output</h4>
+    <p class="api-muted">
+      Each analysis returns a directed acyclic graph of trade events with causal edges,
+      plus counterfactual scenarios showing alternative P&amp;L outcomes if specific
+      trades had been skipped or modified.
+    </p>
+
+    <details class="api-demo-block" open>
+      <summary>See demo</summary>
+      <img src="assets/demos/cli-causal.gif" alt="Trade chain analysis demo" loading="lazy" decoding="async" />
+    </details>
+  </section>
+</template>
+
+<!-- T10: Counterparty Intel (was Supply Chain Intel) -->
+<template data-finance-override="docs-supply">
+  <section class="api-section" id="docs-supply" data-api-section>
+    <h3>Counterparty Intel</h3>
+    <p>
+      Prime broker, clearing house, and custodian risk scoring. Monitor counterparty exposure,
+      detect concentration risk, and receive alerts on credit downgrades, settlement delays,
+      and regulatory actions.
+    </p>
+    <p class="api-muted">Base URL: <code>https://supply.haiphen.io/v1</code></p>
+
+    <div class="api-endpoints">
+      <div class="api-endpoint">
+        <div class="api-endpoint-top">
+          <span class="api-method api-method--post">POST</span>
+          <code class="api-path">/supply/assess</code>
+        </div>
+        <div class="api-endpoint-desc">Assess a counterparty's risk profile including credit, operational, and concentration metrics.</div>
+        <div class="api-endpoint-meta">
+          <div><strong>Auth:</strong> Session JWT</div>
+          <div><strong>Body:</strong> <code>{ "supplier": "Goldman Sachs Prime Services" }</code></div>
+          <div><strong>Returns:</strong> <code>{ assess_id, risk_profile, tiers[], alerts[], alternatives[] }</code></div>
+        </div>
+        <pre class="api-code"><code data-lang="bash">haiphen supply assess --supplier "Goldman Sachs Prime Services" --json</code></pre>
+      </div>
+
+      <div class="api-endpoint">
+        <div class="api-endpoint-top">
+          <span class="api-method">GET</span>
+          <code class="api-path">/supply/assess/:id</code>
+        </div>
+        <div class="api-endpoint-desc">Retrieve a specific counterparty assessment.</div>
+      </div>
+
+      <div class="api-endpoint">
+        <div class="api-endpoint-top">
+          <span class="api-method">GET</span>
+          <code class="api-path">/supply/suppliers</code>
+        </div>
+        <div class="api-endpoint-desc">List tracked counterparties with risk scores and exposure levels.</div>
+        <pre class="api-code"><code data-lang="bash">haiphen supply suppliers --json</code></pre>
+      </div>
+
+      <div class="api-endpoint">
+        <div class="api-endpoint-top">
+          <span class="api-method">GET</span>
+          <code class="api-path">/supply/alerts</code>
+        </div>
+        <div class="api-endpoint-desc">List active counterparty alerts (credit downgrades, concentration breaches, settlement delays).</div>
+        <pre class="api-code"><code data-lang="bash">haiphen supply alerts --json</code></pre>
+      </div>
+    </div>
+
+    <h4>Alert Types</h4>
+    <div class="api-table-wrap">
+      <table class="api-table">
+        <thead>
+          <tr><th>Alert</th><th>Trigger</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>credit_downgrade</code></td><td>Rating agency downgrades counterparty credit</td></tr>
+          <tr><td><code>concentration_breach</code></td><td>Exposure to single counterparty exceeds threshold</td></tr>
+          <tr><td><code>settlement_delay</code></td><td>Settlement failures or T+ delays detected</td></tr>
+          <tr><td><code>regulatory_action</code></td><td>Enforcement action or sanctions against counterparty</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <details class="api-demo-block" open>
+      <summary>See demo</summary>
+      <img src="assets/demos/cli-supply.gif" alt="Counterparty assessment demo" loading="lazy" decoding="async" />
+    </details>
+  </section>
+</template>
+
+<!-- T11: Vulnerability Intelligence (was Prospect Engine) -->
+<template data-finance-override="docs-prospect">
+  <section class="api-section" id="docs-prospect" data-api-section>
+    <h3>Vulnerability Intelligence</h3>
+    <p>
+      Automated vulnerability lead discovery and investigation pipeline for fintech infrastructure.
+      Crawls NVD, OSV, GitHub Advisory, and Shodan for leads, then runs a 6-service investigation
+      with rule-based matching and outreach delivery.
+    </p>
+    <p class="api-muted">Base URL: <code>https://api.haiphen.io/v1</code></p>
+
+    <div class="api-callout">
+      <div class="api-callout-title">Investigation Pipeline</div>
+      <ol class="api-ol">
+        <li><strong>Compliance Scanner</strong> &mdash; regulatory framework assessment</li>
+        <li><strong>Market Data Analyzer</strong> &mdash; feed protocol vulnerability check</li>
+        <li><strong>Trade Chain Analysis</strong> &mdash; causal impact of exploit on trade flow</li>
+        <li><strong>Portfolio Risk Engine</strong> &mdash; risk quantification via Monte Carlo</li>
+        <li><strong>Entity Intelligence</strong> &mdash; affected corporate entities and subsidiaries</li>
+        <li><strong>Counterparty Intel</strong> &mdash; counterparty exposure to vulnerability</li>
+      </ol>
+    </div>
+
+    <div class="api-endpoints">
+      <div class="api-endpoint">
+        <div class="api-endpoint-top">
+          <span class="api-method">GET</span>
+          <code class="api-path">/prospect/leads</code>
+        </div>
+        <div class="api-endpoint-desc">List vulnerability leads with severity, source, and affected entity details.</div>
+        <div class="api-endpoint-meta">
+          <div><strong>Auth:</strong> Session JWT (cookie or bearer)</div>
+          <div><strong>Query (optional):</strong> <code>limit</code>, <code>offset</code>, <code>severity</code>, <code>source</code></div>
+          <div><strong>Returns:</strong> <code>{ leads[], total }</code></div>
+        </div>
+        <pre class="api-code"><code data-lang="bash">haiphen prospect list --severity critical --limit 10</code></pre>
+      </div>
+
+      <div class="api-endpoint">
+        <div class="api-endpoint-top">
+          <span class="api-method api-method--post">POST</span>
+          <code class="api-path">/prospect/investigate</code>
+        </div>
+        <div class="api-endpoint-desc">Run the 6-service sequential investigation pipeline with upstream context forwarding.</div>
+        <div class="api-endpoint-meta">
+          <div><strong>Auth:</strong> Session JWT</div>
+          <div><strong>Body:</strong> <code>{ "lead_id": "&lt;id&gt;" }</code></div>
+          <div><strong>Returns:</strong> <code>{ investigation_id, steps[], aggregate_score, requirements[] }</code></div>
+        </div>
+        <pre class="api-code"><code data-lang="bash">haiphen prospect investigate --lead &lt;id&gt;</code></pre>
+      </div>
+
+      <div class="api-endpoint">
+        <div class="api-endpoint-top">
+          <span class="api-method">GET</span>
+          <code class="api-path">/prospect/investigations/:id</code>
+        </div>
+        <div class="api-endpoint-desc">View investigation details including step scores, aggregate score, and requirements.</div>
+        <div class="api-endpoint-meta">
+          <div><strong>Auth:</strong> Session JWT</div>
+          <div><strong>Returns:</strong> <code>{ investigation, steps[], requirements[] }</code></div>
+        </div>
+        <pre class="api-code"><code data-lang="bash">haiphen prospect investigation --id &lt;id&gt;</code></pre>
+      </div>
+
+      <div class="api-endpoint">
+        <div class="api-endpoint-top">
+          <span class="api-method api-method--post">POST</span>
+          <code class="api-path">/prospect/solve</code>
+        </div>
+        <div class="api-endpoint-desc">Auto-resolve investigation requirements: data gaps, monitors, and integration needs.</div>
+        <div class="api-endpoint-meta">
+          <div><strong>Auth:</strong> Session JWT</div>
+          <div><strong>Body:</strong> <code>{ "investigation_id": "&lt;id&gt;" }</code></div>
+          <div><strong>Returns:</strong> <code>{ resolved[], unresolved[] }</code></div>
+        </div>
+        <pre class="api-code"><code data-lang="bash">haiphen prospect solve --investigation &lt;id&gt;</code></pre>
+      </div>
+
+      <div class="api-endpoint">
+        <div class="api-endpoint-top">
+          <span class="api-method api-method--post">POST</span>
+          <code class="api-path">/prospect/re-investigate</code>
+        </div>
+        <div class="api-endpoint-desc">Re-run the investigation pipeline after solving requirements. Compares risk scores to confirm reduction.</div>
+        <div class="api-endpoint-meta">
+          <div><strong>Auth:</strong> Session JWT</div>
+          <div><strong>Body:</strong> <code>{ "investigation_id": "&lt;id&gt;" }</code></div>
+          <div><strong>Returns:</strong> <code>{ investigation_id, risk_score_before, risk_score_after, risk_reduction }</code></div>
+        </div>
+        <pre class="api-code"><code data-lang="bash">haiphen prospect re-investigate --investigation &lt;id&gt;</code></pre>
+      </div>
+
+      <div class="api-endpoint">
+        <div class="api-endpoint-top">
+          <span class="api-method">GET</span>
+          <code class="api-path">/prospect/rules</code>
+        </div>
+        <div class="api-endpoint-desc">List use-case matching rules that map lead attributes to service configurations.</div>
+        <div class="api-endpoint-meta">
+          <div><strong>Auth:</strong> Session JWT</div>
+          <div><strong>Returns:</strong> <code>{ rules[] }</code></div>
+        </div>
+        <pre class="api-code"><code data-lang="bash">haiphen prospect rules</code></pre>
+      </div>
+    </div>
+
+    <h4>Use Cases</h4>
+    <div class="api-table-wrap">
+      <table class="api-table">
+        <thead>
+          <tr><th>Category</th><th>Example</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Trade execution</td><td>Vulnerabilities in order routing, matching engines, FIX gateways</td></tr>
+          <tr><td>Settlement &amp; clearing</td><td>Exploits affecting T+1 settlement, CCP connectivity</td></tr>
+          <tr><td>Market data feeds</td><td>ITCH/OUCH protocol flaws, exchange feed integrity</td></tr>
+          <tr><td>Payment &amp; banking</td><td>ACH, wire transfer, payment gateway vulnerabilities</td></tr>
+          <tr><td>Regulatory compliance</td><td>CVEs impacting SOC 2, MiFID II, SEC reporting systems</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4>CLI Demos</h4>
+
+    <details class="api-demo-block" open>
+      <summary>Prospect List &mdash; browse vulnerability leads</summary>
+      <img src="assets/demos/cli-prospect-list.gif" alt="Prospect list demo" loading="lazy" decoding="async" />
+    </details>
+
+    <details class="api-demo-block">
+      <summary>Investigate &mdash; 6-service pipeline</summary>
+      <img src="assets/demos/cli-prospect-investigate.gif" alt="Prospect investigate demo" loading="lazy" decoding="async" />
+    </details>
+
+    <details class="api-demo-block">
+      <summary>Auto-Resolve &mdash; solve requirements</summary>
+      <img src="assets/demos/cli-prospect-solve.gif" alt="Prospect auto-resolve demo" loading="lazy" decoding="async" />
+    </details>
+
+    <details class="api-demo-block">
+      <summary>Re-investigate &mdash; confirm risk reduction</summary>
+      <img src="assets/demos/cli-prospect-reinvestigate.gif" alt="Prospect re-investigate demo" loading="lazy" decoding="async" />
+    </details>
+  </section>
+</template>
+
+<!-- T12: CLI Commands (finance labels) -->
+<template data-finance-override="docs-cli-commands">
+  <section class="api-section" id="docs-cli-commands" data-api-section>
+    <h3>CLI Command Center</h3>
+    <p>
+      The Haiphen CLI serves as a unified command center for all portfolio analytics services.
+      It also runs a local gateway that proxies authenticated requests to each service.
+    </p>
+
+    <h4>Global commands</h4>
+    <div class="api-table" role="table" aria-label="CLI global commands">
+      <div class="api-row api-head" role="row">
+        <div role="columnheader">Command</div>
+        <div role="columnheader">Description</div>
+      </div>
+      <div class="api-row" role="row"><div role="cell"><code>haiphen login</code></div><div role="cell">Authenticate via GitHub OAuth</div></div>
+      <div class="api-row" role="row"><div role="cell"><code>haiphen logout</code></div><div role="cell">Clear local session</div></div>
+      <div class="api-row" role="row"><div role="cell"><code>haiphen status</code></div><div role="cell">Show auth + entitlement status</div></div>
+      <div class="api-row" role="row"><div role="cell"><code>haiphen serve</code></div><div role="cell">Run local gateway on :8787</div></div>
+      <div class="api-row" role="row"><div role="cell"><code>haiphen services</code></div><div role="cell">Aggregate health check across all services</div></div>
+      <div class="api-row" role="row"><div role="cell"><code>haiphen onboarding</code></div><div role="cell">Show onboarding links and resources</div></div>
+    </div>
+
+    <h4>Service commands</h4>
+    <div class="api-table" role="table" aria-label="CLI service commands">
+      <div class="api-row api-head" role="row">
+        <div role="columnheader">Command</div>
+        <div role="columnheader">Description</div>
+      </div>
+      <div class="api-row" role="row"><div role="cell"><code>haiphen metrics kpis</code></div><div role="cell">List daily portfolio KPIs (P&amp;L, Sharpe, win rate)</div></div>
+      <div class="api-row" role="row"><div role="cell"><code>haiphen metrics series --kpi &lt;name&gt;</code></div><div role="cell">Get time series for a portfolio KPI</div></div>
+      <div class="api-row" role="row"><div role="cell"><code>haiphen metrics assets</code></div><div role="cell">List portfolio holdings and allocations</div></div>
+      <div class="api-row" role="row"><div role="cell"><code>haiphen secure scan --target &lt;t&gt;</code></div><div role="cell">Run a compliance assessment</div></div>
+      <div class="api-row" role="row"><div role="cell"><code>haiphen network trace --target &lt;t&gt;</code></div><div role="cell">Capture and decode market data feed</div></div>
+      <div class="api-row" role="row"><div role="cell"><code>haiphen graph query --q &lt;query&gt;</code></div><div role="cell">Query the entity intelligence graph</div></div>
+      <div class="api-row" role="row"><div role="cell"><code>haiphen risk assess --scenario &lt;s&gt;</code></div><div role="cell">Run a portfolio risk assessment</div></div>
+      <div class="api-row" role="row"><div role="cell"><code>haiphen causal analyze --events &lt;json&gt;</code></div><div role="cell">Analyze trade chain causality</div></div>
+      <div class="api-row" role="row"><div role="cell"><code>haiphen supply assess --supplier &lt;name&gt;</code></div><div role="cell">Assess counterparty risk</div></div>
+      <div class="api-row" role="row"><div role="cell"><code>haiphen prospect list</code></div><div role="cell">List fintech vulnerability leads</div></div>
+      <div class="api-row" role="row"><div role="cell"><code>haiphen prospect investigate --lead &lt;id&gt;</code></div><div role="cell">Run 6-service investigation pipeline</div></div>
+      <div class="api-row" role="row"><div role="cell"><code>haiphen prospect solve --investigation &lt;id&gt;</code></div><div role="cell">Auto-resolve investigation requirements</div></div>
+      <div class="api-row" role="row"><div role="cell"><code>haiphen prospect re-investigate --investigation &lt;id&gt;</code></div><div role="cell">Confirm risk reduction</div></div>
+    </div>
+
+    <h4>Local gateway proxy</h4>
+    <p class="api-muted">
+      When <code>haiphen serve</code> is running, the gateway proxies requests to all services via path prefix:
+    </p>
+    <pre class="api-code"><code data-lang="bash"># All service proxies on localhost:8787
+curl http://localhost:8787/v1/metrics/kpis          # &rarr; api.haiphen.io
+curl http://localhost:8787/secure/v1/secure/scans   # &rarr; secure.haiphen.io
+curl http://localhost:8787/network/v1/network/traces # &rarr; network.haiphen.io
+curl http://localhost:8787/graph/v1/graph/entities   # &rarr; graph.haiphen.io
+curl http://localhost:8787/risk/v1/risk/models       # &rarr; risk.haiphen.io
+curl http://localhost:8787/causal/v1/causal/analyses # &rarr; causal.haiphen.io
+curl http://localhost:8787/supply/v1/supply/alerts   # &rarr; supply.haiphen.io</code></pre>
+
+    <div class="api-callout">
+      <div class="api-callout-title">Tip</div>
+      <p class="api-muted">
+        All service commands accept a <code>--json</code> flag for machine-readable output.
+        Use <code>--help</code> on any command for full flag documentation.
+      </p>
+    </div>
+
+    <details class="api-demo-block" open>
+      <summary>See full workflow demo</summary>
+      <img src="assets/demos/cli-workflow.gif" alt="Haiphen CLI full workflow demo" loading="lazy" decoding="async" />
+    </details>
+  </section>
+</template>
+
+<!-- T13: Data Lineage (was Lineage) -->
+<template data-finance-override="docs-lineage">
+  <section class="api-section" id="docs-lineage" data-api-section>
+    <h3>Data Lineage</h3>
+    <p>
+      This documents the chain-of-custody from raw market data through portfolio analytics to delivered signals.
+      Structured so you can audit provenance and expand without breaking clients.
+    </p>
+
+    <div class="api-callout">
+      <div class="api-callout-title">Pipeline lineage</div>
+      <ol class="api-ol">
+        <li><strong>Ingest</strong>: Market data (prices, volume, options flow) and portfolio positions ingested daily</li>
+        <li><strong>Process</strong>: Materialized views compute derived metrics (momentum, volatility, Greeks)</li>
+        <li><strong>Signal</strong>: Trigger engine evaluates entry/exit rules against processed data</li>
+        <li><strong>Deliver</strong>: Signal events pushed via webhooks to registered endpoints</li>
+        <li><strong>Report</strong>: KPIs, P&amp;L, risk scores, and portfolio analytics served via API</li>
+      </ol>
+    </div>
+
+    <p class="api-muted">
+      Over time, include identifiers like <code>trace_id</code>, <code>pair_id</code>, <code>client_order_id</code>
+      so power users can correlate trades from signal inception through execution and settlement.
     </p>
   </section>
 </template>
