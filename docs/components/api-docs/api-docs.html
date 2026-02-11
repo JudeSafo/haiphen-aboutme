@@ -34,11 +34,6 @@
         <div class="api-card-s">Per-user keys. Rotate anytime. Least-privilege scopes.</div>
       </div>
 
-      <div class="api-card">
-        <div class="api-card-k">Admin ingest</div>
-        <div class="api-card-v"><code>X-Admin-Token: &lt;ADMIN_TOKEN&gt;</code></div>
-        <div class="api-card-s">Privileged upsert for daily metrics hydration.</div>
-      </div>
     </div>
   </header>
 
@@ -153,8 +148,7 @@
           <p>Set your environment variables:</p>
 
           <pre class="api-code"><code data-lang="bash">export API_BASE="https://api.haiphen.io"
-export API_KEY="..."        # per-user bearer token
-export ADMIN_TOKEN="..."    # admin-only token</code></pre>
+export API_KEY="..."        # per-user bearer token</code></pre>
 
           <p>Optional helpers (mirrors your shell):</p>
 
@@ -177,13 +171,7 @@ api_get() {
   curl -sS -X GET "$API_BASE$path" "$@"
 }</code></pre>
 
-          <p>Hydrate latest metrics (admin):</p>
-          <pre class="api-code"><code data-lang="bash">api_post "/admin/metrics/upsert" \
-  -H "Content-Type: application/json" \
-  -H "X-Admin-Token: $ADMIN_TOKEN" \
-  --data '{"url":"https://haiphen.io/assets/trades/trades.json"}' | jq .</code></pre>
-
-          <p>Fetch KPI index (user):</p>
+          <p>Fetch KPI index:</p>
           <pre class="api-code"><code data-lang="bash">api_get "/metrics/kpis" \
   -H "Authorization: Bearer $API_KEY" | jq .</code></pre>
         </section>
@@ -232,17 +220,10 @@ api_get() {
           <pre class="api-code"><code data-lang="bash">curl -sS "https://api.haiphen.io/v1/metrics/kpis" \
   -H "Authorization: Bearer $API_KEY"</code></pre>
 
-          <h4>Admin token (hydration)</h4>
-          <pre class="api-code"><code data-lang="bash">curl -sS -X POST "https://api.haiphen.io/v1/admin/metrics/upsert" \
-  -H "Content-Type: application/json" \
-  -H "X-Admin-Token: $ADMIN_TOKEN" \
-  --data '{"url":"https://haiphen.io/assets/trades/trades.json"}'</code></pre>
-
           <div class="api-callout">
             <div class="api-callout-title">Key hygiene</div>
             <ul class="api-ul">
-              <li>Never ship admin tokens to browsers.</li>
-              <li>Rotate user keys without downtime: issue new → deploy → revoke old.</li>
+              <li>Rotate user keys without downtime: issue new &rarr; deploy &rarr; revoke old.</li>
               <li>Prefer plan-tier scopes server-side (even if hidden behind a single key today).</li>
             </ul>
           </div>
@@ -252,40 +233,95 @@ api_get() {
         <section class="api-section" id="docs-rate-limits" data-api-section>
           <h3>Rate limits</h3>
           <p>
-            All API endpoints enforce plan-based rate limits. Exceeding your limit returns HTTP 429.
+            All API endpoints enforce plan-based rate limits via a sliding-window counter (Durable Object).
+            Exceeding your per-minute rate or daily quota returns HTTP <code>429</code>.
           </p>
 
-          <div class="api-table" role="table" aria-label="Rate limits">
+          <div class="api-callout">
+            <div class="api-callout-title">Capacity planning</div>
+            <p class="api-muted">
+              Limits are derived from the platform&rsquo;s infrastructure budget of
+              <strong>10&thinsp;M worker requests/month</strong> shared across a target cohort of
+              <strong>50 users</strong>. That gives each user a fair-share budget of
+              <strong>200&thinsp;K requests/month</strong> (~9&thinsp;K/trading day, ~19&thinsp;req/min sustained
+              over 8 active hours &times; 22 trading days). Free-tier limits keep aggregate usage under 60%
+              of capacity; Pro-tier represents a full fair share. When total platform usage exceeds 80%,
+              overflow traffic is routed to GCP failover automatically.
+            </p>
+          </div>
+
+          <h4>Per-minute rate</h4>
+          <div class="api-table" role="table" aria-label="Per-minute rate limits">
             <div class="api-row api-head" role="row">
               <div role="columnheader">Plan</div>
-              <div role="columnheader">Requests</div>
-              <div role="columnheader">Window</div>
+              <div role="columnheader">Requests/min</div>
               <div role="columnheader">Burst</div>
             </div>
             <div class="api-row" role="row">
               <div role="cell"><strong>Free</strong></div>
-              <div role="cell">60</div>
-              <div role="cell">minute</div>
-              <div role="cell">10</div>
+              <div role="cell">12</div>
+              <div role="cell">8</div>
             </div>
             <div class="api-row" role="row">
               <div role="cell"><strong>Pro</strong></div>
-              <div role="cell">600</div>
-              <div role="cell">minute</div>
+              <div role="cell">30</div>
+              <div role="cell">20</div>
+            </div>
+            <div class="api-row" role="row">
+              <div role="cell"><strong>Enterprise</strong></div>
+              <div role="cell">120</div>
               <div role="cell">60</div>
+            </div>
+          </div>
+
+          <h4>Daily quota</h4>
+          <div class="api-table" role="table" aria-label="Daily quotas">
+            <div class="api-row api-head" role="row">
+              <div role="columnheader">Plan</div>
+              <div role="columnheader">Requests/day</div>
+              <div role="columnheader">Monthly budget</div>
+            </div>
+            <div class="api-row" role="row">
+              <div role="cell"><strong>Free</strong></div>
+              <div role="cell">1&thinsp;000</div>
+              <div role="cell">30&thinsp;000</div>
+            </div>
+            <div class="api-row" role="row">
+              <div role="cell"><strong>Pro</strong></div>
+              <div role="cell">10&thinsp;000</div>
+              <div role="cell">200&thinsp;000</div>
             </div>
             <div class="api-row" role="row">
               <div role="cell"><strong>Enterprise</strong></div>
               <div role="cell">Custom</div>
-              <div role="cell">—</div>
-              <div role="cell">—</div>
+              <div role="cell">Custom</div>
             </div>
           </div>
 
+          <h4>Response headers</h4>
           <p class="api-muted">
-            Return <code>429</code> with <code>Retry-After</code>. Include:
-            <code>X-RateLimit-Limit</code>, <code>X-RateLimit-Remaining</code>, <code>X-RateLimit-Reset</code>.
+            Every response includes rate-limit headers.
+            A <code>429</code> response also includes <code>Retry-After</code> (seconds).
           </p>
+          <pre class="api-code"><code data-lang="text">X-RateLimit-Limit: 30
+X-RateLimit-Remaining: 22
+X-RateLimit-Reset: 1707580800
+X-DailyQuota-Limit: 10000
+X-DailyQuota-Remaining: 8743</code></pre>
+
+          <div class="api-callout">
+            <div class="api-callout-title">Why these numbers?</div>
+            <p class="api-muted">
+              <strong>Free 12&thinsp;req/min</strong> &mdash; 50 free users at max rate during trading hours
+              (12 &times; 60 &times; 8h &times; 22d &times; 50) = 6.3&thinsp;M/month, under the 60% warning
+              threshold (6&thinsp;M of 10&thinsp;M).<br>
+              <strong>Pro 30&thinsp;req/min</strong> &mdash; allows 3&times; burst above the sustained fair-share
+              rate of ~19/min. Daily quota of 10&thinsp;K acts as the real monthly cap
+              (10&thinsp;K &times; 22d &asymp; 200&thinsp;K/month = full fair share).<br>
+              <strong>Enterprise 120&thinsp;req/min</strong> &mdash; dedicated capacity, custom daily quota,
+              billed per overage at $0.30/M requests + $0.15/M Durable Object calls.
+            </p>
+          </div>
         </section>
 
         <!-- Data model -->
@@ -419,27 +455,7 @@ curl -sS "https://api.haiphen.io/v1/onboarding/resources" \
   -H "Authorization: Bearer $HAIPHEN_JWT" | jq .</code></pre>
             </div>
 
-            <!-- Admin upsert -->
-            <div class="api-endpoint">
-              <div class="api-endpoint-top">
-                <span class="api-method">POST</span>
-                <code class="api-path" data-copy="/admin/metrics/upsert">/admin/metrics/upsert</code>
-                <button class="api-copy" type="button" data-copy-btn="/admin/metrics/upsert">Copy</button>
-              </div>
-              <div class="api-endpoint-desc">Admin hydration: ingest/update metrics for a day from a JSON URL.</div>
-              <div class="api-endpoint-meta">
-                <div><strong>Auth:</strong> <code>X-Admin-Token</code></div>
-                <div><strong>Body:</strong> <code>{"url":"https://haiphen.io/assets/trades/trades.json"}</code></div>
-                <div><strong>Returns:</strong> <code>{ ok, date, updated_at }</code></div>
-              </div>
-
-              <pre class="api-code"><code data-lang="bash">curl -sS -X POST "https://api.haiphen.io/v1/admin/metrics/upsert" \
-  -H "Content-Type: application/json" \
-  -H "X-Admin-Token: $ADMIN_TOKEN" \
-  --data '{"url":"https://haiphen.io/assets/trades/trades.json"}' | jq .</code></pre>
-            </div>
-
-            <!-- Health (recommended even if already present) -->
+            <!-- Health -->
             <div class="api-endpoint">
               <div class="api-endpoint-top">
                 <span class="api-method">GET</span>
@@ -1123,7 +1139,7 @@ curl http://localhost:8787/supply/v1/supply/alerts   # &rarr; supply.haiphen.io<
               <div class="api-changelog-body">
                 <div class="api-changelog-title">Hydrated metrics + KPI index</div>
                 <div class="api-muted">
-                  Admin upsert (<code>/admin/metrics/upsert</code>) + user reads (<code>/metrics/kpis</code>,
+                  User reads (<code>/metrics/kpis</code>,
                   <code>/metrics/series</code>, <code>/metrics/portfolio-assets</code>).
                 </div>
               </div>
