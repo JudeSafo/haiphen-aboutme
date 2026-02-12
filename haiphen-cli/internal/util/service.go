@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-var serviceClient = &http.Client{Timeout: 30 * time.Second}
+var serviceClient = &http.Client{Timeout: 90 * time.Second}
 
 // ServiceGet performs an authenticated GET request to a service endpoint.
 func ServiceGet(ctx context.Context, origin, path, token string) ([]byte, error) {

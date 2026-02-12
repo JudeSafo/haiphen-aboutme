@@ -2107,7 +2107,7 @@ async function route(req: Request, env: Env): Promise<Response> {
         if (!origin || !env.INTERNAL_TOKEN) throw new Error("Service not configured");
 
         const ac = new AbortController();
-        const timer = setTimeout(() => ac.abort(), 10000);
+        const timer = setTimeout(() => ac.abort(), 3000);
         const svcRes = await fetch(`${origin}/v1/${svc}/prospect-analyze`, {
           method: "POST",
           signal: ac.signal,
