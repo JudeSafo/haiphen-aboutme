@@ -2,13 +2,14 @@ import { buildRss } from "./rss";
 import { hmacSha256Hex, json, safeEqual, sha256Hex, uuid, importMasterKey, encryptCredential, decryptCredential } from "./crypto";
 import { RateLimiterDO, RateLimitPlan } from "./rate_limit_do";
 import { QuotaDO } from "./quota_do";
+import { SignalFeedDO } from "./signal_feed_do";
 import { normalizeTradesJson, upsertMetricsDaily } from "./ingest";
 import { requireUserFromAuthCookie, verifyUserFromJwt } from "./auth";
 import { getExtremes, getKpis, getPortfolioAssets, getSeries } from "./metrics_queries";
 import { withCors, handleOptions as corsOptions } from "./cors";
 
 // Export DO classes for Wrangler
-export { RateLimiterDO, QuotaDO };
+export { RateLimiterDO, QuotaDO, SignalFeedDO };
 
 type TradesJson = {
   date: string;
@@ -34,6 +35,7 @@ type Env = {
   CACHE_KV: KVNamespace;
   RATE_LIMITER: DurableObjectNamespace;
   QUOTA_DO: DurableObjectNamespace;
+  SIGNAL_FEED: DurableObjectNamespace;
 
   // Shared with haiphen-auth so we can verify the same cookie JWT for key issuance.
   JWT_SECRET: string;
@@ -790,6 +792,14 @@ async function route(req: Request, env: Env): Promise<Response> {
       env.CACHE_KV.delete("metrics:latest").catch(() => {}),
     ]);
 
+    // Broadcast to signal feed WebSocket subscribers
+    const feedId = env.SIGNAL_FEED.idFromName("global");
+    const feed = env.SIGNAL_FEED.get(feedId);
+    await feed.fetch(new Request("https://do/broadcast", {
+      method: "POST",
+      body: JSON.stringify({ type: "snapshot", ...normalized }),
+    })).catch(() => {});
+
     return okJson({ ok: true, date: normalized.date, updated_at: normalized.updated_at }, requestId, corsHeaders(req, env));
   }
 
@@ -828,6 +838,126 @@ async function route(req: Request, env: Env): Promise<Response> {
     `).bind(reportDate, rawBody).run();
 
     return okJson({ ok: true, date: reportDate }, requestId, corsHeaders(req, env));
+  }
+
+  // ---- INTERNAL: position events upsert (GKE sync job) ----
+  // POST /v1/internal/position-events
+  // Auth: X-Internal-Token + optional X-Signature HMAC-SHA256
+  // Body: { positions: [ { id, trade_id, buy_sell_id, ... }, ... ] }
+  if (req.method === "POST" && url.pathname === "/v1/internal/position-events") {
+    const tok = req.headers.get("X-Internal-Token") || "";
+    if (!safeEqual(tok, env.INTERNAL_TOKEN)) return err("forbidden", "Forbidden", requestId, 403, corsHeaders(req, env));
+
+    const rawBody = await req.text();
+
+    if (env.SIGNING_SECRET) {
+      const sig = req.headers.get("X-Signature") || "";
+      if (!sig) return err("forbidden", "Missing X-Signature header", requestId, 403, corsHeaders(req, env));
+      const expected = await hmacSha256Hex(env.SIGNING_SECRET, rawBody);
+      if (!safeEqual(sig, expected)) return err("forbidden", "Invalid signature", requestId, 403, corsHeaders(req, env));
+    }
+
+    const body = (() => { try { return JSON.parse(rawBody); } catch { return null; } })();
+    if (!body) return err("invalid_request", "Invalid JSON body", requestId, 400, corsHeaders(req, env));
+
+    const positions: any[] = body.positions;
+    if (!Array.isArray(positions) || positions.length === 0) {
+      return err("invalid_request", "Missing or empty positions array", requestId, 400, corsHeaders(req, env));
+    }
+
+    // Batch upsert — D1 supports up to 100 bound statements per batch
+    const stmts = positions.map((p: any) =>
+      env.DB.prepare(`
+        INSERT INTO position_events(
+          id, trade_id, buy_sell_id, underlying, contract_name,
+          option_type, strike_price, expiration_date, strategy,
+          entry_side, entry_order_type, entry_limit_price, entry_premium, entry_time,
+          entry_condition, exit_condition,
+          delta, gamma, theta, vega, iv,
+          bid_price, ask_price, last_price, spot_price, dividend_yield,
+          exit_side, exit_order_type, exit_limit_price, exit_time,
+          pnl_per_share, pnl_total, hold_seconds,
+          trade_status, close_reason, updated_at
+        ) VALUES (
+          ?,?,?,?,?,
+          ?,?,?,?,
+          ?,?,?,?,?,
+          ?,?,
+          ?,?,?,?,?,
+          ?,?,?,?,?,
+          ?,?,?,?,
+          ?,?,?,
+          ?,?,
+          (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+        )
+        ON CONFLICT(id) DO UPDATE SET
+          exit_side=excluded.exit_side,
+          exit_order_type=excluded.exit_order_type,
+          exit_limit_price=excluded.exit_limit_price,
+          exit_time=excluded.exit_time,
+          pnl_per_share=excluded.pnl_per_share,
+          pnl_total=excluded.pnl_total,
+          hold_seconds=excluded.hold_seconds,
+          trade_status=excluded.trade_status,
+          close_reason=excluded.close_reason,
+          bid_price=excluded.bid_price,
+          ask_price=excluded.ask_price,
+          last_price=excluded.last_price,
+          updated_at=(strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+      `).bind(
+        p.id, p.trade_id, p.buy_sell_id, p.underlying, p.contract_name,
+        p.option_type ?? null, p.strike_price ?? null, p.expiration_date ?? null, p.strategy ?? null,
+        p.entry_side ?? null, p.entry_order_type ?? null, p.entry_limit_price ?? null, p.entry_premium ?? null, p.entry_time ?? null,
+        p.entry_condition ?? null, p.exit_condition ?? null,
+        p.delta ?? null, p.gamma ?? null, p.theta ?? null, p.vega ?? null, p.iv ?? null,
+        p.bid_price ?? null, p.ask_price ?? null, p.last_price ?? null, p.spot_price ?? null, p.dividend_yield ?? null,
+        p.exit_side ?? null, p.exit_order_type ?? null, p.exit_limit_price ?? null, p.exit_time ?? null,
+        p.pnl_per_share ?? null, p.pnl_total ?? null, p.hold_seconds ?? null,
+        p.trade_status, p.close_reason ?? null
+      )
+    );
+
+    // D1 batch() handles up to 100 statements
+    const BATCH_SIZE = 100;
+    let upserted = 0;
+    for (let i = 0; i < stmts.length; i += BATCH_SIZE) {
+      await env.DB.batch(stmts.slice(i, i + BATCH_SIZE));
+      upserted += Math.min(BATCH_SIZE, stmts.length - i);
+    }
+
+    // Broadcast to signal feed for connected daemons
+    try {
+      const feedId = env.SIGNAL_FEED.idFromName("global");
+      const feed = env.SIGNAL_FEED.get(feedId);
+      await feed.fetch(new Request("https://do/broadcast", {
+        method: "POST",
+        body: JSON.stringify({ type: "position_events", positions }),
+      }));
+    } catch { /* best-effort broadcast */ }
+
+    return okJson({ ok: true, upserted, total: positions.length }, requestId, corsHeaders(req, env));
+  }
+
+  // ---- position events query (session auth) ----
+  if (req.method === "GET" && url.pathname === "/v1/position-events") {
+    const { user_login } = await authSessionUser(req, env, requestId);
+    if (!user_login) return err("unauthorized", "Unauthorized", requestId, 401, corsHeaders(req, env));
+
+    const status = url.searchParams.get("status") || null;
+    const underlying = url.searchParams.get("underlying") || null;
+    const since = url.searchParams.get("since") || null;
+    const limit = Math.min(parseInt(url.searchParams.get("limit") || "50", 10) || 50, 200);
+
+    let sql = "SELECT * FROM position_events WHERE 1=1";
+    const binds: any[] = [];
+    if (status) { sql += " AND trade_status = ?"; binds.push(status); }
+    if (underlying) { sql += " AND underlying = ?"; binds.push(underlying); }
+    if (since) { sql += " AND synced_at >= ?"; binds.push(since); }
+    sql += " ORDER BY synced_at DESC LIMIT ?";
+    binds.push(limit);
+
+    const { results } = await env.DB.prepare(sql).bind(...binds).all();
+    return okJson({ ok: true, events: results }, requestId, corsHeaders(req, env));
   }
 
   // ---- webhooks ----
@@ -2606,6 +2736,214 @@ Return ONLY valid JSON: {"summary":"...","impact":"...","recommendations":["..."
       positions_count: body.positions?.length ?? 0,
       source: body.source ?? "paper:" + body.broker,
     }, requestId, corsHeaders(req, env));
+  }
+
+  // ---- SIGNAL: WebSocket stream ----
+  // GET /v1/signal/stream?token=<JWT>
+  if (req.method === "GET" && url.pathname === "/v1/signal/stream") {
+    if (req.headers.get("upgrade") !== "websocket") {
+      return err("invalid_request", "Expected WebSocket upgrade", requestId, 400, corsHeaders(req, env));
+    }
+
+    // Auth via query param (WebSocket can't send custom headers)
+    const wsToken = url.searchParams.get("token") || "";
+    if (!wsToken) return err("unauthorized", "Missing token query param", requestId, 401, corsHeaders(req, env));
+    try {
+      await verifyUserFromJwt(wsToken, env.JWT_SECRET);
+    } catch {
+      return err("unauthorized", "Invalid token", requestId, 401, corsHeaders(req, env));
+    }
+
+    // Proxy to SignalFeedDO
+    const feedId = env.SIGNAL_FEED.idFromName("global");
+    const feed = env.SIGNAL_FEED.get(feedId);
+    return feed.fetch(req);
+  }
+
+  // ---- SIGNAL: rules CRUD ----
+
+  // GET /v1/signal/rules
+  if (req.method === "GET" && url.pathname === "/v1/signal/rules") {
+    const u = await authSessionUser(req, env, requestId);
+    const rows = await env.DB.prepare(
+      `SELECT rule_id, name, status, symbols_json, entry_conditions_json, exit_conditions_json,
+              order_side, order_type, order_qty, order_tif, cooldown_seconds, temporal_json,
+              version, created_at, updated_at
+       FROM signal_rules WHERE user_id = ? AND status != 'disabled' ORDER BY created_at DESC`
+    ).bind(u.user_login).all();
+    return okJson({ items: rows.results ?? [] }, requestId, corsHeaders(req, env));
+  }
+
+  // POST /v1/signal/rules
+  if (req.method === "POST" && url.pathname === "/v1/signal/rules") {
+    const u = await authSessionUser(req, env, requestId);
+    const body = await req.json().catch(() => null) as any;
+    if (!body?.rule_id || !body?.name || !body?.entry_conditions_json || !body?.order_side || !body?.order_qty) {
+      return err("invalid_request", "Missing required fields: rule_id, name, entry_conditions_json, order_side, order_qty", requestId, 400, corsHeaders(req, env));
+    }
+
+    // Cap active rules at 50
+    const countRow = await env.DB.prepare(
+      `SELECT COUNT(*) as cnt FROM signal_rules WHERE user_id = ? AND status = 'active'`
+    ).bind(u.user_login).first<{ cnt: number }>();
+    if ((countRow?.cnt ?? 0) >= 50) {
+      return err("invalid_request", "Maximum 50 active rules", requestId, 400, corsHeaders(req, env));
+    }
+
+    await env.DB.prepare(`
+      INSERT INTO signal_rules (rule_id, user_id, name, status, symbols_json,
+        entry_conditions_json, exit_conditions_json, order_side, order_type,
+        order_qty, order_tif, cooldown_seconds, temporal_json, version)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).bind(
+      body.rule_id, u.user_login, body.name, body.status || "active",
+      body.symbols_json || null, body.entry_conditions_json, body.exit_conditions_json || null,
+      body.order_side, body.order_type || "market", body.order_qty,
+      body.order_tif || "day", body.cooldown_seconds ?? 300,
+      body.temporal_json || null, body.version ?? 1
+    ).run();
+
+    return okJson({ ok: true, rule_id: body.rule_id }, requestId, corsHeaders(req, env));
+  }
+
+  // PUT /v1/signal/rules/:id
+  const signalRulePutMatch = url.pathname.match(/^\/v1\/signal\/rules\/([a-f0-9]+)$/);
+  if (req.method === "PUT" && signalRulePutMatch) {
+    const u = await authSessionUser(req, env, requestId);
+    const ruleId = signalRulePutMatch[1];
+    const body = await req.json().catch(() => null) as any;
+    if (!body) return err("invalid_request", "Invalid JSON body", requestId, 400, corsHeaders(req, env));
+
+    const result = await env.DB.prepare(`
+      UPDATE signal_rules SET
+        name = COALESCE(?, name),
+        status = COALESCE(?, status),
+        symbols_json = COALESCE(?, symbols_json),
+        entry_conditions_json = COALESCE(?, entry_conditions_json),
+        exit_conditions_json = COALESCE(?, exit_conditions_json),
+        order_side = COALESCE(?, order_side),
+        order_type = COALESCE(?, order_type),
+        order_qty = COALESCE(?, order_qty),
+        order_tif = COALESCE(?, order_tif),
+        cooldown_seconds = COALESCE(?, cooldown_seconds),
+        temporal_json = COALESCE(?, temporal_json),
+        version = COALESCE(?, version),
+        updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now')
+      WHERE rule_id = ? AND user_id = ?
+    `).bind(
+      body.name ?? null, body.status ?? null, body.symbols_json ?? null,
+      body.entry_conditions_json ?? null, body.exit_conditions_json ?? null,
+      body.order_side ?? null, body.order_type ?? null,
+      body.order_qty ?? null, body.order_tif ?? null,
+      body.cooldown_seconds ?? null, body.temporal_json ?? null,
+      body.version ?? null, ruleId, u.user_login
+    ).run();
+
+    if (!result.meta.changes) return err("not_found", "Rule not found", requestId, 404, corsHeaders(req, env));
+    return okJson({ ok: true, rule_id: ruleId }, requestId, corsHeaders(req, env));
+  }
+
+  // DELETE /v1/signal/rules/:id — soft-delete (set status=disabled)
+  const signalRuleDeleteMatch = url.pathname.match(/^\/v1\/signal\/rules\/([a-f0-9]+)$/);
+  if (req.method === "DELETE" && signalRuleDeleteMatch) {
+    const u = await authSessionUser(req, env, requestId);
+    const ruleId = signalRuleDeleteMatch[1];
+    const result = await env.DB.prepare(
+      `UPDATE signal_rules SET status = 'disabled', updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now')
+       WHERE rule_id = ? AND user_id = ?`
+    ).bind(ruleId, u.user_login).run();
+
+    if (!result.meta.changes) return err("not_found", "Rule not found", requestId, 404, corsHeaders(req, env));
+    return okJson({ ok: true, rule_id: ruleId }, requestId, corsHeaders(req, env));
+  }
+
+  // ---- SIGNAL: events ----
+
+  // GET /v1/signal/events?since=<ISO>&limit=<n>
+  if (req.method === "GET" && url.pathname === "/v1/signal/events") {
+    const u = await authSessionUser(req, env, requestId);
+    const since = url.searchParams.get("since") || "1970-01-01T00:00:00Z";
+    const limit = Math.min(parseInt(url.searchParams.get("limit") || "100", 10) || 100, 500);
+
+    const rows = await env.DB.prepare(
+      `SELECT event_id, rule_id, event_type, trigger_snapshot_json, matched_conditions_json,
+              symbol, order_id, order_side, order_qty, order_price, daemon_id, created_at
+       FROM signal_events WHERE user_id = ? AND created_at > ? ORDER BY created_at DESC LIMIT ?`
+    ).bind(u.user_login, since, limit).all();
+
+    return okJson({ items: rows.results ?? [] }, requestId, corsHeaders(req, env));
+  }
+
+  // POST /v1/signal/events — log event from CLI daemon
+  if (req.method === "POST" && url.pathname === "/v1/signal/events") {
+    const u = await authSessionUser(req, env, requestId);
+    const body = await req.json().catch(() => null) as any;
+    if (!body?.event_id || !body?.rule_id || !body?.event_type) {
+      return err("invalid_request", "Missing required fields: event_id, rule_id, event_type", requestId, 400, corsHeaders(req, env));
+    }
+
+    await env.DB.prepare(`
+      INSERT OR IGNORE INTO signal_events (event_id, rule_id, user_id, event_type,
+        trigger_snapshot_json, matched_conditions_json, symbol, order_id,
+        order_side, order_qty, order_price, daemon_id)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).bind(
+      body.event_id, body.rule_id, u.user_login, body.event_type,
+      body.trigger_snapshot_json || null, body.matched_conditions_json || null,
+      body.symbol || null, body.order_id || null,
+      body.order_side || null, body.order_qty ?? null,
+      body.order_price ?? null, body.daemon_id || null
+    ).run();
+
+    return okJson({ ok: true, event_id: body.event_id }, requestId, corsHeaders(req, env));
+  }
+
+  // POST /v1/signal/rules/sync — bulk upsert rules from CLI
+  if (req.method === "POST" && url.pathname === "/v1/signal/rules/sync") {
+    const u = await authSessionUser(req, env, requestId);
+    const body = await req.json().catch(() => null) as any;
+    if (!body?.rules || !Array.isArray(body.rules)) {
+      return err("invalid_request", "Expected { rules: [...] }", requestId, 400, corsHeaders(req, env));
+    }
+
+    if (body.rules.length > 50) {
+      return err("invalid_request", "Maximum 50 rules per sync", requestId, 400, corsHeaders(req, env));
+    }
+
+    let upserted = 0;
+    for (const r of body.rules) {
+      if (!r.rule_id || !r.name || !r.entry_conditions_json || !r.order_side || !r.order_qty) continue;
+
+      await env.DB.prepare(`
+        INSERT INTO signal_rules (rule_id, user_id, name, status, symbols_json,
+          entry_conditions_json, exit_conditions_json, order_side, order_type,
+          order_qty, order_tif, cooldown_seconds, temporal_json, version)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT (rule_id) DO UPDATE SET
+          name = excluded.name,
+          status = excluded.status,
+          symbols_json = excluded.symbols_json,
+          entry_conditions_json = excluded.entry_conditions_json,
+          exit_conditions_json = excluded.exit_conditions_json,
+          order_side = excluded.order_side,
+          order_type = excluded.order_type,
+          order_qty = excluded.order_qty,
+          order_tif = excluded.order_tif,
+          cooldown_seconds = excluded.cooldown_seconds,
+          temporal_json = excluded.temporal_json,
+          version = excluded.version,
+          updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now')
+      `).bind(
+        r.rule_id, u.user_login, r.name, r.status || "active",
+        r.symbols_json || null, r.entry_conditions_json, r.exit_conditions_json || null,
+        r.order_side, r.order_type || "market", r.order_qty,
+        r.order_tif || "day", r.cooldown_seconds ?? 300,
+        r.temporal_json || null, r.version ?? 1
+      ).run();
+      upserted++;
+    }
+
+    return okJson({ ok: true, upserted }, requestId, corsHeaders(req, env));
   }
 
   return err("not_found", "Not found", requestId, 404, corsHeaders(req, env));
