@@ -793,6 +793,43 @@ async function route(req: Request, env: Env): Promise<Response> {
     return okJson({ ok: true, date: normalized.date, updated_at: normalized.updated_at }, requestId, corsHeaders(req, env));
   }
 
+  // ---- INTERNAL: daily trading report write (GKE sync job) ----
+  // POST /v1/internal/trading-report
+  // Auth: X-Internal-Token header AND optional X-Signature HMAC-SHA256 verification
+  if (req.method === "POST" && url.pathname === "/v1/internal/trading-report") {
+    const tok = req.headers.get("X-Internal-Token") || "";
+    if (!safeEqual(tok, env.INTERNAL_TOKEN)) return err("forbidden", "Forbidden", requestId, 403, corsHeaders(req, env));
+
+    const rawBody = await req.text();
+
+    // HMAC signature verification (when SIGNING_SECRET is configured)
+    if (env.SIGNING_SECRET) {
+      const sig = req.headers.get("X-Signature") || "";
+      if (!sig) return err("forbidden", "Missing X-Signature header", requestId, 403, corsHeaders(req, env));
+      const expected = await hmacSha256Hex(env.SIGNING_SECRET, rawBody);
+      if (!safeEqual(sig, expected)) return err("forbidden", "Invalid signature", requestId, 403, corsHeaders(req, env));
+    }
+
+    const body = (() => { try { return JSON.parse(rawBody); } catch { return null; } })();
+    if (!body) return err("invalid_request", "Invalid JSON body", requestId, 400, corsHeaders(req, env));
+
+    const reportDate = body.report_date;
+    if (!reportDate || typeof reportDate !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(reportDate)) {
+      return err("invalid_request", "Missing or invalid report_date (expected YYYY-MM-DD)", requestId, 400, corsHeaders(req, env));
+    }
+
+    // Upsert to D1
+    await env.DB.prepare(`
+      INSERT INTO trading_report_snapshots(date, payload, updated_at)
+      VALUES (?, ?, (strftime('%Y-%m-%dT%H:%M:%fZ','now')))
+      ON CONFLICT(date) DO UPDATE SET
+        payload=excluded.payload,
+        updated_at=excluded.updated_at
+    `).bind(reportDate, rawBody).run();
+
+    return okJson({ ok: true, date: reportDate }, requestId, corsHeaders(req, env));
+  }
+
   // ---- webhooks ----
   if (req.method === "POST" && url.pathname === "/v1/webhooks") {
     const auth = await authApiKey(req, env, requestId);

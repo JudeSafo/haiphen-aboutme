@@ -1,0 +1,38 @@
+{
+  "report_date": "2026-02-11",
+  "total_pnl": 1247.83,
+  "win_rate": 0.6842,
+  "winners": 13,
+  "losers": 6,
+  "total_closed": 21,
+  "zero_pnl": 2,
+  "avg_win": 142.56,
+  "avg_loss": -62.31,
+  "total_entries": 24,
+  "total_exits": 21,
+  "p25_hold_secs": 45,
+  "p50_hold_secs": 127,
+  "p75_hold_secs": 340,
+  "p90_hold_secs": 892,
+  "avg_submit_ms": 12,
+  "p90_submit_ms": 34,
+  "avg_entry_slippage": 0.0003,
+  "avg_exit_slippage": 0.0005,
+  "total_calcs": 1842,
+  "all_passed": 312,
+  "va_pass_rate": 0.1694,
+  "pass_liq": 987,
+  "pass_edge": 456,
+  "total_attenuated": 78,
+  "attenuation_breakdown": {
+    "volatility_gate": 31,
+    "spread_gate": 22,
+    "momentum_gate": 15,
+    "cooldown_gate": 10
+  },
+  "deprecation_audit": {
+    "legacy_signal_v1": 4,
+    "old_risk_model": 2,
+    "deprecated_edge_calc": 1
+  }
+}

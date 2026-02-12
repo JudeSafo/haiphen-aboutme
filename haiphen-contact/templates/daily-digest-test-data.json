@@ -16,9 +16,8 @@
     { "kpi": "Exits closed", "value": "1,101" }
   ],
   "entities": [
-    { "symbol": "ASTS", "contract_name": "ASTS270115P00090000", "trade_id": 840799, "contract_qs": "ASTS270115P00090000" },
-    { "symbol": "DKNG", "contract_name": "DKNG260220P00029500", "trade_id": 840830, "contract_qs": "DKNG260220P00029500" },
-    { "symbol": "HII", "contract_name": "HII260618C00390000", "trade_id": 840186, "contract_qs": "HII260618C00390000" }
+    { "symbol": "AVAV", "contract_name": "AVAV270115C00400000", "trade_id": 850051, "contract_qs": "AVAV270115C00400000" },
+    { "symbol": "ON", "contract_name": "ON260320C00055000", "trade_id": 850601, "contract_qs": "ON260320C00055000" }
   ],
   "cta": {
     "feature": "Prospect Investigation",

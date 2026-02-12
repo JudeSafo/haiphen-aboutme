@@ -359,6 +359,8 @@ export default {
         res = await handleUsageAlert(request, env);
       } else if (request.method === "POST" && path === "/api/prospect/outreach/send") {
         res = await handleProspectOutreachSend(request, env);
+      } else if (request.method === "POST" && path === "/api/trading-report/send") {
+        res = await handleTradingReportSend(request, env);
       } else {
         res = debugNotFound(request, url, path);
       }
@@ -387,12 +389,25 @@ export default {
   async scheduled(event: ScheduledEvent, env: Env, ctx: ExecutionContext) {
     ctx.waitUntil(
       (async () => {
-        try {
-          const when = new Date(event.scheduledTime);
-          const out = await runDailyDigest(env, when);
-          console.log("[digest] scheduled ok", out, { build: BUILD_ID });
-        } catch (err) {
-          console.error("[digest] scheduled failed", err, { build: BUILD_ID });
+        const when = new Date(event.scheduledTime);
+        const hour = when.getUTCHours();
+
+        if (hour === 13) {
+          // Morning daily digest (7am CT)
+          try {
+            const out = await runDailyDigest(env, when);
+            console.log("[digest] scheduled ok", out, { build: BUILD_ID });
+          } catch (err) {
+            console.error("[digest] scheduled failed", err, { build: BUILD_ID });
+          }
+        } else if (hour === 22) {
+          // Post-market trading report (5pm ET)
+          try {
+            const out = await sendTradingReport(env, when);
+            console.log("[trading-report] scheduled ok", out, { build: BUILD_ID });
+          } catch (err) {
+            console.error("[trading-report] scheduled failed", err, { build: BUILD_ID });
+          }
         }
       })(),
     );
@@ -2159,6 +2174,33 @@ async function handleDigestSend(request: Request, env: Env): Promise<Response> {
   return json({ ok: true, ...out }, 200);
 }
 
+/**
+ * Manual send endpoint: POST /api/trading-report/send
+ * Protected by HMAC like /api/digest/send.
+ * Body (optional): { "send_date": "2026-02-11" }
+ */
+async function handleTradingReportSend(request: Request, env: Env): Promise<Response> {
+  const raw = await request.text();
+
+  const secret = (env.DIGEST_HMAC_SECRET || "").trim();
+  if (!secret) return json({ ok: false, error: "DIGEST_HMAC_SECRET not set" }, 500);
+
+  const sigOk = await verifyHmacRequest(request, secret, raw);
+  if (!sigOk) return json({ ok: false, error: "unauthorized" }, 401);
+
+  const body = raw ? safeParseJson<{ send_date?: string }>(raw) : null;
+  const now = new Date();
+
+  let when = now;
+  if (body?.send_date) {
+    const cand = new Date(`${body.send_date}T00:00:00Z`);
+    if (Number.isFinite(cand.getTime())) when = cand;
+  }
+
+  const out = await sendTradingReport(env, when);
+  return json({ ok: true, ...out }, 200);
+}
+
 type EmailOnlySubscriber = {
   email: string;
   name: string | null;
@@ -2332,4 +2374,251 @@ async function runDailyDigest(env: Env, when: Date): Promise<{
   }
 
   return { sendDate, attempted, sent, skipped, failed };
+}
+
+// ── Post-market trading report email ──
+
+async function sendTradingReport(
+  env: Env,
+  when: Date,
+): Promise<{ sendDate: string; sent: boolean; reason?: string }> {
+  const sendDate = yyyyMmDdUtc(when);
+
+  // Skip weekends
+  if (!isWeekdayUtc(when)) {
+    console.log("[trading-report] weekend skip", { sendDate });
+    return { sendDate, sent: false, reason: "weekend" };
+  }
+
+  // 1) Read today's report from D1
+  const row = await env.DB.prepare(
+    "SELECT payload FROM trading_report_snapshots WHERE date = ?"
+  ).bind(sendDate).first<{ payload: string }>();
+
+  if (!row) {
+    console.log("[trading-report] no report for", sendDate);
+    return { sendDate, sent: false, reason: "no_report" };
+  }
+
+  // 2) Idempotency check
+  const deliveryId = crypto.randomUUID();
+  try {
+    const ins = await env.DB.prepare(
+      `INSERT INTO email_deliveries(delivery_id, user_login, list_id, send_date, status, created_at, updated_at)
+       VALUES (?, 'system', 'trading_report', ?, 'queued',
+               (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
+               (strftime('%Y-%m-%dT%H:%M:%fZ','now')))`
+    ).bind(deliveryId, sendDate).run();
+
+    if (!ins.success) {
+      return { sendDate, sent: false, reason: "already_sent_today" };
+    }
+  } catch (e: any) {
+    const msg = String(e?.message || e || "");
+    if (/UNIQUE|constraint/i.test(msg)) {
+      console.log("[trading-report] already sent today", { sendDate });
+      return { sendDate, sent: false, reason: "already_sent_today" };
+    }
+    throw e;
+  }
+
+  // 3) Parse report payload
+  let report: Record<string, any>;
+  try {
+    report = JSON.parse(row.payload);
+  } catch {
+    console.error("[trading-report] invalid JSON payload for", sendDate);
+    return { sendDate, sent: false, reason: "invalid_payload" };
+  }
+
+  // 4) Build inline HTML email
+  const totalPnl = Number(report.total_pnl ?? 0);
+  const pnlColor = totalPnl >= 0 ? "#16a34a" : "#dc2626";
+  const pnlSign = totalPnl >= 0 ? "+" : "";
+  const winRate = report.win_rate != null ? (Number(report.win_rate) * 100).toFixed(1) : "N/A";
+  const winners = Number(report.winners ?? 0);
+  const losers = Number(report.losers ?? 0);
+  const totalClosed = Number(report.total_closed ?? 0);
+  const zeroPnl = Number(report.zero_pnl ?? 0);
+  const avgWin = Number(report.avg_win ?? 0).toFixed(2);
+  const avgLoss = Number(report.avg_loss ?? 0).toFixed(2);
+  const totalEntries = Number(report.total_entries ?? 0);
+  const totalExits = Number(report.total_exits ?? 0);
+
+  function fmtDur(secs: number): string {
+    if (secs < 60) return `${secs.toFixed(0)}s`;
+    if (secs < 3600) return `${(secs / 60).toFixed(1)}min`;
+    return `${(secs / 3600).toFixed(1)}hr`;
+  }
+
+  const p25 = fmtDur(Number(report.p25_hold_secs ?? 0));
+  const p50 = fmtDur(Number(report.p50_hold_secs ?? 0));
+  const p75 = fmtDur(Number(report.p75_hold_secs ?? 0));
+  const p90 = fmtDur(Number(report.p90_hold_secs ?? 0));
+
+  const avgSubmitMs = Number(report.avg_submit_ms ?? 0).toFixed(0);
+  const p90SubmitMs = Number(report.p90_submit_ms ?? 0).toFixed(0);
+  const totalCalcs = Number(report.total_calcs ?? 0);
+  const allPassed = Number(report.all_passed ?? 0);
+  const vaPassRate = report.va_pass_rate != null ? (Number(report.va_pass_rate) * 100).toFixed(1) : "N/A";
+  const passLiq = Number(report.pass_liq ?? 0);
+  const passEdge = Number(report.pass_edge ?? 0);
+  const totalAttenuated = Number(report.total_attenuated ?? 0);
+
+  // Attenuation breakdown table rows
+  const attBreakdown: Record<string, number> = report.attenuation_breakdown ?? {};
+  const attRows = Object.entries(attBreakdown)
+    .sort((a, b) => b[1] - a[1])
+    .map(([gate, count]) => `<tr><td style="padding:4px 12px;border-bottom:1px solid #e5e7eb;">${escapeHtml(gate)}</td><td style="padding:4px 12px;border-bottom:1px solid #e5e7eb;text-align:right;">${count}</td></tr>`)
+    .join("");
+
+  // Deprecation audit table rows
+  const deprecAudit: Record<string, number> = report.deprecation_audit ?? {};
+  const deprecRows = Object.entries(deprecAudit)
+    .sort((a, b) => b[1] - a[1])
+    .map(([cat, count]) => `<tr><td style="padding:4px 12px;border-bottom:1px solid #e5e7eb;">${escapeHtml(cat)}</td><td style="padding:4px 12px;border-bottom:1px solid #e5e7eb;text-align:right;">${count}</td></tr>`)
+    .join("");
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f9fafb;">
+<div style="max-width:640px;margin:0 auto;padding:24px;">
+
+  <!-- P&L Hero -->
+  <div style="background:#ffffff;border-radius:12px;padding:32px;text-align:center;margin-bottom:24px;border:1px solid #e5e7eb;">
+    <div style="font-size:14px;color:#6b7280;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Daily P&amp;L</div>
+    <div style="font-size:48px;font-weight:700;color:${pnlColor};">${pnlSign}$${totalPnl.toFixed(2)}</div>
+    <div style="font-size:14px;color:#9ca3af;margin-top:8px;">${sendDate}</div>
+  </div>
+
+  <!-- KPI Grid -->
+  <div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:24px;">
+    <div style="flex:1;min-width:130px;background:#fff;border-radius:8px;padding:16px;border:1px solid #e5e7eb;text-align:center;">
+      <div style="font-size:12px;color:#6b7280;">Winners</div>
+      <div style="font-size:24px;font-weight:600;color:#16a34a;">${winners}</div>
+      <div style="font-size:11px;color:#9ca3af;">avg $${avgWin}</div>
+    </div>
+    <div style="flex:1;min-width:130px;background:#fff;border-radius:8px;padding:16px;border:1px solid #e5e7eb;text-align:center;">
+      <div style="font-size:12px;color:#6b7280;">Losers</div>
+      <div style="font-size:24px;font-weight:600;color:#dc2626;">${losers}</div>
+      <div style="font-size:11px;color:#9ca3af;">avg $${avgLoss}</div>
+    </div>
+    <div style="flex:1;min-width:130px;background:#fff;border-radius:8px;padding:16px;border:1px solid #e5e7eb;text-align:center;">
+      <div style="font-size:12px;color:#6b7280;">Win Rate</div>
+      <div style="font-size:24px;font-weight:600;">${winRate}%</div>
+      <div style="font-size:11px;color:#9ca3af;">${winners}/${winners + losers} non-zero</div>
+    </div>
+    <div style="flex:1;min-width:130px;background:#fff;border-radius:8px;padding:16px;border:1px solid #e5e7eb;text-align:center;">
+      <div style="font-size:12px;color:#6b7280;">Trades Closed</div>
+      <div style="font-size:24px;font-weight:600;">${totalClosed}</div>
+      <div style="font-size:11px;color:#9ca3af;">${zeroPnl} zero P&amp;L</div>
+    </div>
+  </div>
+
+  <!-- Signal Funnel -->
+  <div style="background:#fff;border-radius:8px;padding:20px;margin-bottom:16px;border:1px solid #e5e7eb;">
+    <div style="font-size:14px;font-weight:600;margin-bottom:12px;">Signal Funnel</div>
+    <table style="width:100%;font-size:13px;border-collapse:collapse;">
+      <tr><td style="padding:4px 0;color:#6b7280;">VA Calculations</td><td style="text-align:right;font-weight:500;">${totalCalcs}</td></tr>
+      <tr><td style="padding:4px 0;color:#6b7280;">All Gates Passed</td><td style="text-align:right;font-weight:500;">${allPassed} (${vaPassRate}%)</td></tr>
+      <tr><td style="padding:4px 0;color:#6b7280;">Liq Gate Pass</td><td style="text-align:right;font-weight:500;">${passLiq}</td></tr>
+      <tr><td style="padding:4px 0;color:#6b7280;">Edge Gate Pass</td><td style="text-align:right;font-weight:500;">${passEdge}</td></tr>
+      <tr><td style="padding:4px 0;color:#6b7280;">JS Attenuated</td><td style="text-align:right;font-weight:500;">${totalAttenuated}</td></tr>
+      <tr><td style="padding:4px 0;color:#6b7280;">Entries Logged</td><td style="text-align:right;font-weight:500;">${totalEntries}</td></tr>
+      <tr><td style="padding:4px 0;color:#6b7280;">Exits Logged</td><td style="text-align:right;font-weight:500;">${totalExits}</td></tr>
+    </table>
+  </div>
+
+  <!-- Hold Time Distribution -->
+  <div style="background:#fff;border-radius:8px;padding:20px;margin-bottom:16px;border:1px solid #e5e7eb;">
+    <div style="font-size:14px;font-weight:600;margin-bottom:12px;">Hold Time Distribution</div>
+    <table style="width:100%;font-size:13px;border-collapse:collapse;">
+      <tr><td style="padding:4px 0;color:#6b7280;">P25</td><td style="text-align:right;font-weight:500;">${p25}</td></tr>
+      <tr><td style="padding:4px 0;color:#6b7280;">P50 (median)</td><td style="text-align:right;font-weight:500;">${p50}</td></tr>
+      <tr><td style="padding:4px 0;color:#6b7280;">P75</td><td style="text-align:right;font-weight:500;">${p75}</td></tr>
+      <tr><td style="padding:4px 0;color:#6b7280;">P90</td><td style="text-align:right;font-weight:500;">${p90}</td></tr>
+    </table>
+  </div>
+
+  <!-- Execution Quality -->
+  <div style="background:#fff;border-radius:8px;padding:20px;margin-bottom:16px;border:1px solid #e5e7eb;">
+    <div style="font-size:14px;font-weight:600;margin-bottom:12px;">Execution Quality</div>
+    <table style="width:100%;font-size:13px;border-collapse:collapse;">
+      <tr><td style="padding:4px 0;color:#6b7280;">Avg Submit Latency</td><td style="text-align:right;font-weight:500;">${avgSubmitMs}ms</td></tr>
+      <tr><td style="padding:4px 0;color:#6b7280;">P90 Submit Latency</td><td style="text-align:right;font-weight:500;">${p90SubmitMs}ms</td></tr>
+      <tr><td style="padding:4px 0;color:#6b7280;">Avg Entry Slippage</td><td style="text-align:right;font-weight:500;">${Number(report.avg_entry_slippage ?? 0).toFixed(4)}</td></tr>
+      <tr><td style="padding:4px 0;color:#6b7280;">Avg Exit Slippage</td><td style="text-align:right;font-weight:500;">${Number(report.avg_exit_slippage ?? 0).toFixed(4)}</td></tr>
+    </table>
+  </div>
+
+  ${attRows ? `
+  <!-- Attenuation Breakdown -->
+  <div style="background:#fff;border-radius:8px;padding:20px;margin-bottom:16px;border:1px solid #e5e7eb;">
+    <div style="font-size:14px;font-weight:600;margin-bottom:12px;">Signal Attenuation</div>
+    <table style="width:100%;font-size:13px;border-collapse:collapse;">
+      <tr style="background:#f9fafb;"><th style="padding:6px 12px;text-align:left;font-weight:500;color:#6b7280;">Gate</th><th style="padding:6px 12px;text-align:right;font-weight:500;color:#6b7280;">Count</th></tr>
+      ${attRows}
+    </table>
+  </div>
+  ` : ""}
+
+  ${deprecRows ? `
+  <!-- Deprecation Audit -->
+  <div style="background:#fff;border-radius:8px;padding:20px;margin-bottom:16px;border:1px solid #e5e7eb;">
+    <div style="font-size:14px;font-weight:600;margin-bottom:12px;">Deprecation Audit</div>
+    <table style="width:100%;font-size:13px;border-collapse:collapse;">
+      <tr style="background:#f9fafb;"><th style="padding:6px 12px;text-align:left;font-weight:500;color:#6b7280;">Category</th><th style="padding:6px 12px;text-align:right;font-weight:500;color:#6b7280;">Count</th></tr>
+      ${deprecRows}
+    </table>
+  </div>
+  ` : ""}
+
+  <!-- Footer -->
+  <div style="text-align:center;font-size:11px;color:#9ca3af;padding:16px 0;">
+    Generated at ${new Date().toISOString()} | Haiphen Trading Engine
+  </div>
+
+</div>
+</body>
+</html>`.trim();
+
+  const subject = `Trading Report: ${sendDate} | P&L: ${pnlSign}$${totalPnl.toFixed(2)} | Win Rate: ${winRate}%`;
+  const toEmail = env.OWNER_EMAIL;
+  const fromEmail = env.FROM_EMAIL;
+  const fromName = (env.FROM_NAME ?? "Haiphen").trim();
+
+  // 5) Send via SendGrid (raw HTML, no template)
+  const sg = await sendSendGrid(env.SENDGRID_API_KEY, {
+    from: { email: fromEmail, name: fromName },
+    personalizations: [
+      {
+        to: [{ email: toEmail }],
+        subject,
+      },
+    ],
+    content: [
+      { type: "text/html", value: html },
+    ],
+  });
+
+  // 6) Update delivery status
+  if (sg.ok) {
+    await env.DB.prepare(
+      `UPDATE email_deliveries
+          SET status='sent', message_id=?, updated_at=(strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+        WHERE delivery_id=?`
+    ).bind(sg.messageId ?? null, deliveryId).run();
+    console.log("[trading-report] sent to", toEmail, { sendDate, messageId: sg.messageId });
+    return { sendDate, sent: true };
+  } else {
+    await env.DB.prepare(
+      `UPDATE email_deliveries
+          SET status='failed', error=?, updated_at=(strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+        WHERE delivery_id=?`
+    ).bind(JSON.stringify(sg.details ?? {}), deliveryId).run();
+    console.error("[trading-report] send failed", { sendDate, details: sg.details });
+    return { sendDate, sent: false, reason: "sendgrid_failed" };
+  }
 }

@@ -76,5 +76,6 @@ id = "7ef6277bfea34ec18fb4b52ceb79aba3"
 preview_id = "d855f84fde7f471cb7d91d632868107a"
 
 [triggers]
-# 13:00 UTC = 7am Chicago (CST). Adjust later if you want DST-perfect behavior.
-crons = ["0 13 * * 1-5"]
+# 13:00 UTC = 7am Chicago (CST) — morning daily digest
+# 22:00 UTC = 5pm ET — post-market trading report email
+crons = ["0 13 * * 1-5", "0 22 * * 1-5"]
