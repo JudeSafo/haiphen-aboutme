@@ -2252,7 +2252,12 @@
 	        <section id="docs-top">
 	          <div id="api-docs-mount"></div>
 	        </section>
-	      `,      
+	      `,
+	      "GettingStarted": `
+	        <section class="hp-section-reveal">
+	          <div id="getting-started-mount"></div>
+	        </section>
+	      `,
 	    };
 	    
 	    /* ------------------------------------------------------------
@@ -2361,12 +2366,14 @@
 		    Fintech: "Trades",
 		    company: "Contact",
 		    Company: "Contact",
+		    cohort: "Trades",
+		    Cohort: "Trades",
 		  };
 
 		  const resolved = ALIASES[key] || ALIASES[key.toLowerCase()] || key;
 
 		  const html = sectionContent[resolved];
-		  contentWidget.innerHTML = html || `<p>No content available.</p>`;
+		  contentWidget.innerHTML = html || ``;
 		  contentWidget.classList.add("active");
 
 		  // Flash the lens toggle on first visit to this section
