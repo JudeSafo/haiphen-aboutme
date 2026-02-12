@@ -1,6 +1,28 @@
 <!-- docs/components/hero-device-launcher/hero-device-launcher.html -->
 <div class="hdl" data-hdl-root>
   <div class="hdl-panel" data-hdl-panel aria-hidden="true">
+    <!-- CTA block (above demo) -->
+    <div class="hdl-cta" role="group" aria-label="Get Haiphen">
+      <div class="hdl-cta-row">
+        <span class="hdl-cta-title">Install:</span>
+
+        <div class="hdl-cta-pill" role="group" aria-label="Install command">
+          <code class="hdl-cta-code" data-hdl-command></code>
+          <button class="hdl-cta-copy" type="button" data-hdl-action="copy" aria-label="Copy command to clipboard">
+            Copy
+          </button>
+        </div>
+      </div>
+
+      <a
+        class="hdl-cta-docs"
+        href="javascript:void(0)"
+        data-hdl-action="cohort"
+        aria-label="Join our onboarding cohort"
+      >
+        Or join our onboarding cohort
+      </a>
+    </div>
     <!-- Demo GIF reveal (lazy-loaded when panel opens) -->
     <div class="hdl-demo" role="img" aria-label="Haiphen CLI demo">
       <div class="hdl-demo-placeholder" data-hdl-demo-placeholder>
@@ -13,27 +35,5 @@
         decoding="async"
       />
     </div>
-    <!-- Claude-like CTA block -->
-    <div class="hdl-cta" role="group" aria-label="Get Haiphen">
-      <div class="hdl-cta-row">
-        <span class="hdl-cta-title">Intel Feed:</span>
-
-        <div class="hdl-cta-pill" role="group" aria-label="Install command">
-          <code class="hdl-cta-code" data-hdl-command></code>
-          <button class="hdl-cta-copy" type="button" data-hdl-action="copy" aria-label="Copy command to clipboard">
-            Copy
-          </button>
-        </div>
-      </div>
-
-      <button
-        class="hdl-cta-docs"
-        type="button"
-        data-hdl-action="docs"
-        aria-label="Read the documentation"
-      >
-        Or read the documentation
-      </button>
-    </div>    
   </div>
 </div>

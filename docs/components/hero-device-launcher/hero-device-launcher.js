@@ -4,7 +4,7 @@
   const LOG = '[hero-device]';
 
   const INSTALL_HASH = '#docs:docs-install-brew';
-  const INSTALL_COMMAND = 'brew install haiphen';
+  const INSTALL_COMMAND = 'brew tap haiphenAI/tap && brew install haiphen';
 
   /* ── Timing constants ── */
   const OPEN_DELAY   = 200;   // ms before opening on hover
@@ -293,13 +293,15 @@
       });
     }
 
-    // CTA: docs
-    const docsBtn = root.querySelector('[data-hdl-action="docs"]');
-    if (docsBtn) {
-      docsBtn.addEventListener('click', (e) => {
+    // CTA: cohort
+    const cohortBtn = root.querySelector('[data-hdl-action="cohort"]');
+    if (cohortBtn) {
+      cohortBtn.addEventListener('click', (e) => {
         e.preventDefault?.();
         e.stopPropagation?.();
-        routeToDocsInstall('hero_install_docs');
+        try {
+          if (typeof window.showSection === 'function') window.showSection('Cohort');
+        } catch {}
       });
     }
 

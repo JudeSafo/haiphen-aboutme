@@ -273,7 +273,7 @@
     {
       q: "What infrastructure do I need to use Haiphen?",
       a:
-        "None. Haiphen requires zero customer infrastructure. Install the CLI via Homebrew (brew install haiphenAI/tap/haiphen), authenticate with your GitHub account, and start making API calls. All compute, storage, and coordination happens on the edge.",
+        "None. Haiphen requires zero customer infrastructure. Install the CLI via Homebrew (brew tap haiphenAI/tap && brew install haiphen), authenticate with your GitHub account, and start making API calls. All compute, storage, and coordination happens on the edge.",
       tags: ["cloud-native", "services", "cli"],
     },
     {
@@ -287,7 +287,7 @@
     {
       q: "How do I get started with Haiphen?",
       aHtml:
-        `Install the CLI (<code>brew install haiphen/tap/haiphen</code>), authenticate with <code>haiphen login</code>, and run <code>haiphen status</code> to verify your entitlement. From there, connect a data source or broker and start exploring services. See the full walkthrough at <a href="#getting-started">Getting Started</a>.`,
+        `Install the CLI (<code>brew tap haiphenAI/tap && brew install haiphen</code>), authenticate with <code>haiphen login</code>, and run <code>haiphen status</code> to verify your entitlement. From there, connect a data source or broker and start exploring services. See the full walkthrough at <a href="#getting-started">Getting Started</a>.`,
       aText:
         "Install the CLI via Homebrew, authenticate with haiphen login, and run haiphen status to verify your entitlement. Then connect a data source or broker and start exploring services.",
       tags: ["services", "cli", "general"],
