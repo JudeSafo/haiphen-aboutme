@@ -7,7 +7,7 @@ import { normalizeTradesJson, upsertMetricsDaily } from "./ingest";
 import { requireUserFromAuthCookie, verifyUserFromJwt } from "./auth";
 import { getExtremes, getKpis, getPortfolioAssets, getSeries } from "./metrics_queries";
 import { withCors, handleOptions as corsOptions } from "./cors";
-import { synthesize } from "./synthesizer";
+import { synthesize, type DataGap } from "./synthesizer";
 
 // Export DO classes for Wrangler
 export { RateLimiterDO, QuotaDO, SignalFeedDO };
@@ -64,6 +64,14 @@ type Env = {
 
   // HMAC signing secret for prospect outreach emails (shared with haiphen-contact)
   PROSPECT_HMAC_SECRET?: string;
+
+  // Service bindings for scaffold Worker-to-Worker calls
+  SVC_SECURE: Fetcher;
+  SVC_NETWORK: Fetcher;
+  SVC_GRAPH: Fetcher;
+  SVC_RISK: Fetcher;
+  SVC_CAUSAL: Fetcher;
+  SVC_SUPPLY: Fetcher;
 
   // Optional: for CORS allowlist
   ALLOWED_ORIGINS?: string;
@@ -1333,7 +1341,7 @@ async function route(req: Request, env: Env): Promise<Response> {
     const rows = await env.DB.prepare(
       `SELECT lead_id, source_id, entity_type, entity_name, entity_domain,
               industry, country, vulnerability_id, severity, cvss_score,
-              summary, services_json, status, created_at, updated_at
+              summary, services_json, status, investigation_status, created_at, updated_at
        FROM prospect_leads ${where}
        ORDER BY created_at DESC LIMIT ?`
     ).bind(...params).all();
@@ -1448,33 +1456,35 @@ async function route(req: Request, env: Env): Promise<Response> {
            started_at = strftime('%Y-%m-%dT%H:%M:%fZ','now')`
       ).bind(analysisId, leadId, svc).run();
 
-      // Fan out to scaffold service (best-effort)
-      const serviceOrigins: Record<string, string> = {
-        secure: "https://secure.haiphen.io",
-        network: "https://network.haiphen.io",
-        graph: "https://graph.haiphen.io",
-        risk: "https://risk.haiphen.io",
-        causal: "https://causal.haiphen.io",
-        supply: "https://supply.haiphen.io",
+      // Fan out to scaffold service via service binding (best-effort)
+      const svcFetchers: Record<string, Fetcher | undefined> = {
+        secure: env.SVC_SECURE,
+        network: env.SVC_NETWORK,
+        graph: env.SVC_GRAPH,
+        risk: env.SVC_RISK,
+        causal: env.SVC_CAUSAL,
+        supply: env.SVC_SUPPLY,
       };
 
       try {
-        const origin = serviceOrigins[svc];
-        if (origin && env.INTERNAL_TOKEN) {
-          const svcRes = await fetch(`${origin}/v1/${svc}/prospect-analyze`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "X-Internal-Token": env.INTERNAL_TOKEN,
-            },
-            body: JSON.stringify({
-              lead_id: leadId,
-              entity_name: lead.entity_name,
-              vulnerability_id: lead.vulnerability_id,
-              summary: lead.summary,
-              cvss_score: lead.cvss_score,
+        const fetcher = svcFetchers[svc];
+        if (fetcher && env.INTERNAL_TOKEN) {
+          const svcRes = await fetcher.fetch(
+            new Request(`https://internal/v1/${svc}/prospect-analyze`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "X-Internal-Token": env.INTERNAL_TOKEN,
+              },
+              body: JSON.stringify({
+                lead_id: leadId,
+                entity_name: lead.entity_name,
+                vulnerability_id: lead.vulnerability_id,
+                summary: lead.summary,
+                cvss_score: lead.cvss_score,
+              }),
             }),
-          });
+          );
 
           const svcData = await svcRes.json().catch(() => null) as any;
 
@@ -2042,13 +2052,13 @@ async function route(req: Request, env: Env): Promise<Response> {
   const SERVICE_WEIGHTS: Record<string, number> = {
     secure: 0.20, network: 0.15, causal: 0.20, risk: 0.20, graph: 0.10, supply: 0.15,
   };
-  const SERVICE_ORIGINS: Record<string, string> = {
-    secure: "https://secure.haiphen.io",
-    network: "https://network.haiphen.io",
-    graph: "https://graph.haiphen.io",
-    risk: "https://risk.haiphen.io",
-    causal: "https://causal.haiphen.io",
-    supply: "https://supply.haiphen.io",
+  const SERVICE_FETCHERS: Record<string, Fetcher> = {
+    secure: env.SVC_SECURE,
+    network: env.SVC_NETWORK,
+    graph: env.SVC_GRAPH,
+    risk: env.SVC_RISK,
+    causal: env.SVC_CAUSAL,
+    supply: env.SVC_SUPPLY,
   };
 
   // ---- Helper: check budget via watchdog status ----
@@ -2079,18 +2089,114 @@ async function route(req: Request, env: Env): Promise<Response> {
     return { allowed: true, level: "normal" };
   }
 
+  // ---- Helper: hydrate triples from lead data and step findings ----
+  async function hydrateTriples(
+    lead: { lead_id: string; entity_name: string; vulnerability_id: string | null; summary: string; cvss_score: number | null; source_id: string | null; severity?: string | null },
+    source: string,
+    findings?: string[],
+    service?: string,
+  ): Promise<void> {
+    const triples: Array<{ s: string; p: string; o: string; conf: number; src: string }> = [];
+    const entityNode = `entity:${lead.entity_name}`;
+    const vulnNode = lead.vulnerability_id ? `vuln:${lead.vulnerability_id}` : null;
+
+    if (source === "seed") {
+      // Pre-pipeline seed triples from lead data
+      if (vulnNode) {
+        triples.push({ s: vulnNode, p: "affects", o: entityNode, conf: 1.0, src: "seed" });
+        if (lead.severity) {
+          triples.push({ s: vulnNode, p: "has_severity", o: lead.severity, conf: 1.0, src: "seed" });
+        }
+        if (lead.cvss_score != null) {
+          triples.push({ s: vulnNode, p: "has_cvss", o: String(lead.cvss_score), conf: 1.0, src: "seed" });
+        }
+        // Short summary excerpt (first 100 chars)
+        const excerpt = lead.summary.slice(0, 100).replace(/'/g, "");
+        if (excerpt) {
+          triples.push({ s: vulnNode, p: "described_as", o: excerpt, conf: 0.8, src: "seed" });
+        }
+      }
+      if (lead.source_id) {
+        triples.push({ s: entityNode, p: "has_source", o: `source:${lead.source_id}`, conf: 1.0, src: "seed" });
+      }
+    } else if (source === "step" && findings && service) {
+      // Post-step extraction from findings
+      const stepSrc = `step:${service}`;
+
+      for (const finding of findings) {
+        // Extract entity recurrence: "Entity X appears in N leads"
+        const recurrenceMatch = finding.match(/"([\w.\-]+)" appears in (\d+) leads/);
+        if (recurrenceMatch) {
+          triples.push({ s: `entity:${recurrenceMatch[1]}`, p: "recurrence_count", o: recurrenceMatch[2], conf: 0.9, src: stepSrc });
+        }
+
+        // Extract CVE mentions for co-occurrence
+        const cveMatches = finding.match(/CVE-\d{4}-\d+/g);
+        if (cveMatches && cveMatches.length >= 2) {
+          for (let i = 1; i < cveMatches.length; i++) {
+            triples.push({ s: `vuln:${cveMatches[0]}`, p: "co_mentioned_with", o: `vuln:${cveMatches[i]}`, conf: 0.7, src: stepSrc });
+          }
+        } else if (cveMatches && cveMatches.length === 1 && vulnNode && `vuln:${cveMatches[0]}` !== vulnNode) {
+          triples.push({ s: vulnNode, p: "co_mentioned_with", o: `vuln:${cveMatches[0]}`, conf: 0.7, src: stepSrc });
+        }
+
+        // Service-specific extractions
+        if (service === "secure") {
+          const cpeMatch = finding.match(/CPE[:\s]+(cpe:[^\s,]+)/i);
+          if (cpeMatch && vulnNode) {
+            triples.push({ s: vulnNode, p: "matched_cpe", o: cpeMatch[1], conf: 0.8, src: stepSrc });
+          }
+        }
+        if (service === "supply") {
+          const vendorMatch = finding.match(/(?:vendor|supplier|provider)[:\s]+"?([^",]+)"?/i);
+          if (vendorMatch) {
+            triples.push({ s: entityNode, p: "supplied_by", o: `vendor:${vendorMatch[1].trim()}`, conf: 0.6, src: stepSrc });
+          }
+          if (/depend/i.test(finding)) {
+            const depMatch = finding.match(/"([\w.\-]+)"/);
+            if (depMatch && depMatch[1] !== lead.entity_name) {
+              triples.push({ s: entityNode, p: "depends_on", o: `entity:${depMatch[1]}`, conf: 0.6, src: stepSrc });
+            }
+          }
+        }
+        if (service === "network") {
+          if (/connect|link|interface/i.test(finding)) {
+            const connMatch = finding.match(/"([\w.\-]+)"/);
+            if (connMatch && connMatch[1] !== lead.entity_name) {
+              triples.push({ s: entityNode, p: "connects_to", o: `entity:${connMatch[1]}`, conf: 0.5, src: stepSrc });
+            }
+          }
+        }
+      }
+    }
+
+    // Batch INSERT OR IGNORE (dedup index prevents duplicates)
+    for (const t of triples) {
+      try {
+        await env.DB.prepare(
+          `INSERT OR IGNORE INTO triples (subject, predicate, object, confidence, source) VALUES (?, ?, ?, ?, ?)`
+        ).bind(t.s, t.p, t.o, t.conf, t.src).run();
+      } catch { /* ignore dedup/schema errors */ }
+    }
+  }
+
   // ---- Helper: run sequential pipeline ----
   async function runPipeline(
     investigationId: string,
-    lead: { lead_id: string; entity_name: string; vulnerability_id: string | null; summary: string; cvss_score: number | null; source_id: string | null },
-  ): Promise<{ steps: Array<{ service: string; step_id: string; score: number | null; findings: string[]; recommendation: string | null; duration_ms: number; status: string }>; aggregateScore: number }> {
-    const upstreamContext: { prior_scores: Record<string, number>; prior_findings: string[]; investigation_id: string } = {
+    lead: { lead_id: string; entity_name: string; vulnerability_id: string | null; summary: string; cvss_score: number | null; source_id: string | null; severity?: string | null },
+  ): Promise<{ steps: Array<{ service: string; step_id: string; score: number | null; findings: string[]; recommendation: string | null; duration_ms: number; status: string }>; aggregateScore: number; allGaps: DataGap[] }> {
+    // Pre-pipeline: seed triples from lead data
+    await hydrateTriples(lead, "seed");
+
+    const upstreamContext: { prior_scores: Record<string, number>; prior_findings: string[]; prior_gaps: DataGap[]; investigation_id: string } = {
       prior_scores: {},
       prior_findings: [],
+      prior_gaps: [],
       investigation_id: investigationId,
     };
 
     const steps: Array<{ service: string; step_id: string; score: number | null; findings: string[]; recommendation: string | null; duration_ms: number; status: string }> = [];
+    const allGaps: DataGap[] = [];
 
     for (let i = 0; i < SERVICE_PIPELINE.length; i++) {
       const svc = SERVICE_PIPELINE[i];
@@ -2103,46 +2209,57 @@ async function route(req: Request, env: Env): Promise<Response> {
 
       const t0 = Date.now();
       try {
-        const origin = SERVICE_ORIGINS[svc];
-        if (!origin || !env.INTERNAL_TOKEN) throw new Error("Service not configured");
+        const fetcher = SERVICE_FETCHERS[svc];
+        if (!fetcher || !env.INTERNAL_TOKEN) throw new Error(`Service not configured (fetcher=${!!fetcher}, token=${!!env.INTERNAL_TOKEN})`);
 
-        const ac = new AbortController();
-        const timer = setTimeout(() => ac.abort(), 3000);
-        const svcRes = await fetch(`${origin}/v1/${svc}/prospect-analyze`, {
-          method: "POST",
-          signal: ac.signal,
-          headers: { "Content-Type": "application/json", "X-Internal-Token": env.INTERNAL_TOKEN },
-          body: JSON.stringify({
-            lead_id: lead.lead_id,
-            entity_name: lead.entity_name,
-            vulnerability_id: lead.vulnerability_id,
-            summary: lead.summary,
-            cvss_score: lead.cvss_score,
-            upstream_context: upstreamContext,
+        const svcRes = await fetcher.fetch(
+          new Request(`https://internal/v1/${svc}/prospect-analyze`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "X-Internal-Token": env.INTERNAL_TOKEN },
+            body: JSON.stringify({
+              lead_id: lead.lead_id,
+              entity_name: lead.entity_name,
+              vulnerability_id: lead.vulnerability_id,
+              summary: lead.summary,
+              cvss_score: lead.cvss_score,
+              upstream_context: upstreamContext,
+            }),
           }),
-        });
-        clearTimeout(timer);
+        );
 
         const svcData = await svcRes.json().catch(() => null) as any;
         const durationMs = Date.now() - t0;
         const score: number | null = svcData?.score ?? null;
         const findings: string[] = Array.isArray(svcData?.findings) ? svcData.findings : [];
         const recommendation: string | null = svcData?.recommendation ?? null;
+        const stepGaps: DataGap[] = Array.isArray(svcData?.gaps) ? svcData.gaps.map((g: any) => ({ ...g, service: svc })) : [];
 
+        // Store gaps_json alongside step data
         await env.DB.prepare(
-          `UPDATE investigation_steps SET status = 'completed', score = ?, findings_json = ?, recommendation = ?, duration_ms = ? WHERE step_id = ?`
-        ).bind(score, JSON.stringify(findings), recommendation, durationMs, stepId).run();
+          `UPDATE investigation_steps SET status = 'completed', score = ?, findings_json = ?, recommendation = ?, duration_ms = ?, gaps_json = ? WHERE step_id = ?`
+        ).bind(score, JSON.stringify(findings), recommendation, durationMs, stepGaps.length > 0 ? JSON.stringify(stepGaps) : null, stepId).run();
+
+        // Post-step: extract triples from findings
+        if (findings.length > 0) {
+          await hydrateTriples(lead, "step", findings, svc);
+        }
 
         // Update upstream context for next service
         if (score !== null) upstreamContext.prior_scores[svc] = score;
         upstreamContext.prior_findings.push(...findings);
+        if (stepGaps.length > 0) {
+          upstreamContext.prior_gaps.push(...stepGaps);
+          allGaps.push(...stepGaps);
+        }
 
         steps.push({ service: svc, step_id: stepId, score, findings, recommendation, duration_ms: durationMs, status: "completed" });
       } catch (e: any) {
         const durationMs = Date.now() - t0;
+        const errMsg = String(e?.message ?? e).slice(0, 500);
+        console.error(`[pipeline] ${svc} failed (${durationMs}ms):`, errMsg);
         await env.DB.prepare(
-          `UPDATE investigation_steps SET status = 'failed', duration_ms = ? WHERE step_id = ?`
-        ).bind(durationMs, stepId).run();
+          `UPDATE investigation_steps SET status = 'failed', duration_ms = ?, recommendation = ? WHERE step_id = ?`
+        ).bind(durationMs, `ERROR: ${errMsg}`, stepId).run();
         steps.push({ service: svc, step_id: stepId, score: null, findings: [], recommendation: null, duration_ms: durationMs, status: "failed" });
       }
     }
@@ -2159,7 +2276,7 @@ async function route(req: Request, env: Env): Promise<Response> {
     }
     const aggregateScore = totalWeight > 0 ? Math.round((weightedSum / totalWeight) * 100) / 100 : 0;
 
-    return { steps, aggregateScore };
+    return { steps, aggregateScore, allGaps };
   }
 
   // ---- Helper: derive requirements ----
@@ -2233,11 +2350,11 @@ async function route(req: Request, env: Env): Promise<Response> {
     ).bind(leadId).run();
 
     // Run sequential pipeline
-    const { steps, aggregateScore } = await runPipeline(investigationId, lead);
+    const { steps, aggregateScore, allGaps } = await runPipeline(investigationId, lead);
 
     // Deterministic structured synthesis (replaces Claude API)
-    const synthesis = synthesize(lead, steps, aggregateScore);
-    const claudeSummary = { summary: synthesis.summary, impact: synthesis.impact, recommendations: synthesis.recommendations };
+    const synthesis = synthesize(lead, steps, aggregateScore, allGaps);
+    const claudeSummary = { summary: synthesis.summary, impact: synthesis.impact, recommendations: synthesis.recommendations, data_gaps: synthesis.data_gaps };
     const claudeUsed = 0;
 
     // Derive requirements
@@ -2378,10 +2495,11 @@ async function route(req: Request, env: Env): Promise<Response> {
     const leadId = parts[parts.length - 2];
 
     const lead = await env.DB.prepare(
-      `SELECT lead_id, entity_name, vulnerability_id, summary, cvss_score, source_id FROM prospect_leads WHERE lead_id = ?`
+      `SELECT lead_id, entity_name, vulnerability_id, summary, cvss_score, source_id, severity FROM prospect_leads WHERE lead_id = ?`
     ).bind(leadId).first<{
       lead_id: string; entity_name: string; vulnerability_id: string | null;
       summary: string; cvss_score: number | null; source_id: string | null;
+      severity: string | null;
     }>();
     if (!lead) return err("not_found", "Lead not found", requestId, 404, corsHeaders(req, env));
 
@@ -2411,7 +2529,7 @@ async function route(req: Request, env: Env): Promise<Response> {
       `UPDATE prospect_leads SET investigation_status = 're_investigating', updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE lead_id = ?`
     ).bind(leadId).run();
 
-    const { steps, aggregateScore } = await runPipeline(investigationId, lead);
+    const { steps, aggregateScore, allGaps: _reInvGaps } = await runPipeline(investigationId, lead);
 
     const riskReduction = riskScoreBefore !== null ? Math.round((riskScoreBefore - aggregateScore) * 100) / 100 : null;
 
@@ -2447,11 +2565,13 @@ async function route(req: Request, env: Env): Promise<Response> {
     const statusFilter = url.searchParams.get("status");
     const limit = Math.min(parseInt(url.searchParams.get("limit") || "20", 10), 100);
 
-    let query = `SELECT investigation_id, lead_id, status, aggregate_score, claude_used, budget_level, created_at FROM investigations WHERE user_id = ?`;
+    let query = `SELECT i.investigation_id, i.lead_id, i.status, i.aggregate_score, i.claude_used, i.budget_level, i.created_at,
+       p.entity_name, p.vulnerability_id, p.severity
+       FROM investigations i LEFT JOIN prospect_leads p ON p.lead_id = i.lead_id WHERE i.user_id = ?`;
     const binds: unknown[] = [u.user_login];
-    if (leadFilter) { query += ` AND lead_id = ?`; binds.push(leadFilter); }
-    if (statusFilter) { query += ` AND status = ?`; binds.push(statusFilter); }
-    query += ` ORDER BY created_at DESC LIMIT ?`;
+    if (leadFilter) { query += ` AND i.lead_id = ?`; binds.push(leadFilter); }
+    if (statusFilter) { query += ` AND i.status = ?`; binds.push(statusFilter); }
+    query += ` ORDER BY i.created_at DESC LIMIT ?`;
     binds.push(limit);
 
     const rows = await env.DB.prepare(query).bind(...binds).all();
@@ -2971,11 +3091,11 @@ async function route(req: Request, env: Env): Promise<Response> {
           `UPDATE prospect_leads SET investigation_status = 'investigating', updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE lead_id = ?`
         ).bind(lead.lead_id).run();
 
-        const { steps, aggregateScore } = await runPipeline(investigationId, lead);
+        const { steps, aggregateScore, allGaps } = await runPipeline(investigationId, lead);
 
         // Deterministic synthesis
-        const synthesis = synthesize(lead, steps, aggregateScore);
-        const claudeSummary = { summary: synthesis.summary, impact: synthesis.impact, recommendations: synthesis.recommendations };
+        const synthesis = synthesize(lead, steps, aggregateScore, allGaps);
+        const claudeSummary = { summary: synthesis.summary, impact: synthesis.impact, recommendations: synthesis.recommendations, data_gaps: synthesis.data_gaps };
 
         // Derive requirements
         const requirements = deriveRequirements(steps, lead);

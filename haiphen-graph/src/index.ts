@@ -356,77 +356,166 @@ async function route(req: Request, env: Env): Promise<Response> {
     const body = await req.json().catch(() => null) as null | {
       lead_id: string; entity_name: string;
       vulnerability_id?: string; summary: string;
+      cvss_score?: number;
       upstream_context?: {
         prior_scores: Record<string, number>;
         prior_findings: string[];
+        prior_gaps?: Array<{ type: string; description: string; suggestion: string }>;
         investigation_id: string;
       };
     };
     if (!body?.lead_id) return errJson("invalid_request", "Missing lead_id", rid, 400, cors);
 
     const findings: string[] = [];
+    const gaps: Array<{ type: string; description: string; suggestion: string }> = [];
     let score = 15; // baseline
 
-    // Upstream context: high upstream scores = search related entities more aggressively
+    // Upstream context bonus (preserved from v1)
     const uc = body.upstream_context;
+    let upstreamBonus = 0;
     if (uc && uc.prior_findings && uc.prior_findings.length >= 3) {
-      score += 10;
-      findings.push(`${uc.prior_findings.length} upstream findings — widening graph traversal depth`);
+      upstreamBonus += 10;
+      findings.push(`${uc.prior_findings.length} upstream findings inform graph traversal scope`);
     }
     if (uc && uc.prior_scores) {
       const maxScore = Math.max(...Object.values(uc.prior_scores));
       if (maxScore >= 60) {
-        score += 10;
-        findings.push(`High upstream score (${maxScore}) — aggressive entity relationship search`);
+        upstreamBonus += 10;
+        findings.push(`High upstream score (${maxScore}) amplifies graph analysis priority`);
       }
     }
+    upstreamBonus = Math.min(upstreamBonus, 20);
+    score += upstreamBonus;
 
-    // Entity relationship density — how connected is this entity to other leads?
+    // Build subject identifiers for triple queries
+    const entityNode = `entity:${body.entity_name}`;
+    const vulnNode = body.vulnerability_id ? `vuln:${body.vulnerability_id}` : null;
+    const queryNode = vulnNode || entityNode;
+
+    // Query 1 — Blast Radius (recursive CTE, depth 3)
+    let blastPts = 0;
     try {
-      const relatedLeads = await env.DB.prepare(
-        `SELECT COUNT(*) as cnt FROM prospect_leads
-         WHERE entity_name = ? AND status != 'archived'`
-      ).bind(body.entity_name).first<{ cnt: number }>();
+      const blastResult = await env.DB.prepare(
+        `WITH RECURSIVE blast(node, depth) AS (
+          SELECT ?, 0
+          UNION ALL
+          SELECT t.object, b.depth + 1
+          FROM triples t JOIN blast b ON t.subject = b.node
+          WHERE b.depth < 3 AND t.predicate IN ('affects','depends_on','connects_to','supplied_by')
+        )
+        SELECT COUNT(DISTINCT node) - 1 AS reach FROM blast`
+      ).bind(queryNode).first<{ reach: number }>();
 
-      const cnt = relatedLeads?.cnt ?? 0;
-      if (cnt >= 5) {
-        score += 25;
-        findings.push(`Entity "${body.entity_name}" appears in ${cnt} leads — high recurrence density`);
-      } else if (cnt >= 2) {
-        score += 15;
-        findings.push(`Entity "${body.entity_name}" appears in ${cnt} leads — moderate recurrence`);
+      const reach = blastResult?.reach ?? 0;
+      if (reach >= 11) {
+        blastPts = 25;
+        findings.push(`Blast radius: ${reach} reachable nodes (depth 3) — high systemic exposure`);
+      } else if (reach >= 6) {
+        blastPts = 20;
+        findings.push(`Blast radius: ${reach} reachable nodes (depth 3) — moderate exposure`);
+      } else if (reach >= 3) {
+        blastPts = 10;
+        findings.push(`Blast radius: ${reach} reachable nodes (depth 3) — limited exposure`);
+      } else if (reach > 0) {
+        findings.push(`Blast radius: ${reach} reachable node(s) — minimal graph footprint`);
       }
     } catch { /* best-effort */ }
+    score += blastPts;
 
-    // Check graph entities for this entity name
+    // Query 2 — Entity Centrality (inbound + outbound degree)
+    let centralityPts = 0;
     try {
-      const graphEntities = await env.DB.prepare(
-        `SELECT COUNT(*) as cnt FROM graph_entities
-         WHERE LOWER(label) LIKE LOWER(?)`
-      ).bind(`%${body.entity_name}%`).first<{ cnt: number }>();
+      const degreeResult = await env.DB.prepare(
+        `SELECT (SELECT COUNT(*) FROM triples WHERE subject = ?) +
+                (SELECT COUNT(*) FROM triples WHERE object = ?) AS degree`
+      ).bind(entityNode, entityNode).first<{ degree: number }>();
 
-      if (graphEntities && graphEntities.cnt > 0) {
-        score += 15;
-        findings.push(`Entity found in knowledge graph with ${graphEntities.cnt} node(s) — relationship mapping available`);
+      const degree = degreeResult?.degree ?? 0;
+      if (degree >= 9) {
+        centralityPts = 20;
+        findings.push(`Entity centrality: degree ${degree} — highly connected node`);
+      } else if (degree >= 4) {
+        centralityPts = 10;
+        findings.push(`Entity centrality: degree ${degree} — moderately connected`);
+      } else if (degree > 0) {
+        findings.push(`Entity centrality: degree ${degree} — sparsely connected`);
       }
     } catch { /* best-effort */ }
+    score += centralityPts;
 
-    // Keyword density scoring
-    const lower = body.summary.toLowerCase();
-    if (/interconnect|relationship|depend|link|graph/.test(lower)) {
-      score += 10;
-      findings.push("Graph-relevant relationship language detected");
+    // Query 3 — Related Vulnerabilities (co-affected entities)
+    let relatedPts = 0;
+    if (vulnNode) {
+      try {
+        const relatedVulns = await env.DB.prepare(
+          `SELECT DISTINCT t2.subject AS related_vuln
+           FROM triples t1
+           JOIN triples t2 ON t1.object = t2.object
+             AND t2.predicate = 'affects'
+             AND t2.subject != t1.subject
+           WHERE t1.subject = ? AND t1.predicate = 'affects'
+           LIMIT 10`
+        ).bind(vulnNode).all<{ related_vuln: string }>();
+
+        const relCount = relatedVulns.results?.length ?? 0;
+        if (relCount >= 3) {
+          relatedPts = 20;
+          const names = (relatedVulns.results ?? []).slice(0, 5).map(r => r.related_vuln.replace("vuln:", "")).join(", ");
+          findings.push(`${relCount} related vulnerabilities share affected entities: ${names}`);
+        } else if (relCount >= 1) {
+          relatedPts = 10;
+          const names = (relatedVulns.results ?? []).map(r => r.related_vuln.replace("vuln:", "")).join(", ");
+          findings.push(`${relCount} related vulnerability(ies) found: ${names}`);
+        }
+      } catch { /* best-effort */ }
+    }
+    score += relatedPts;
+
+    // Query 4 — Data Richness (triple count for this entity)
+    let richnessPts = 0;
+    try {
+      const richness = await env.DB.prepare(
+        `SELECT COUNT(*) AS cnt FROM triples WHERE subject = ? OR object = ?`
+      ).bind(entityNode, entityNode).first<{ cnt: number }>();
+
+      const cnt = richness?.cnt ?? 0;
+      if (cnt >= 10) {
+        richnessPts = 10;
+        findings.push(`Data richness: ${cnt} triples — well-characterized entity`);
+      } else if (cnt >= 3) {
+        richnessPts = 5;
+        findings.push(`Data richness: ${cnt} triples — partially characterized`);
+      } else {
+        gaps.push({
+          type: "data_gap",
+          description: `Entity "${body.entity_name}" has only ${cnt} triple(s) in the knowledge graph`,
+          suggestion: "Add vendor/product relationships or expand crawler keywords for this entity",
+        });
+        if (cnt > 0) {
+          findings.push(`Data richness: ${cnt} triple(s) — sparse data, gap reported`);
+        }
+      }
+    } catch { /* best-effort */ }
+    score += richnessPts;
+
+    // Gap: no blast radius and no related vulns → relationship gap
+    if (blastPts === 0 && relatedPts === 0 && centralityPts === 0) {
+      gaps.push({
+        type: "relationship_gap",
+        description: `No relationship data found for "${body.entity_name}" in the triple store`,
+        suggestion: "Run additional investigations or manually add entity relationships to build graph density",
+      });
     }
 
     score = Math.min(score, 100);
 
     const recommendation = score >= 60
-      ? "High entity connectivity — recommend full graph traversal to map relationship density and identify systemic risk clusters."
+      ? "High entity connectivity — systemic risk cluster identified. Recommend blast-radius isolation analysis."
       : score >= 30
-      ? "Moderate graph relevance — entity has known connections worth investigating."
-      : "Low graph density — entity appears isolated in current data.";
+      ? "Moderate graph relevance — entity has traversable connections worth deeper investigation."
+      : "Low graph density — entity appears isolated. Expand data collection to improve graph coverage.";
 
-    return okJson({ score, findings, recommendation }, rid, cors);
+    return okJson({ score, findings, recommendation, gaps }, rid, cors);
   }
 
   // ---- fallback ----

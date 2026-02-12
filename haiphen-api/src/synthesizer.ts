@@ -38,12 +38,20 @@ export interface ScoredImpact {
   label: string;
 }
 
+export interface DataGap {
+  type: "data_gap" | "relationship_gap" | "coverage_gap";
+  description: string;
+  suggestion: string;
+  service?: string;
+}
+
 export interface SynthesisResult {
   summary: string;
   impact: string;
   recommendations: string[];
   threats: ClassifiedThreat[];
   impacts: ScoredImpact[];
+  data_gaps?: DataGap[];
 }
 
 // ---------------------------------------------------------------------------
@@ -247,6 +255,7 @@ export function synthesize(
   lead: { entity_name: string; vulnerability_id: string | null; cvss_score: number | null },
   steps: Array<{ service: string; score: number | null; findings: string[] }>,
   aggregateScore: number,
+  gaps?: DataGap[],
 ): SynthesisResult {
   const threats = classifyThreats(steps);
   const impacts = scoreImpacts(threats, aggregateScore);
@@ -267,5 +276,9 @@ export function synthesize(
   // Recommendations — one per classified threat
   const recommendations = threats.map(t => RECOMMENDATION_TEMPLATES[t.primitive]);
 
-  return { summary, impact, recommendations, threats, impacts };
+  const result: SynthesisResult = { summary, impact, recommendations, threats, impacts };
+  if (gaps && gaps.length > 0) {
+    result.data_gaps = gaps;
+  }
+  return result;
 }
