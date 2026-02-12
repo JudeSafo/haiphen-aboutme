@@ -149,16 +149,48 @@ async function main(): Promise<void> {
   }
 
   const duration = Date.now() - start;
+  const totalWritten = stats.reduce((a, s) => a + s.written, 0);
   const summary = {
     ok: true,
     duration_ms: duration,
     sources: stats,
     total_found: stats.reduce((a, s) => a + s.found, 0),
-    total_written: stats.reduce((a, s) => a + s.written, 0),
+    total_written: totalWritten,
     total_errors: stats.reduce((a, s) => a + s.errors, 0),
   };
 
   console.log("[prospect-crawler] Complete:", JSON.stringify(summary, null, 2));
+
+  // Trigger regression detection if new leads were written
+  if (totalWritten > 0) {
+    const apiOrigin = process.env.HAIPHEN_API_ORIGIN ?? "https://api.haiphen.io";
+    const internalToken = process.env.INTERNAL_TOKEN ?? "";
+    if (internalToken) {
+      try {
+        const regRes = await fetch(`${apiOrigin}/v1/prospect/regressions/detect`, {
+          method: "POST",
+          headers: { "X-Internal-Token": internalToken },
+        });
+        const regData = (await regRes.json()) as { ok?: boolean; entity_regressions?: number; vuln_class_regressions?: number };
+        console.log("[prospect-crawler] Regression detection:", regData);
+      } catch (err) {
+        console.warn("[prospect-crawler] Regression detection failed:", err);
+      }
+
+      // Auto-investigate top new leads
+      try {
+        const invRes = await fetch(`${apiOrigin}/v1/internal/prospect/auto-investigate`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "X-Internal-Token": internalToken },
+          body: JSON.stringify({ max_leads: 5 }),
+        });
+        const invData = (await invRes.json()) as { ok?: boolean; investigated?: number };
+        console.log("[prospect-crawler] Auto-investigate:", invData);
+      } catch (err) {
+        console.warn("[prospect-crawler] Auto-investigate failed:", err);
+      }
+    }
+  }
 }
 
 main().catch((err) => {

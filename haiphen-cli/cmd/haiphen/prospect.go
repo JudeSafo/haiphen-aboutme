@@ -40,6 +40,7 @@ func cmdProspect(cfg *config.Config, st store.Store) *cobra.Command {
 		cmdProspectInvestigations(cfg, st),
 		cmdProspectSolve(cfg, st),
 		cmdProspectReInvestigate(cfg, st),
+		cmdProspectPipeline(cfg, st),
 	)
 	return cmd
 }
@@ -779,7 +780,7 @@ func cmdProspectInvestigate(cfg *config.Config, st store.Store) *cobra.Command {
 				}
 				if json.Unmarshal(b, &out) == nil {
 					fmt.Printf("Investigation: %s\n", out.InvestigationID)
-					fmt.Printf("Aggregate Score: %.1f  Budget: %s  Claude: %v\n\n", out.AggregateScore, out.BudgetLevel, out.ClaudeUsed == 1)
+					fmt.Printf("Aggregate Score: %.1f  Budget: %s  Synthesis: deterministic\n\n", out.AggregateScore, out.BudgetLevel)
 
 					fmt.Printf("%-10s %-8s %-6s %s\n", "SERVICE", "STATUS", "SCORE", "FINDINGS")
 					fmt.Println(strings.Repeat("-", 80))
@@ -803,7 +804,7 @@ func cmdProspectInvestigate(cfg *config.Config, st store.Store) *cobra.Command {
 					}
 
 					if out.ClaudeSummary != nil {
-						fmt.Printf("\nClaude Synthesis:\n  %s\n", out.ClaudeSummary.Summary)
+						fmt.Printf("\nSynthesis:\n  %s\n", out.ClaudeSummary.Summary)
 						fmt.Printf("  Impact: %s\n", out.ClaudeSummary.Impact)
 						for _, r := range out.ClaudeSummary.Recommendations {
 							fmt.Printf("  - %s\n", r)
@@ -892,27 +893,22 @@ func cmdProspectInvestigations(cfg *config.Config, st store.Store) *cobra.Comman
 						LeadID          string  `json:"lead_id"`
 						Status          string  `json:"status"`
 						AggregateScore  float64 `json:"aggregate_score"`
-						ClaudeUsed      int     `json:"claude_used"`
 						BudgetLevel     string  `json:"budget_level"`
 						CreatedAt       string  `json:"created_at"`
 					} `json:"items"`
 				}
 				if json.Unmarshal(b, &out) == nil {
-					fmt.Printf("%-38s %-38s %-12s %-8s %-7s %-12s %s\n",
-						"INVESTIGATION", "LEAD", "STATUS", "SCORE", "CLAUDE", "BUDGET", "CREATED")
-					fmt.Println(strings.Repeat("-", 140))
+					fmt.Printf("%-38s %-38s %-12s %-8s %-12s %s\n",
+						"INVESTIGATION", "LEAD", "STATUS", "SCORE", "BUDGET", "CREATED")
+					fmt.Println(strings.Repeat("-", 130))
 					for _, item := range out.Items {
-						claude := "no"
-						if item.ClaudeUsed == 1 {
-							claude = "yes"
-						}
 						created := item.CreatedAt
 						if len(created) > 10 {
 							created = created[:10]
 						}
-						fmt.Printf("%-38s %-38s %-12s %-8.1f %-7s %-12s %s\n",
+						fmt.Printf("%-38s %-38s %-12s %-8.1f %-12s %s\n",
 							item.InvestigationID, item.LeadID, item.Status,
-							item.AggregateScore, claude, item.BudgetLevel, created)
+							item.AggregateScore, item.BudgetLevel, created)
 					}
 					fmt.Printf("\n%d investigations\n", len(out.Items))
 				}
@@ -1054,5 +1050,97 @@ func cmdProspectReInvestigate(cfg *config.Config, st store.Store) *cobra.Command
 	}
 
 	cmd.Flags().BoolVar(&asJSON, "json", false, "Output as JSON")
+	return cmd
+}
+
+// ---- prospect pipeline ----
+
+func cmdProspectPipeline(cfg *config.Config, st store.Store) *cobra.Command {
+	var (
+		asJSON    bool
+		maxLeads  int
+		threshold float64
+	)
+
+	cmd := &cobra.Command{
+		Use:   "pipeline",
+		Short: "Run full prospect pipeline: crawl, investigate, draft outreach",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			token, err := requireToken(st)
+			if err != nil {
+				return err
+			}
+
+			// Step 1: Trigger crawl
+			fmt.Println("[1/3] Triggering crawl...")
+			_, err = util.ServicePost(cmd.Context(), cfg.APIOrigin, "/v1/prospect/crawl", token, nil)
+			if err != nil {
+				fmt.Printf("  Crawl trigger: %v (continuing)\n", err)
+			} else {
+				fmt.Println("  Crawl triggered")
+			}
+
+			// Step 2: Auto-investigate
+			fmt.Printf("[2/3] Auto-investigating top %d leads...\n", maxLeads)
+			invPayload := map[string]interface{}{
+				"max_leads": maxLeads,
+			}
+			invData, err := util.ServicePost(cmd.Context(), cfg.APIOrigin, "/v1/prospect/auto-investigate", token, invPayload)
+			if err != nil {
+				return fmt.Errorf("auto-investigate failed: %w", err)
+			}
+
+			var invOut struct {
+				OK           bool `json:"ok"`
+				Investigated int  `json:"investigated"`
+				Leads        []struct {
+					LeadID         string   `json:"lead_id"`
+					AggregateScore float64  `json:"aggregate_score"`
+					Threats        []string `json:"threats"`
+				} `json:"leads"`
+			}
+			if err := json.Unmarshal(invData, &invOut); err != nil {
+				return fmt.Errorf("parse auto-investigate response: %w", err)
+			}
+
+			fmt.Printf("  Investigated %d leads\n", invOut.Investigated)
+
+			// Step 3: Draft outreach for leads above threshold
+			drafted := 0
+			for _, lead := range invOut.Leads {
+				if lead.AggregateScore >= threshold {
+					fmt.Printf("[3/3] Drafting outreach for %s (score %.1f)...\n", lead.LeadID, lead.AggregateScore)
+					outreachPayload := map[string]interface{}{}
+					_, oErr := util.ServicePost(cmd.Context(), cfg.APIOrigin,
+						"/v1/prospect/leads/"+lead.LeadID+"/outreach", token, outreachPayload)
+					if oErr != nil {
+						fmt.Printf("  Outreach draft failed for %s: %v\n", lead.LeadID, oErr)
+					} else {
+						drafted++
+						fmt.Printf("  Outreach drafted for %s\n", lead.LeadID)
+					}
+				}
+			}
+
+			if asJSON {
+				summary := map[string]interface{}{
+					"investigated": invOut.Investigated,
+					"drafted":      drafted,
+					"leads":        invOut.Leads,
+				}
+				b, _ := json.MarshalIndent(summary, "", "  ")
+				fmt.Println(string(b))
+			} else {
+				fmt.Printf("\nPipeline complete: %d investigated, %d outreach drafted (threshold %.0f)\n",
+					invOut.Investigated, drafted, threshold)
+			}
+
+			return nil
+		},
+	}
+
+	cmd.Flags().BoolVar(&asJSON, "json", false, "Output as JSON")
+	cmd.Flags().IntVar(&maxLeads, "max-leads", 5, "Max leads to investigate")
+	cmd.Flags().Float64Var(&threshold, "threshold", 60.0, "Min aggregate score for outreach draft")
 	return cmd
 }

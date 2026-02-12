@@ -7,6 +7,7 @@ import { normalizeTradesJson, upsertMetricsDaily } from "./ingest";
 import { requireUserFromAuthCookie, verifyUserFromJwt } from "./auth";
 import { getExtremes, getKpis, getPortfolioAssets, getSeries } from "./metrics_queries";
 import { withCors, handleOptions as corsOptions } from "./cors";
+import { synthesize } from "./synthesizer";
 
 // Export DO classes for Wrangler
 export { RateLimiterDO, QuotaDO, SignalFeedDO };
@@ -58,8 +59,11 @@ type Env = {
   // HMAC signing secret for GKE trades sync job (hex-encoded)
   SIGNING_SECRET?: string;
 
-  // Anthropic API key for Claude synthesis (optional, set via wrangler secret)
+  // Anthropic API key for Claude synthesis (deprecated, replaced by deterministic synthesizer)
   ANTHROPIC_API_KEY?: string;
+
+  // HMAC signing secret for prospect outreach emails (shared with haiphen-contact)
+  PROSPECT_HMAC_SECRET?: string;
 
   // Optional: for CORS allowlist
   ALLOWED_ORIGINS?: string;
@@ -1982,7 +1986,7 @@ async function route(req: Request, env: Env): Promise<Response> {
     });
 
     const ts = String(Date.now());
-    const sig = await hmacSha256Hex(env.INTERNAL_TOKEN, `${ts}.${payload}`);
+    const sig = await hmacSha256Hex(env.PROSPECT_HMAC_SECRET ?? env.INTERNAL_TOKEN, `${ts}.${payload}`);
 
     try {
       const contactRes = await fetch("https://contact.haiphen.io/api/prospect/outreach/send", {
@@ -2195,51 +2199,6 @@ async function route(req: Request, env: Env): Promise<Response> {
     return reqs;
   }
 
-  // ---- Helper: Claude API synthesis ----
-  async function callClaudeForSynthesis(
-    lead: { entity_name: string; vulnerability_id: string | null; summary: string; cvss_score: number | null },
-    steps: Array<{ service: string; score: number | null; findings: string[] }>,
-  ): Promise<{ summary: string; impact: string; recommendations: string[] } | null> {
-    if (!env.ANTHROPIC_API_KEY) return null;
-
-    try {
-      const response = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: {
-          "x-api-key": env.ANTHROPIC_API_KEY,
-          "anthropic-version": "2023-06-01",
-          "content-type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "claude-sonnet-4-5-20250929",
-          max_tokens: 1024,
-          messages: [{
-            role: "user",
-            content: `You are a fintech security analyst. Synthesize this investigation for ${lead.entity_name} (${lead.vulnerability_id ?? "no CVE"}).
-Summary: ${lead.summary}
-CVSS: ${lead.cvss_score ?? "N/A"}
-Service results:
-${steps.filter(s => s.score !== null).map(s => `${s.service}(score ${s.score}): ${s.findings.join("; ")}`).join("\n")}
-
-Return ONLY valid JSON: {"summary":"...","impact":"...","recommendations":["..."]}`
-          }],
-        }),
-      });
-
-      // Increment daily counter
-      const dateKey = `claude:calls:${new Date().toISOString().split("T")[0]}`;
-      const current = parseInt(await env.CACHE_KV.get(dateKey) ?? "0");
-      await env.CACHE_KV.put(dateKey, String(current + 1), { expirationTtl: 86400 });
-
-      if (!response.ok) return null;
-      const data = await response.json() as any;
-      const text = data?.content?.[0]?.text ?? "";
-      return JSON.parse(text);
-    } catch {
-      return null;
-    }
-  }
-
   // ---- POST /v1/prospect/leads/:id/investigate ----
   if (req.method === "POST" && url.pathname.match(/^\/v1\/prospect\/leads\/[^/]+\/investigate$/)) {
     const u = await authSessionUser(req, env, requestId);
@@ -2276,20 +2235,10 @@ Return ONLY valid JSON: {"summary":"...","impact":"...","recommendations":["..."
     // Run sequential pipeline
     const { steps, aggregateScore } = await runPipeline(investigationId, lead);
 
-    // Claude API triple-gate
-    let claudeSummary: { summary: string; impact: string; recommendations: string[] } | null = null;
-    let claudeUsed = 0;
-    const maxStepScore = Math.max(...steps.filter(s => s.score !== null).map(s => s.score!), 0);
-    const gate1 = aggregateScore >= 60 || maxStepScore >= 80;
-    const gate2 = budget.level === "normal";
-    const dateKey = `claude:calls:${new Date().toISOString().split("T")[0]}`;
-    const dailyCalls = parseInt(await env.CACHE_KV.get(dateKey) ?? "0");
-    const gate3 = dailyCalls < 50;
-
-    if (gate1 && gate2 && gate3) {
-      claudeSummary = await callClaudeForSynthesis(lead, steps);
-      if (claudeSummary) claudeUsed = 1;
-    }
+    // Deterministic structured synthesis (replaces Claude API)
+    const synthesis = synthesize(lead, steps, aggregateScore);
+    const claudeSummary = { summary: synthesis.summary, impact: synthesis.impact, recommendations: synthesis.recommendations };
+    const claudeUsed = 0;
 
     // Derive requirements
     const requirements = deriveRequirements(steps, lead);
@@ -2944,6 +2893,155 @@ Return ONLY valid JSON: {"summary":"...","impact":"...","recommendations":["..."
     }
 
     return okJson({ ok: true, upserted }, requestId, corsHeaders(req, env));
+  }
+
+  // ---- INTERNAL: prospect digest (top investigations for daily email) ----
+  // GET /v1/internal/prospect/digest
+  if (req.method === "GET" && url.pathname === "/v1/internal/prospect/digest") {
+    const tok = req.headers.get("X-Internal-Token") || "";
+    if (!env.INTERNAL_TOKEN || !safeEqual(tok, env.INTERNAL_TOKEN)) {
+      return err("forbidden", "Forbidden", requestId, 403, corsHeaders(req, env));
+    }
+
+    const sinceParam = url.searchParams.get("since");
+    const limitParam = url.searchParams.get("limit");
+    const since = sinceParam || new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const limit = Math.min(Math.max(parseInt(limitParam || "5", 10) || 5, 1), 20);
+
+    const q = await env.DB.prepare(`
+      SELECT
+        i.investigation_id, i.lead_id,
+        l.entity_name, l.vulnerability_id, l.severity, l.cvss_score,
+        i.aggregate_score, i.claude_summary,
+        i.risk_score_before, i.risk_score_after, i.completed_at,
+        (SELECT json_group_object(s.service, s.score)
+         FROM investigation_steps s
+         WHERE s.investigation_id = i.investigation_id AND s.status = 'completed'
+        ) AS step_scores,
+        (SELECT COUNT(*) FROM investigation_requirements r
+         WHERE r.investigation_id = i.investigation_id) AS requirement_count,
+        (SELECT COUNT(*) FROM investigation_requirements r
+         WHERE r.investigation_id = i.investigation_id AND r.resolved = 1) AS resolved_count
+      FROM investigations i
+      JOIN prospect_leads l ON i.lead_id = l.lead_id
+      WHERE i.status = 'completed'
+        AND i.completed_at >= ?
+      ORDER BY i.aggregate_score DESC
+      LIMIT ?
+    `).bind(since, limit).all();
+
+    const items = (q.results ?? []).map((r: any) => ({
+      ...r,
+      step_scores: r.step_scores ? JSON.parse(r.step_scores) : null,
+    }));
+
+    return okJson({ items, since, limit }, requestId, corsHeaders(req, env));
+  }
+
+  // ---- Shared: auto-investigate top uninvestigated leads ----
+  async function autoInvestigateLeads(userId: string, maxLeads: number, minCvss: number) {
+    const leads = await env.DB.prepare(
+      `SELECT lead_id, entity_name, vulnerability_id, summary, cvss_score, source_id, severity, entity_type, services_json
+       FROM prospect_leads
+       WHERE investigation_status IS NULL AND status = 'new' AND (cvss_score >= ? OR cvss_score IS NULL)
+       ORDER BY cvss_score DESC NULLS LAST
+       LIMIT ?`
+    ).bind(minCvss, maxLeads).all<{
+      lead_id: string; entity_name: string; vulnerability_id: string | null;
+      summary: string; cvss_score: number | null; source_id: string | null;
+      severity: string | null; entity_type: string | null; services_json: string | null;
+    }>();
+
+    const results: Array<{ lead_id: string; aggregate_score: number; threats: string[] }> = [];
+
+    for (const lead of leads.results ?? []) {
+      try {
+        const budget = await checkBudget();
+        if (!budget.allowed) break;
+
+        const investigationId = uuid();
+        const startedAt = new Date().toISOString();
+
+        await env.DB.prepare(
+          `INSERT INTO investigations (investigation_id, lead_id, user_id, status, budget_level, started_at)
+           VALUES (?, ?, ?, 'running', ?, ?)`
+        ).bind(investigationId, lead.lead_id, userId, budget.level, startedAt).run();
+
+        await env.DB.prepare(
+          `UPDATE prospect_leads SET investigation_status = 'investigating', updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE lead_id = ?`
+        ).bind(lead.lead_id).run();
+
+        const { steps, aggregateScore } = await runPipeline(investigationId, lead);
+
+        // Deterministic synthesis
+        const synthesis = synthesize(lead, steps, aggregateScore);
+        const claudeSummary = { summary: synthesis.summary, impact: synthesis.impact, recommendations: synthesis.recommendations };
+
+        // Derive requirements
+        const requirements = deriveRequirements(steps, lead);
+        for (const rq of requirements) {
+          await env.DB.prepare(
+            `INSERT INTO investigation_requirements (requirement_id, investigation_id, category, description)
+             VALUES (?, ?, ?, ?)`
+          ).bind(uuid(), investigationId, rq.category, rq.description).run();
+        }
+
+        const completedAt = new Date().toISOString();
+        await env.DB.prepare(
+          `UPDATE investigations SET status = 'completed', aggregate_score = ?, risk_score_before = ?,
+           claude_used = 0, claude_summary = ?, requirements_json = ?, completed_at = ?,
+           updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now')
+           WHERE investigation_id = ?`
+        ).bind(
+          aggregateScore, aggregateScore,
+          JSON.stringify(claudeSummary),
+          JSON.stringify(requirements), completedAt, investigationId,
+        ).run();
+
+        await env.DB.prepare(
+          `UPDATE prospect_leads SET investigation_status = 'investigated', updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE lead_id = ?`
+        ).bind(lead.lead_id).run();
+
+        results.push({
+          lead_id: lead.lead_id,
+          aggregate_score: aggregateScore,
+          threats: synthesis.threats.map(t => t.primitive),
+        });
+      } catch (e: any) {
+        console.error(`[auto-investigate] Failed for lead ${lead.lead_id}:`, e?.message ?? e);
+      }
+    }
+
+    return results;
+  }
+
+  // ---- POST /v1/internal/prospect/auto-investigate (internal-token auth) ----
+  if (req.method === "POST" && url.pathname === "/v1/internal/prospect/auto-investigate") {
+    const tok = req.headers.get("X-Internal-Token") || "";
+    if (!env.INTERNAL_TOKEN || !safeEqual(tok, env.INTERNAL_TOKEN)) {
+      return err("forbidden", "Forbidden", requestId, 403, corsHeaders(req, env));
+    }
+
+    const body = await req.json().catch(() => ({})) as { max_leads?: number; min_cvss?: number };
+    const maxLeads = Math.min(Math.max(body.max_leads ?? 5, 1), 20);
+    const minCvss = body.min_cvss ?? 0;
+
+    const results = await autoInvestigateLeads("system:auto-investigate", maxLeads, minCvss);
+
+    return okJson({ ok: true, investigated: results.length, leads: results }, requestId, corsHeaders(req, env));
+  }
+
+  // ---- POST /v1/prospect/auto-investigate (session auth) ----
+  if (req.method === "POST" && url.pathname === "/v1/prospect/auto-investigate") {
+    const u = await authSessionUser(req, env, requestId);
+
+    const body = await req.json().catch(() => ({})) as { max_leads?: number; min_cvss?: number };
+    const maxLeads = Math.min(Math.max(body.max_leads ?? 5, 1), 20);
+    const minCvss = body.min_cvss ?? 0;
+
+    const results = await autoInvestigateLeads(u.user_login, maxLeads, minCvss);
+
+    return okJson({ ok: true, investigated: results.length, leads: results }, requestId, corsHeaders(req, env));
   }
 
   return err("not_found", "Not found", requestId, 404, corsHeaders(req, env));

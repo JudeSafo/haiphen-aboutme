@@ -2206,6 +2206,147 @@ type EmailOnlySubscriber = {
   name: string | null;
 };
 
+type InvestigationDigestRow = {
+  investigation_id: string;
+  lead_id: string;
+  entity_name: string;
+  vulnerability_id: string | null;
+  severity: string | null;
+  cvss_score: number | null;
+  aggregate_score: number | null;
+  claude_summary: string | null;
+  risk_score_before: number | null;
+  risk_score_after: number | null;
+  completed_at: string | null;
+  step_scores: string | null;
+  requirement_count: number;
+  resolved_count: number;
+};
+
+async function fetchDigestInvestigations(env: Env): Promise<InvestigationDigestRow[]> {
+  try {
+    const q = await env.DB.prepare(`
+      SELECT
+        i.investigation_id, i.lead_id,
+        l.entity_name, l.vulnerability_id, l.severity, l.cvss_score,
+        i.aggregate_score, i.claude_summary,
+        i.risk_score_before, i.risk_score_after, i.completed_at,
+        (SELECT json_group_object(s.service, s.score)
+         FROM investigation_steps s
+         WHERE s.investigation_id = i.investigation_id AND s.status = 'completed'
+        ) AS step_scores,
+        (SELECT COUNT(*) FROM investigation_requirements r
+         WHERE r.investigation_id = i.investigation_id) AS requirement_count,
+        (SELECT COUNT(*) FROM investigation_requirements r
+         WHERE r.investigation_id = i.investigation_id AND r.resolved = 1) AS resolved_count
+      FROM investigations i
+      JOIN prospect_leads l ON i.lead_id = l.lead_id
+      WHERE i.status = 'completed'
+        AND i.completed_at >= datetime('now', '-1 day')
+      ORDER BY i.aggregate_score DESC
+      LIMIT 5
+    `).all<InvestigationDigestRow>();
+    return q.results ?? [];
+  } catch (e) {
+    console.error("[digest] fetchDigestInvestigations failed", e);
+    return [];
+  }
+}
+
+function renderProspectSection(rows: InvestigationDigestRow[]): string {
+  if (!rows.length) return "";
+
+  const severityColor: Record<string, string> = {
+    CRITICAL: "#dc2626",
+    HIGH: "#ea580c",
+    MEDIUM: "#ca8a04",
+    LOW: "#2563eb",
+  };
+
+  function scoreColor(score: number | null): string {
+    if (score == null) return "#6b7280";
+    if (score >= 80) return "#dc2626";
+    if (score >= 60) return "#ea580c";
+    if (score >= 40) return "#ca8a04";
+    return "#16a34a";
+  }
+
+  const cards = rows.map(r => {
+    const sev = (r.severity ?? "UNKNOWN").toUpperCase();
+    const sevCol = severityColor[sev] ?? "#6b7280";
+    const agg = r.aggregate_score != null ? r.aggregate_score.toFixed(0) : "—";
+    const aggCol = scoreColor(r.aggregate_score);
+
+    // Step scores breakdown
+    let stepsHtml = "";
+    if (r.step_scores) {
+      try {
+        const scores: Record<string, number> = JSON.parse(r.step_scores);
+        const order = ["secure", "network", "causal", "risk", "graph", "supply"];
+        const chips = order
+          .filter(s => scores[s] != null)
+          .map(s => {
+            const sc = scores[s];
+            return `<span style="display:inline-block;padding:2px 6px;margin:2px;border-radius:4px;font-size:11px;background:#f3f4f6;color:${scoreColor(sc)};">${s}:${sc}</span>`;
+          })
+          .join("");
+        if (chips) stepsHtml = `<div style="margin-top:8px;">${chips}</div>`;
+      } catch { /* ignore parse errors */ }
+    }
+
+    // Synthesis summary snippet (parse structured JSON or fallback to raw string)
+    let summaryHtml = "";
+    if (r.claude_summary) {
+      let snippet = r.claude_summary;
+      try {
+        const parsed = JSON.parse(r.claude_summary);
+        snippet = parsed.summary ?? r.claude_summary;
+      } catch { /* fallback to raw string */ }
+      if (snippet.length > 200) snippet = snippet.slice(0, 197) + "...";
+      summaryHtml = `<div style="margin-top:8px;font-size:12px;color:#4b5563;line-height:1.4;">${escapeHtml(snippet)}</div>`;
+    }
+
+    // Risk reduction
+    let reductionHtml = "";
+    if (r.risk_score_before != null && r.risk_score_after != null) {
+      const delta = r.risk_score_before - r.risk_score_after;
+      const pct = r.risk_score_before > 0 ? ((delta / r.risk_score_before) * 100).toFixed(0) : "0";
+      reductionHtml = `<div style="margin-top:6px;font-size:12px;color:#16a34a;font-weight:500;">Risk: ${r.risk_score_before}\u2192${r.risk_score_after} (\u2212${pct}%)</div>`;
+    }
+
+    // Requirements
+    let reqHtml = "";
+    if (r.requirement_count > 0) {
+      reqHtml = `<div style="margin-top:4px;font-size:11px;color:#6b7280;">${r.requirement_count} gap${r.requirement_count !== 1 ? "s" : ""} found, ${r.resolved_count} resolved</div>`;
+    }
+
+    const vulnLabel = r.vulnerability_id ? ` \u00B7 ${escapeHtml(r.vulnerability_id)}` : "";
+
+    return `
+    <div style="background:#fff;border-radius:8px;padding:16px;margin-bottom:12px;border:1px solid #e5e7eb;">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div style="font-size:14px;font-weight:600;color:#111827;">${escapeHtml(r.entity_name)}${vulnLabel}</div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;color:#fff;background:${sevCol};">${sev}</span>
+          <span style="font-size:18px;font-weight:700;color:${aggCol};">${agg}</span>
+        </div>
+      </div>
+      ${stepsHtml}
+      ${summaryHtml}
+      ${reductionHtml}
+      ${reqHtml}
+    </div>`;
+  }).join("");
+
+  return `
+  <!-- Prospect Intelligence -->
+  <div style="margin-bottom:24px;">
+    <div style="font-size:16px;font-weight:700;color:#111827;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid #8B5CF6;">Prospect Intelligence</div>
+    <div style="font-size:12px;color:#6b7280;margin-bottom:12px;">${rows.length} investigation${rows.length !== 1 ? "s" : ""} completed in the last 24 hours</div>
+    ${cards}
+  </div>`;
+}
+
 async function runDailyDigest(env: Env, when: Date): Promise<{
   sendDate: string;
   attempted: number;
@@ -2232,6 +2373,10 @@ async function runDailyDigest(env: Env, when: Date): Promise<{
   // Load the content once
   const trades = await fetchTradesJson(env);
 
+  // Load prospect investigations for digest
+  const investigations = await fetchDigestInvestigations(env);
+  const prospectHtml = renderProspectSection(investigations);
+
   // Query active subscribers (default to active unless explicitly unsubscribed)
   const subs = await env.DB.prepare(
     `
@@ -2245,6 +2390,7 @@ async function runDailyDigest(env: Env, when: Date): Promise<{
       ON s.user_login = u.user_login AND s.list_id = 'daily_digest'
     WHERE u.email IS NOT NULL AND u.email <> ''
       AND (s.active IS NULL OR s.active = 1)
+      AND u.user_login NOT LIKE 'system%'
     ORDER BY u.user_login ASC
     `
   ).all<DigestSubscriber>();
@@ -2337,6 +2483,8 @@ async function runDailyDigest(env: Env, when: Date): Promise<{
       subscriptions,
       manage_url: manageUrl,
       updated_at: trades.updated_at ?? "",
+      prospect_section: prospectHtml || undefined,
+      prospect_count: investigations.length,
     };
 
     const sg = await sendSendGrid(env.SENDGRID_API_KEY, {
