@@ -293,18 +293,6 @@
       });
     }
 
-    // CTA: cohort
-    const cohortBtn = root.querySelector('[data-hdl-action="cohort"]');
-    if (cohortBtn) {
-      cohortBtn.addEventListener('click', (e) => {
-        e.preventDefault?.();
-        e.stopPropagation?.();
-        try {
-          if (typeof window.showSection === 'function') window.showSection('Cohort');
-        } catch {}
-      });
-    }
-
     // Lens switch: swap demo asset when lens changes
     window.addEventListener('haiphen:lens', () => {
       if (isOpen(root)) lazyLoadDemo(root);

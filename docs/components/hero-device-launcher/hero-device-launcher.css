@@ -124,23 +124,25 @@
 .hdl-cta-docs{
   margin: 8px auto 0;
   display: block;
-
-  appearance: none;
-  border: none;
-  background: transparent;
-  cursor: pointer;
+  text-align: center;
 
   font-size: 12px;
   font-weight: 850;
   color: rgba(226,232,240,0.70);
-  text-decoration: underline;
-  text-decoration-color: rgba(226,232,240,0.28);
-  text-underline-offset: 3px;
+  text-decoration: none;
 }
 
-.hdl-cta-docs:hover{
-  color: rgba(226,232,240,0.88);
-  text-decoration-color: rgba(226,232,240,0.42);
+.hdl-cta-cohort-link{
+  color: #5A9BD4;
+  text-decoration: underline;
+  text-decoration-color: rgba(90,155,212,0.4);
+  text-underline-offset: 3px;
+  transition: color 0.15s, text-decoration-color 0.15s;
+}
+
+.hdl-cta-cohort-link:hover{
+  color: #7AB4E8;
+  text-decoration-color: rgba(90,155,212,0.7);
 }
 
 /* --- Demo GIF area — flexes to fill all remaining panel height --- */
