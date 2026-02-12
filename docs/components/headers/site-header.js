@@ -82,6 +82,48 @@
       item.addEventListener('focusout', () => setExpanded(false));
     });
 
+    // --- Finance lens: swap Explore dropdown labels ---
+    var FINANCE_LABELS = {
+      'svc-platform': 'Trading Platform',
+      'svc-secure':   'Compliance Scanner',
+      'svc-network':  'Market Data',
+      'svc-graph':    'Entity Intelligence',
+      'svc-risk':     'Portfolio Risk',
+      'svc-causal':   'Trade Chains',
+      'svc-supply':   'Counterparty Intel'
+    };
+
+    var subLinks = root.querySelectorAll('[data-subid]');
+    subLinks.forEach(function (a) {
+      var subid = a.getAttribute('data-subid');
+      var techLabel = a.textContent.trim();
+      a.setAttribute('data-tech-label', techLabel);
+      a.setAttribute('data-finance-label', FINANCE_LABELS[subid] || techLabel);
+    });
+
+    function applyLensLabels(lens) {
+      var attr = lens === 'finance' ? 'data-finance-label' : 'data-tech-label';
+      subLinks.forEach(function (a) {
+        var img = a.querySelector('img');
+        var label = a.getAttribute(attr) || a.getAttribute('data-tech-label');
+        if (img) {
+          a.textContent = '';
+          a.appendChild(img);
+          a.appendChild(document.createTextNode('\n              ' + label + '\n            '));
+        } else {
+          a.textContent = label;
+        }
+      });
+    }
+
+    // Apply on init
+    applyLensLabels(document.documentElement.dataset.lens || 'tech');
+
+    // Listen for lens changes
+    document.addEventListener('haiphen:lens', function (e) {
+      applyLensLabels(e.detail && e.detail.lens || 'tech');
+    });
+
     // ESC closes any open menu state
     window.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') closeHeader();

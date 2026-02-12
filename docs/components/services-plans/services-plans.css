@@ -247,3 +247,53 @@
   .hp-catalogue__grid{ grid-template-columns:1fr; }
   .hp-card__waitlist-row{ flex-direction:column; }
 }
+
+/* ── Finance lens ────────────────────────────────────────────────────────── */
+html[data-lens="finance"] .hp-catalogue__section {
+  background: linear-gradient(180deg, #1e293b 0%, #172033 100%);
+  border-color: rgba(148,163,184,0.18);
+}
+html[data-lens="finance"] .hp-catalogue__kicker { color: #94a3b8; background: rgba(90,155,212,0.12); border-color: rgba(90,155,212,0.25); }
+html[data-lens="finance"] .hp-catalogue__title { color: #f8fafc; }
+html[data-lens="finance"] .hp-catalogue__sub { color: #cbd5e1; }
+
+html[data-lens="finance"] .hp-card {
+  background: #1e293b;
+  border-color: rgba(148,163,184,0.18);
+}
+html[data-lens="finance"] .hp-card:hover { border-color: rgba(90,155,212,0.45); box-shadow: 0 10px 24px rgba(0,0,0,0.25); }
+html[data-lens="finance"] .hp-card__name { color: #f8fafc; }
+html[data-lens="finance"] .hp-card__amt { color: #f8fafc; }
+html[data-lens="finance"] .hp-card__price { color: #94a3b8; }
+html[data-lens="finance"] .hp-card__per { color: #94a3b8; }
+html[data-lens="finance"] .hp-card__desc { color: #cbd5e1; }
+html[data-lens="finance"] .hp-card__features { color: #cbd5e1; }
+html[data-lens="finance"] .hp-card__icon { background: rgba(90,155,212,0.15); border-color: rgba(90,155,212,0.30); }
+html[data-lens="finance"] .hp-card__icon img { filter: brightness(0) invert(1); }
+
+html[data-lens="finance"] .hp-card__cta--primary { background: #5A9BD4; border-color: #5A9BD4; color: #fff; }
+html[data-lens="finance"] .hp-card__cta--primary:hover { background: #7ab4e0; }
+html[data-lens="finance"] .hp-card__cta--secondary { color: #e2e8f0; border-color: rgba(148,163,184,0.18); }
+html[data-lens="finance"] .hp-card__cta--secondary:hover { background: rgba(90,155,212,0.10); border-color: rgba(90,155,212,0.35); }
+
+html[data-lens="finance"] .hp-card__status--available { background: rgba(16,185,129,0.15); border-color: rgba(16,185,129,0.30); color: #34d399; }
+html[data-lens="finance"] .hp-card__status--coming_soon { background: rgba(245,158,11,0.15); border-color: rgba(245,158,11,0.30); color: #fbbf24; }
+html[data-lens="finance"] .hp-card__status--free { background: rgba(90,155,212,0.15); border-color: rgba(90,155,212,0.30); color: #93c5fd; }
+
+html[data-lens="finance"] .hp-card--coming-soon { background: linear-gradient(180deg, #1e293b 0%, #1a2235 100%); border-color: rgba(245,158,11,0.25); }
+html[data-lens="finance"] .hp-card--coming-soon:hover { border-color: rgba(245,158,11,0.45); }
+
+html[data-lens="finance"] .hp-card__trial { background: rgba(16,185,129,0.10); border-color: rgba(16,185,129,0.25); color: #34d399; }
+html[data-lens="finance"] .hp-card__waitlist-label { color: #94a3b8; }
+html[data-lens="finance"] .hp-card__waitlist-input { background: #172033; border-color: rgba(148,163,184,0.18); color: #f8fafc; }
+html[data-lens="finance"] .hp-card__waitlist-btn { background: #5A9BD4; border-color: #5A9BD4; }
+html[data-lens="finance"] .hp-card__waitlist-btn:hover { background: #7ab4e0; }
+
+html[data-lens="finance"] .pill { color: #94a3b8; background: rgba(90,155,212,0.12); border-color: rgba(90,155,212,0.22); }
+html[data-lens="finance"] .pill-muted { color: #64748b; background: rgba(148,163,184,0.06); border-color: rgba(148,163,184,0.10); }
+
+html[data-lens="finance"] .services-subscribe-banner__inner { background: radial-gradient(1000px 260px at 85% -30%,rgba(90,155,212,.18),transparent 60%), linear-gradient(180deg,rgba(30,41,59,.95) 0%,rgba(23,32,51,.95) 100%); border-color: rgba(90,155,212,0.25); }
+html[data-lens="finance"] .services-subscribe-banner__kicker { color: #94a3b8; background: rgba(148,163,184,0.10); border-color: rgba(148,163,184,0.15); }
+html[data-lens="finance"] .services-subscribe-banner__title { color: #f8fafc; }
+html[data-lens="finance"] .services-subscribe-banner__sub { color: #cbd5e1; }
+html[data-lens="finance"] .services-subscribe-banner__link { color: #5A9BD4; }

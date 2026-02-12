@@ -627,3 +627,7 @@ html[data-lens="finance"] .session-tab[aria-selected="true"] {
   border-color: rgba(148,163,184,0.20);
 }
 
+html[data-lens="finance"] .site-header__icon {
+  filter: brightness(0) invert(1);
+}
+
