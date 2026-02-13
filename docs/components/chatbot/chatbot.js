@@ -336,14 +336,26 @@
       /* ---- Initial peek: company intro + starter prompts ---- */
       /* On mobile (narrow screens): just pulse the FAB icon, don't open the panel */
       const isMobileChat = window.matchMedia('(max-width: 720px)').matches;
+      const PEEK_DELAY = 1500; // ms after FAB is visible
 
-      if (isMobileChat) {
-        setTimeout(() => {
-          fab.classList.add('is-pulsing');
-          fab.addEventListener('animationend', () => fab.classList.remove('is-pulsing'), { once: true });
-        }, 1500);
+      const schedulePeek = () => {
+        if (isMobileChat) {
+          setTimeout(() => {
+            fab.classList.add('is-pulsing');
+            fab.addEventListener('animationend', () => fab.classList.remove('is-pulsing'), { once: true });
+          }, PEEK_DELAY);
+        } else {
+          setTimeout(showPeek, PEEK_DELAY);
+        }
+      };
+
+      /* If stagger is active the chatbot is hidden (opacity 0) — wait for
+         the stagger orchestrator to reveal us before starting the peek
+         countdown, so the user actually sees the full sequence. */
+      if (document.documentElement.classList.contains('hp-stagger-active')) {
+        window.addEventListener('haiphen:stagger:chatbot-revealed', schedulePeek, { once: true });
       } else {
-        setTimeout(showPeek, 1500);
+        schedulePeek();
       }
     }
   };

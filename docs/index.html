@@ -25,6 +25,13 @@
 	  <meta name="twitter:image" content="https://haiphen.io/assets/og-image.png" />
 	  <link rel="canonical" href="https://haiphen.io/">
 	  <link rel="stylesheet" href="assets/base.css" />
+	  <link rel="stylesheet" href="assets/stagger.css" />
+	  <script>
+	    try {
+	      if (!localStorage.getItem('haiphen.stagger_seen'))
+	        document.documentElement.classList.add('hp-stagger-active');
+	    } catch(e) {}
+	  </script>
 
 	  <script src="components/headers/site-header.js"></script>
 	  <script src="components/headers/session-profile-template.js"></script>
@@ -65,6 +72,8 @@
 	  <script src="components/chatbot/chatbot.js"></script>
 	  <script src="components/welcome-overlay/welcome-overlay.js"></script>
 	  <script src="components/lens-toggle/lens-toggle.js"></script>
+	  <script defer src="components/stagger/stagger.js"></script>
+	  <script defer src="components/mobile-overlay/mobile-overlay.js"></script>
 
 	  <script>
 	    window.HAIPHEN = window.HAIPHEN || {};

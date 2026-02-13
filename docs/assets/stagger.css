@@ -1,0 +1,48 @@
+/* docs/assets/stagger.css
+ * First-visit staggered reveal — hides secondary UI until JS orchestrator
+ * adds .hp-stagger-revealed to each element in sequence.
+ * Scoped entirely under html.hp-stagger-active so repeat visitors are unaffected.
+ *
+ * Cohort banner is NOT staggered — it appears normally from the start.
+ */
+
+/* ---------- hidden state (per-element entrance direction) ---------- */
+
+html.hp-stagger-active #sidebar-mount {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-16px);          /* slides in from left */
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+html.hp-stagger-active #chatbot-mount {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(12px) scale(0.95); /* rises + grows */
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+html.hp-stagger-active #cookie-consent-mount {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(20px);           /* slides up from bottom */
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+/* ---------- revealed state ---------- */
+
+html.hp-stagger-active .hp-stagger-revealed {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  transform: none !important;
+}
+
+/* ---------- reduced-motion: instant reveal, no animation ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  html.hp-stagger-active #sidebar-mount,
+  html.hp-stagger-active #chatbot-mount,
+  html.hp-stagger-active #cookie-consent-mount {
+    transition: none;
+  }
+}
