@@ -176,11 +176,6 @@
     /* Set initial dropdown state */
     updateDropdownState(getLens());
 
-    /* On mobile, auto-show the dropdown so a single tap toggles the lens */
-    if (isTouchDevice && dropdown) {
-      dropdown.classList.add('is-open');
-    }
-
     /* ---- Hover acknowledges (stops) the flash ---- */
     if (wrapper) {
       wrapper.addEventListener('mouseenter', function () {
@@ -193,13 +188,22 @@
       if (dropdown) dropdown.classList.remove('is-open');
     }
 
+    function toggleDropdown() {
+      if (dropdown) dropdown.classList.toggle('is-open');
+    }
+
     /* ---- Click button ---- */
     btn.addEventListener('click', function (e) {
       e.stopPropagation();
       stopFlashing();
 
-      /* Both mobile and desktop: direct toggle */
-      setLens(getLens() === 'tech' ? 'finance' : 'tech');
+      if (isTouchDevice) {
+        /* Mobile: toggle dropdown open/closed */
+        toggleDropdown();
+      } else {
+        /* Desktop: direct toggle lens */
+        setLens(getLens() === 'tech' ? 'finance' : 'tech');
+      }
     });
 
     /* ---- Click dropdown options → pick specific lens ---- */
@@ -213,14 +217,13 @@
         if (pick && !opt.classList.contains('is-current')) {
           setLens(pick);
         }
-        /* On desktop close the dropdown; on mobile keep it visible */
-        if (!isTouchDevice) closeDropdown();
+        closeDropdown();
       });
     }
 
-    /* ---- Close dropdown on outside tap (mobile) ---- */
+    /* ---- Close dropdown on outside tap ---- */
     document.addEventListener('click', function (e) {
-      if (!isTouchDevice && dropdown && dropdown.classList.contains('is-open') && !wrapper.contains(e.target)) {
+      if (dropdown && dropdown.classList.contains('is-open') && !wrapper.contains(e.target)) {
         closeDropdown();
       }
     });
