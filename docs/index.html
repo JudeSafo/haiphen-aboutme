@@ -28,7 +28,7 @@
 	  <link rel="stylesheet" href="assets/stagger.css" />
 	  <script>
 	    try {
-	      if (!localStorage.getItem('haiphen.stagger_seen'))
+	      if (!localStorage.getItem('haiphen.stagger_seen') && !window.location.hash)
 	        document.documentElement.classList.add('hp-stagger-active');
 	    } catch(e) {}
 	  </script>
