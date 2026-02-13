@@ -36,14 +36,48 @@
   }
 
   function renderLoggedOut(slot) {
+    const siteKey = window.HAIPHEN?.TURNSTILE_SITE_KEY || '';
+
     slot.innerHTML = `
       <div class="session-login-buttons">
-        <a href="${loginHref('google')}" class="session-login-btn session-login-btn--google">
+        <button type="button" class="session-login-btn session-login-btn--google" data-provider="google">
           <svg width="16" height="16" viewBox="0 0 48 48" aria-hidden="true"><path fill="#4285F4" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#34A853" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#EA4335" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
           Sign in with Google
-        </a>
+        </button>
+        ${siteKey ? `<div class="session-turnstile" data-turnstile-container></div>` : ''}
       </div>
     `;
+
+    // Wire Turnstile-gated login
+    const btn = slot.querySelector('[data-provider]');
+    if (!btn) return;
+
+    if (siteKey && typeof turnstile !== 'undefined') {
+      const container = slot.querySelector('[data-turnstile-container]');
+      turnstile.render(container, {
+        sitekey: siteKey,
+        size: 'compact',
+        callback: function (token) {
+          container.dataset.cfToken = token;
+        },
+      });
+
+      btn.addEventListener('click', () => {
+        const token = container?.dataset.cfToken;
+        if (!token) {
+          container.style.outline = '2px solid #EA4335';
+          container.style.borderRadius = '4px';
+          return;
+        }
+        const href = loginHref(btn.dataset.provider);
+        window.location.assign(href + '&cf_token=' + encodeURIComponent(token));
+      });
+    } else {
+      // No Turnstile — plain redirect
+      btn.addEventListener('click', () => {
+        window.location.assign(loginHref(btn.dataset.provider));
+      });
+    }
   }
 
   function escapeHtml(s) {

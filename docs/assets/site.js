@@ -17,7 +17,33 @@
     if (!slot) return;
 
     const showLogin = () => {
-      slot.innerHTML = `<a href="${AUTH_ORIGIN}/login?provider=google" class="login-btn">Login</a>`;
+      const siteKey = window.HAIPHEN?.TURNSTILE_SITE_KEY || '';
+      slot.innerHTML = `<button type="button" class="login-btn" data-provider="google">Login</button>`
+        + (siteKey ? `<div data-turnstile-container style="margin-top:6px;"></div>` : '');
+
+      const btn = slot.querySelector('[data-provider]');
+      const container = slot.querySelector('[data-turnstile-container]');
+
+      if (siteKey && typeof turnstile !== 'undefined' && container) {
+        turnstile.render(container, {
+          sitekey: siteKey,
+          size: 'compact',
+          callback: (token) => { container.dataset.cfToken = token; },
+        });
+        btn.addEventListener('click', () => {
+          const token = container?.dataset.cfToken;
+          if (!token) {
+            container.style.outline = '2px solid #EA4335';
+            container.style.borderRadius = '4px';
+            return;
+          }
+          window.location.assign(`${AUTH_ORIGIN}/login?provider=google&to=${encodeURIComponent(window.location.href)}&cf_token=${encodeURIComponent(token)}`);
+        });
+      } else {
+        btn.addEventListener('click', () => {
+          window.location.assign(`${AUTH_ORIGIN}/login?provider=google&to=${encodeURIComponent(window.location.href)}`);
+        });
+      }
     };
 
     try {

@@ -52,7 +52,7 @@
         ],
       },
       assets: {
-        demo: 'assets/demos/cli-workflow.gif',
+        demo: 'assets/demos/cli-prospect-pipeline.gif',
         scenario: 'assets/scenarios/scenario-secure.svg',
         icon: 'assets/mission/telemetry-dashboard.svg',
       },

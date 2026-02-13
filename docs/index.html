@@ -2927,7 +2927,34 @@
 		  if (!slot) return;
 
 		  function showLogin() {
-		    slot.innerHTML = `<a href="${AUTH_ORIGIN}/login?provider=google" class="login-btn">Login</a>`;
+		    const siteKey = window.HAIPHEN?.TURNSTILE_SITE_KEY || '';
+		    slot.innerHTML = `<button type="button" class="login-btn" data-provider="google">Login</button>`
+		      + (siteKey ? `<div class="header-turnstile" data-turnstile-container style="margin-top:6px;"></div>` : '');
+
+		    const btn = slot.querySelector('[data-provider]');
+		    const container = slot.querySelector('[data-turnstile-container]');
+
+		    if (siteKey && typeof turnstile !== 'undefined' && container) {
+		      turnstile.render(container, {
+		        sitekey: siteKey,
+		        size: 'compact',
+		        callback: function (token) { container.dataset.cfToken = token; },
+		      });
+		      btn.addEventListener('click', function () {
+		        const token = container?.dataset.cfToken;
+		        if (!token) {
+		          container.style.outline = '2px solid #EA4335';
+		          container.style.borderRadius = '4px';
+		          return;
+		        }
+		        const here = window.location.href;
+		        window.location.assign(`${AUTH_ORIGIN}/login?provider=google&to=${encodeURIComponent(here)}&cf_token=${encodeURIComponent(token)}`);
+		      });
+		    } else {
+		      btn.addEventListener('click', function () {
+		        window.location.assign(`${AUTH_ORIGIN}/login?provider=google&to=${encodeURIComponent(window.location.href)}`);
+		      });
+		    }
 		  }
 
 		  try {

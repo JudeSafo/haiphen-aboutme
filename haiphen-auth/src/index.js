@@ -7,6 +7,20 @@ const DEFAULT_LOGOUT_REDIRECT = 'https://haiphen.io/';
 const RATE_LIMIT_WINDOW_MS = 60_000; // 1 minute
 const RATE_LIMIT_MAX_LOGIN = 10;     // 10 login attempts per minute per IP
 const RATE_LIMIT_MAX_CALLBACK = 20;  // 20 callback attempts per minute per IP
+
+/* ── Cloudflare Turnstile verification ── */
+async function verifyTurnstile(secretKey, token, ip) {
+  const form = new FormData();
+  form.append('secret', secretKey);
+  form.append('response', token);
+  if (ip) form.append('remoteip', ip);
+  const resp = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+    method: 'POST',
+    body: form,
+  });
+  const data = await resp.json().catch(() => ({}));
+  return data.success === true;
+}
 const _rl = new Map();
 
 function rateLimit(ip, bucket, max) {
@@ -638,6 +652,25 @@ async function handleAuth(req, env, jwtKey, ctx) {
         status: 429,
         headers: { ...corsHeaders(origin), 'Content-Type': 'application/json', 'Retry-After': '60' },
       });
+    }
+
+    // Turnstile verification (if TURNSTILE_SECRET_KEY is configured)
+    const tsSecret = (env.TURNSTILE_SECRET_KEY || '').trim();
+    if (tsSecret) {
+      const cfToken = url.searchParams.get('cf_token') || '';
+      if (!cfToken) {
+        return new Response(JSON.stringify({ ok: false, error: 'Turnstile verification required' }), {
+          status: 403,
+          headers: { ...corsHeaders(origin), 'Content-Type': 'application/json' },
+        });
+      }
+      const valid = await verifyTurnstile(tsSecret, cfToken, clientIp);
+      if (!valid) {
+        return new Response(JSON.stringify({ ok: false, error: 'Turnstile verification failed' }), {
+          status: 403,
+          headers: { ...corsHeaders(origin), 'Content-Type': 'application/json' },
+        });
+      }
     }
 
     const toRaw =
