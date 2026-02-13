@@ -63,8 +63,9 @@ func cmdProspectList(cfg *config.Config, st store.Store) *cobra.Command {
 	)
 
 	cmd := &cobra.Command{
-		Use:   "list",
-		Short: "List prospect leads with optional filters",
+		Use:         "list",
+		Short:       "List prospect leads with optional filters",
+		Annotations: map[string]string{"tier": "free"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			token, err := requireToken(st)
 			if err != nil {
@@ -170,9 +171,10 @@ func cmdProspectGet(cfg *config.Config, st store.Store) *cobra.Command {
 	var asJSON bool
 
 	cmd := &cobra.Command{
-		Use:   "get <lead_id>",
-		Short: "Get full detail for a prospect lead",
-		Args:  cobra.ExactArgs(1),
+		Use:         "get <lead_id>",
+		Short:       "Get full detail for a prospect lead",
+		Annotations: map[string]string{"tier": "free"},
+		Args:        cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			token, err := requireToken(st)
 			if err != nil {
@@ -203,9 +205,11 @@ func cmdProspectAnalyze(cfg *config.Config, st store.Store) *cobra.Command {
 	)
 
 	cmd := &cobra.Command{
-		Use:   "analyze <lead_id>",
-		Short: "Trigger Haiphen analysis on a prospect lead",
-		Args:  cobra.ExactArgs(1),
+		Use:         "analyze <lead_id>",
+		Short:       "Trigger Haiphen analysis on a prospect lead",
+		Long:        "Trigger Haiphen analysis on a prospect lead\n\nRequires: Pro plan or higher\nUpgrade: https://haiphen.io/#pricing",
+		Annotations: map[string]string{"tier": "pro", "audit": "1"},
+		Args:        cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			token, err := requireToken(st)
 			if err != nil {
@@ -239,9 +243,11 @@ func cmdProspectOutreach(cfg *config.Config, st store.Store) *cobra.Command {
 	var asJSON bool
 
 	cmd := &cobra.Command{
-		Use:   "outreach <lead_id>",
-		Short: "Draft infrastructure advisory outreach for a lead",
-		Args:  cobra.ExactArgs(1),
+		Use:         "outreach <lead_id>",
+		Short:       "Draft infrastructure advisory outreach for a lead",
+		Long:        "Draft infrastructure advisory outreach for a lead\n\nRequires: Admin access",
+		Annotations: map[string]string{"tier": "admin", "audit": "1"},
+		Args:        cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			token, err := requireToken(st)
 			if err != nil {
@@ -269,8 +275,9 @@ func cmdProspectSources(cfg *config.Config, st store.Store) *cobra.Command {
 	var asJSON bool
 
 	cmd := &cobra.Command{
-		Use:   "sources",
-		Short: "List crawl sources and their stats",
+		Use:         "sources",
+		Short:       "List crawl sources and their stats",
+		Annotations: map[string]string{"tier": "free"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			token, err := requireToken(st)
 			if err != nil {
@@ -327,8 +334,10 @@ func cmdProspectCrawl(cfg *config.Config, st store.Store) *cobra.Command {
 	)
 
 	cmd := &cobra.Command{
-		Use:   "crawl",
-		Short: "Manually trigger a prospect crawl job (admin)",
+		Use:         "crawl",
+		Short:       "Manually trigger a prospect crawl job (admin)",
+		Long:        "Manually trigger a prospect crawl job (admin)\n\nRequires: Admin access",
+		Annotations: map[string]string{"tier": "admin", "audit": "1"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			token, err := requireToken(st)
 			if err != nil {
@@ -369,8 +378,11 @@ func cmdProspectSetKey(cfg *config.Config, st store.Store) *cobra.Command {
 		Long: `Opens your browser to the Haiphen profile credentials page where you can
 securely enter your API key. Use --prompt to enter the key directly in the
 terminal (input is masked). Keys are never passed as CLI arguments to avoid
-leaking them into shell history.`,
-		Args: cobra.ExactArgs(1),
+leaking them into shell history.
+
+Requires: Admin access`,
+		Annotations: map[string]string{"tier": "admin", "audit": "1"},
+		Args:        cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			provider := args[0]
 			valid := map[string]bool{"nvd": true, "github": true, "shodan": true}
@@ -437,8 +449,10 @@ func cmdProspectListKeys(cfg *config.Config, st store.Store) *cobra.Command {
 	var asJSON bool
 
 	cmd := &cobra.Command{
-		Use:   "list-keys",
-		Short: "List stored prospect API keys (metadata only, no secrets)",
+		Use:         "list-keys",
+		Short:       "List stored prospect API keys (metadata only, no secrets)",
+		Long:        "List stored prospect API keys (metadata only, no secrets)\n\nRequires: Admin access",
+		Annotations: map[string]string{"tier": "admin"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			token, err := requireToken(st)
 			if err != nil {
@@ -486,9 +500,11 @@ func cmdProspectListKeys(cfg *config.Config, st store.Store) *cobra.Command {
 
 func cmdProspectDeleteKey(cfg *config.Config, st store.Store) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "delete-key <provider>",
-		Short: "Delete a stored prospect API key (nvd, github, shodan)",
-		Args:  cobra.ExactArgs(1),
+		Use:         "delete-key <provider>",
+		Short:       "Delete a stored prospect API key (nvd, github, shodan)",
+		Long:        "Delete a stored prospect API key (nvd, github, shodan)\n\nRequires: Admin access",
+		Annotations: map[string]string{"tier": "admin", "audit": "1"},
+		Args:        cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			provider := args[0]
 			valid := map[string]bool{"nvd": true, "github": true, "shodan": true}
@@ -521,8 +537,9 @@ func cmdProspectRules(cfg *config.Config, st store.Store) *cobra.Command {
 	var asJSON bool
 
 	cmd := &cobra.Command{
-		Use:   "rules",
-		Short: "List use case rules (ordered by priority)",
+		Use:         "rules",
+		Short:       "List use case rules (ordered by priority)",
+		Annotations: map[string]string{"tier": "free"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			token, err := requireToken(st)
 			if err != nil {
@@ -587,8 +604,9 @@ func cmdProspectRegressions(cfg *config.Config, st store.Store) *cobra.Command {
 	)
 
 	cmd := &cobra.Command{
-		Use:   "regressions",
-		Short: "List prospect regressions (entity recurrence + vuln class spread)",
+		Use:         "regressions",
+		Short:       "List prospect regressions (entity recurrence + vuln class spread)",
+		Annotations: map[string]string{"tier": "free"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			token, err := requireToken(st)
 			if err != nil {
@@ -671,9 +689,11 @@ func cmdProspectApprove(cfg *config.Config, st store.Store) *cobra.Command {
 	var asJSON bool
 
 	cmd := &cobra.Command{
-		Use:   "approve <lead_id>",
-		Short: "Approve an outreach draft for sending",
-		Args:  cobra.ExactArgs(1),
+		Use:         "approve <lead_id>",
+		Short:       "Approve an outreach draft for sending",
+		Long:        "Approve an outreach draft for sending\n\nRequires: Admin access",
+		Annotations: map[string]string{"tier": "admin", "audit": "1"},
+		Args:        cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			token, err := requireToken(st)
 			if err != nil {
@@ -716,9 +736,11 @@ func cmdProspectSend(cfg *config.Config, st store.Store) *cobra.Command {
 	)
 
 	cmd := &cobra.Command{
-		Use:   "send <lead_id>",
-		Short: "Send approved outreach email for a lead",
-		Args:  cobra.ExactArgs(1),
+		Use:         "send <lead_id>",
+		Short:       "Send approved outreach email for a lead",
+		Long:        "Send approved outreach email for a lead\n\nRequires: Admin access",
+		Annotations: map[string]string{"tier": "admin", "audit": "1"},
+		Args:        cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			token, err := requireToken(st)
 			if err != nil {
@@ -769,9 +791,11 @@ func cmdProspectInvestigate(cfg *config.Config, st store.Store) *cobra.Command {
 	var asJSON bool
 
 	cmd := &cobra.Command{
-		Use:   "investigate <lead_id>",
-		Short: "Run closed-loop investigation pipeline on a lead",
-		Args:  cobra.ExactArgs(1),
+		Use:         "investigate <lead_id>",
+		Short:       "Run closed-loop investigation pipeline on a lead",
+		Long:        "Run closed-loop investigation pipeline on a lead\n\nRequires: Pro plan or higher\nUpgrade: https://haiphen.io/#pricing",
+		Annotations: map[string]string{"tier": "pro", "audit": "1"},
+		Args:        cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			token, err := requireToken(st)
 			if err != nil {
@@ -856,9 +880,10 @@ func cmdProspectInvestigation(cfg *config.Config, st store.Store) *cobra.Command
 	var asJSON bool
 
 	cmd := &cobra.Command{
-		Use:   "investigation <investigation_id>",
-		Short: "Get full details of an investigation",
-		Args:  cobra.ExactArgs(1),
+		Use:         "investigation <investigation_id>",
+		Short:       "Get full details of an investigation",
+		Annotations: map[string]string{"tier": "free"},
+		Args:        cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			token, err := requireToken(st)
 			if err != nil {
@@ -890,8 +915,9 @@ func cmdProspectInvestigations(cfg *config.Config, st store.Store) *cobra.Comman
 	)
 
 	cmd := &cobra.Command{
-		Use:   "investigations",
-		Short: "List investigations with optional filters",
+		Use:         "investigations",
+		Short:       "List investigations with optional filters",
+		Annotations: map[string]string{"tier": "free"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			token, err := requireToken(st)
 			if err != nil {
@@ -970,9 +996,11 @@ func cmdProspectSolve(cfg *config.Config, st store.Store) *cobra.Command {
 	var asJSON bool
 
 	cmd := &cobra.Command{
-		Use:   "solve <investigation_id>",
-		Short: "Auto-resolve investigation requirements (add keywords, monitors, etc.)",
-		Args:  cobra.ExactArgs(1),
+		Use:         "solve <investigation_id>",
+		Short:       "Auto-resolve investigation requirements (add keywords, monitors, etc.)",
+		Long:        "Auto-resolve investigation requirements (add keywords, monitors, etc.)\n\nRequires: Pro plan or higher\nUpgrade: https://haiphen.io/#pricing",
+		Annotations: map[string]string{"tier": "pro", "audit": "1"},
+		Args:        cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			token, err := requireToken(st)
 			if err != nil {
@@ -1021,9 +1049,11 @@ func cmdProspectReInvestigate(cfg *config.Config, st store.Store) *cobra.Command
 	var asJSON bool
 
 	cmd := &cobra.Command{
-		Use:   "re-investigate <lead_id>",
-		Short: "Re-run investigation pipeline and compare risk scores",
-		Args:  cobra.ExactArgs(1),
+		Use:         "re-investigate <lead_id>",
+		Short:       "Re-run investigation pipeline and compare risk scores",
+		Long:        "Re-run investigation pipeline and compare risk scores\n\nRequires: Pro plan or higher\nUpgrade: https://haiphen.io/#pricing",
+		Annotations: map[string]string{"tier": "pro", "audit": "1"},
+		Args:        cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			token, err := requireToken(st)
 			if err != nil {
@@ -1106,8 +1136,10 @@ func cmdProspectPipeline(cfg *config.Config, st store.Store) *cobra.Command {
 	)
 
 	cmd := &cobra.Command{
-		Use:   "pipeline",
-		Short: "Run full prospect pipeline: crawl, investigate, draft outreach",
+		Use:         "pipeline",
+		Short:       "Run full prospect pipeline: crawl, investigate, draft outreach",
+		Long:        "Run full prospect pipeline: crawl, investigate, draft outreach\n\nRequires: Admin access",
+		Annotations: map[string]string{"tier": "admin", "audit": "1"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			token, err := requireToken(st)
 			if err != nil {
@@ -1322,8 +1354,9 @@ func cmdProspectTargetList(cfg *config.Config, st store.Store) *cobra.Command {
 	)
 
 	cmd := &cobra.Command{
-		Use:   "list",
-		Short: "List prospect targets",
+		Use:         "list",
+		Short:       "List prospect targets",
+		Annotations: map[string]string{"tier": "free"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			token, err := requireToken(st)
 			if err != nil {
@@ -1401,9 +1434,10 @@ func cmdProspectTargetGet(cfg *config.Config, st store.Store) *cobra.Command {
 	var asJSON bool
 
 	cmd := &cobra.Command{
-		Use:   "get <target_id_or_name>",
-		Short: "Get full target profile with lead and investigation summary",
-		Args:  cobra.ExactArgs(1),
+		Use:         "get <target_id_or_name>",
+		Short:       "Get full target profile with lead and investigation summary",
+		Annotations: map[string]string{"tier": "free"},
+		Args:        cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			token, err := requireToken(st)
 			if err != nil {
@@ -1445,8 +1479,10 @@ func cmdProspectTargetAdd(cfg *config.Config, st store.Store) *cobra.Command {
 	)
 
 	cmd := &cobra.Command{
-		Use:   "add",
-		Short: "Add a new prospect target",
+		Use:         "add",
+		Short:       "Add a new prospect target",
+		Long:        "Add a new prospect target\n\nRequires: Admin access",
+		Annotations: map[string]string{"tier": "admin", "audit": "1"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if name == "" {
 				return fmt.Errorf("--name is required")
@@ -1506,9 +1542,11 @@ func cmdProspectTargetAdd(cfg *config.Config, st store.Store) *cobra.Command {
 
 func cmdProspectTargetRemove(cfg *config.Config, st store.Store) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "remove <target_id>",
-		Short: "Archive a prospect target (soft delete)",
-		Args:  cobra.ExactArgs(1),
+		Use:         "remove <target_id>",
+		Short:       "Archive a prospect target (soft delete)",
+		Long:        "Archive a prospect target (soft delete)\n\nRequires: Admin access",
+		Annotations: map[string]string{"tier": "admin", "audit": "1"},
+		Args:        cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			token, err := requireToken(st)
 			if err != nil {
@@ -1537,9 +1575,11 @@ func cmdProspectReport(cfg *config.Config, st store.Store) *cobra.Command {
 	)
 
 	cmd := &cobra.Command{
-		Use:   "report <target_name_or_id>",
-		Short: "Generate a LaTeX research report for a target company",
-		Args:  cobra.ExactArgs(1),
+		Use:         "report <target_name_or_id>",
+		Short:       "Generate a LaTeX research report for a target company",
+		Long:        "Generate a LaTeX research report for a target company\n\nRequires: Pro plan or higher\nUpgrade: https://haiphen.io/#pricing",
+		Annotations: map[string]string{"tier": "pro"},
+		Args:        cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			token, err := requireToken(st)
 			if err != nil {

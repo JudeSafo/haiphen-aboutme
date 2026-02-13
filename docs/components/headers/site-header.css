@@ -175,6 +175,38 @@
   opacity: .9;
 }
 
+/* Featured dropdown link — subtle accent at top of dropdown */
+.site-header__drop-link--featured{
+  background: linear-gradient(135deg, rgba(37,99,235,.06), rgba(139,92,246,.06));
+  font-weight: 700;
+  position: relative;
+}
+
+.site-header__drop-link--featured:hover{
+  background: linear-gradient(135deg, rgba(37,99,235,.12), rgba(139,92,246,.10));
+}
+
+/* Small "Guide" badge */
+.site-header__drop-badge{
+  margin-left: auto;
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .3px;
+  text-transform: uppercase;
+  background: rgba(37,99,235,.10);
+  color: #2563eb;
+  line-height: 1.4;
+}
+
+/* Thin separator between featured link and service list */
+.site-header__drop-sep{
+  height: 1px;
+  margin: 4px 10px;
+  background: rgba(15,23,42,.08);
+}
+
 /* Session area (grid column 3 — right-aligned) */
 .site-header__session{
   justify-self: end;
@@ -626,6 +658,23 @@ html[data-lens="finance"] .session-tab {
 html[data-lens="finance"] .session-tab[aria-selected="true"] {
   background: rgba(51,65,85,0.8);
   border-color: rgba(148,163,184,0.20);
+}
+
+html[data-lens="finance"] .site-header__drop-link--featured{
+  background: linear-gradient(135deg, rgba(90,155,212,.10), rgba(139,92,246,.08));
+}
+
+html[data-lens="finance"] .site-header__drop-link--featured:hover{
+  background: linear-gradient(135deg, rgba(90,155,212,.18), rgba(139,92,246,.14));
+}
+
+html[data-lens="finance"] .site-header__drop-badge{
+  background: rgba(90,155,212,.15);
+  color: #93c5fd;
+}
+
+html[data-lens="finance"] .site-header__drop-sep{
+  background: rgba(148,163,184,.12);
 }
 
 html[data-lens="finance"] .site-header__icon {

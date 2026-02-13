@@ -77,6 +77,9 @@ export interface Env {
   // Internal API token for calling haiphen-api internal endpoints
   INTERNAL_TOKEN?: string;
 
+  // Service binding for Worker-to-Worker calls to haiphen-api
+  SVC_API?: Fetcher;
+
   // Digest template + config
   SENDGRID_TEMPLATE_ID_DAILY?: string; // add as [vars]
   DAILY_FROM_NAME?: string;
@@ -1678,13 +1681,17 @@ function withCorsAndBuild(res: Response, req: Request, env: Env, path?: string):
   const cors = corsHeaders(req, env);
   for (const [k, v] of Object.entries(cors)) h.set(k, v);
 
+  // Security headers
+  h.set("Strict-Transport-Security", "max-age=63072000; includeSubDomains; preload");
+  h.set("X-Content-Type-Options", "nosniff");
+  h.set("X-Frame-Options", "DENY");
+  h.set("Referrer-Policy", "strict-origin-when-cross-origin");
+  h.set("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+
   const build = getBuildId(env);
   h.set("x-haiphen-build", build);
   if (path) h.set("x-haiphen-route", path);
 
-  // If you want caching disabled only for debug endpoints, keep no-store.
-  // Otherwise consider:
-  // h.set("cache-control", path?.startsWith("/api/") ? "no-store" : "public, max-age=60")
   h.set("cache-control", "no-store");
 
   return new Response(res.body, { status: res.status, headers: h });
@@ -2218,8 +2225,9 @@ async function fetchTradesJson(env: Env, targetDate?: string): Promise<TradesJso
   const dateQs = targetDate ? `?date=${targetDate}` : "";
 
   let apiData: TradesJson | null = null;
+  const apiFetch = env.SVC_API?.fetch?.bind(env.SVC_API) ?? fetch;
   try {
-    const apiResp = await fetch(`https://api.haiphen.io/v1/trades/latest${dateQs}`, { cf: { cacheTtl: 60, cacheEverything: true } as any });
+    const apiResp = await apiFetch(`https://api.haiphen.io/v1/trades/latest${dateQs}`, { cf: { cacheTtl: 60, cacheEverything: true } as any });
     if (apiResp.ok) apiData = (await apiResp.json()) as TradesJson;
   } catch (_) { /* fall through */ }
 
@@ -3124,7 +3132,8 @@ async function runProspectPipelineDigest(
   try {
     const apiUrl = "https://api.haiphen.io/v1/internal/prospect/pipeline-digest";
     const token = env.INTERNAL_TOKEN ?? env.PROSPECT_HMAC_SECRET ?? "";
-    const resp = await fetch(apiUrl, {
+    const digestFetch = env.SVC_API?.fetch?.bind(env.SVC_API) ?? fetch;
+    const resp = await digestFetch(apiUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

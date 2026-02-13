@@ -1,6 +1,14 @@
 name = "haiphen-causal"
 main = "src/index.ts"
 compatibility_date = "2025-07-16"
+workers_dev = false
+upload_source_maps = false
+
+[observability]
+enabled = true
+
+[limits]
+cpu_ms = 30
 
 [[routes]]
 pattern = "causal.haiphen.io/*"
@@ -9,6 +17,10 @@ zone_name = "haiphen.io"
 [vars]
 ALLOWED_ORIGINS = "https://haiphen.io,https://www.haiphen.io,https://app.haiphen.io,https://auth.haiphen.io"
 QUOTA_API_URL = "https://api.haiphen.io"
+
+[[services]]
+binding = "SVC_API"
+service = "haiphen-api"
 
 [[d1_databases]]
 binding = "DB"

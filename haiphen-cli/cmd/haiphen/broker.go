@@ -143,8 +143,10 @@ func cmdBrokerInit(cfg *config.Config, _ store.Store) *cobra.Command {
 	var useTerminal bool
 
 	cmd := &cobra.Command{
-		Use:   "init",
-		Short: "Interactive broker setup wizard",
+		Use:         "init",
+		Short:       "Interactive broker setup wizard",
+		Long:        "Interactive broker setup wizard\n\nRequires: Pro plan or higher\nUpgrade: https://haiphen.io/#pricing",
+		Annotations: map[string]string{"tier": "pro", "audit": "1"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			tui.DisclaimerBanner(os.Stdout)
 
@@ -303,8 +305,10 @@ func cmdBrokerStatus(cfg *config.Config, _ store.Store) *cobra.Command {
 	var asJSON bool
 
 	cmd := &cobra.Command{
-		Use:   "status",
-		Short: "Account dashboard (balance, buying power, P&L, positions)",
+		Use:         "status",
+		Short:       "Account dashboard (balance, buying power, P&L, positions)",
+		Long:        "Account dashboard (balance, buying power, P&L, positions)\n\nRequires: Pro plan or higher\nUpgrade: https://haiphen.io/#pricing",
+		Annotations: map[string]string{"tier": "pro"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			sp := tui.NewSpinner("Fetching account status...")
 			b, err := connectBroker(cmd.Context(), cfg)
@@ -377,8 +381,10 @@ func cmdBrokerTrade(cfg *config.Config, _ store.Store) *cobra.Command {
 	)
 
 	cmd := &cobra.Command{
-		Use:   "trade",
-		Short: "Submit a paper trade order",
+		Use:         "trade",
+		Short:       "Submit a paper trade order",
+		Long:        "Submit a paper trade order\n\nRequires: Pro plan or higher\nUpgrade: https://haiphen.io/#pricing",
+		Annotations: map[string]string{"tier": "pro", "audit": "1"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if err := requireTOTP(cfg, "alpaca"); err != nil {
 				return err
@@ -525,8 +531,10 @@ func cmdBrokerPositions(cfg *config.Config, _ store.Store) *cobra.Command {
 	var asJSON bool
 
 	cmd := &cobra.Command{
-		Use:   "positions",
-		Short: "List current positions",
+		Use:         "positions",
+		Short:       "List current positions",
+		Long:        "List current positions\n\nRequires: Pro plan or higher\nUpgrade: https://haiphen.io/#pricing",
+		Annotations: map[string]string{"tier": "pro"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			b, err := connectBroker(cmd.Context(), cfg)
 			if err != nil {
@@ -586,8 +594,10 @@ func cmdBrokerOrders(cfg *config.Config, _ store.Store) *cobra.Command {
 	)
 
 	cmd := &cobra.Command{
-		Use:   "orders",
-		Short: "List orders",
+		Use:         "orders",
+		Short:       "List orders",
+		Long:        "List orders\n\nRequires: Pro plan or higher\nUpgrade: https://haiphen.io/#pricing",
+		Annotations: map[string]string{"tier": "pro"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			b, err := connectBroker(cmd.Context(), cfg)
 			if err != nil {
@@ -645,9 +655,11 @@ func cmdBrokerOrder(cfg *config.Config, _ store.Store) *cobra.Command {
 	var asJSON bool
 
 	cmd := &cobra.Command{
-		Use:   "order <id>",
-		Short: "Get details of a single order",
-		Args:  cobra.ExactArgs(1),
+		Use:         "order <id>",
+		Short:       "Get details of a single order",
+		Long:        "Get details of a single order\n\nRequires: Pro plan or higher\nUpgrade: https://haiphen.io/#pricing",
+		Annotations: map[string]string{"tier": "pro"},
+		Args:        cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			b, err := connectBroker(cmd.Context(), cfg)
 			if err != nil {
@@ -699,9 +711,11 @@ func cmdBrokerOrder(cfg *config.Config, _ store.Store) *cobra.Command {
 
 func cmdBrokerCancel(cfg *config.Config, _ store.Store) *cobra.Command {
 	return &cobra.Command{
-		Use:   "cancel <id>",
-		Short: "Cancel a specific order",
-		Args:  cobra.ExactArgs(1),
+		Use:         "cancel <id>",
+		Short:       "Cancel a specific order",
+		Long:        "Cancel a specific order\n\nRequires: Pro plan or higher\nUpgrade: https://haiphen.io/#pricing",
+		Annotations: map[string]string{"tier": "pro", "audit": "1"},
+		Args:        cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			b, err := connectBroker(cmd.Context(), cfg)
 			if err != nil {
@@ -725,8 +739,10 @@ func cmdBrokerHalt(cfg *config.Config, _ store.Store) *cobra.Command {
 	var skipConfirm bool
 
 	cmd := &cobra.Command{
-		Use:   "halt",
-		Short: "Kill switch — cancel ALL open orders immediately",
+		Use:         "halt",
+		Short:       "Kill switch — cancel ALL open orders immediately",
+		Long:        "Kill switch — cancel ALL open orders immediately\n\nRequires: Pro plan or higher\nUpgrade: https://haiphen.io/#pricing",
+		Annotations: map[string]string{"tier": "pro", "audit": "1"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if err := requireTOTP(cfg, "alpaca"); err != nil {
 				return err
@@ -772,8 +788,10 @@ func cmdBrokerHalt(cfg *config.Config, _ store.Store) *cobra.Command {
 
 func cmdBrokerWatch(cfg *config.Config, _ store.Store) *cobra.Command {
 	return &cobra.Command{
-		Use:   "watch",
-		Short: "Real-time WebSocket trade updates (Ctrl+C to stop)",
+		Use:         "watch",
+		Short:       "Real-time WebSocket trade updates (Ctrl+C to stop)",
+		Long:        "Real-time WebSocket trade updates (Ctrl+C to stop)\n\nRequires: Pro plan or higher\nUpgrade: https://haiphen.io/#pricing",
+		Annotations: map[string]string{"tier": "pro"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			b, err := connectBroker(cmd.Context(), cfg)
 			if err != nil {
@@ -859,8 +877,10 @@ func cmdBrokerSync(cfg *config.Config, st store.Store) *cobra.Command {
 	var asJSON bool
 
 	cmd := &cobra.Command{
-		Use:   "sync",
-		Short: "Push paper trading data to haiphen trades pipeline",
+		Use:         "sync",
+		Short:       "Push paper trading data to haiphen trades pipeline",
+		Long:        "Push paper trading data to haiphen trades pipeline\n\nRequires: Pro plan or higher\nUpgrade: https://haiphen.io/#pricing",
+		Annotations: map[string]string{"tier": "pro", "audit": "1"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			token, err := requireToken(st)
 			if err != nil {
@@ -932,8 +952,10 @@ func cmdBrokerConfig(cfg *config.Config, _ store.Store) *cobra.Command {
 	)
 
 	cmd := &cobra.Command{
-		Use:   "config",
-		Short: "Show or set broker safety configuration",
+		Use:         "config",
+		Short:       "Show or set broker safety configuration",
+		Long:        "Show or set broker safety configuration\n\nRequires: Pro plan or higher\nUpgrade: https://haiphen.io/#pricing",
+		Annotations: map[string]string{"tier": "pro", "audit": "1"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if reset {
 				defaults := broker.DefaultSafetyConfig()
@@ -986,8 +1008,10 @@ func cmdBrokerConfig(cfg *config.Config, _ store.Store) *cobra.Command {
 
 func cmdBrokerDisconnect(cfg *config.Config, _ store.Store) *cobra.Command {
 	return &cobra.Command{
-		Use:   "disconnect",
-		Short: "Remove broker credentials",
+		Use:         "disconnect",
+		Short:       "Remove broker credentials",
+		Long:        "Remove broker credentials\n\nRequires: Pro plan or higher\nUpgrade: https://haiphen.io/#pricing",
+		Annotations: map[string]string{"tier": "pro", "audit": "1"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if err := requireTOTP(cfg, "alpaca"); err != nil {
 				return err

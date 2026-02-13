@@ -958,7 +958,33 @@ async function handleAuth(req, env, jwtKey, ctx) {
     if (!token) return textResponse('Unauthorized', origin, 401);
     try {
       const user = await getUserFromToken(token, jwtKey, env);
-      return jsonResponse(user, origin);
+
+      // Enrich with role (admin check via ADMIN_EMAILS env var)
+      const adminEmails = (env.ADMIN_EMAILS || '').split(',').map(e => e.trim()).filter(Boolean);
+      const isAdmin = user.email && adminEmails.includes(user.email);
+
+      // Check plan from D1 entitlements table
+      let plan = 'free';
+      if (env.DB) {
+        try {
+          const row = await env.DB.prepare(
+            'SELECT plan FROM entitlements WHERE user_id = ? AND active = 1 ORDER BY created_at DESC LIMIT 1'
+          ).bind(user.sub).first();
+          if (row) plan = row.plan;
+        } catch { /* D1 unavailable — default to free */ }
+      }
+      // Also check ENTITLE_KV as fallback (Stripe payments set this)
+      if (plan === 'free' && env.ENTITLE_KV) {
+        const paidVal = await env.ENTITLE_KV.get(`paid:${user.sub}`);
+        if (paidVal === '1' || paidVal === 'true') plan = 'pro';
+      }
+
+      return jsonResponse({
+        ...user,
+        plan,
+        role: isAdmin ? 'admin' : 'user',
+        entitled: plan !== 'free',
+      }, origin);
     } catch (err) {
       return textResponse('Invalid token', origin, 401);
     }

@@ -15,15 +15,27 @@ func newTestStore(t *testing.T) *fileStore {
 	return &fileStore{path: path}
 }
 
+// storePath extracts the underlying file path regardless of store type.
+func storePath(st Store) string {
+	switch s := st.(type) {
+	case *fileStore:
+		return s.path
+	case *keyringStore:
+		return s.fallback.path
+	default:
+		return ""
+	}
+}
+
 func TestNew_DefaultProfile(t *testing.T) {
 	st, err := New(Options{Profile: ""})
 	if err != nil {
 		t.Fatalf("New: %v", err)
 	}
 	// Should have been set to "default"
-	fs := st.(*fileStore)
-	if !contains(fs.path, "session.default.json") {
-		t.Errorf("path = %q, want to contain session.default.json", fs.path)
+	p := storePath(st)
+	if !contains(p, "session.default.json") {
+		t.Errorf("path = %q, want to contain session.default.json", p)
 	}
 }
 
@@ -32,9 +44,9 @@ func TestNew_CustomProfile(t *testing.T) {
 	if err != nil {
 		t.Fatalf("New: %v", err)
 	}
-	fs := st.(*fileStore)
-	if !contains(fs.path, "session.work.json") {
-		t.Errorf("path = %q, want to contain session.work.json", fs.path)
+	p := storePath(st)
+	if !contains(p, "session.work.json") {
+		t.Errorf("path = %q, want to contain session.work.json", p)
 	}
 }
 

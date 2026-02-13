@@ -858,6 +858,144 @@
 }
 
 /* ================================================================
+   WORKFLOW DIAGRAM + WALKTHROUGH CARDS
+   ================================================================ */
+
+.hp-gs__workflow-diagram{
+  max-width: 780px;
+  margin: 0 0 18px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(15,23,42,.10);
+  background: #0f172a;
+}
+
+.hp-gs__workflow-diagram img{
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.hp-gs__workflow-cards{
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.hp-gs__wk-card{
+  border: 1px solid rgba(15,23,42,.10);
+  border-radius: 12px;
+  background: rgba(255,255,255,.65);
+  overflow: hidden;
+}
+
+.hp-gs__wk-card summary{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  cursor: pointer;
+  user-select: none;
+  list-style: none;
+}
+
+.hp-gs__wk-card summary::-webkit-details-marker{
+  display: none;
+}
+
+.hp-gs__wk-badge{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  font-size: 13px;
+  font-weight: 900;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.hp-gs__wk-badge--blue{ background: #5A9BD4; }
+.hp-gs__wk-badge--teal{ background: #10B981; }
+.hp-gs__wk-badge--purple{ background: #8B5CF6; }
+
+.hp-gs__wk-meta{
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.hp-gs__wk-meta strong{
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.hp-gs__wk-meta span{
+  font-size: 11px;
+  font-weight: 700;
+  opacity: 0.65;
+}
+
+.hp-gs__wk-card[open] summary{
+  border-bottom: 1px solid rgba(15,23,42,.08);
+}
+
+.hp-gs__wk-body{
+  padding: 14px 16px;
+}
+
+.hp-gs__wk-steps{
+  margin: 0;
+  padding: 0 0 0 20px;
+  list-style: decimal;
+}
+
+.hp-gs__wk-steps li{
+  margin-bottom: 10px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.hp-gs__wk-steps li:last-child{
+  margin-bottom: 0;
+}
+
+.hp-gs__wk-steps strong{
+  display: block;
+  font-size: 12px;
+  font-weight: 900;
+  margin-bottom: 2px;
+}
+
+.hp-gs__wk-steps p{
+  margin: 0;
+  font-weight: 700;
+  opacity: 0.75;
+}
+
+.hp-gs__wk-steps em{
+  font-weight: 800;
+  font-style: italic;
+  color: #5A9BD4;
+}
+
+.hp-gs__wk-note{
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border-left: 3px solid #F59E0B;
+  background: rgba(245,158,11,.06);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.hp-gs__wk-note strong{
+  color: #d97706;
+}
+
+/* ================================================================
    FINANCE LENS — DARK THEME OVERRIDES
    ================================================================ */
 
@@ -1045,6 +1183,47 @@ html[data-lens="finance"] .hp-gs__broker-mode--live{
 
 html[data-lens="finance"] .hp-gs__broker-mode--sandbox{
   border-left-color: #fbbf24;
+}
+
+/* Finance lens — workflow dark overrides */
+html[data-lens="finance"] .hp-gs__workflow-diagram{
+  border-color: rgba(148,163,184,.15);
+  background: #0c1322;
+}
+
+html[data-lens="finance"] .hp-gs__wk-card{
+  background: rgba(30,41,59,.7);
+  border-color: rgba(148,163,184,.18);
+  color: #e2e8f0;
+}
+
+html[data-lens="finance"] .hp-gs__wk-meta strong{
+  color: #f1f5f9;
+}
+
+html[data-lens="finance"] .hp-gs__wk-meta span{
+  color: #94a3b8;
+}
+
+html[data-lens="finance"] .hp-gs__wk-card[open] summary{
+  border-bottom-color: rgba(148,163,184,.12);
+}
+
+html[data-lens="finance"] .hp-gs__wk-steps p{
+  color: #94a3b8;
+}
+
+html[data-lens="finance"] .hp-gs__wk-steps em{
+  color: #93c5fd;
+}
+
+html[data-lens="finance"] .hp-gs__wk-note{
+  background: rgba(245,158,11,.08);
+  border-left-color: #fbbf24;
+}
+
+html[data-lens="finance"] .hp-gs__wk-note strong{
+  color: #fbbf24;
 }
 
 /* Finance lens — sidebar dark overrides */

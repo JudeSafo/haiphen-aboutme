@@ -1,0 +1,20 @@
+{
+  "date_label": "2026-02-09",
+  "month_label": "Feb 2026",
+  "level": "WARNING",
+  "level_color": "#F59E0B",
+  "days_remaining": 19,
+  "resources": [
+    { "label": "Worker Requests", "current": "6,230,000", "limit": "10,000,000", "pct": "62.3%", "pct_num": 62.3, "bar_color": "#F59E0B" },
+    { "label": "D1 Rows Read",    "current": "1,200,000", "limit": "25,000,000,000", "pct": "0.0%", "pct_num": 0, "bar_color": "#5A9BD4" },
+    { "label": "D1 Rows Written",  "current": "3,400,000", "limit": "50,000,000", "pct": "6.8%", "pct_num": 6.8, "bar_color": "#5A9BD4" },
+    { "label": "KV Reads",        "current": "4,510,000", "limit": "10,000,000", "pct": "45.1%", "pct_num": 45.1, "bar_color": "#5A9BD4" },
+    { "label": "KV Writes",       "current": "120,000",   "limit": "1,000,000",  "pct": "12.0%", "pct_num": 12, "bar_color": "#5A9BD4" },
+    { "label": "DO Requests",     "current": "510,000",   "limit": "1,000,000",  "pct": "51.0%", "pct_num": 51, "bar_color": "#5A9BD4" }
+  ],
+  "failedOver": [],
+  "has_failovers": false,
+  "routing": [],
+  "watchdog_url": "https://haiphen.io/#watchdog",
+  "manage_url": "https://haiphen.io/#profile"
+}

@@ -1,0 +1,41 @@
+name = "haiphen-watchdog"
+main = "src/index.ts"
+compatibility_date = "2025-07-16"
+workers_dev = false
+upload_source_maps = false
+
+[limits]
+cpu_ms = 50
+
+[observability]
+enabled = true
+
+[vars]
+# Cloudflare account & zone — replace with real values or set as secrets
+CF_ACCOUNT_ID = "307a5117867a624064b8ec44fb1bac76"
+CF_ZONE_ID = "6839cf5279822fd740a95e38d80c11f3"
+# Thresholds (percentage of monthly limit)
+FAILOVER_THRESHOLD_PCT = "80"
+WARNING_THRESHOLD_PCT = "60"
+# D1 database ID for usage queries
+CF_D1_DATABASE_ID = "9a26fb67-b6e5-4d5f-8e62-3ecfde5ee8c2"
+# Daily digest email
+DIGEST_TO_EMAIL = "jude@haiphen.io"
+DIGEST_FROM_EMAIL = "jude@haiphen.io"
+DIGEST_FROM_NAME = "Haiphen Watchdog"
+# Optional: SendGrid dynamic template ID. If empty, uses inline HTML.
+WATCHDOG_DIGEST_TEMPLATE_ID = ""
+
+[[kv_namespaces]]
+binding = "WATCHDOG_KV"
+id = "00fe28f01adf415c811a42e5248d7b6b"
+
+[triggers]
+# Hourly usage check + daily digest at 8am UTC (2am CST) on weekdays
+crons = ["0 * * * *", "0 8 * * 1-5"]
+
+# Secrets (set via `wrangler secret put`):
+# - CF_API_TOKEN    (Analytics Read + Workers Routes Edit + DNS Edit)
+# - ADMIN_TOKEN     (shared admin token)
+# - SENDGRID_API_KEY (SendGrid API key for daily digest email)
+# - GITHUB_PAT      (GitHub PAT with actions:write scope — triggers gcp-standup workflow)

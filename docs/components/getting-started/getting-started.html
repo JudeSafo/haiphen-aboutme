@@ -93,6 +93,147 @@
         <div data-gs-lens="success-detail"></div>
       </div>
 
+      <!-- Interactive Workflows -->
+      <div class="hp-gs__section" id="gs-workflows" data-gs-gated>
+        <h3 class="hp-gs__section-title" data-gs-lens="workflows-title"></h3>
+        <p class="hp-gs__section-sub" data-gs-lens="workflows-sub"></p>
+
+        <div class="hp-gs__workflow-diagram">
+          <img src="assets/diagrams/interactive-shell-workflows.svg" alt="Interactive shell workflow diagram showing three guided paths: Onboarding, Trading, and Prospect Intelligence" loading="lazy" />
+        </div>
+
+        <p class="hp-gs__hint" style="margin-bottom:14px">Launch the interactive shell with <code style="background:rgba(15,23,42,.06);padding:2px 6px;border-radius:4px;font-size:11px">haiphen -i</code> and follow the guided prompts below.</p>
+
+        <div class="hp-gs__workflow-cards">
+
+          <details class="hp-gs__wk-card">
+            <summary>
+              <span class="hp-gs__wk-badge hp-gs__wk-badge--blue">1</span>
+              <div class="hp-gs__wk-meta">
+                <strong>Onboarding</strong>
+                <span>5 steps &middot; Free tier &middot; No prerequisites</span>
+              </div>
+            </summary>
+            <div class="hp-gs__wk-body">
+              <ol class="hp-gs__wk-steps">
+                <li>
+                  <strong>Welcome &amp; Orientation</strong>
+                  <p>See what Haiphen offers, compare plan tiers (Free, Pro, Enterprise), and get links to documentation.</p>
+                </li>
+                <li>
+                  <strong>Login via Browser</strong>
+                  <p>Authenticate with GitHub or Google. Your browser opens, you approve access, and the CLI receives your session automatically. <em>Skipped if you're already logged in.</em></p>
+                </li>
+                <li>
+                  <strong>Account Status</strong>
+                  <p>View your current plan, active services, and account details at a glance.</p>
+                </li>
+                <li>
+                  <strong>Platform Health Check</strong>
+                  <p>All six intelligence services are pinged. You see a live status grid confirming each endpoint is responding.</p>
+                </li>
+                <li>
+                  <strong>Choose Next Workflow</strong>
+                  <p>Pick where to go next: <em>Start Trading</em> or <em>Explore Prospect Intelligence</em>. The shell transitions directly into your chosen workflow.</p>
+                </li>
+              </ol>
+            </div>
+          </details>
+
+          <details class="hp-gs__wk-card">
+            <summary>
+              <span class="hp-gs__wk-badge hp-gs__wk-badge--teal">2</span>
+              <div class="hp-gs__wk-meta">
+                <strong>Trading</strong>
+                <span>8 steps &middot; Pro plan &middot; Sandbox-first</span>
+              </div>
+            </summary>
+            <div class="hp-gs__wk-body">
+              <ol class="hp-gs__wk-steps">
+                <li>
+                  <strong>Connect Broker</strong>
+                  <p>Link your brokerage account. Start with Alpaca paper trading to test safely before going live. <em>Skipped if already connected.</em></p>
+                </li>
+                <li>
+                  <strong>Account Summary</strong>
+                  <p>View your portfolio value, buying power, and current positions in a compact dashboard.</p>
+                </li>
+                <li>
+                  <strong>Safety Limits</strong>
+                  <p>Set maximum order size, daily loss limits, and position caps. Your limits persist across sessions.</p>
+                </li>
+                <li>
+                  <strong>Place a Trade</strong>
+                  <p>Execute a trade through the guided interface. Select symbol, quantity, and side. Large orders trigger an extra confirmation prompt.</p>
+                </li>
+                <li>
+                  <strong>Order History</strong>
+                  <p>Review your recent orders with status, fill price, and timestamps in a compact table.</p>
+                </li>
+                <li>
+                  <strong>Live Updates</strong>
+                  <p>Stream real-time position changes and market data via WebSocket connection.</p>
+                </li>
+                <li>
+                  <strong>Signal Rules</strong>
+                  <p>Configure automated entry and exit conditions using YAML-based signal rules.</p>
+                </li>
+                <li>
+                  <strong>Signal Daemon</strong>
+                  <p>Start background monitoring that watches markets and fires notifications when your signal rules trigger. <em>Skipped if already running.</em></p>
+                </li>
+              </ol>
+              <div class="hp-gs__wk-note">
+                <strong>Paper Trading Only</strong> &mdash; The interactive shell defaults to sandbox mode. No real capital is at risk during the guided walkthrough.
+              </div>
+            </div>
+          </details>
+
+          <details class="hp-gs__wk-card">
+            <summary>
+              <span class="hp-gs__wk-badge hp-gs__wk-badge--purple">3</span>
+              <div class="hp-gs__wk-meta">
+                <strong>Prospect Intelligence</strong>
+                <span>7 steps &middot; Free to browse &middot; Pro to investigate</span>
+              </div>
+            </summary>
+            <div class="hp-gs__wk-body">
+              <ol class="hp-gs__wk-steps">
+                <li>
+                  <strong>API Credentials</strong>
+                  <p>See which data source keys are configured (NVD, GitHub Advisory, Shodan). Enterprise users can set missing credentials here.</p>
+                </li>
+                <li>
+                  <strong>Browse Targets</strong>
+                  <p>Filter Fortune 500 companies by sector (Financials, IT, Health Care, etc.) and select a target for analysis.</p>
+                </li>
+                <li>
+                  <strong>Intelligence Scan</strong>
+                  <p>Scan your selected target across vulnerability databases, regulatory filings, and infrastructure signals. See how many leads are discovered.</p>
+                </li>
+                <li>
+                  <strong>View Leads</strong>
+                  <p>Browse discovered leads in a table sorted by severity, with signal type, entity name, and CVSS score. Select one for deeper analysis.</p>
+                </li>
+                <li>
+                  <strong>Run Investigation</strong>
+                  <p>Run the 6-service analysis pipeline on a lead. See aggregate risk score, per-service breakdown, synthesis summary, and data gaps. <em>Requires Pro plan.</em></p>
+                </li>
+                <li>
+                  <strong>Generate Report</strong>
+                  <p>Export a professional LaTeX report with executive summary, threat landscape, impact assessment, and recommendations. Optionally compile to PDF. <em>Requires Pro plan.</em></p>
+                </li>
+                <li>
+                  <strong>Send Advisory</strong>
+                  <p>Draft and preview an infrastructure advisory email for the target organization. Review subject line and body before sending. <em>Enterprise only.</em></p>
+                </li>
+              </ol>
+            </div>
+          </details>
+
+        </div>
+      </div>
+
       <!-- Disclaimer Banner -->
       <div class="hp-gs__disclaimer" data-gs-gated>
         <div class="hp-gs__disclaimer-icon">&#9432;</div>

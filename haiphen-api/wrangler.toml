@@ -1,11 +1,16 @@
 name = "haiphen-api"
 main = "src/index.ts"
 compatibility_date = "2025-07-16"
+workers_dev = false
+upload_source_maps = false
 
 # You will attach this worker to api.haiphen.io via route below.
 routes = [
   { pattern = "api.haiphen.io/*", zone_name = "haiphen.io" }
 ]
+
+[limits]
+cpu_ms = 50
 
 [observability]
 enabled = true
@@ -68,11 +73,16 @@ service = "haiphen-causal"
 binding = "SVC_SUPPLY"
 service = "haiphen-supply"
 
+[[services]]
+binding = "SVC_CONTACT"
+service = "haiphen-contact"
+
 # Secrets (set via `npx wrangler secret put <NAME>`):
 #   JWT_SECRET, API_KEY_PEPPER, ADMIN_TOKEN, INTERNAL_TOKEN, CREDENTIAL_KEY,
 #   WEBHOOK_SALT, ANTHROPIC_API_KEY
 
 [vars]
+ADMIN_EMAILS = "jude@haiphen.io"
 ONBOARDING_APP_URL = "https://app.haiphen.io/"
 ONBOARDING_DOCS_URL = "https://haiphen.io/#docs"
 ONBOARDING_PROFILE_URL = "https://haiphen.io/#profile"

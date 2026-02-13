@@ -1,0 +1,264 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 780 560" width="780" height="560">
+  <defs>
+    <linearGradient id="iw-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0b1220"/>
+      <stop offset="100%" stop-color="#0f1b2e"/>
+    </linearGradient>
+    <linearGradient id="iw-blue" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="rgba(90,155,212,0.22)"/>
+      <stop offset="100%" stop-color="rgba(90,155,212,0.06)"/>
+    </linearGradient>
+    <linearGradient id="iw-teal" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="rgba(16,185,129,0.22)"/>
+      <stop offset="100%" stop-color="rgba(16,185,129,0.06)"/>
+    </linearGradient>
+    <linearGradient id="iw-purple" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="rgba(139,92,246,0.22)"/>
+      <stop offset="100%" stop-color="rgba(139,92,246,0.06)"/>
+    </linearGradient>
+    <linearGradient id="iw-amber" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="rgba(245,158,11,0.22)"/>
+      <stop offset="100%" stop-color="rgba(245,158,11,0.06)"/>
+    </linearGradient>
+    <filter id="iw-glow">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <pattern id="iw-dots" width="20" height="20" patternUnits="userSpaceOnUse">
+      <circle cx="10" cy="10" r="0.6" fill="rgba(148,163,184,0.10)"/>
+    </pattern>
+  </defs>
+
+  <!-- Background -->
+  <rect width="780" height="560" fill="url(#iw-bg)" rx="8"/>
+  <rect width="780" height="560" fill="url(#iw-dots)" rx="8"/>
+
+  <!-- Title -->
+  <text x="390" y="32" text-anchor="middle" fill="#e2e8f0" font-family="system-ui,sans-serif" font-size="14" font-weight="700" letter-spacing="0.5">Interactive Shell &#x2014; Guided Workflows</text>
+  <text x="390" y="50" text-anchor="middle" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="10">haiphen -i</text>
+
+  <!-- MENU BOX -->
+  <rect x="290" y="62" width="200" height="36" rx="6" fill="url(#iw-blue)" stroke="#5A9BD4" stroke-width="1.2"/>
+  <text x="390" y="78" text-anchor="middle" fill="#e2e8f0" font-family="monospace" font-size="10" font-weight="700">MENU</text>
+  <text x="390" y="91" text-anchor="middle" fill="#94a3b8" font-family="monospace" font-size="8">Select [1] [2] [3] or [q]</text>
+
+  <!-- Connector lines from Menu -->
+  <line x1="330" y1="98" x2="140" y2="132" stroke="#5A9BD4" stroke-width="1" opacity="0.5"/>
+  <line x1="390" y1="98" x2="390" y2="132" stroke="#10B981" stroke-width="1" opacity="0.5"/>
+  <line x1="450" y1="98" x2="640" y2="132" stroke="#8B5CF6" stroke-width="1" opacity="0.5"/>
+
+  <!-- Number badges -->
+  <circle cx="235" cy="115" r="9" fill="#5A9BD4" opacity="0.9"/>
+  <text x="235" y="118.5" text-anchor="middle" fill="#fff" font-family="monospace" font-size="9" font-weight="700">1</text>
+  <circle cx="390" cy="115" r="9" fill="#10B981" opacity="0.9"/>
+  <text x="390" y="118.5" text-anchor="middle" fill="#fff" font-family="monospace" font-size="9" font-weight="700">2</text>
+  <circle cx="545" cy="115" r="9" fill="#8B5CF6" opacity="0.9"/>
+  <text x="545" y="118.5" text-anchor="middle" fill="#fff" font-family="monospace" font-size="9" font-weight="700">3</text>
+
+  <!-- ============================================================
+       COLUMN 1: ONBOARDING (blue)
+       ============================================================ -->
+  <rect x="30" y="132" width="220" height="28" rx="5" fill="url(#iw-blue)" stroke="#5A9BD4" stroke-width="1"/>
+  <text x="140" y="150" text-anchor="middle" fill="#5A9BD4" font-family="system-ui,sans-serif" font-size="11" font-weight="700">Onboarding</text>
+
+  <!-- Steps -->
+  <rect x="42" y="170" width="196" height="26" rx="4" fill="rgba(90,155,212,0.08)" stroke="rgba(90,155,212,0.25)" stroke-width="0.8"/>
+  <circle cx="56" cy="183" r="6" fill="rgba(90,155,212,0.2)" stroke="#5A9BD4" stroke-width="0.8"/>
+  <text x="56" y="186" text-anchor="middle" fill="#5A9BD4" font-family="monospace" font-size="8" font-weight="700">1</text>
+  <text x="72" y="186" fill="#e2e8f0" font-family="system-ui,sans-serif" font-size="9.5">Welcome &amp; Orientation</text>
+
+  <line x1="140" y1="196" x2="140" y2="204" stroke="rgba(90,155,212,0.3)" stroke-width="0.8"/>
+
+  <rect x="42" y="204" width="196" height="26" rx="4" fill="rgba(90,155,212,0.08)" stroke="rgba(90,155,212,0.25)" stroke-width="0.8"/>
+  <circle cx="56" cy="217" r="6" fill="rgba(90,155,212,0.2)" stroke="#5A9BD4" stroke-width="0.8"/>
+  <text x="56" y="220" text-anchor="middle" fill="#5A9BD4" font-family="monospace" font-size="8" font-weight="700">2</text>
+  <text x="72" y="220" fill="#e2e8f0" font-family="system-ui,sans-serif" font-size="9.5">Login via Browser</text>
+
+  <line x1="140" y1="230" x2="140" y2="238" stroke="rgba(90,155,212,0.3)" stroke-width="0.8"/>
+
+  <rect x="42" y="238" width="196" height="26" rx="4" fill="rgba(90,155,212,0.08)" stroke="rgba(90,155,212,0.25)" stroke-width="0.8"/>
+  <circle cx="56" cy="251" r="6" fill="rgba(90,155,212,0.2)" stroke="#5A9BD4" stroke-width="0.8"/>
+  <text x="56" y="254" text-anchor="middle" fill="#5A9BD4" font-family="monospace" font-size="8" font-weight="700">3</text>
+  <text x="72" y="254" fill="#e2e8f0" font-family="system-ui,sans-serif" font-size="9.5">Account Status</text>
+
+  <line x1="140" y1="264" x2="140" y2="272" stroke="rgba(90,155,212,0.3)" stroke-width="0.8"/>
+
+  <rect x="42" y="272" width="196" height="26" rx="4" fill="rgba(90,155,212,0.08)" stroke="rgba(90,155,212,0.25)" stroke-width="0.8"/>
+  <circle cx="56" cy="285" r="6" fill="rgba(90,155,212,0.2)" stroke="#5A9BD4" stroke-width="0.8"/>
+  <text x="56" y="288" text-anchor="middle" fill="#5A9BD4" font-family="monospace" font-size="8" font-weight="700">4</text>
+  <text x="72" y="288" fill="#e2e8f0" font-family="system-ui,sans-serif" font-size="9.5">Platform Health Check</text>
+
+  <line x1="140" y1="298" x2="140" y2="306" stroke="rgba(90,155,212,0.3)" stroke-width="0.8"/>
+
+  <rect x="42" y="306" width="196" height="26" rx="4" fill="rgba(90,155,212,0.12)" stroke="#5A9BD4" stroke-width="1"/>
+  <circle cx="56" cy="319" r="6" fill="rgba(90,155,212,0.2)" stroke="#5A9BD4" stroke-width="0.8"/>
+  <text x="56" y="322" text-anchor="middle" fill="#5A9BD4" font-family="monospace" font-size="8" font-weight="700">5</text>
+  <text x="72" y="322" fill="#e2e8f0" font-family="system-ui,sans-serif" font-size="9.5">Choose Next Workflow</text>
+
+  <!-- Chain arrows from Onboarding to Trading & Prospect -->
+  <path d="M238,319 C270,319 270,150 320,150" fill="none" stroke="#F59E0B" stroke-width="1" stroke-dasharray="4,3" opacity="0.6"/>
+  <polygon points="318,147 324,150 318,153" fill="#F59E0B" opacity="0.6"/>
+
+  <path d="M238,319 C500,345 500,150 530,150" fill="none" stroke="#F59E0B" stroke-width="1" stroke-dasharray="4,3" opacity="0.6"/>
+  <polygon points="528,147 534,150 528,153" fill="#F59E0B" opacity="0.6"/>
+
+  <!-- Chain label -->
+  <text x="140" y="348" text-anchor="middle" fill="#F59E0B" font-family="system-ui,sans-serif" font-size="8" font-style="italic" opacity="0.7">chains into selected workflow</text>
+
+  <!-- ============================================================
+       COLUMN 2: TRADING (teal)
+       ============================================================ -->
+  <rect x="280" y="132" width="220" height="28" rx="5" fill="url(#iw-teal)" stroke="#10B981" stroke-width="1"/>
+  <text x="390" y="150" text-anchor="middle" fill="#10B981" font-family="system-ui,sans-serif" font-size="11" font-weight="700">Trading</text>
+
+  <!-- Requires label -->
+  <text x="390" y="165" text-anchor="middle" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="7.5" font-style="italic">Requires: Pro plan</text>
+
+  <!-- Steps -->
+  <rect x="292" y="174" width="196" height="26" rx="4" fill="rgba(16,185,129,0.08)" stroke="rgba(16,185,129,0.25)" stroke-width="0.8"/>
+  <circle cx="306" cy="187" r="6" fill="rgba(16,185,129,0.2)" stroke="#10B981" stroke-width="0.8"/>
+  <text x="306" y="190" text-anchor="middle" fill="#10B981" font-family="monospace" font-size="8" font-weight="700">1</text>
+  <text x="322" y="190" fill="#e2e8f0" font-family="system-ui,sans-serif" font-size="9.5">Connect Broker</text>
+
+  <line x1="390" y1="200" x2="390" y2="208" stroke="rgba(16,185,129,0.3)" stroke-width="0.8"/>
+
+  <rect x="292" y="208" width="196" height="26" rx="4" fill="rgba(16,185,129,0.08)" stroke="rgba(16,185,129,0.25)" stroke-width="0.8"/>
+  <circle cx="306" cy="221" r="6" fill="rgba(16,185,129,0.2)" stroke="#10B981" stroke-width="0.8"/>
+  <text x="306" y="224" text-anchor="middle" fill="#10B981" font-family="monospace" font-size="8" font-weight="700">2</text>
+  <text x="322" y="224" fill="#e2e8f0" font-family="system-ui,sans-serif" font-size="9.5">Account Summary</text>
+
+  <line x1="390" y1="234" x2="390" y2="242" stroke="rgba(16,185,129,0.3)" stroke-width="0.8"/>
+
+  <rect x="292" y="242" width="196" height="26" rx="4" fill="rgba(16,185,129,0.08)" stroke="rgba(16,185,129,0.25)" stroke-width="0.8"/>
+  <circle cx="306" cy="255" r="6" fill="rgba(16,185,129,0.2)" stroke="#10B981" stroke-width="0.8"/>
+  <text x="306" y="258" text-anchor="middle" fill="#10B981" font-family="monospace" font-size="8" font-weight="700">3</text>
+  <text x="322" y="258" fill="#e2e8f0" font-family="system-ui,sans-serif" font-size="9.5">Safety Limits</text>
+
+  <line x1="390" y1="268" x2="390" y2="276" stroke="rgba(16,185,129,0.3)" stroke-width="0.8"/>
+
+  <rect x="292" y="276" width="196" height="26" rx="4" fill="rgba(16,185,129,0.08)" stroke="rgba(16,185,129,0.25)" stroke-width="0.8"/>
+  <circle cx="306" cy="289" r="6" fill="rgba(16,185,129,0.2)" stroke="#10B981" stroke-width="0.8"/>
+  <text x="306" y="292" text-anchor="middle" fill="#10B981" font-family="monospace" font-size="8" font-weight="700">4</text>
+  <text x="322" y="292" fill="#e2e8f0" font-family="system-ui,sans-serif" font-size="9.5">Place a Trade</text>
+
+  <line x1="390" y1="302" x2="390" y2="310" stroke="rgba(16,185,129,0.3)" stroke-width="0.8"/>
+
+  <rect x="292" y="310" width="196" height="26" rx="4" fill="rgba(16,185,129,0.08)" stroke="rgba(16,185,129,0.25)" stroke-width="0.8"/>
+  <circle cx="306" cy="323" r="6" fill="rgba(16,185,129,0.2)" stroke="#10B981" stroke-width="0.8"/>
+  <text x="306" y="326" text-anchor="middle" fill="#10B981" font-family="monospace" font-size="8" font-weight="700">5</text>
+  <text x="322" y="326" fill="#e2e8f0" font-family="system-ui,sans-serif" font-size="9.5">Order History</text>
+
+  <line x1="390" y1="336" x2="390" y2="344" stroke="rgba(16,185,129,0.3)" stroke-width="0.8"/>
+
+  <rect x="292" y="344" width="196" height="26" rx="4" fill="rgba(16,185,129,0.08)" stroke="rgba(16,185,129,0.25)" stroke-width="0.8"/>
+  <circle cx="306" cy="357" r="6" fill="rgba(16,185,129,0.2)" stroke="#10B981" stroke-width="0.8"/>
+  <text x="306" y="360" text-anchor="middle" fill="#10B981" font-family="monospace" font-size="8" font-weight="700">6</text>
+  <text x="322" y="360" fill="#e2e8f0" font-family="system-ui,sans-serif" font-size="9.5">Live Updates</text>
+
+  <line x1="390" y1="370" x2="390" y2="378" stroke="rgba(16,185,129,0.3)" stroke-width="0.8"/>
+
+  <rect x="292" y="378" width="196" height="26" rx="4" fill="rgba(16,185,129,0.08)" stroke="rgba(16,185,129,0.25)" stroke-width="0.8"/>
+  <circle cx="306" cy="391" r="6" fill="rgba(16,185,129,0.2)" stroke="#10B981" stroke-width="0.8"/>
+  <text x="306" y="394" text-anchor="middle" fill="#10B981" font-family="monospace" font-size="8" font-weight="700">7</text>
+  <text x="322" y="394" fill="#e2e8f0" font-family="system-ui,sans-serif" font-size="9.5">Signal Rules</text>
+
+  <line x1="390" y1="404" x2="390" y2="412" stroke="rgba(16,185,129,0.3)" stroke-width="0.8"/>
+
+  <rect x="292" y="412" width="196" height="26" rx="4" fill="rgba(16,185,129,0.08)" stroke="rgba(16,185,129,0.25)" stroke-width="0.8"/>
+  <circle cx="306" cy="425" r="6" fill="rgba(16,185,129,0.2)" stroke="#10B981" stroke-width="0.8"/>
+  <text x="306" y="428" text-anchor="middle" fill="#10B981" font-family="monospace" font-size="8" font-weight="700">8</text>
+  <text x="322" y="428" fill="#e2e8f0" font-family="system-ui,sans-serif" font-size="9.5">Signal Daemon</text>
+
+  <!-- ============================================================
+       COLUMN 3: PROSPECT INTELLIGENCE (purple)
+       ============================================================ -->
+  <rect x="530" y="132" width="220" height="28" rx="5" fill="url(#iw-purple)" stroke="#8B5CF6" stroke-width="1"/>
+  <text x="640" y="150" text-anchor="middle" fill="#8B5CF6" font-family="system-ui,sans-serif" font-size="11" font-weight="700">Prospect Intelligence</text>
+
+  <!-- Requires label -->
+  <text x="640" y="165" text-anchor="middle" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="7.5" font-style="italic">Free to browse &#x00B7; Pro to investigate</text>
+
+  <!-- Steps -->
+  <rect x="542" y="174" width="196" height="26" rx="4" fill="rgba(139,92,246,0.08)" stroke="rgba(139,92,246,0.25)" stroke-width="0.8"/>
+  <circle cx="556" cy="187" r="6" fill="rgba(139,92,246,0.2)" stroke="#8B5CF6" stroke-width="0.8"/>
+  <text x="556" y="190" text-anchor="middle" fill="#8B5CF6" font-family="monospace" font-size="8" font-weight="700">1</text>
+  <text x="572" y="190" fill="#e2e8f0" font-family="system-ui,sans-serif" font-size="9.5">API Credentials</text>
+
+  <line x1="640" y1="200" x2="640" y2="208" stroke="rgba(139,92,246,0.3)" stroke-width="0.8"/>
+
+  <rect x="542" y="208" width="196" height="26" rx="4" fill="rgba(139,92,246,0.08)" stroke="rgba(139,92,246,0.25)" stroke-width="0.8"/>
+  <circle cx="556" cy="221" r="6" fill="rgba(139,92,246,0.2)" stroke="#8B5CF6" stroke-width="0.8"/>
+  <text x="556" y="224" text-anchor="middle" fill="#8B5CF6" font-family="monospace" font-size="8" font-weight="700">2</text>
+  <text x="572" y="224" fill="#e2e8f0" font-family="system-ui,sans-serif" font-size="9.5">Browse Targets</text>
+
+  <line x1="640" y1="234" x2="640" y2="242" stroke="rgba(139,92,246,0.3)" stroke-width="0.8"/>
+
+  <rect x="542" y="242" width="196" height="26" rx="4" fill="rgba(139,92,246,0.08)" stroke="rgba(139,92,246,0.25)" stroke-width="0.8"/>
+  <circle cx="556" cy="255" r="6" fill="rgba(139,92,246,0.2)" stroke="#8B5CF6" stroke-width="0.8"/>
+  <text x="556" y="258" text-anchor="middle" fill="#8B5CF6" font-family="monospace" font-size="8" font-weight="700">3</text>
+  <text x="572" y="258" fill="#e2e8f0" font-family="system-ui,sans-serif" font-size="9.5">Intelligence Scan</text>
+
+  <line x1="640" y1="268" x2="640" y2="276" stroke="rgba(139,92,246,0.3)" stroke-width="0.8"/>
+
+  <rect x="542" y="276" width="196" height="26" rx="4" fill="rgba(139,92,246,0.08)" stroke="rgba(139,92,246,0.25)" stroke-width="0.8"/>
+  <circle cx="556" cy="289" r="6" fill="rgba(139,92,246,0.2)" stroke="#8B5CF6" stroke-width="0.8"/>
+  <text x="556" y="292" text-anchor="middle" fill="#8B5CF6" font-family="monospace" font-size="8" font-weight="700">4</text>
+  <text x="572" y="292" fill="#e2e8f0" font-family="system-ui,sans-serif" font-size="9.5">View Leads</text>
+
+  <line x1="640" y1="302" x2="640" y2="310" stroke="rgba(139,92,246,0.3)" stroke-width="0.8"/>
+
+  <rect x="542" y="310" width="196" height="26" rx="4" fill="rgba(139,92,246,0.08)" stroke="rgba(139,92,246,0.25)" stroke-width="0.8"/>
+  <circle cx="556" cy="323" r="6" fill="rgba(139,92,246,0.2)" stroke="#8B5CF6" stroke-width="0.8"/>
+  <text x="556" y="326" text-anchor="middle" fill="#8B5CF6" font-family="monospace" font-size="8" font-weight="700">5</text>
+  <text x="572" y="326" fill="#e2e8f0" font-family="system-ui,sans-serif" font-size="9.5">Run Investigation</text>
+  <text x="732" y="326" text-anchor="end" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="7">Pro</text>
+
+  <line x1="640" y1="336" x2="640" y2="344" stroke="rgba(139,92,246,0.3)" stroke-width="0.8"/>
+
+  <rect x="542" y="344" width="196" height="26" rx="4" fill="rgba(139,92,246,0.08)" stroke="rgba(139,92,246,0.25)" stroke-width="0.8"/>
+  <circle cx="556" cy="357" r="6" fill="rgba(139,92,246,0.2)" stroke="#8B5CF6" stroke-width="0.8"/>
+  <text x="556" y="360" text-anchor="middle" fill="#8B5CF6" font-family="monospace" font-size="8" font-weight="700">6</text>
+  <text x="572" y="360" fill="#e2e8f0" font-family="system-ui,sans-serif" font-size="9.5">Generate Report</text>
+  <text x="732" y="360" text-anchor="end" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="7">Pro</text>
+
+  <line x1="640" y1="370" x2="640" y2="378" stroke="rgba(139,92,246,0.3)" stroke-width="0.8"/>
+
+  <rect x="542" y="378" width="196" height="26" rx="4" fill="rgba(139,92,246,0.08)" stroke="rgba(139,92,246,0.25)" stroke-width="0.8"/>
+  <circle cx="556" cy="391" r="6" fill="rgba(139,92,246,0.2)" stroke="#8B5CF6" stroke-width="0.8"/>
+  <text x="556" y="394" text-anchor="middle" fill="#8B5CF6" font-family="monospace" font-size="8" font-weight="700">7</text>
+  <text x="572" y="394" fill="#e2e8f0" font-family="system-ui,sans-serif" font-size="9.5">Send Advisory</text>
+  <text x="732" y="394" text-anchor="end" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="7">Enterprise</text>
+
+  <!-- ============================================================
+       LEGEND
+       ============================================================ -->
+  <rect x="30" y="468" width="720" height="70" rx="6" fill="rgba(15,23,42,0.4)" stroke="rgba(148,163,184,0.12)" stroke-width="0.8"/>
+
+  <text x="50" y="488" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="9" font-weight="700">PLAN TIERS</text>
+
+  <circle cx="58" cy="502" r="4" fill="rgba(90,155,212,0.3)" stroke="#5A9BD4" stroke-width="0.8"/>
+  <text x="68" y="505.5" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="8.5">Free &#x2014; login only</text>
+
+  <circle cx="58" cy="518" r="4" fill="rgba(16,185,129,0.3)" stroke="#10B981" stroke-width="0.8"/>
+  <text x="68" y="521.5" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="8.5">Pro &#x2014; paid plan required</text>
+
+  <circle cx="58" cy="534" r="4" fill="rgba(139,92,246,0.3)" stroke="#8B5CF6" stroke-width="0.8"/>
+  <text x="68" y="537.5" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="8.5">Enterprise &#x2014; full access</text>
+
+  <text x="280" y="488" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="9" font-weight="700">KEY</text>
+
+  <line x1="290" y1="500" x2="316" y2="500" stroke="#F59E0B" stroke-width="1" stroke-dasharray="4,3" opacity="0.7"/>
+  <text x="324" y="503.5" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="8.5">Workflow chain (automatic handoff)</text>
+
+  <line x1="290" y1="516" x2="316" y2="516" stroke="rgba(148,163,184,0.4)" stroke-width="0.8"/>
+  <text x="324" y="519.5" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="8.5">Sequential step progression</text>
+
+  <text x="560" y="488" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="9" font-weight="700">FLOW</text>
+  <text x="560" y="505" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="8.5">Onboarding has no plan requirement.</text>
+  <text x="560" y="519" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="8.5">After onboarding, choose Trading or Prospect.</text>
+  <text x="560" y="533" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="8.5">Steps auto-skip if already completed.</text>
+
+  <!-- PAPER TRADING badge -->
+  <rect x="292" y="446" width="196" height="16" rx="3" fill="rgba(245,158,11,0.12)" stroke="rgba(245,158,11,0.3)" stroke-width="0.6"/>
+  <text x="390" y="457" text-anchor="middle" fill="#F59E0B" font-family="system-ui,sans-serif" font-size="7.5" font-weight="600">PAPER TRADING ONLY</text>
+</svg>

@@ -57,6 +57,7 @@
     { id: 'gs-connect',  label: 'Connect' },
     { id: 'gs-verify',   label: 'Verify' },
     { id: 'gs-success',  label: 'Success' },
+    { id: 'gs-workflows', label: 'Workflows' },
     { id: 'gs-services', label: 'Services' },
     { id: 'gs-prospect', label: 'Prospect' },
     { id: 'gs-apps',     label: 'Apps' },
@@ -110,6 +111,14 @@
     'cohort-sub': {
       tech: 'Get hands-on onboarding, priority support, and early access to new services. Cohort members ship faster and shape the platform roadmap.',
       finance: 'Get guided onboarding, dedicated support, and early access to new analytics. Cohort members see results faster and influence product direction.',
+    },
+    'workflows-title': {
+      tech: 'Interactive Workflows',
+      finance: 'Guided Trading Workflows',
+    },
+    'workflows-sub': {
+      tech: 'Three guided paths from first login to production intelligence. The interactive shell walks you through each step with prompts, validation, and real-time feedback.',
+      finance: 'Three guided paths from first login to live trading signals. The interactive shell walks you through broker connection, safety configuration, and signal setup step by step.',
     },
     'svc-secure-name': {
       tech: 'Haiphen Secure',

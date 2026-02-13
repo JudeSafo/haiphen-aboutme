@@ -66,6 +66,9 @@ type Env = {
   // HMAC signing secret for prospect outreach emails (shared with haiphen-contact)
   PROSPECT_HMAC_SECRET?: string;
 
+  // Comma-separated list of admin emails (fail-closed: empty means no admins)
+  ADMIN_EMAILS?: string;
+
   // Service bindings for scaffold Worker-to-Worker calls
   SVC_SECURE: Fetcher;
   SVC_NETWORK: Fetcher;
@@ -73,6 +76,7 @@ type Env = {
   SVC_RISK: Fetcher;
   SVC_CAUSAL: Fetcher;
   SVC_SUPPLY: Fetcher;
+  SVC_CONTACT: Fetcher;
 
   // Optional: for CORS allowlist
   ALLOWED_ORIGINS?: string;
@@ -306,6 +310,19 @@ async function authSessionUser(req: Request, env: Env, requestId: string): Promi
   } catch {
     throw err("unauthorized", "Unauthorized", requestId, 401);
   }
+}
+
+/**
+ * Fail-closed admin check: requires session auth + email in ADMIN_EMAILS.
+ * If ADMIN_EMAILS is unset or empty, no one is admin → always 403.
+ */
+async function requireAdmin(req: Request, env: Env, requestId: string): Promise<{ user_login: string; name?: string | null; email?: string | null }> {
+  const user = await authSessionUser(req, env, requestId);
+  const adminEmails = (env.ADMIN_EMAILS ?? '').split(',').map(e => e.trim()).filter(Boolean);
+  if (!user.email || !adminEmails.includes(user.email)) {
+    throw err("forbidden", "Admin access required", requestId, 403);
+  }
+  return user;
 }
 
 function onboardingLinks(env: Env) {
@@ -1374,9 +1391,9 @@ async function route(req: Request, env: Env): Promise<Response> {
     }, requestId, corsHeaders(req, env));
   }
 
-  // POST /v1/prospect/targets
+  // POST /v1/prospect/targets (admin)
   if (req.method === "POST" && url.pathname === "/v1/prospect/targets") {
-    const u = await authSessionUser(req, env, requestId);
+    const u = await requireAdmin(req, env, requestId);
     const body = await req.json().catch(() => ({})) as any;
 
     if (!body.name) return err("invalid_request", "name is required", requestId, 400, corsHeaders(req, env));
@@ -1429,9 +1446,9 @@ async function route(req: Request, env: Env): Promise<Response> {
     return okJson({ ok: true, target_id: targetId }, requestId, corsHeaders(req, env));
   }
 
-  // DELETE /v1/prospect/targets/:id (soft-delete)
+  // DELETE /v1/prospect/targets/:id (admin, soft-delete)
   if (req.method === "DELETE" && url.pathname.match(/^\/v1\/prospect\/targets\/[^/]+$/)) {
-    const u = await authSessionUser(req, env, requestId);
+    const u = await requireAdmin(req, env, requestId);
     const targetId = url.pathname.split("/").pop()!;
 
     await env.DB.prepare(
@@ -1839,10 +1856,10 @@ async function route(req: Request, env: Env): Promise<Response> {
     return okJson({ ok: true, lead_id: leadId, matched_rule_id: matchedRuleId, analyses: results }, requestId, corsHeaders(req, env));
   }
 
-  // ---- PROSPECT: draft outreach ----
+  // ---- PROSPECT: draft outreach (admin) ----
   // POST /v1/prospect/leads/:id/outreach
   if (req.method === "POST" && url.pathname.match(/^\/v1\/prospect\/leads\/[^/]+\/outreach$/)) {
-    const u = await authSessionUser(req, env, requestId);
+    const u = await requireAdmin(req, env, requestId);
     const parts = url.pathname.split("/");
     const leadId = parts[parts.length - 2];
 
@@ -1978,10 +1995,10 @@ async function route(req: Request, env: Env): Promise<Response> {
     return okJson({ items: rows.results ?? [] }, requestId, corsHeaders(req, env));
   }
 
-  // ---- PROSPECT CREDENTIALS: upsert ----
+  // ---- PROSPECT CREDENTIALS: upsert (admin) ----
   // PUT /v1/prospect/credentials/:provider
   if (req.method === "PUT" && url.pathname.match(/^\/v1\/prospect\/credentials\/(nvd|github|shodan)$/)) {
-    const u = await authSessionUser(req, env, requestId);
+    const u = await requireAdmin(req, env, requestId);
     const provider = url.pathname.split("/").pop()!;
 
     const body = await req.json().catch(() => null) as null | { api_key?: string; label?: string };
@@ -2019,10 +2036,10 @@ async function route(req: Request, env: Env): Promise<Response> {
     return okJson({ items: rows.results ?? [] }, requestId, corsHeaders(req, env));
   }
 
-  // ---- PROSPECT CREDENTIALS: delete ----
+  // ---- PROSPECT CREDENTIALS: delete (admin) ----
   // DELETE /v1/prospect/credentials/:provider
   if (req.method === "DELETE" && url.pathname.match(/^\/v1\/prospect\/credentials\/(nvd|github|shodan)$/)) {
-    const u = await authSessionUser(req, env, requestId);
+    const u = await requireAdmin(req, env, requestId);
     const provider = url.pathname.split("/").pop()!;
 
     const result = await env.DB.prepare(
@@ -2065,8 +2082,11 @@ async function route(req: Request, env: Env): Promise<Response> {
   // ---- PROSPECT: trigger crawl (admin) ----
   // POST /v1/prospect/crawl
   if (req.method === "POST" && url.pathname === "/v1/prospect/crawl") {
+    // Accept both legacy X-Admin-Token and session-based admin auth
     const tok = req.headers.get("X-Admin-Token") || "";
-    if (!safeEqual(tok, env.ADMIN_TOKEN)) return err("forbidden", "Forbidden", requestId, 403, corsHeaders(req, env));
+    if (!safeEqual(tok, env.ADMIN_TOKEN)) {
+      await requireAdmin(req, env, requestId);
+    }
 
     // Trigger Cloud Run Job via REST API
     // In production this would use GCP auth; for now return acknowledgement
@@ -2268,10 +2288,10 @@ async function route(req: Request, env: Env): Promise<Response> {
     return okJson({ ok: true, entity_regressions: entityCount, vuln_class_regressions: vulnCount }, requestId, corsHeaders(req, env));
   }
 
-  // ---- PROSPECT OUTREACH: approve ----
+  // ---- PROSPECT OUTREACH: approve (admin) ----
   // POST /v1/prospect/leads/:id/outreach/approve
   if (req.method === "POST" && url.pathname.match(/^\/v1\/prospect\/leads\/[^/]+\/outreach\/approve$/)) {
-    const u = await authSessionUser(req, env, requestId);
+    const u = await requireAdmin(req, env, requestId);
     const parts = url.pathname.split("/");
     const leadId = parts[parts.length - 3];
 
@@ -2289,10 +2309,10 @@ async function route(req: Request, env: Env): Promise<Response> {
     return okJson({ ok: true, outreach_id: outreach.outreach_id, status: "approved" }, requestId, corsHeaders(req, env));
   }
 
-  // ---- PROSPECT OUTREACH: send ----
+  // ---- PROSPECT OUTREACH: send (admin) ----
   // POST /v1/prospect/leads/:id/outreach/send
   if (req.method === "POST" && url.pathname.match(/^\/v1\/prospect\/leads\/[^/]+\/outreach\/send$/)) {
-    const u = await authSessionUser(req, env, requestId);
+    const u = await requireAdmin(req, env, requestId);
     const parts = url.pathname.split("/");
     const leadId = parts[parts.length - 3];
 
@@ -2326,7 +2346,8 @@ async function route(req: Request, env: Env): Promise<Response> {
     const sig = await hmacSha256Hex(env.PROSPECT_HMAC_SECRET ?? env.INTERNAL_TOKEN, `${ts}.${payload}`);
 
     try {
-      const contactRes = await fetch("https://contact.haiphen.io/api/prospect/outreach/send", {
+      const contactFetch = env.SVC_CONTACT?.fetch?.bind(env.SVC_CONTACT) ?? fetch;
+      const contactRes = await contactFetch("https://contact.haiphen.io/api/prospect/outreach/send", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -59,6 +59,8 @@ func cmdSignalDaemon(cfg *config.Config, st store.Store) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "daemon",
 		Short: "Start the signal daemon (background by default)",
+		Long:  "Start the signal daemon (background by default)\n\nRequires: Pro plan or higher\nUpgrade: https://haiphen.io/#pricing",
+		Annotations: map[string]string{"tier": "pro", "audit": "1"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			// TOTP gate if enrolled
 			if err := requireSignalTOTP(cfg); err != nil {
@@ -202,6 +204,8 @@ func cmdSignalStop(cfg *config.Config) *cobra.Command {
 	return &cobra.Command{
 		Use:   "stop",
 		Short: "Stop the running signal daemon",
+		Long:  "Stop the running signal daemon\n\nRequires: Pro plan or higher\nUpgrade: https://haiphen.io/#pricing",
+		Annotations: map[string]string{"tier": "pro", "audit": "1"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if err := sig.StopDaemon(cfg.Profile); err != nil {
 				return err
@@ -218,6 +222,7 @@ func cmdSignalStatus(cfg *config.Config) *cobra.Command {
 	return &cobra.Command{
 		Use:   "status",
 		Short: "Show daemon status",
+		Annotations: map[string]string{"tier": "free"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			pid, running := sig.IsRunning(cfg.Profile)
 			if !running {
@@ -257,6 +262,8 @@ func cmdSignalAdd(cfg *config.Config, _ store.Store) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "add <file.yaml>",
 		Short: "Import a signal rule from YAML",
+		Long:  "Import a signal rule from YAML\n\nRequires: Pro plan or higher\nUpgrade: https://haiphen.io/#pricing",
+		Annotations: map[string]string{"tier": "pro", "audit": "1"},
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			r, err := sig.LoadRuleFile(args[0])
@@ -301,6 +308,7 @@ func cmdSignalList(cfg *config.Config) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "list",
 		Short: "List all signal rules",
+		Annotations: map[string]string{"tier": "free"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			rulesDir, err := sig.SignalsDir(cfg.Profile)
 			if err != nil {
@@ -378,6 +386,8 @@ func cmdSignalRemove(cfg *config.Config) *cobra.Command {
 	return &cobra.Command{
 		Use:   "remove <name>",
 		Short: "Delete a signal rule",
+		Long:  "Delete a signal rule\n\nRequires: Pro plan or higher\nUpgrade: https://haiphen.io/#pricing",
+		Annotations: map[string]string{"tier": "pro", "audit": "1"},
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			rulesDir, err := sig.SignalsDir(cfg.Profile)
@@ -401,6 +411,8 @@ func cmdSignalEnable(cfg *config.Config) *cobra.Command {
 	return &cobra.Command{
 		Use:   "enable <name>",
 		Short: "Set a rule's status to active",
+		Long:  "Set a rule's status to active\n\nRequires: Pro plan or higher\nUpgrade: https://haiphen.io/#pricing",
+		Annotations: map[string]string{"tier": "pro", "audit": "1"},
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return setRuleStatus(cfg, args[0], "active")
@@ -414,6 +426,8 @@ func cmdSignalPause(cfg *config.Config) *cobra.Command {
 	return &cobra.Command{
 		Use:   "pause <name>",
 		Short: "Pause a signal rule",
+		Long:  "Pause a signal rule\n\nRequires: Pro plan or higher\nUpgrade: https://haiphen.io/#pricing",
+		Annotations: map[string]string{"tier": "pro", "audit": "1"},
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return setRuleStatus(cfg, args[0], "paused")
@@ -457,6 +471,8 @@ func cmdSignalTest(cfg *config.Config, st store.Store) *cobra.Command {
 	return &cobra.Command{
 		Use:   "test <name>",
 		Short: "Dry-run a single rule against the latest snapshot",
+		Long:  "Dry-run a single rule against the latest snapshot\n\nRequires: Pro plan or higher\nUpgrade: https://haiphen.io/#pricing",
+		Annotations: map[string]string{"tier": "pro"},
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			token, err := requireToken(st)
@@ -553,6 +569,7 @@ func cmdSignalLog(cfg *config.Config) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "log",
 		Short: "Show signal daemon log",
+		Annotations: map[string]string{"tier": "free"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			logPath, err := sig.LogPath(cfg.Profile)
 			if err != nil {
@@ -591,6 +608,8 @@ func cmdSignalSync(cfg *config.Config, st store.Store) *cobra.Command {
 	return &cobra.Command{
 		Use:   "sync",
 		Short: "Push rules to D1 and pull events",
+		Long:  "Push rules to D1 and pull events\n\nRequires: Pro plan or higher\nUpgrade: https://haiphen.io/#pricing",
+		Annotations: map[string]string{"tier": "pro", "audit": "1"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			token, err := requireToken(st)
 			if err != nil {
@@ -645,6 +664,8 @@ func cmdSignalPositions(cfg *config.Config, st store.Store) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "positions",
 		Short: "List recent position events from the API",
+		Long:  "List recent position events from the API\n\nRequires: Pro plan or higher\nUpgrade: https://haiphen.io/#pricing",
+		Annotations: map[string]string{"tier": "pro"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			token, err := requireToken(st)
 			if err != nil {
@@ -726,6 +747,7 @@ func cmdSignalFilter(cfg *config.Config) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "filter",
 		Short: "Show or import position copy-trade filter config",
+		Annotations: map[string]string{"tier": "free"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			f, err := sig.LoadPositionFilter(cfg.Profile)
 			if err != nil {
@@ -749,6 +771,8 @@ func cmdSignalFilterSet(cfg *config.Config) *cobra.Command {
 	return &cobra.Command{
 		Use:   "set <file.yaml>",
 		Short: "Import a position filter config from YAML",
+		Long:  "Import a position filter config from YAML\n\nRequires: Pro plan or higher\nUpgrade: https://haiphen.io/#pricing",
+		Annotations: map[string]string{"tier": "pro", "audit": "1"},
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			data, err := os.ReadFile(args[0])

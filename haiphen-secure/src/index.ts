@@ -9,6 +9,7 @@ type Env = {
   ALLOWED_ORIGINS?: string;
   INTERNAL_TOKEN?: string;
   QUOTA_API_URL?: string;
+  SVC_API?: Fetcher;
 };
 
 // ---- Shared helpers ----
@@ -27,6 +28,11 @@ function corsHeaders(req: Request, env: Env): Record<string, string> {
     "Access-Control-Allow-Headers": "Content-Type, Authorization",
     "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
     "Vary": "Origin",
+    "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload",
+    "X-Content-Type-Options": "nosniff",
+    "X-Frame-Options": "DENY",
+    "Referrer-Policy": "strict-origin-when-cross-origin",
+    "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
   };
 }
 
@@ -91,8 +97,9 @@ async function checkQuota(env: Env, userId: string, plan: string): Promise<{ all
   const apiUrl = env.QUOTA_API_URL || "https://api.haiphen.io";
   const token = env.INTERNAL_TOKEN;
   if (!token) return { allowed: true };
+  const quotaFetch = env.SVC_API?.fetch?.bind(env.SVC_API) ?? fetch;
   try {
-    const res = await fetch(`${apiUrl}/v1/internal/quota/consume`, {
+    const res = await quotaFetch(`${apiUrl}/v1/internal/quota/consume`, {
       method: "POST",
       headers: { "Content-Type": "application/json", "X-Internal-Token": token },
       body: JSON.stringify({ user_id: userId, plan }),

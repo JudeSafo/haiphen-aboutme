@@ -1,0 +1,1 @@
+# Prevent accidental commit of secrets in wrangler.toml

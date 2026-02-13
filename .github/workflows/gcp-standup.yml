@@ -1,0 +1,46 @@
+name: GCP Standup
+on:
+  workflow_dispatch:
+    inputs:
+      skip_build:
+        description: "Skip build phase (deploy pre-built artifacts)"
+        required: false
+        default: "false"
+
+jobs:
+  standup:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: united-lane-361102
+
+      - name: Run standup.sh
+        env:
+          ADMIN_TOKEN: ${{ secrets.ADMIN_TOKEN }}
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+        run: |
+          cd haiphen-gcp
+          ARGS=""
+          if [ "${{ github.event.inputs.skip_build }}" = "true" ]; then
+            ARGS="--skip-build"
+          fi
+          chmod +x standup.sh build-function.sh
+          ./standup.sh $ARGS
+
+      - name: Verify deployments
+        run: |
+          gcloud functions list --project=united-lane-361102 --region=us-central1 \
+            --filter="name~haiphen" --format="table(name,state,updateTime)"

@@ -9,6 +9,7 @@ type Env = {
   ALLOWED_ORIGINS?: string;
   INTERNAL_TOKEN?: string;
   QUOTA_API_URL?: string;
+  SVC_API?: Fetcher;
 };
 
 function uuid(): string { return crypto.randomUUID(); }
@@ -19,7 +20,7 @@ function corsHeaders(req: Request, env: Env): Record<string, string> {
     .split(",").map(s => s.trim());
   if (origin && /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) allowed.push(origin);
   const o = allowed.includes(origin) ? origin : "https://haiphen.io";
-  return { "Access-Control-Allow-Origin": o, "Access-Control-Allow-Credentials": "true", "Access-Control-Allow-Headers": "Content-Type, Authorization", "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS", "Vary": "Origin" };
+  return { "Access-Control-Allow-Origin": o, "Access-Control-Allow-Credentials": "true", "Access-Control-Allow-Headers": "Content-Type, Authorization", "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS", "Vary": "Origin", "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload", "X-Content-Type-Options": "nosniff", "X-Frame-Options": "DENY", "Referrer-Policy": "strict-origin-when-cross-origin", "Permissions-Policy": "camera=(), microphone=(), geolocation=()" };
 }
 
 function okJson(data: unknown, rid: string, h?: Record<string, string>): Response {
@@ -69,8 +70,9 @@ async function checkQuota(env: Env, userId: string, plan: string): Promise<{ all
   const apiUrl = env.QUOTA_API_URL || "https://api.haiphen.io";
   const token = env.INTERNAL_TOKEN;
   if (!token) return { allowed: true };
+  const quotaFetch = env.SVC_API?.fetch?.bind(env.SVC_API) ?? fetch;
   try {
-    const res = await fetch(`${apiUrl}/v1/internal/quota/consume`, {
+    const res = await quotaFetch(`${apiUrl}/v1/internal/quota/consume`, {
       method: "POST",
       headers: { "Content-Type": "application/json", "X-Internal-Token": token },
       body: JSON.stringify({ user_id: userId, plan }),

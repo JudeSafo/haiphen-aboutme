@@ -40,7 +40,7 @@ func New(opts Options) (Store, error) {
 		return nil, err
 	}
 	path := filepath.Join(base, "session."+opts.Profile+".json")
-	return &fileStore{path: path}, nil
+	return newKeyringStore(opts.Profile, path), nil
 }
 
 func (s *fileStore) LoadToken() (*Token, error) {

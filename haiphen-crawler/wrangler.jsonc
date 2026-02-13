@@ -4,6 +4,9 @@
   "main": "src/edge-crawler.js",
   "compatibility_date": "2025-07-24",
   "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": false,
+  "upload_source_maps": false,
+  "limits": { "cpu_ms": 30 },
 
   "kv_namespaces": [
     {

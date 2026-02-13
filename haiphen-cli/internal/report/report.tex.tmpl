@@ -1,0 +1,332 @@
+\documentclass[10pt,twocolumn]{article}
+\usepackage[margin=0.75in,top=1in,bottom=0.8in]{geometry}
+\usepackage{tikz}
+\usetikzlibrary{positioning}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\usepackage{xcolor}
+\usepackage{lastpage}
+\usepackage{enumitem}
+\usepackage{tabularx}
+\usepackage{graphicx}
+\usepackage{amsmath}
+
+\definecolor{haiphenBlue}{HTML}{5A9BD4}
+\definecolor{haiphenTeal}{HTML}{10B981}
+\definecolor{haiphenPurple}{HTML}{8B5CF6}
+\definecolor{haiphenAmber}{HTML}{F59E0B}
+\definecolor{haiphenRed}{HTML}{EF4444}
+\definecolor{haiphenBg}{HTML}{F8FAFC}
+\definecolor{haiphenGray}{HTML}{64748B}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\textcolor{haiphenBlue}{\textbf{Haiphen Intelligence Platform}}}
+\fancyhead[R]{\small\textcolor{gray}{Confidential}}
+\fancyfoot[C]{\small Page \thepage\ of \pageref{LastPage}}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+
+\hypersetup{colorlinks=true,linkcolor=haiphenBlue,urlcolor=haiphenBlue}
+
+\begin{document}
+
+%% === PAGE 1: Title, Abstract, Introduction ===
+
+\twocolumn[{%
+\begin{center}
+{\LARGE\textbf{Infrastructure Risk Advisory}}\\[4pt]
+{\Large\textcolor{haiphenBlue}{ {{- escape .Target.Name -}} {{- if .Target.Ticker}} ({{escape .Target.Ticker}}){{end -}} }}\\[6pt]
+{\small Haiphen Intelligence Platform \quad|\quad {{.Date}}}\\[2pt]
+{\small\textcolor{gray}{ {{- len .Leads}} signals analyzed across {{len .Investigations}} investigation{{if ne (len .Investigations) 1}}s{{end -}} }}\\[8pt]
+\end{center}
+
+\noindent\fcolorbox{haiphenBlue}{haiphenBg}{\parbox{\dimexpr\textwidth-2\fboxsep-2\fboxrule}{%
+\small\textbf{Abstract.} This advisory presents findings from an automated infrastructure
+risk assessment of {{escape .Target.Name}}, conducted by the Haiphen Intelligence
+Platform on {{.Date}}. The assessment analyzed {{len .Leads}} signals across
+{{len .Investigations}} investigation pipeline{{if ne (len .Investigations) 1}}s{{end}}
+spanning {{escape .SignalTypesList}}.
+This investigation is performed as part of Haiphen's ongoing mission to strengthen
+financial infrastructure resilience and promote robust market operations.
+All analysis is based exclusively on publicly available data sources
+including SEC EDGAR filings, National Vulnerability Database (NVD) entries,
+and passive infrastructure telemetry. No proprietary or privileged information was accessed.
+}}\\[10pt]
+}]
+
+\section{Introduction}
+
+The Haiphen Intelligence Platform employs a six-service analysis pipeline to assess
+infrastructure risk. Each signal is processed through independent evaluation modules,
+and the aggregate risk score $R$ is computed as:
+
+\begin{equation}
+R = \sum_{i=1}^{6} w_i \cdot S_i
+\end{equation}
+
+\noindent where $w_i$ represents the signal-type-specific weight for service $i$ and $S_i$ is the
+service score (0--100). For the primary signal type \textit{ {{- escape .PrimarySignalType -}} },
+the top-weighted services are {{.TopWeightedServices}}.
+
+\subsection{Target Profile}
+\begin{tabularx}{\columnwidth}{lX}
+\textbf{Company} & {{escape .Target.Name}} \\
+{{- if .Target.Ticker}}
+\textbf{Ticker} & {{escape .Target.Ticker}} \\
+{{- end}}
+{{- if .Target.Industry}}
+\textbf{Industry} & {{escape .Target.Industry}} \\
+{{- end}}
+{{- if .Target.Sector}}
+\textbf{Sector} & {{escape .Target.Sector}} \\
+{{- end}}
+{{- if .Target.Domains}}
+\textbf{Domains} & {{range $i, $d := .Target.Domains}}{{if $i}}, {{end}}\texttt{ {{- escape $d -}} }{{end}} \\
+{{- end}}
+\textbf{Leads} & {{len .Leads}} signals \\
+\textbf{Investigations} & {{len .Investigations}} completed \\
+\end{tabularx}
+
+\subsection{Signal Distribution}
+\begin{tabular}{lrr}
+\toprule
+\textbf{Signal Type} & \textbf{Count} & \textbf{Avg Score} \\
+\midrule
+{{- range $type, $stat := .SignalDist}}
+{{escape $type}} & {{$stat.Total}} & {{$stat.AvgScore}} \\
+{{- end}}
+\bottomrule
+\end{tabular}
+
+\subsection{Severity Breakdown}
+\begin{tabular}{lr}
+\toprule
+\textbf{Severity} & \textbf{Count} \\
+\midrule
+{{- range $sev, $count := .SeverityDist}}
+\textcolor{ {{- severityColor $sev -}} }{ {{- escape $sev -}} } & {{$count}} \\
+{{- end}}
+\bottomrule
+\end{tabular}
+
+%% === PAGE 2: Signal Inventory, Threats, Services ===
+
+\section{Signal Inventory}
+
+Table~\ref{tab:signals} summarizes the top signals detected during the assessment.
+
+\begin{table}[h]
+\centering
+\caption{Top signals by severity}\label{tab:signals}
+\scriptsize
+\begin{tabular}{llllp{1.8cm}}
+\toprule
+\textbf{Signal ID} & \textbf{Type} & \textbf{Sev.} & \textbf{Source} & \textbf{Entity} \\
+\midrule
+{{- range .TopLeads}}
+{{if .VulnerabilityID}}{{escape (truncate .VulnerabilityID 16)}}{{else}}---{{end}} & {{escape (truncate .SignalType 8)}} & \textcolor{ {{- severityColor .Severity -}} }{ {{- .Severity -}} } & {{escape (truncate .SourceID 8)}} & {{escape (truncate .EntityName 18)}} \\
+{{- end}}
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Threat Classification}
+{{- if not .AllThreats}}
+No threat vectors classified at current evidence level.
+{{- else}}
+
+The following {{len .AllThreats}} threat vector{{if ne (len .AllThreats) 1}}s were{{else}} was{{end}} identified through automated pattern matching across all investigation pipelines.
+
+{{- range .AllThreats}}
+
+\paragraph{ {{- escape .Primitive -}} } \textcolor{ {{- if eq .Confidence "high"}}haiphenRed{{else if eq .Confidence "medium"}}haiphenAmber{{else}}haiphenTeal{{end -}} }{\textbf{[{{.Confidence}} confidence]}}
+
+{{threatExplanation .Primitive}}
+
+{{- if .Evidence}}
+
+\textit{Evidence:}
+\begin{itemize}[nosep,leftmargin=*]
+{{- range .Evidence}}
+\item \small {{escape (truncate . 120)}}
+{{- end}}
+\end{itemize}
+{{- end}}
+{{- end}}
+{{- end}}
+
+\section{Service Analysis}
+{{- if .ServiceScores}}
+
+The highest-scoring service was \textbf{ {{- .HighestServiceLabel -}} }
+(score: {{round .HighestServiceScore}}/100), indicating {{escape .HighestServiceExplan}}.
+
+\begin{center}
+\begin{tikzpicture}[
+  node distance=0.3cm,
+  svcbox/.style={draw,rounded corners=2pt,minimum width=1.1cm,minimum height=0.7cm,font=\tiny\bfseries,align=center},
+]
+  \node[svcbox,fill=haiphenRed!15] (s0) {Secure\\{{serviceScore "secure" $.ServiceScores}}};
+  \node[svcbox,fill=haiphenBlue!15,right=of s0] (s1) {Network\\{{serviceScore "network" $.ServiceScores}}};
+  \node[svcbox,fill=haiphenTeal!15,right=of s1] (s2) {Causal\\{{serviceScore "causal" $.ServiceScores}}};
+  \node[svcbox,fill=haiphenAmber!15,right=of s2] (s3) {Risk\\{{serviceScore "risk" $.ServiceScores}}};
+  \node[svcbox,fill=haiphenPurple!15,right=of s3] (s4) {Graph\\{{serviceScore "graph" $.ServiceScores}}};
+  \node[svcbox,fill=haiphenBlue!15,right=of s4] (s5) {Supply\\{{serviceScore "supply" $.ServiceScores}}};
+  \draw[->,thick,haiphenBlue] (s0) -- (s1);
+  \draw[->,thick,haiphenBlue] (s1) -- (s2);
+  \draw[->,thick,haiphenBlue] (s2) -- (s3);
+  \draw[->,thick,haiphenBlue] (s3) -- (s4);
+  \draw[->,thick,haiphenBlue] (s4) -- (s5);
+\end{tikzpicture}
+\end{center}
+
+\begin{tabularx}{\columnwidth}{lrX}
+\toprule
+\textbf{Service} & \textbf{Score} & \textbf{Capability} \\
+\midrule
+{{- range .Services}}
+{{- if hasService .Key $.ServiceScores}}
+\href{ {{- .URL -}} }{\textcolor{ {{- .Color -}} }{\textbf{ {{- .Label -}} }}} & {{serviceScore .Key $.ServiceScores}} & {{.Desc}} \\
+{{- end}}
+{{- end}}
+\bottomrule
+\end{tabularx}
+
+{{- else}}
+No service scores available at current evidence level.
+{{- end}}
+
+%% === PAGE 3: Impact, Remediation, Conclusion ===
+
+\section{Impact Assessment}
+{{- if not .AllImpacts}}
+No impact scores computed at current threat level.
+{{- else}}
+\begin{tabular}{llr}
+\toprule
+\textbf{Impact} & \textbf{Rating} & \textbf{Score} \\
+\midrule
+{{- range .AllImpacts}}
+{{escape .Label}} & {{scoreBand .Score}} & {{printf "%.1f" .Score}} \\
+{{- end}}
+\bottomrule
+\end{tabular}
+{{- end}}
+
+\subsection{Financial Quantification}
+
+Using the IBM Cost of a Data Breach 2025 benchmark for the financial sector
+(\$6.1M average), and applying the aggregate risk score
+of {{printf "%.1f" .AvgScore}}/100 as a probability-weighted multiplier, the estimated
+annualized breach exposure for {{escape .Target.Name}} is:
+
+\begin{center}
+\fcolorbox{haiphenAmber}{haiphenBg}{\parbox{0.85\columnwidth}{%
+\centering\small
+\textbf{Estimated Annual Exposure:} {{.FinancialEstLow}} -- {{.FinancialEstHigh}}
+}}
+\end{center}
+
+This estimate reflects the range between conservative (0.3x) and adverse (1.2x)
+scenario multipliers applied to the sector benchmark.
+
+\section{Remediation Roadmap}
+{{- if not .Recommendations}}
+No specific recommendations at current evidence level.
+{{- else}}
+\begin{enumerate}[nosep,leftmargin=*]
+{{- range .Recommendations}}
+\item {{escape .}}
+{{- end}}
+\end{enumerate}
+{{- end}}
+
+\subsection{Monitoring Commands}
+
+The following Haiphen CLI commands enable ongoing monitoring:
+\begin{itemize}[nosep,leftmargin=*]
+\item \texttt{haiphen prospect pipeline --target "{{escape .Target.Name}}"}
+{{- range $type, $stat := .SignalDist}}
+\item \texttt{haiphen prospect list --signal-type {{escape $type}}}
+{{- end}}
+\item \texttt{haiphen prospect report "{{escape .Target.Name}}" --compile}
+\end{itemize}
+
+\section{Conclusion}
+
+This assessment identified {{len .AllThreats}} threat vector{{if ne (len .AllThreats) 1}}s{{end}}
+across {{len .Leads}} signal{{if ne (len .Leads) 1}}s{{end}} for {{escape .Target.Name}},
+yielding an aggregate risk score of {{printf "%.1f" .AvgScore}}/100 ({{scoreBand .AvgScore}}).
+The primary threat classification is \textit{ {{- escape .TopThreatLabel -}} }.
+
+Based on industry benchmarks, proactive remediation of identified vulnerabilities
+can reduce annualized breach exposure by approximately {{.MitigationPct}}\%,
+representing a potential savings of {{.MitigationSavings}} annually.
+Peer institutions including JPMorgan Chase, Goldman Sachs, and Morgan Stanley have invested
+significantly in similar infrastructure resilience programs.
+
+Haiphen recommends integrating this assessment into {{escape .Target.Name}}'s
+existing risk management framework and scheduling periodic re-assessments
+to track remediation progress and emerging threats.
+
+{{if .References}}
+\section*{References}
+\begin{enumerate}[nosep,leftmargin=*,label={[\arabic*]}]
+{{- range .References}}
+\item \small {{.}}
+{{- end}}
+\item \small IBM Security, ``Cost of a Data Breach Report 2025,'' IBM Corporation.
+\end{enumerate}
+{{end}}
+
+%% === PAGE 4: Branding ===
+
+\newpage
+\onecolumn
+\thispagestyle{empty}
+\vspace*{\fill}
+\begin{center}
+
+\IfFileExists{robot_haiphen.png}{%
+  \includegraphics[width=3cm]{robot_haiphen}\\[12pt]
+}{%
+  \rule{3cm}{3cm}\\[12pt]
+}
+
+{\Large\textbf{Haiphen Intelligence Platform}}\\[6pt]
+{\large\textcolor{haiphenBlue}{Securing Financial Infrastructure at Scale}}\\[20pt]
+
+\begin{minipage}{0.7\textwidth}
+\small\color{haiphenGray}
+This report was generated by the Haiphen Intelligence Platform as part of
+a daily automated infrastructure risk assessment program. All findings are
+based exclusively on publicly available data sources including the National
+Vulnerability Database (NVD), SEC EDGAR filings, GitHub Security Advisories,
+and passive network telemetry.
+
+No proprietary, confidential, or privileged information was accessed during
+this assessment. This document is provided for informational purposes only
+and does not constitute legal, financial, or professional advice.
+Recipients should independently verify all findings before taking action.
+\end{minipage}\\[24pt]
+
+\href{https://haiphen.io/\#mission}{\textcolor{haiphenBlue}{Explore Our Mission \& Services}}\\[6pt]
+\href{mailto:jude@haiphen.io}{\textcolor{haiphenBlue}{Contact: jude@haiphen.io}}\\[6pt]
+\url{https://haiphen.io}\\[12pt]
+
+\begin{minipage}{0.6\textwidth}
+\small
+\textbf{Service Index}\\[4pt]
+{{range .Services -}}
+\href{ {{- .URL -}} }{\textcolor{ {{- .Color -}} }{\textbf{ {{- .Label -}} }}} --- {{.Desc}}\\
+{{end}}
+\end{minipage}
+
+\end{center}
+\vspace*{\fill}
+
+\end{document}

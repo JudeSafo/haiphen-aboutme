@@ -51,8 +51,9 @@ func cmdServices(cfg *config.Config, st store.Store) *cobra.Command {
 	var asJSON bool
 
 	cmd := &cobra.Command{
-		Use:   "services",
-		Short: "Check health of all Haiphen services",
+		Use:         "services",
+		Short:       "Check health of all Haiphen services",
+		Annotations: map[string]string{"tier": "public"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			type result struct {
 				Name   string `json:"name"`
@@ -131,8 +132,9 @@ func cmdMetrics(cfg *config.Config, st store.Store) *cobra.Command {
 	var kpisJSON bool
 	var kpisDate string
 	kpis := &cobra.Command{
-		Use:   "kpis",
-		Short: "List KPI values",
+		Use:         "kpis",
+		Short:       "List KPI values",
+		Annotations: map[string]string{"tier": "free"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			token, err := requireToken(st)
 			if err != nil {
@@ -172,8 +174,9 @@ func cmdMetrics(cfg *config.Config, st store.Store) *cobra.Command {
 	var seriesKPI, seriesDate string
 	var seriesLimit int
 	series := &cobra.Command{
-		Use:   "series",
-		Short: "Get time series for a KPI",
+		Use:         "series",
+		Short:       "Get time series for a KPI",
+		Annotations: map[string]string{"tier": "free"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if seriesKPI == "" {
 				return fmt.Errorf("--kpi is required")
@@ -203,8 +206,9 @@ func cmdMetrics(cfg *config.Config, st store.Store) *cobra.Command {
 	var assetsJSON bool
 	var assetsDate string
 	assets := &cobra.Command{
-		Use:   "assets",
-		Short: "List portfolio assets",
+		Use:         "assets",
+		Short:       "List portfolio assets",
+		Annotations: map[string]string{"tier": "free"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			token, err := requireToken(st)
 			if err != nil {
@@ -229,6 +233,128 @@ func cmdMetrics(cfg *config.Config, st store.Store) *cobra.Command {
 	return cmd
 }
 
+// ---- haiphen trades ----
+
+func cmdTrades(cfg *config.Config, st store.Store) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "trades",
+		Short: "Query live trades data",
+	}
+
+	// trades latest
+	var latestJSON bool
+	latest := &cobra.Command{
+		Use:         "latest",
+		Short:       "Show latest trading KPIs",
+		Annotations: map[string]string{"tier": "free"},
+		RunE: func(cmd *cobra.Command, args []string) error {
+			data, err := util.ServiceGet(cmd.Context(), cfg.APIOrigin, "/v1/trades/latest", "")
+			if err != nil {
+				return err
+			}
+			printOrJSON(data, latestJSON, func(b []byte) {
+				var out struct {
+					Date string `json:"date"`
+					Rows []struct {
+						KPI   string `json:"kpi"`
+						Value string `json:"value"`
+					} `json:"rows"`
+				}
+				if json.Unmarshal(b, &out) == nil {
+					fmt.Printf("Date: %s\n\n", out.Date)
+					for _, r := range out.Rows {
+						fmt.Printf("  %-40s %s\n", r.KPI, r.Value)
+					}
+				} else {
+					printJSON(b)
+				}
+			})
+			return nil
+		},
+	}
+	latest.Flags().BoolVar(&latestJSON, "json", false, "Output as JSON")
+
+	// trades dates
+	var datesJSON bool
+	dates := &cobra.Command{
+		Use:         "dates",
+		Short:       "List available trading dates",
+		Annotations: map[string]string{"tier": "free"},
+		RunE: func(cmd *cobra.Command, args []string) error {
+			data, err := util.ServiceGet(cmd.Context(), cfg.APIOrigin, "/v1/trades/dates", "")
+			if err != nil {
+				return err
+			}
+			printOrJSON(data, datesJSON, func(b []byte) {
+				var out struct {
+					Dates []string `json:"dates"`
+				}
+				if json.Unmarshal(b, &out) == nil {
+					fmt.Printf("Available dates (%d):\n", len(out.Dates))
+					for _, d := range out.Dates {
+						fmt.Printf("  %s\n", d)
+					}
+				} else {
+					printJSON(b)
+				}
+			})
+			return nil
+		},
+	}
+	dates.Flags().BoolVar(&datesJSON, "json", false, "Output as JSON")
+
+	cmd.AddCommand(latest, dates)
+	return cmd
+}
+
+// ---- haiphen quota ----
+
+func cmdQuota(cfg *config.Config, st store.Store) *cobra.Command {
+	var asJSON bool
+
+	cmd := &cobra.Command{
+		Use:         "quota",
+		Short:       "Show API quota status",
+		Annotations: map[string]string{"tier": "free"},
+		RunE: func(cmd *cobra.Command, args []string) error {
+			token, err := requireToken(st)
+			if err != nil {
+				return err
+			}
+			data, err := util.ServiceGet(cmd.Context(), cfg.APIOrigin, "/v1/quota/status", token)
+			if err != nil {
+				// Graceful fallback if endpoint doesn't exist
+				if strings.Contains(err.Error(), "404") {
+					fmt.Println("Quota endpoint not available yet.")
+					return nil
+				}
+				return err
+			}
+			printOrJSON(data, asJSON, func(b []byte) {
+				var out struct {
+					Plan      string `json:"plan"`
+					Remaining int    `json:"remaining"`
+					Limit     int    `json:"limit"`
+					ResetAt   string `json:"reset_at"`
+				}
+				if json.Unmarshal(b, &out) == nil {
+					fmt.Printf("Plan:      %s\n", out.Plan)
+					fmt.Printf("Remaining: %d / %d\n", out.Remaining, out.Limit)
+					if out.ResetAt != "" {
+						fmt.Printf("Resets:    %s\n", out.ResetAt)
+					}
+				} else {
+					printJSON(b)
+				}
+			})
+			return nil
+		},
+	}
+
+	cmd.Flags().BoolVar(&asJSON, "json", false, "Output as JSON")
+	return cmd
+}
+
 // ---- haiphen secure ----
 
 func cmdSecure(cfg *config.Config, st store.Store) *cobra.Command {
@@ -241,8 +367,10 @@ func cmdSecure(cfg *config.Config, st store.Store) *cobra.Command {
 	var scanTarget, scanType string
 	var scanJSON bool
 	scan := &cobra.Command{
-		Use:   "scan",
-		Short: "Initiate a security scan",
+		Use:         "scan",
+		Short:       "Initiate a security scan",
+		Annotations: map[string]string{"tier": "pro"},
+		Long:        "Initiate a security scan\n\nRequires: Pro plan or higher\nUpgrade: https://haiphen.io/#pricing",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if scanTarget == "" {
 				return fmt.Errorf("--target is required")
@@ -267,8 +395,10 @@ func cmdSecure(cfg *config.Config, st store.Store) *cobra.Command {
 	// secure scans
 	var scansJSON bool
 	scans := &cobra.Command{
-		Use:   "scans",
-		Short: "List recent scans",
+		Use:         "scans",
+		Short:       "List recent scans",
+		Annotations: map[string]string{"tier": "pro"},
+		Long:        "List recent scans\n\nRequires: Pro plan or higher\nUpgrade: https://haiphen.io/#pricing",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			token, err := requireToken(st)
 			if err != nil {
@@ -287,8 +417,9 @@ func cmdSecure(cfg *config.Config, st store.Store) *cobra.Command {
 	// secure status
 	var statusJSON bool
 	status := &cobra.Command{
-		Use:   "status",
-		Short: "Show service status",
+		Use:         "status",
+		Short:       "Show service status",
+		Annotations: map[string]string{"tier": "public"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			data, err := util.ServiceGet(cmd.Context(), cfg.SecureOrigin, "/v1/secure/status", "")
 			if err != nil {
@@ -316,8 +447,10 @@ func cmdNetwork(cfg *config.Config, st store.Store) *cobra.Command {
 	var traceTarget, traceProtocol string
 	var traceJSON bool
 	trace := &cobra.Command{
-		Use:   "trace",
-		Short: "Start a network trace",
+		Use:         "trace",
+		Short:       "Start a network trace",
+		Annotations: map[string]string{"tier": "pro"},
+		Long:        "Start a network trace\n\nRequires: Pro plan or higher\nUpgrade: https://haiphen.io/#pricing",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if traceTarget == "" {
 				return fmt.Errorf("--target is required")
@@ -342,8 +475,10 @@ func cmdNetwork(cfg *config.Config, st store.Store) *cobra.Command {
 	// network traces
 	var tracesJSON bool
 	traces := &cobra.Command{
-		Use:   "traces",
-		Short: "List recent traces",
+		Use:         "traces",
+		Short:       "List recent traces",
+		Annotations: map[string]string{"tier": "pro"},
+		Long:        "List recent traces\n\nRequires: Pro plan or higher\nUpgrade: https://haiphen.io/#pricing",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			token, err := requireToken(st)
 			if err != nil {
@@ -362,8 +497,9 @@ func cmdNetwork(cfg *config.Config, st store.Store) *cobra.Command {
 	// network protocols
 	var protoJSON bool
 	protocols := &cobra.Command{
-		Use:   "protocols",
-		Short: "List supported protocols",
+		Use:         "protocols",
+		Short:       "List supported protocols",
+		Annotations: map[string]string{"tier": "public"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			data, err := util.ServiceGet(cmd.Context(), cfg.NetworkOrigin, "/v1/network/protocols", "")
 			if err != nil {
@@ -392,8 +528,10 @@ func cmdGraph(cfg *config.Config, st store.Store) *cobra.Command {
 	var queryDepth int
 	var queryJSON bool
 	query := &cobra.Command{
-		Use:   "query",
-		Short: "Query the knowledge graph",
+		Use:         "query",
+		Short:       "Query the knowledge graph",
+		Annotations: map[string]string{"tier": "pro"},
+		Long:        "Query the knowledge graph\n\nRequires: Pro plan or higher\nUpgrade: https://haiphen.io/#pricing",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if queryQ == "" {
 				return fmt.Errorf("--q is required")
@@ -418,8 +556,10 @@ func cmdGraph(cfg *config.Config, st store.Store) *cobra.Command {
 	// graph entities
 	var entitiesJSON bool
 	entities := &cobra.Command{
-		Use:   "entities",
-		Short: "List graph entities",
+		Use:         "entities",
+		Short:       "List graph entities",
+		Annotations: map[string]string{"tier": "pro"},
+		Long:        "List graph entities\n\nRequires: Pro plan or higher\nUpgrade: https://haiphen.io/#pricing",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			token, err := requireToken(st)
 			if err != nil {
@@ -438,8 +578,9 @@ func cmdGraph(cfg *config.Config, st store.Store) *cobra.Command {
 	// graph schema
 	var schemaJSON bool
 	schema := &cobra.Command{
-		Use:   "schema",
-		Short: "Show graph schema",
+		Use:         "schema",
+		Short:       "Show graph schema",
+		Annotations: map[string]string{"tier": "public"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			data, err := util.ServiceGet(cmd.Context(), cfg.GraphOrigin, "/v1/graph/schema", "")
 			if err != nil {
@@ -467,8 +608,10 @@ func cmdRisk(cfg *config.Config, st store.Store) *cobra.Command {
 	var assessScenario string
 	var assessJSON bool
 	assess := &cobra.Command{
-		Use:   "assess",
-		Short: "Run a risk assessment",
+		Use:         "assess",
+		Short:       "Run a risk assessment",
+		Annotations: map[string]string{"tier": "pro"},
+		Long:        "Run a risk assessment\n\nRequires: Pro plan or higher\nUpgrade: https://haiphen.io/#pricing",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if assessScenario == "" {
 				return fmt.Errorf("--scenario is required")
@@ -492,8 +635,9 @@ func cmdRisk(cfg *config.Config, st store.Store) *cobra.Command {
 	// risk models
 	var modelsJSON bool
 	models := &cobra.Command{
-		Use:   "models",
-		Short: "List available risk models",
+		Use:         "models",
+		Short:       "List available risk models",
+		Annotations: map[string]string{"tier": "public"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			data, err := util.ServiceGet(cmd.Context(), cfg.RiskOrigin, "/v1/risk/models", "")
 			if err != nil {
@@ -508,8 +652,10 @@ func cmdRisk(cfg *config.Config, st store.Store) *cobra.Command {
 	// risk assessments
 	var assessmentsJSON bool
 	assessments := &cobra.Command{
-		Use:   "assessments",
-		Short: "List past assessments",
+		Use:         "assessments",
+		Short:       "List past assessments",
+		Annotations: map[string]string{"tier": "pro"},
+		Long:        "List past assessments\n\nRequires: Pro plan or higher\nUpgrade: https://haiphen.io/#pricing",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			token, err := requireToken(st)
 			if err != nil {
@@ -541,8 +687,10 @@ func cmdCausal(cfg *config.Config, st store.Store) *cobra.Command {
 	var analyzeEvents string
 	var analyzeJSON bool
 	analyze := &cobra.Command{
-		Use:   "analyze",
-		Short: "Analyze causal chain from events",
+		Use:         "analyze",
+		Short:       "Analyze causal chain from events",
+		Annotations: map[string]string{"tier": "pro"},
+		Long:        "Analyze causal chain from events\n\nRequires: Pro plan or higher\nUpgrade: https://haiphen.io/#pricing",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if analyzeEvents == "" {
 				return fmt.Errorf("--events is required (JSON array or file path)")
@@ -573,8 +721,10 @@ func cmdCausal(cfg *config.Config, st store.Store) *cobra.Command {
 	// causal analyses
 	var analysesJSON bool
 	analyses := &cobra.Command{
-		Use:   "analyses",
-		Short: "List past analyses",
+		Use:         "analyses",
+		Short:       "List past analyses",
+		Annotations: map[string]string{"tier": "pro"},
+		Long:        "List past analyses\n\nRequires: Pro plan or higher\nUpgrade: https://haiphen.io/#pricing",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			token, err := requireToken(st)
 			if err != nil {
@@ -606,8 +756,10 @@ func cmdSupply(cfg *config.Config, st store.Store) *cobra.Command {
 	var supAssessSupplier string
 	var supAssessJSON bool
 	supAssess := &cobra.Command{
-		Use:   "assess",
-		Short: "Assess a supplier's risk profile",
+		Use:         "assess",
+		Short:       "Assess a supplier's risk profile",
+		Annotations: map[string]string{"tier": "pro"},
+		Long:        "Assess a supplier's risk profile\n\nRequires: Pro plan or higher\nUpgrade: https://haiphen.io/#pricing",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if supAssessSupplier == "" {
 				return fmt.Errorf("--supplier is required")
@@ -631,8 +783,10 @@ func cmdSupply(cfg *config.Config, st store.Store) *cobra.Command {
 	// supply suppliers
 	var suppliersJSON bool
 	suppliers := &cobra.Command{
-		Use:   "suppliers",
-		Short: "List tracked suppliers",
+		Use:         "suppliers",
+		Short:       "List tracked suppliers",
+		Annotations: map[string]string{"tier": "pro"},
+		Long:        "List tracked suppliers\n\nRequires: Pro plan or higher\nUpgrade: https://haiphen.io/#pricing",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			token, err := requireToken(st)
 			if err != nil {
@@ -651,8 +805,10 @@ func cmdSupply(cfg *config.Config, st store.Store) *cobra.Command {
 	// supply alerts
 	var alertsJSON bool
 	alerts := &cobra.Command{
-		Use:   "alerts",
-		Short: "List supply chain alerts",
+		Use:         "alerts",
+		Short:       "List supply chain alerts",
+		Annotations: map[string]string{"tier": "pro"},
+		Long:        "List supply chain alerts\n\nRequires: Pro plan or higher\nUpgrade: https://haiphen.io/#pricing",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			token, err := requireToken(st)
 			if err != nil {

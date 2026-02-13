@@ -16,9 +16,12 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/haiphen/haiphen-cli/internal/acl"
+	"github.com/haiphen/haiphen-cli/internal/audit"
 	"github.com/haiphen/haiphen-cli/internal/auth"
 	"github.com/haiphen/haiphen-cli/internal/config"
 	"github.com/haiphen/haiphen-cli/internal/server"
+	"github.com/haiphen/haiphen-cli/internal/shell"
 	"github.com/haiphen/haiphen-cli/internal/store"
 	"github.com/haiphen/haiphen-cli/internal/tui"
 	"github.com/haiphen/haiphen-cli/internal/util"
@@ -31,10 +34,18 @@ var (
 	date    = "unknown"
 )
 
+// Context keys for ACL and audit.
+type ctxKey string
+
+const (
+	ctxKeyAudit ctxKey = "audit"
+	ctxKeyRole  ctxKey = "role"
+)
+
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lmicroseconds)
 
-	cfg := config.Default()
+	cfg := config.LoadFromDisk("default")
 
 	root := &cobra.Command{
 		Use:   "haiphen",
@@ -46,6 +57,8 @@ func main() {
 		printLandingPage()
 	}
 
+	var interactive bool
+	root.PersistentFlags().BoolVarP(&interactive, "interactive", "i", false, "Enter interactive shell mode")
 	root.PersistentFlags().StringVar(&cfg.AuthOrigin, "auth-origin", cfg.AuthOrigin, "Auth origin (e.g. https://auth.haiphen.io)")
 	root.PersistentFlags().StringVar(&cfg.APIOrigin, "api-origin", cfg.APIOrigin, "API origin (e.g. https://api.haiphen.io)")
 	root.PersistentFlags().IntVar(&cfg.Port, "port", cfg.Port, "Local gateway port")
@@ -56,13 +69,96 @@ func main() {
 		log.Fatalf("store init: %v", err)
 	}
 
+	aclClient := acl.NewClient(cfg.AuthOrigin, cfg.Profile)
+
+	// Audit logger
+	auditLogger, auditErr := audit.New(cfg.Profile)
+	if auditErr != nil {
+		log.Printf("audit init: %v (audit disabled)", auditErr)
+	}
+
+	// ---- Access Control Middleware ----
+	root.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {
+		tierStr, _ := cmd.Annotations["tier"]
+		if tierStr == "" || tierStr == "public" {
+			return nil
+		}
+		tier := acl.ParseTier(tierStr)
+
+		// Check login
+		tok, loadErr := st.LoadToken()
+		if loadErr != nil || tok == nil || strings.TrimSpace(tok.AccessToken) == "" {
+			return fmt.Errorf("This command requires authentication.\n  Run: haiphen login")
+		}
+
+		// Session timeout
+		if cfg.SessionMaxAgeHours > 0 && !tok.Expiry.IsZero() {
+			maxAge := time.Duration(cfg.SessionMaxAgeHours) * time.Hour
+			if time.Since(tok.Expiry.Add(-7*24*time.Hour)) > maxAge {
+				return fmt.Errorf("Session expired (max age %dh).\n  Run: haiphen login --force", cfg.SessionMaxAgeHours)
+			}
+		}
+
+		if tier >= acl.Pro || tier >= acl.Admin {
+			role, resolveErr := aclClient.ResolveRole(tok.AccessToken)
+			if resolveErr != nil {
+				return fmt.Errorf("Unable to verify access: %v\n  Try: haiphen login --force", resolveErr)
+			}
+
+			// Store role in context for audit
+			cmd.SetContext(context.WithValue(cmd.Context(), ctxKeyRole, role))
+
+			if tier >= acl.Pro && !role.Entitled {
+				return fmt.Errorf(
+					"This command requires a Pro or Enterprise plan.\n"+
+						"  Current plan: %s\n"+
+						"  Upgrade at: https://haiphen.io/#pricing", role.Plan)
+			}
+
+			if tier >= acl.Admin && role.Role != "admin" {
+				return fmt.Errorf(
+					"This command requires admin privileges.\n"+
+						"  Your account (%s) is not authorized.\n"+
+						"  Contact jude@haiphen.io for access.", role.Email)
+			}
+		}
+
+		// Start audit entry for mutating commands
+		if auditLogger != nil {
+			if _, isMutating := cmd.Annotations["audit"]; isMutating {
+				email := ""
+				if role, ok := cmd.Context().Value(ctxKeyRole).(*acl.UserRole); ok {
+					email = role.Email
+				}
+				cmdArgs := make(map[string]string)
+				if len(args) > 0 {
+					cmdArgs["args"] = strings.Join(args, " ")
+				}
+				auditLogger.Begin(cmd.CommandPath(), tierStr, email, cmdArgs)
+				cmd.SetContext(context.WithValue(cmd.Context(), ctxKeyAudit, auditLogger))
+			}
+		}
+
+		return nil
+	}
+
+	// ---- Audit Flush ----
+	root.PersistentPostRunE = func(cmd *cobra.Command, args []string) error {
+		if al, ok := cmd.Context().Value(ctxKeyAudit).(*audit.Logger); ok {
+			al.Finish(nil)
+		}
+		return nil
+	}
+
 	root.AddCommand(cmdServe(cfg, st))
-	root.AddCommand(cmdLogin(cfg, st))
-	root.AddCommand(cmdLogout(cfg, st))
+	root.AddCommand(cmdLogin(cfg, st, aclClient))
+	root.AddCommand(cmdLogout(cfg, st, aclClient))
 	root.AddCommand(cmdStatus(cfg, st))
 	root.AddCommand(cmdOnboarding(cfg, st))
 	root.AddCommand(cmdServices(cfg, st))
 	root.AddCommand(cmdMetrics(cfg, st))
+	root.AddCommand(cmdTrades(cfg, st))
+	root.AddCommand(cmdQuota(cfg, st))
 	root.AddCommand(cmdSecure(cfg, st))
 	root.AddCommand(cmdNetwork(cfg, st))
 	root.AddCommand(cmdGraph(cfg, st))
@@ -73,6 +169,25 @@ func main() {
 	root.AddCommand(cmdBroker(cfg, st))
 	root.AddCommand(cmdSignal(cfg, st))
 	root.AddCommand(cmdVersion())
+
+	// Early intercept: launch interactive shell before Cobra dispatch.
+	if wantsInteractive() {
+		eng := shell.NewEngine(cfg, st, aclClient)
+		eng.RegisterWorkflow(shell.NewOnboardingWorkflow(cfg, st, aclClient))
+		eng.RegisterWorkflow(shell.NewTradingWorkflow(cfg, st))
+		eng.RegisterWorkflow(shell.NewProspectWorkflow(cfg, st, aclClient))
+
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+		ch := make(chan os.Signal, 1)
+		signal.Notify(ch, os.Interrupt, syscall.SIGTERM)
+		go func() { <-ch; cancel() }()
+
+		if err := eng.Run(ctx); err != nil {
+			log.Fatalf("shell: %v", err)
+		}
+		os.Exit(0)
+	}
 
 	if err := root.Execute(); err != nil {
 		os.Exit(1)
@@ -100,10 +215,24 @@ func printLandingPage() {
 	fmt.Println()
 }
 
+// wantsInteractive checks os.Args for -i or --interactive before Cobra parsing.
+func wantsInteractive() bool {
+	for _, arg := range os.Args[1:] {
+		if arg == "-i" || arg == "--interactive" {
+			return true
+		}
+		if arg == "--" {
+			break
+		}
+	}
+	return false
+}
+
 func cmdVersion() *cobra.Command {
 	return &cobra.Command{
 		Use:   "version",
 		Short: "Print CLI version, commit, and build date",
+		Annotations: map[string]string{"tier": "public"},
 		Run: func(cmd *cobra.Command, args []string) {
 			commitShort := commit
 			if len(commitShort) > 7 {
@@ -130,8 +259,9 @@ func cmdOnboarding(cfg *config.Config, st store.Store) *cobra.Command {
 	var asJSON bool
 
 	cmd := &cobra.Command{
-		Use:   "onboarding",
-		Short: "Show onboarding links and activation resources",
+		Use:         "onboarding",
+		Short:       "Show onboarding links and activation resources",
+		Annotations: map[string]string{"tier": "free"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			tok, err := st.LoadToken()
 			if err != nil {
@@ -241,8 +371,9 @@ func prettyLinkKey(k string) string {
 
 func cmdServe(cfg *config.Config, st store.Store) *cobra.Command {
 	return &cobra.Command{
-		Use:   "serve",
-		Short: "Run the local Haiphen gateway",
+		Use:         "serve",
+		Short:       "Run the local Haiphen gateway",
+		Annotations: map[string]string{"tier": "public"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel()
@@ -275,19 +406,28 @@ func cmdServe(cfg *config.Config, st store.Store) *cobra.Command {
 	}
 }
 
-func cmdLogin(cfg *config.Config, st store.Store) *cobra.Command {
+func cmdLogin(cfg *config.Config, st store.Store, aclClient *acl.Client) *cobra.Command {
 	var force bool
 
 	cmd := &cobra.Command{
-		Use:   "login",
-		Short: "Login via browser and store session locally",
+		Use:         "login",
+		Short:       "Login via browser and store session locally",
+		Annotations: map[string]string{"tier": "public"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			a := auth.New(cfg, st)
 			token, err := a.Login(cmd.Context(), auth.LoginOptions{Force: force})
 			if err != nil {
 				return err
 			}
-			fmt.Printf("✅ Logged in. Token expires at: %s\n", token.Expiry.Format(time.RFC3339))
+
+			fmt.Printf("Logged in. Token expires at: %s\n", token.Expiry.Format(time.RFC3339))
+
+			// Show role and plan after login
+			role, roleErr := aclClient.ResolveRole(token.AccessToken)
+			if roleErr == nil {
+				fmt.Printf("Plan: %s | Role: %s\n", role.Plan, role.Role)
+			}
+
 			return nil
 		},
 	}
@@ -296,16 +436,18 @@ func cmdLogin(cfg *config.Config, st store.Store) *cobra.Command {
 	return cmd
 }
 
-func cmdLogout(cfg *config.Config, st store.Store) *cobra.Command {
+func cmdLogout(cfg *config.Config, st store.Store, aclClient *acl.Client) *cobra.Command {
 	return &cobra.Command{
-		Use:   "logout",
-		Short: "Clear local session and (optionally) revoke remotely",
+		Use:         "logout",
+		Short:       "Clear local session and (optionally) revoke remotely",
+		Annotations: map[string]string{"tier": "public"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			a := auth.New(cfg, st)
 			if err := a.Logout(cmd.Context()); err != nil {
 				return err
 			}
-			fmt.Println("✅ Logged out.")
+			aclClient.ClearCache()
+			fmt.Println("Logged out.")
 			return nil
 		},
 	}
@@ -313,8 +455,9 @@ func cmdLogout(cfg *config.Config, st store.Store) *cobra.Command {
 
 func cmdStatus(cfg *config.Config, st store.Store) *cobra.Command {
 	return &cobra.Command{
-		Use:   "status",
-		Short: "Show auth + entitlement status",
+		Use:         "status",
+		Short:       "Show auth + entitlement status",
+		Annotations: map[string]string{"tier": "free"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			a := auth.New(cfg, st)
 			s, err := a.Status(cmd.Context())

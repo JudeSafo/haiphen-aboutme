@@ -4,6 +4,9 @@
   "main": "src/index.ts",
   "compatibility_date": "2025-07-16",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "workers_dev": false,
+  "upload_source_maps": false,
+  "limits": { "cpu_ms": 30 },
   "observability": { "enabled": true },
 
   "d1_databases": [
@@ -28,7 +31,7 @@
 
   "vars": {
     "PUBLIC_SITE_ORIGIN": "https://haiphen.io",
-    "CONTACT_ORIGIN": "https://haiphen-contact.pi-307.workers.dev",
+    "CONTACT_ORIGIN": "https://contact.haiphen.io",
     "CHECKOUT_SUCCESS_URL": "https://app.haiphen.io/#docs/?checkout=success",
     "CHECKOUT_CANCEL_URL": "https://haiphen.io/#docs/?checkout=cancel",
     "STRIPE_PROMO_CODE_ID": "promo_1SwwX7JRL3AYFpZZN1xpLCzH",

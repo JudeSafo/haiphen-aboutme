@@ -46,11 +46,20 @@ func TestPrintBanner_Robot(t *testing.T) {
 	if strings.TrimSpace(out) == "" {
 		t.Fatal("Robot banner should not be empty")
 	}
-	if !strings.Contains(out, "◉") {
-		t.Error("Robot banner should contain eye character ◉")
+	if !strings.Contains(out, "■") {
+		t.Error("Robot banner should contain eye character ■")
 	}
-	if !strings.Contains(out, "H") {
-		t.Error("Robot banner should contain H character")
+	if !strings.Contains(out, "═") {
+		t.Error("Robot banner should contain mouth character ═")
+	}
+	if !strings.Contains(out, "●") {
+		t.Error("Robot banner should contain i-dot character ●")
+	}
+	if !strings.Contains(out, "┻") {
+		t.Error("Robot banner should contain connector character ┻")
+	}
+	if !strings.Contains(out, "H") || !strings.Contains(out, "phen") {
+		t.Error("Robot banner should spell H[ai]phen with flanking text")
 	}
 }
 
