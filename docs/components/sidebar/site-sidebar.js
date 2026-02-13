@@ -77,7 +77,7 @@
     const slot = mountEl.querySelector('#sidebar-session-card');
     if (!slot) return;
 
-    const AUTH_ORIGIN = 'https://auth.haiphen.io';
+    const AUTH_ORIGIN = window.HAIPHEN?.AUTH_ORIGIN || 'https://auth.haiphen.io';
     const LOGOUT_URL = `${AUTH_ORIGIN}/logout`;
 
     function loginHref(provider) {

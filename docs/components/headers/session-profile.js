@@ -6,7 +6,11 @@
 (function () {
   'use strict';
 
-  const AUTH_ORIGIN = 'https://auth.haiphen.io';
+  // Signal to site.js that a richer session component is managing #session-slot
+  window.HAIPHEN = window.HAIPHEN || {};
+  window.HAIPHEN._sessionManaged = true;
+
+  const AUTH_ORIGIN = window.HAIPHEN?.AUTH_ORIGIN || 'https://auth.haiphen.io';
   const LOGOUT_URL = `${AUTH_ORIGIN}/logout`;
 
   function qs(root, sel) {

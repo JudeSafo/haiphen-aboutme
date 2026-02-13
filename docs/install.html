@@ -96,23 +96,17 @@
       <pre><code>brew tap haiphenAI/tap
 brew install haiphen</code></pre>
 
-      <h3>Linux via curl installer</h3>
-      <pre><code>curl -fsSL https://haiphen.io/install.sh | bash</code></pre>
-      <p>
-        The installer detects your architecture (amd64 / arm64), downloads the latest release,
-        and places the binary in <code>/usr/local/bin</code>.
-      </p>
+      <h3>Linux via GitHub Releases</h3>
+      <pre><code># Download the latest release for your architecture:
+curl -sL https://github.com/haiphenAI/haiphen-cli/releases/latest/download/haiphen_linux_amd64.tar.gz | tar xz
+sudo mv haiphen /usr/local/bin/</code></pre>
 
       <h3>Windows via GitHub Releases</h3>
       <pre><code># Download the latest .exe from GitHub Releases:
-# https://github.com/haiphenAI/haiphen-aboutme/releases
-
-# Or use Scoop:
-scoop bucket add haiphen https://github.com/haiphenAI/scoop-bucket
-scoop install haiphen</code></pre>
+# https://github.com/haiphenAI/haiphen-cli/releases</code></pre>
 
       <h3>Build from source (Go 1.22+)</h3>
-      <pre><code>git clone https://github.com/haiphenAI/haiphen-aboutme.git
+      <pre><code>git clone https://github.com/haiphenAI/haiphen-cli.git
 cd haiphen-cli
 go build -o haiphen ./cmd/haiphen/main.go
 ./haiphen --help</code></pre>
@@ -148,7 +142,7 @@ haiphen status</code></pre>
             <td>macOS</td>
             <td>
               Download the <code>.dmg</code> from
-              <a href="https://github.com/haiphenAI/haiphen-aboutme/releases" target="_blank" rel="noopener">GitHub Releases</a>,
+              <a href="https://github.com/haiphenAI/haiphen-cli/releases" target="_blank" rel="noopener">GitHub Releases</a>,
               or install via Homebrew:<br />
               <code>brew install --cask haiphen-desktop</code>
             </td>
@@ -157,14 +151,14 @@ haiphen status</code></pre>
             <td>Windows</td>
             <td>
               Download the <code>.msi</code> installer from
-              <a href="https://github.com/haiphenAI/haiphen-aboutme/releases" target="_blank" rel="noopener">GitHub Releases</a>
+              <a href="https://github.com/haiphenAI/haiphen-cli/releases" target="_blank" rel="noopener">GitHub Releases</a>
             </td>
           </tr>
           <tr>
             <td>Linux</td>
             <td>
               Download the <code>.AppImage</code> from
-              <a href="https://github.com/haiphenAI/haiphen-aboutme/releases" target="_blank" rel="noopener">GitHub Releases</a>,
+              <a href="https://github.com/haiphenAI/haiphen-cli/releases" target="_blank" rel="noopener">GitHub Releases</a>,
               then <code>chmod +x</code> and run
             </td>
           </tr>
@@ -186,15 +180,15 @@ haiphen status</code></pre>
           <tr>
             <td>iOS</td>
             <td>
-              Available on <strong>TestFlight</strong> &mdash;
-              <a href="https://testflight.apple.com/join/haiphen" target="_blank" rel="noopener">join the beta</a>
+              <strong>TestFlight</strong> beta &mdash; coming soon.
+              <a href="mailto:jude@haiphen.io?subject=iOS%20beta%20access">Request early access</a>
             </td>
           </tr>
           <tr>
             <td>Android</td>
             <td>
-              Available on the <strong>Google Play internal testing track</strong> &mdash;
-              <a href="https://play.google.com/apps/internaltest/haiphen" target="_blank" rel="noopener">request access</a>
+              <strong>Google Play</strong> internal testing &mdash; coming soon.
+              <a href="mailto:jude@haiphen.io?subject=Android%20beta%20access">Request early access</a>
             </td>
           </tr>
         </tbody>

@@ -3,7 +3,11 @@
  * optional trades overlay, and snap-stack highlighting.
  */
 (() => {
-  const AUTH_ORIGIN = 'https://auth.haiphen.io'; // change if needed
+  const AUTH_ORIGIN = 'https://auth.haiphen.io';
+
+  // Expose as canonical source for all components
+  window.HAIPHEN = window.HAIPHEN || {};
+  window.HAIPHEN.AUTH_ORIGIN = AUTH_ORIGIN;
 
   function safeLoad(fn, name) {
     if (typeof fn !== 'function') return;
@@ -125,11 +129,15 @@
     safeLoad(H.loadTradesOverlay, 'trades-overlay');
 
     initSnapStacks(document);
-    updateSessionWidget();
     setActiveNavLink();
 
-    // Refresh session pill periodically (optional)
-    setInterval(updateSessionWidget, 5 * 60 * 1000);
+    // Only manage session if session-profile.js isn't loaded (it provides a
+    // richer dropdown). On secondary pages that don't include session-profile.js,
+    // this fallback handles the basic login/avatar pill.
+    if (!window.HAIPHEN?._sessionManaged) {
+      updateSessionWidget();
+      window.HAIPHEN._sessionInterval = setInterval(updateSessionWidget, 5 * 60 * 1000);
+    }
   });
 
   // Expose minimal hooks if you want them elsewhere

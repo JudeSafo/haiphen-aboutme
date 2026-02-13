@@ -10,6 +10,7 @@
   --shadow: 0 8px 24px rgba(17,24,39,0.10);
 
   --brand: #5A9BD4;
+  --brand-text: #2d7bb5;         /* WCAG AA on white (4.5:1+) */
   --brand-ink: #0b2a3d;
   --brand-hover: #2f4156;
 
@@ -64,7 +65,7 @@ p, li {
 }
 
 a {
-  color: var(--brand);
+  color: var(--brand-text, #2d7bb5);
   text-decoration: none;
 }
 a:hover { text-decoration: underline; }
@@ -133,6 +134,7 @@ html[data-lens="finance"] {
   --border: rgba(148,163,184,0.20);
   --shadow: 0 8px 24px rgba(0,0,0,0.35);
   --brand: #5A9BD4;
+  --brand-text: #5A9BD4;         /* fine on dark bg */
   --brand-ink: #c8ddf0;
   --brand-hover: #8bb8e0;
   --surface-2: rgba(30,41,59,0.95);
@@ -181,4 +183,29 @@ html.lens-transition *::before,
 html.lens-transition *::after {
   transition: background-color 0.5s ease, color 0.5s ease,
               border-color 0.5s ease, box-shadow 0.5s ease !important;
+}
+
+/* ============================================================
+   Reduced motion — respect OS accessibility setting
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .hp-section-reveal,
+  .hp-contact-reveal {
+    opacity: 1;
+    transform: none;
+  }
+
+  html.lens-transition,
+  html.lens-transition *,
+  html.lens-transition *::before,
+  html.lens-transition *::after {
+    transition: none !important;
+  }
 }
