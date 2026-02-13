@@ -12,7 +12,7 @@
  *  - Overlay lives inside the Trades section mount (#cohort-mount).
  */
 (function () {
-  const API_ORIGIN = "https://haiphen-contact.pi-307.workers.dev";
+  const API_ORIGIN = "https://contact.haiphen.io";
   const ENDPOINT = `${API_ORIGIN}/api/cohort/submit`;
 
   const LOG = "[cohort]";
