@@ -101,30 +101,42 @@ curl -X POST -H "Authorization: Bearer $CF_API_TOKEN" \
 
 ### 3d. Repeat for each worker
 
-Worker → GCP target mapping:
+Worker → GCP target mapping (all Cloud Functions gen2, backed by Cloud Run):
 
-| Worker | Subdomain | GCP Target |
+| Worker | Subdomain | Cloud Run Hostname |
 |--------|-----------|------------|
-| haiphen-api | api | `haiphen-api-xxx.us-central1.run.app` |
-| haiphen-auth | auth | `haiphen-auth-xxx.us-central1.run.app` |
-| haiphen-checkout | checkout | `haiphen-checkout-xxx.us-central1.run.app` |
-| haiphen-contact | contact | `haiphen-contact-xxx.cloudfunctions.net` |
-| haiphen-secure | secure | `haiphen-secure-xxx.cloudfunctions.net` |
-| haiphen-network | network | `haiphen-network-xxx.cloudfunctions.net` |
-| haiphen-graph | graph | `haiphen-graph-xxx.cloudfunctions.net` |
-| haiphen-risk | risk | `haiphen-risk-xxx.cloudfunctions.net` |
-| haiphen-causal | causal | `haiphen-causal-xxx.cloudfunctions.net` |
-| haiphen-supply | supply | `haiphen-supply-xxx.cloudfunctions.net` |
-| edge-crawler | crawler | `haiphen-crawler-xxx.cloudfunctions.net` |
-| haiphen-orchestrator | orchestrator | `haiphen-orchestrator-xxx.us-central1.run.app` |
+| haiphen-api | api | `haiphen-api-ifkn3iz6zq-uc.a.run.app` |
+| haiphen-auth | auth | `haiphen-auth-fn-ifkn3iz6zq-uc.a.run.app` |
+| haiphen-checkout | checkout | `haiphen-checkout-ifkn3iz6zq-uc.a.run.app` |
+| haiphen-secure | secure | `haiphen-secure-ifkn3iz6zq-uc.a.run.app` |
+| haiphen-network | network | `haiphen-network-ifkn3iz6zq-uc.a.run.app` |
+| haiphen-graph | graph | `haiphen-graph-ifkn3iz6zq-uc.a.run.app` |
+| haiphen-risk | risk | `haiphen-risk-ifkn3iz6zq-uc.a.run.app` |
+| haiphen-causal | causal | `haiphen-causal-ifkn3iz6zq-uc.a.run.app` |
+| haiphen-supply | supply | `haiphen-supply-ifkn3iz6zq-uc.a.run.app` |
+| haiphen-contact | contact | *(not yet deployed)* |
+| edge-crawler | crawler | *(not yet deployed)* |
+| haiphen-orchestrator | orchestrator | *(not yet deployed)* |
 
-Replace `xxx` with the actual deployment hash. Get the real URL:
+Get the Cloud Run hostname for any function:
 
 ```bash
 gcloud functions describe haiphen-secure --gen2 --region=us-central1 --format='value(serviceConfig.uri)'
-# or for Cloud Run:
-gcloud run services describe haiphen-api --region=us-central1 --format='value(status.url)'
 ```
+
+> **CNAME Host Header Note**: When a CNAME points `api.haiphen.io` →
+> `haiphen-api-ifkn3iz6zq-uc.a.run.app`, Cloud Run receives requests with
+> `Host: api.haiphen.io`. Cloud Run needs a custom domain mapping to route
+> these correctly. Set this up **before** failover:
+>
+> ```bash
+> gcloud run domain-mappings create --service=haiphen-api \
+>   --domain=api.haiphen.io --region=us-central1
+> ```
+>
+> This requires DNS verification (TXT record) and takes ~15 min for TLS
+> certificate provisioning. Do this proactively for all subdomains so
+> failover is instant when needed.
 
 ---
 
@@ -248,19 +260,23 @@ in GCP. Cloud Run replacements use Firestore for persistence:
 
 ## 8. Deploying GCP Services
 
+All 9 services deploy as **Cloud Functions gen2** (backed by Cloud Run).
+Scaffold services compile TS together; core services (api, checkout) use
+esbuild to bundle the CF worker source to CJS first.
+
 ### 8a. Build all services locally
 
 ```bash
 cd haiphen-gcp
 
-# 6 scaffold Cloud Functions
-for svc in secure network graph risk causal supply; do
+# 6 scaffold Cloud Functions + auth (copies shared adapters + compiles)
+for svc in secure network graph risk causal supply auth; do
   ./build-function.sh $svc
 done
 
-# 3 core Cloud Run services
-for svc in api auth checkout; do
-  ./build-cloudrun.sh $svc
+# api + checkout (uses esbuild to bundle CF worker TS → CJS, then compiles wrapper)
+for svc in api checkout; do
+  ./build-function.sh $svc
 done
 ```
 
@@ -268,71 +284,74 @@ done
 
 ```bash
 for svc in secure network graph risk causal supply; do
+  cd functions/haiphen-$svc
   gcloud functions deploy haiphen-$svc \
     --gen2 --runtime=nodejs20 --region=us-central1 \
-    --source=./functions/haiphen-$svc --entry-point=handler \
+    --source=. --entry-point=handler \
     --trigger-http --allow-unauthenticated \
-    --memory=256MB --timeout=60s \
-    --set-secrets=JWT_SECRET=HAIPHEN_JWT_SECRET:latest,INTERNAL_TOKEN=HAIPHEN_INTERNAL_TOKEN:latest \
-    --set-env-vars=ALLOWED_ORIGINS="https://haiphen.io,https://www.haiphen.io",QUOTA_API_URL="https://api.haiphen.io"
+    --memory=256Mi --timeout=30s \
+    --set-secrets=JWT_SECRET=HAIPHEN_JWT_SECRET:latest,INTERNAL_TOKEN=HAIPHEN_INTERNAL_TOKEN:latest
+  cd ../..
 done
 ```
 
-### 8c. Deploy 3 core Cloud Run services
+### 8c. Deploy 3 core Cloud Functions
 
 ```bash
-# haiphen-auth
-cd cloudrun/haiphen-auth
-gcloud run deploy haiphen-auth \
-  --source=. --region=us-central1 \
-  --memory=512Mi --cpu=1 --min-instances=0 --max-instances=3 \
-  --allow-unauthenticated \
-  --set-secrets=HAIPHEN_JWT_SECRET=HAIPHEN_JWT_SECRET:latest,HAIPHEN_SENDGRID_API_KEY=HAIPHEN_SENDGRID_API_KEY:latest,HAIPHEN_GITHUB_CLIENT_ID=HAIPHEN_GITHUB_CLIENT_ID:latest,HAIPHEN_GITHUB_CLIENT_SECRET=HAIPHEN_GITHUB_CLIENT_SECRET:latest,HAIPHEN_GOOGLE_CLIENT_ID=HAIPHEN_GOOGLE_CLIENT_ID:latest,HAIPHEN_GOOGLE_CLIENT_SECRET=HAIPHEN_GOOGLE_CLIENT_SECRET:latest \
-  --set-env-vars=GOOGLE_REDIRECT_URI="https://auth.haiphen.io/callback/google"
+# haiphen-auth (auth worker is JS, loaded via dynamic import as .mjs)
+cd functions/haiphen-auth
+gcloud functions deploy haiphen-auth-fn \
+  --gen2 --runtime=nodejs20 --region=us-central1 \
+  --source=. --entry-point=handler \
+  --trigger-http --allow-unauthenticated \
+  --memory=256Mi --timeout=30s \
+  --set-secrets="JWT_SECRET=HAIPHEN_JWT_SECRET:latest,SENDGRID_API_KEY=HAIPHEN_SENDGRID_API_KEY:latest,GITHUB_CLIENT_ID=HAIPHEN_GITHUB_CLIENT_ID:latest,GITHUB_CLIENT_SECRET=HAIPHEN_GITHUB_CLIENT_SECRET:latest,GOOGLE_CLIENT_ID=HAIPHEN_GOOGLE_CLIENT_ID:latest,GOOGLE_CLIENT_SECRET=HAIPHEN_GOOGLE_CLIENT_SECRET:latest"
+cd ../..
 
-# haiphen-api
-cd ../haiphen-api
-gcloud run deploy haiphen-api \
-  --source=. --region=us-central1 \
-  --memory=512Mi --cpu=1 --min-instances=0 --max-instances=5 \
-  --allow-unauthenticated \
-  --set-secrets=HAIPHEN_JWT_SECRET=HAIPHEN_JWT_SECRET:latest,HAIPHEN_API_KEY_PEPPER=HAIPHEN_API_KEY_PEPPER:latest,HAIPHEN_ADMIN_TOKEN=HAIPHEN_ADMIN_TOKEN:latest,HAIPHEN_INTERNAL_TOKEN=HAIPHEN_INTERNAL_TOKEN:latest
+# haiphen-api (worker bundled to CJS via esbuild)
+cd functions/haiphen-api
+gcloud functions deploy haiphen-api \
+  --gen2 --runtime=nodejs20 --region=us-central1 \
+  --source=. --entry-point=handler \
+  --trigger-http --allow-unauthenticated \
+  --memory=256Mi --timeout=30s \
+  --set-secrets="JWT_SECRET=HAIPHEN_JWT_SECRET:latest,API_KEY_PEPPER=HAIPHEN_API_KEY_PEPPER:latest,ADMIN_TOKEN=HAIPHEN_ADMIN_TOKEN:latest,INTERNAL_TOKEN=HAIPHEN_INTERNAL_TOKEN:latest"
+cd ../..
 
-# haiphen-checkout
-cd ../haiphen-checkout
-gcloud run deploy haiphen-checkout \
-  --source=. --region=us-central1 \
-  --memory=512Mi --cpu=1 --min-instances=0 --max-instances=3 \
-  --allow-unauthenticated \
-  --set-secrets=HAIPHEN_JWT_SECRET=HAIPHEN_JWT_SECRET:latest,HAIPHEN_STRIPE_SECRET_KEY=HAIPHEN_STRIPE_SECRET_KEY:latest,HAIPHEN_STRIPE_WEBHOOK_SECRET=HAIPHEN_STRIPE_WEBHOOK_SECRET:latest \
-  --set-env-vars=PUBLIC_SITE_ORIGIN="https://haiphen.io",CHECKOUT_SUCCESS_URL="https://haiphen.io/#/success",CHECKOUT_CANCEL_URL="https://haiphen.io/#/cancel"
+# haiphen-checkout (worker bundled to CJS via esbuild)
+cd functions/haiphen-checkout
+gcloud functions deploy haiphen-checkout \
+  --gen2 --runtime=nodejs20 --region=us-central1 \
+  --source=. --entry-point=handler \
+  --trigger-http --allow-unauthenticated \
+  --memory=256Mi --timeout=30s \
+  --set-secrets="JWT_SECRET=HAIPHEN_JWT_SECRET:latest,STRIPE_SECRET_KEY=HAIPHEN_STRIPE_SECRET_KEY:latest"
+cd ../..
 ```
 
 ### 8d. Get deployed URLs
 
 ```bash
-# Cloud Functions
-for svc in secure network graph risk causal supply; do
-  echo "$svc: $(gcloud functions describe haiphen-$svc --gen2 --region=us-central1 --format='value(serviceConfig.uri)')"
-done
-
-# Cloud Run
-for svc in api auth checkout; do
-  echo "$svc: $(gcloud run services describe haiphen-$svc --region=us-central1 --format='value(status.url)')"
+# All services are Cloud Functions gen2 (each backed by a Cloud Run service)
+for svc in secure network graph risk causal supply api auth-fn checkout; do
+  echo "haiphen-$svc: $(gcloud functions describe haiphen-$svc --gen2 --region=us-central1 --format='value(serviceConfig.uri)')"
 done
 ```
 
 ### 8e. Register GCP URLs with the watchdog
 
+The watchdog stores **Cloud Run hostnames** (not full URLs) for CNAME targets:
+
 ```bash
-# For each service, register its GCP URL so the watchdog knows where to point DNS
-for svc in secure network graph risk causal supply api auth checkout; do
-  GCP_URL=$(gcloud run services describe haiphen-$svc --region=us-central1 --format='value(status.url)' 2>/dev/null || \
-            gcloud functions describe haiphen-$svc --gen2 --region=us-central1 --format='value(serviceConfig.uri)')
+for svc in secure network graph risk causal supply api auth-fn checkout; do
+  URI=$(gcloud functions describe haiphen-$svc --gen2 --region=us-central1 --format='value(serviceConfig.uri)')
+  HOSTNAME="${URI#https://}"
+  # Map auth-fn → haiphen-auth for watchdog worker name
+  WORKER="haiphen-${svc/auth-fn/auth}"
   curl -X POST -H "Authorization: Bearer $ADMIN_TOKEN" \
     -H "Content-Type: application/json" \
     https://haiphen-watchdog.pi-307.workers.dev/v1/watchdog/gcp-url \
-    -d "{\"worker\":\"haiphen-$svc\",\"url\":\"${GCP_URL#https://}\"}"
+    -d "{\"worker\":\"$WORKER\",\"url\":\"$HOSTNAME\"}"
 done
 ```
 

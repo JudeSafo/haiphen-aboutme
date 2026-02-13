@@ -4,7 +4,7 @@
 // Rate limit: 5 req/30s without API key, 50 with
 // ---------------------------------------------------------------------------
 
-import { ProspectLead, ProspectSource } from "../d1-writer";
+import { ProspectLead, ProspectSource, ProspectTarget } from "../d1-writer";
 import { randomUUID, sleep } from "../util";
 
 interface NvdConfig {
@@ -67,16 +67,40 @@ function determineServices(cve: NvdCve, description: string): string[] {
   const services: string[] = ["secure"]; // All CVEs are relevant to secure
   const lower = description.toLowerCase();
 
-  if (lower.includes("network") || lower.includes("protocol") || lower.includes("modbus") || lower.includes("mqtt")) {
-    services.push("network");
+  // Trade execution & order flow
+  if (/trading|order|execution|fix\b|fix protocol|matching engine/.test(lower)) {
+    services.push("risk", "network");
   }
-  if (lower.includes("supply chain") || lower.includes("dependency") || lower.includes("third-party")) {
+  // Settlement & clearing
+  if (/settlement|clearing|reconciliation|position|drift|margin/.test(lower)) {
+    services.push("risk", "causal");
+  }
+  // Brokerage & asset management
+  if (/broker|brokerage|custodian|portfolio|wealth/.test(lower)) {
+    services.push("risk", "supply");
+  }
+  // Market data feeds
+  if (/market data|price feed|quote|ticker|data vendor/.test(lower)) {
+    services.push("network", "causal");
+  }
+  // API & gateway
+  if (/\bapi\b|gateway|webhook|oauth|rest\b/.test(lower)) {
+    services.push("network", "supply");
+  }
+  // Payment & ledger
+  if (/payment|ledger|transaction|ach|wire|swift|treasury/.test(lower)) {
+    services.push("risk", "graph");
+  }
+  // Supply chain / dependency (keep existing)
+  if (/supply chain|dependency|third-party|vendor/.test(lower)) {
     services.push("supply");
   }
-  if (lower.includes("risk") || lower.includes("impact") || lower.includes("exposure")) {
-    services.push("risk");
+  // Industrial protocols (keep for backward compat)
+  if (/modbus|mqtt|opcua|dnp3|bacnet|scada|plc/.test(lower)) {
+    services.push("network");
   }
-  if (lower.includes("cause") || lower.includes("chain") || lower.includes("cascade")) {
+  // Causal chain
+  if (/cascade|propagat|chain|downstream/.test(lower)) {
     services.push("causal");
   }
 
@@ -177,5 +201,86 @@ export async function crawlNvd(source: ProspectSource): Promise<ProspectLead[]> 
   }
 
   console.log(`[nvd] Found ${leads.length} leads`);
+  return leads;
+}
+
+export async function crawlNvdTargeted(target: ProspectTarget, source: ProspectSource): Promise<ProspectLead[]> {
+  const leads: ProspectLead[] = [];
+  const baseUrl = source.api_base_url;
+  const searchTerms = [target.name];
+
+  // Also search known products as CPE vendor names
+  const products: string[] = target.products ? JSON.parse(target.products) : [];
+  const keywords: string[] = target.keywords ? JSON.parse(target.keywords) : [];
+  searchTerms.push(...keywords);
+
+  for (const term of searchTerms.slice(0, 3)) {
+    const params = new URLSearchParams({
+      keywordSearch: term,
+      resultsPerPage: "20",
+    });
+
+    const url = `${baseUrl}?${params}`;
+    console.log(`[nvd-targeted] Searching: "${term}"`);
+
+    const res = await fetch(url, {
+      headers: { Accept: "application/json" },
+    });
+
+    if (!res.ok) {
+      console.error(`[nvd-targeted] API error (${res.status}): ${await res.text()}`);
+      await sleep(6000);
+      continue;
+    }
+
+    const data = (await res.json()) as NvdResponse;
+
+    for (const { cve } of data.vulnerabilities) {
+      const description =
+        cve.descriptions.find((d) => d.lang === "en")?.value ?? cve.descriptions[0]?.value ?? "";
+
+      const cvssV31 = cve.metrics?.cvssMetricV31?.[0]?.cvssData;
+      const cvssV2 = cve.metrics?.cvssMetricV2?.[0]?.cvssData;
+      const cvssScore = cvssV31?.baseScore ?? cvssV2?.baseScore ?? 0;
+
+      if (cvssScore < 4.0) continue; // Lower threshold for targeted crawl
+
+      const vendors = new Set<string>();
+      for (const cfg of cve.configurations ?? []) {
+        for (const node of cfg.nodes) {
+          for (const match of node.cpeMatch) {
+            if (match.vulnerable) {
+              const vp = extractVendorProduct(match.criteria);
+              if (vp) vendors.add(vp.vendor);
+            }
+          }
+        }
+      }
+
+      const entityName = vendors.size > 0
+        ? [...vendors].join(", ")
+        : cve.sourceIdentifier ?? target.name;
+
+      const services = determineServices(cve, description);
+
+      leads.push({
+        lead_id: randomUUID(),
+        source_id: "nvd",
+        entity_type: "software",
+        entity_name: entityName,
+        vulnerability_id: cve.id,
+        severity: severityFromCvss(cvssScore),
+        cvss_score: cvssScore,
+        summary: description.slice(0, 500),
+        raw_data_json: JSON.stringify(cve),
+        services_json: JSON.stringify(services),
+        target_id: target.target_id,
+      });
+    }
+
+    await sleep(6000);
+  }
+
+  console.log(`[nvd-targeted] Found ${leads.length} leads for ${target.name}`);
   return leads;
 }

@@ -3,7 +3,7 @@
 // Rate: 5000/hr with token
 // ---------------------------------------------------------------------------
 
-import { ProspectLead, ProspectSource } from "../d1-writer";
+import { ProspectLead, ProspectSource, ProspectTarget } from "../d1-writer";
 import { randomUUID, sleep } from "../util";
 
 interface GhAdvisoryConfig {
@@ -165,6 +165,14 @@ export async function crawlGitHubAdvisory(source: ProspectSource): Promise<Prosp
 
       const cveId = adv.identifiers.find((i) => i.type === "CVE")?.value;
 
+      // Determine services based on advisory content
+      const svcSet = new Set(["secure", "supply"]);
+      const advText = (adv.summary + " " + adv.description).toLowerCase();
+      if (/trading|order|execution|websocket|fix\b/.test(advText)) { svcSet.add("risk"); svcSet.add("network"); }
+      if (/api|gateway|auth|oauth|jwt|token/.test(advText)) { svcSet.add("network"); }
+      if (/payment|transaction|ledger|fintech/.test(advText)) { svcSet.add("risk"); svcSet.add("graph"); }
+      if (/settlement|clearing|broker/.test(advText)) { svcSet.add("risk"); svcSet.add("causal"); }
+
       leads.push({
         lead_id: randomUUID(),
         source_id: "github-advisory",
@@ -175,7 +183,7 @@ export async function crawlGitHubAdvisory(source: ProspectSource): Promise<Prosp
         cvss_score: adv.cvss?.score ?? null,
         summary: (adv.summary || adv.description).slice(0, 500),
         raw_data_json: JSON.stringify(adv),
-        services_json: JSON.stringify(["secure", "supply"]),
+        services_json: JSON.stringify([...svcSet]),
       });
     }
 
@@ -187,5 +195,103 @@ export async function crawlGitHubAdvisory(source: ProspectSource): Promise<Prosp
   }
 
   console.log(`[github-advisory] Found ${leads.length} leads`);
+  return leads;
+}
+
+export async function crawlGitHubAdvisoryTargeted(target: ProspectTarget, source: ProspectSource): Promise<ProspectLead[]> {
+  const token = process.env.GITHUB_TOKEN;
+  if (!token) {
+    console.warn("[github-advisory-targeted] GITHUB_TOKEN not set, skipping");
+    return [];
+  }
+
+  const leads: ProspectLead[] = [];
+  const products: string[] = target.products ? JSON.parse(target.products) : [];
+  const keywords: string[] = target.keywords ? JSON.parse(target.keywords) : [];
+  const searchTerms = [target.name, ...products, ...keywords].slice(0, 5);
+
+  // GitHub Advisory doesn't support text search via GraphQL —
+  // search REST API for security advisories mentioning the company
+  for (const term of searchTerms) {
+    console.log(`[github-advisory-targeted] Searching REST for "${term}"`);
+
+    try {
+      const params = new URLSearchParams({
+        q: `"${term}" type:reviewed`,
+        per_page: "10",
+      });
+
+      const res = await fetch(`https://api.github.com/search/code?${params}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/vnd.github+json",
+          "User-Agent": "haiphen-prospect-crawler/1.0",
+          "X-GitHub-Api-Version": "2022-11-28",
+        },
+      });
+
+      // Fall back to advisory database query using GraphQL for known products
+      if (!res.ok || products.length === 0) {
+        // Use standard advisory crawl with updatedSince filter
+        const updatedSince = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+        const variables = { first: 20, after: null, updatedSince };
+
+        const gqlRes = await fetch("https://api.github.com/graphql", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+            "User-Agent": "haiphen-prospect-crawler/1.0",
+          },
+          body: JSON.stringify({ query: QUERY, variables }),
+        });
+
+        if (gqlRes.ok) {
+          const data = (await gqlRes.json()) as GhGraphQLResponse;
+          const advisories = data.data?.securityAdvisories;
+          if (advisories) {
+            for (const adv of advisories.nodes) {
+              const advText = (adv.summary + " " + adv.description).toLowerCase();
+              // Only include if it mentions the target
+              if (!advText.includes(target.name.toLowerCase()) &&
+                  !products.some(p => advText.includes(p.toLowerCase()))) {
+                continue;
+              }
+
+              const cveId = adv.identifiers.find((i) => i.type === "CVE")?.value;
+              const packageNames = adv.vulnerabilities.nodes
+                .map((v) => v.package?.name)
+                .filter(Boolean)
+                .join(", ");
+
+              const svcSet = new Set(["secure", "supply"]);
+              if (/trading|order|execution/.test(advText)) { svcSet.add("risk"); svcSet.add("network"); }
+              if (/api|gateway|auth/.test(advText)) { svcSet.add("network"); }
+
+              leads.push({
+                lead_id: randomUUID(),
+                source_id: "github-advisory",
+                entity_type: "software",
+                entity_name: packageNames || adv.ghsaId,
+                vulnerability_id: cveId ?? adv.ghsaId,
+                severity: severityFromGh(adv.severity),
+                cvss_score: adv.cvss?.score ?? null,
+                summary: (adv.summary || adv.description).slice(0, 500),
+                raw_data_json: JSON.stringify(adv),
+                services_json: JSON.stringify([...svcSet]),
+                target_id: target.target_id,
+              });
+            }
+          }
+        }
+      }
+    } catch (err) {
+      console.error(`[github-advisory-targeted] Error for "${term}":`, err);
+    }
+
+    await sleep(1000);
+  }
+
+  console.log(`[github-advisory-targeted] Found ${leads.length} leads for ${target.name}`);
   return leads;
 }

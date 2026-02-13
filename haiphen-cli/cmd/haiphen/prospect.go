@@ -5,12 +5,15 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/spf13/cobra"
 	"golang.org/x/term"
 
 	"github.com/haiphen/haiphen-cli/internal/config"
+	"github.com/haiphen/haiphen-cli/internal/report"
 	"github.com/haiphen/haiphen-cli/internal/store"
 	"github.com/haiphen/haiphen-cli/internal/util"
 )
@@ -41,6 +44,8 @@ func cmdProspect(cfg *config.Config, st store.Store) *cobra.Command {
 		cmdProspectSolve(cfg, st),
 		cmdProspectReInvestigate(cfg, st),
 		cmdProspectPipeline(cfg, st),
+		cmdProspectTarget(cfg, st),
+		cmdProspectReport(cfg, st),
 	)
 	return cmd
 }
@@ -49,11 +54,12 @@ func cmdProspect(cfg *config.Config, st store.Store) *cobra.Command {
 
 func cmdProspectList(cfg *config.Config, st store.Store) *cobra.Command {
 	var (
-		asJSON   bool
-		status   string
-		source   string
-		severity string
-		limit    int
+		asJSON     bool
+		status     string
+		source     string
+		severity   string
+		signalType string
+		limit      int
 	)
 
 	cmd := &cobra.Command{
@@ -75,6 +81,9 @@ func cmdProspectList(cfg *config.Config, st store.Store) *cobra.Command {
 			if severity != "" {
 				params.Set("severity", severity)
 			}
+			if signalType != "" {
+				params.Set("signal_type", signalType)
+			}
 			if limit > 0 {
 				params.Set("limit", fmt.Sprintf("%d", limit))
 			}
@@ -92,32 +101,52 @@ func cmdProspectList(cfg *config.Config, st store.Store) *cobra.Command {
 			printOrJSON(data, asJSON, func(b []byte) {
 				var out struct {
 					Items []struct {
-						LeadID          string  `json:"lead_id"`
-						EntityName      string  `json:"entity_name"`
-						EntityType      string  `json:"entity_type"`
-						VulnerabilityID string  `json:"vulnerability_id"`
-						Severity        string  `json:"severity"`
-						CvssScore       float64 `json:"cvss_score"`
-						Status          string  `json:"status"`
-						SourceID        string  `json:"source_id"`
-						CreatedAt       string  `json:"created_at"`
+						LeadID              string  `json:"lead_id"`
+						EntityName          string  `json:"entity_name"`
+						EntityType          string  `json:"entity_type"`
+						VulnerabilityID     string  `json:"vulnerability_id"`
+						Severity            string  `json:"severity"`
+						CvssScore           float64 `json:"cvss_score"`
+						ImpactScore         float64 `json:"impact_score"`
+						SignalType          string  `json:"signal_type"`
+						Status              string  `json:"status"`
+						InvestigationStatus string  `json:"investigation_status"`
+						SourceID            string  `json:"source_id"`
+						CreatedAt           string  `json:"created_at"`
 					} `json:"items"`
 				}
 				if json.Unmarshal(b, &out) == nil {
-					fmt.Printf("%-12s %-8s %-20s %-18s %-10s %s\n",
-						"SEVERITY", "SOURCE", "ENTITY", "VULN ID", "STATUS", "CREATED")
-					fmt.Println(strings.Repeat("-", 90))
+					fmt.Printf("%-10s %-12s %-8s %-20s %-18s %-6s %-10s %-14s %s\n",
+						"SEVERITY", "SIGNAL", "SOURCE", "ENTITY", "SIGNAL ID", "SCORE", "STATUS", "INVESTIGATED", "CREATED")
+					fmt.Println(strings.Repeat("-", 120))
 					for _, item := range out.Items {
 						name := item.EntityName
 						if len(name) > 20 {
 							name = name[:17] + "..."
 						}
-						vulnID := item.VulnerabilityID
-						if len(vulnID) > 18 {
-							vulnID = vulnID[:15] + "..."
+						sigID := item.VulnerabilityID
+						if len(sigID) > 18 {
+							sigID = sigID[:15] + "..."
 						}
-						fmt.Printf("%-12s %-8s %-20s %-18s %-10s %s\n",
-							item.Severity, item.SourceID, name, vulnID, item.Status, item.CreatedAt[:10])
+						invStatus := item.InvestigationStatus
+						if invStatus == "" {
+							invStatus = "-"
+						}
+						signal := item.SignalType
+						if signal == "" {
+							signal = "vuln"
+						}
+						// Show CVSS for vulnerability, impact_score for others
+						score := item.CvssScore
+						if item.SignalType != "" && item.SignalType != "vulnerability" {
+							score = item.ImpactScore
+						}
+						scoreStr := "-"
+						if score > 0 {
+							scoreStr = fmt.Sprintf("%.1f", score)
+						}
+						fmt.Printf("%-10s %-12s %-8s %-20s %-18s %-6s %-10s %-14s %s\n",
+							item.Severity, signal, item.SourceID, name, sigID, scoreStr, item.Status, invStatus, item.CreatedAt[:10])
 					}
 					fmt.Printf("\n%d leads\n", len(out.Items))
 				}
@@ -128,8 +157,9 @@ func cmdProspectList(cfg *config.Config, st store.Store) *cobra.Command {
 
 	cmd.Flags().BoolVar(&asJSON, "json", false, "Output as JSON")
 	cmd.Flags().StringVar(&status, "status", "", "Filter by status (new, analyzing, analyzed, etc.)")
-	cmd.Flags().StringVar(&source, "source", "", "Filter by source (nvd, osv, github-advisory, shodan)")
+	cmd.Flags().StringVar(&source, "source", "", "Filter by source (nvd, osv, github-advisory, shodan, sec-edgar, infra-scan)")
 	cmd.Flags().StringVar(&severity, "severity", "", "Filter by severity (critical, high, medium, low)")
+	cmd.Flags().StringVar(&signalType, "signal-type", "", "Filter by signal type (vulnerability, regulatory, performance, incident)")
 	cmd.Flags().IntVar(&limit, "limit", 0, "Max results")
 	return cmd
 }
@@ -210,7 +240,7 @@ func cmdProspectOutreach(cfg *config.Config, st store.Store) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "outreach <lead_id>",
-		Short: "Draft responsible-disclosure outreach for a lead",
+		Short: "Draft infrastructure advisory outreach for a lead",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			token, err := requireToken(st)
@@ -891,6 +921,9 @@ func cmdProspectInvestigations(cfg *config.Config, st store.Store) *cobra.Comman
 					Items []struct {
 						InvestigationID string  `json:"investigation_id"`
 						LeadID          string  `json:"lead_id"`
+						EntityName      string  `json:"entity_name"`
+						VulnerabilityID string  `json:"vulnerability_id"`
+						Severity        string  `json:"severity"`
 						Status          string  `json:"status"`
 						AggregateScore  float64 `json:"aggregate_score"`
 						BudgetLevel     string  `json:"budget_level"`
@@ -898,17 +931,25 @@ func cmdProspectInvestigations(cfg *config.Config, st store.Store) *cobra.Comman
 					} `json:"items"`
 				}
 				if json.Unmarshal(b, &out) == nil {
-					fmt.Printf("%-38s %-38s %-12s %-8s %-12s %s\n",
-						"INVESTIGATION", "LEAD", "STATUS", "SCORE", "BUDGET", "CREATED")
-					fmt.Println(strings.Repeat("-", 130))
+					fmt.Printf("%-38s %-20s %-18s %-10s %-12s %-8s %s\n",
+						"INVESTIGATION", "ENTITY", "SIGNAL ID", "SEVERITY", "STATUS", "SCORE", "CREATED")
+					fmt.Println(strings.Repeat("-", 120))
 					for _, item := range out.Items {
 						created := item.CreatedAt
 						if len(created) > 10 {
 							created = created[:10]
 						}
-						fmt.Printf("%-38s %-38s %-12s %-8.1f %-12s %s\n",
-							item.InvestigationID, item.LeadID, item.Status,
-							item.AggregateScore, item.BudgetLevel, created)
+						name := item.EntityName
+						if len(name) > 20 {
+							name = name[:17] + "..."
+						}
+						sigID := item.VulnerabilityID
+						if len(sigID) > 18 {
+							sigID = sigID[:15] + "..."
+						}
+						fmt.Printf("%-38s %-20s %-18s %-10s %-12s %-8.1f %s\n",
+							item.InvestigationID, name, sigID, item.Severity,
+							item.Status, item.AggregateScore, created)
 					}
 					fmt.Printf("\n%d investigations\n", len(out.Items))
 				}
@@ -1057,9 +1098,11 @@ func cmdProspectReInvestigate(cfg *config.Config, st store.Store) *cobra.Command
 
 func cmdProspectPipeline(cfg *config.Config, st store.Store) *cobra.Command {
 	var (
-		asJSON    bool
-		maxLeads  int
-		threshold float64
+		asJSON     bool
+		maxLeads   int
+		threshold  float64
+		signalType string
+		targetName string
 	)
 
 	cmd := &cobra.Command{
@@ -1069,6 +1112,11 @@ func cmdProspectPipeline(cfg *config.Config, st store.Store) *cobra.Command {
 			token, err := requireToken(st)
 			if err != nil {
 				return err
+			}
+
+			// If --target is set, resolve and run targeted pipeline
+			if targetName != "" {
+				return runTargetedPipeline(cmd, cfg, st, token, targetName, maxLeads, threshold, asJSON)
 			}
 
 			// Step 1: Trigger crawl
@@ -1084,6 +1132,9 @@ func cmdProspectPipeline(cfg *config.Config, st store.Store) *cobra.Command {
 			fmt.Printf("[2/3] Auto-investigating top %d leads...\n", maxLeads)
 			invPayload := map[string]interface{}{
 				"max_leads": maxLeads,
+			}
+			if signalType != "" {
+				invPayload["signal_type"] = signalType
 			}
 			invData, err := util.ServicePost(cmd.Context(), cfg.APIOrigin, "/v1/prospect/auto-investigate", token, invPayload)
 			if err != nil {
@@ -1103,7 +1154,7 @@ func cmdProspectPipeline(cfg *config.Config, st store.Store) *cobra.Command {
 				return fmt.Errorf("parse auto-investigate response: %w", err)
 			}
 
-			fmt.Printf("  Investigated %d leads\n", invOut.Investigated)
+			fmt.Printf("  Investigated %d leads (synthesis: deterministic)\n", invOut.Investigated)
 
 			// Step 3: Draft outreach for leads above threshold
 			drafted := 0
@@ -1142,5 +1193,452 @@ func cmdProspectPipeline(cfg *config.Config, st store.Store) *cobra.Command {
 	cmd.Flags().BoolVar(&asJSON, "json", false, "Output as JSON")
 	cmd.Flags().IntVar(&maxLeads, "max-leads", 5, "Max leads to investigate")
 	cmd.Flags().Float64Var(&threshold, "threshold", 60.0, "Min aggregate score for outreach draft")
+	cmd.Flags().StringVar(&signalType, "signal-type", "", "Filter by signal type (vulnerability, regulatory, performance, incident)")
+	cmd.Flags().StringVar(&targetName, "target", "", "Target company name or ID for targeted pipeline")
 	return cmd
+}
+
+// runTargetedPipeline executes crawl→investigate→outreach→report for a single target company.
+func runTargetedPipeline(cmd *cobra.Command, cfg *config.Config, _ store.Store, token, targetName string, maxLeads int, threshold float64, asJSON bool) error {
+	// Step 1: Resolve target
+	fmt.Printf("[1/4] Resolving target %q...\n", targetName)
+	params := url.Values{"q": {targetName}, "limit": {"1"}}
+	tData, err := util.ServiceGet(cmd.Context(), cfg.APIOrigin, "/v1/prospect/targets?"+params.Encode(), token)
+	if err != nil {
+		return fmt.Errorf("target lookup failed: %w", err)
+	}
+
+	var tOut struct {
+		Items []struct {
+			TargetID string `json:"target_id"`
+			Name     string `json:"name"`
+			Ticker   string `json:"ticker"`
+		} `json:"items"`
+	}
+	if err := json.Unmarshal(tData, &tOut); err != nil || len(tOut.Items) == 0 {
+		return fmt.Errorf("target %q not found", targetName)
+	}
+	target := tOut.Items[0]
+	fmt.Printf("  Target: %s (%s) [%s]\n", target.Name, target.Ticker, target.TargetID)
+
+	// Step 2: Targeted crawl
+	fmt.Printf("[2/4] Crawling sources for %s...\n", target.Name)
+	crawlData, err := util.ServicePost(cmd.Context(), cfg.APIOrigin,
+		"/v1/prospect/targets/"+target.TargetID+"/crawl", token, nil)
+	if err != nil {
+		fmt.Printf("  Crawl: %v (continuing)\n", err)
+	} else {
+		var crawlOut struct {
+			TotalFound   int `json:"total_found"`
+			TotalWritten int `json:"total_written"`
+		}
+		if json.Unmarshal(crawlData, &crawlOut) == nil {
+			fmt.Printf("  Found %d signals, %d new leads written\n", crawlOut.TotalFound, crawlOut.TotalWritten)
+		}
+	}
+
+	// Step 3: Auto-investigate targeted leads
+	fmt.Printf("[3/4] Investigating top %d leads...\n", maxLeads)
+	invPayload := map[string]interface{}{
+		"max_leads": maxLeads,
+		"target_id": target.TargetID,
+	}
+	invData, err := util.ServicePost(cmd.Context(), cfg.APIOrigin,
+		"/v1/prospect/auto-investigate", token, invPayload)
+	if err != nil {
+		return fmt.Errorf("auto-investigate failed: %w", err)
+	}
+
+	var invOut struct {
+		OK           bool `json:"ok"`
+		Investigated int  `json:"investigated"`
+		Leads        []struct {
+			LeadID         string   `json:"lead_id"`
+			AggregateScore float64  `json:"aggregate_score"`
+			Threats        []string `json:"threats"`
+		} `json:"leads"`
+	}
+	if err := json.Unmarshal(invData, &invOut); err != nil {
+		return fmt.Errorf("parse investigate response: %w", err)
+	}
+	fmt.Printf("  Investigated %d leads\n", invOut.Investigated)
+
+	// Step 4: Draft outreach for leads above threshold
+	drafted := 0
+	for _, lead := range invOut.Leads {
+		if lead.AggregateScore >= threshold {
+			fmt.Printf("[4/4] Drafting outreach for %s (score %.1f)...\n", lead.LeadID, lead.AggregateScore)
+			_, oErr := util.ServicePost(cmd.Context(), cfg.APIOrigin,
+				"/v1/prospect/leads/"+lead.LeadID+"/outreach", token, map[string]interface{}{})
+			if oErr != nil {
+				fmt.Printf("  Outreach draft failed for %s: %v\n", lead.LeadID, oErr)
+			} else {
+				drafted++
+			}
+		}
+	}
+
+	if asJSON {
+		summary := map[string]interface{}{
+			"target":       target,
+			"investigated": invOut.Investigated,
+			"drafted":      drafted,
+			"leads":        invOut.Leads,
+		}
+		b, _ := json.MarshalIndent(summary, "", "  ")
+		fmt.Println(string(b))
+	} else {
+		fmt.Printf("\nTargeted pipeline complete for %s: %d investigated, %d outreach drafted\n",
+			target.Name, invOut.Investigated, drafted)
+		fmt.Printf("Generate report: haiphen prospect report %q\n", target.Name)
+	}
+
+	return nil
+}
+
+// ---- prospect target ----
+
+func cmdProspectTarget(cfg *config.Config, st store.Store) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "target",
+		Short: "Manage prospect targets (Fortune 500 companies)",
+	}
+
+	cmd.AddCommand(
+		cmdProspectTargetList(cfg, st),
+		cmdProspectTargetGet(cfg, st),
+		cmdProspectTargetAdd(cfg, st),
+		cmdProspectTargetRemove(cfg, st),
+	)
+	return cmd
+}
+
+func cmdProspectTargetList(cfg *config.Config, st store.Store) *cobra.Command {
+	var (
+		asJSON bool
+		sector string
+		query  string
+		limit  int
+	)
+
+	cmd := &cobra.Command{
+		Use:   "list",
+		Short: "List prospect targets",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			token, err := requireToken(st)
+			if err != nil {
+				return err
+			}
+
+			params := url.Values{}
+			if sector != "" {
+				params.Set("sector", sector)
+			}
+			if query != "" {
+				params.Set("q", query)
+			}
+			if limit > 0 {
+				params.Set("limit", fmt.Sprintf("%d", limit))
+			}
+
+			path := "/v1/prospect/targets"
+			if len(params) > 0 {
+				path += "?" + params.Encode()
+			}
+
+			data, err := util.ServiceGet(cmd.Context(), cfg.APIOrigin, path, token)
+			if err != nil {
+				return err
+			}
+
+			printOrJSON(data, asJSON, func(b []byte) {
+				var out struct {
+					Items []struct {
+						TargetID           string `json:"target_id"`
+						Name               string `json:"name"`
+						Ticker             string `json:"ticker"`
+						Sector             string `json:"sector"`
+						Status             string `json:"status"`
+						LeadCount          int    `json:"lead_count"`
+						InvestigationCount int    `json:"investigation_count"`
+					} `json:"items"`
+				}
+				if json.Unmarshal(b, &out) == nil {
+					fmt.Printf("%-24s %-26s %-6s %-16s %-8s %-6s %s\n",
+						"TARGET ID", "NAME", "TICK", "SECTOR", "STATUS", "LEADS", "INVEST")
+					fmt.Println(strings.Repeat("-", 100))
+					for _, t := range out.Items {
+						name := t.Name
+						if len(name) > 26 {
+							name = name[:23] + "..."
+						}
+						sect := t.Sector
+						if len(sect) > 16 {
+							sect = sect[:13] + "..."
+						}
+						tick := t.Ticker
+						if tick == "" {
+							tick = "-"
+						}
+						fmt.Printf("%-24s %-26s %-6s %-16s %-8s %-6d %d\n",
+							t.TargetID, name, tick, sect, t.Status, t.LeadCount, t.InvestigationCount)
+					}
+					fmt.Printf("\n%d targets\n", len(out.Items))
+				}
+			})
+			return nil
+		},
+	}
+
+	cmd.Flags().BoolVar(&asJSON, "json", false, "Output as JSON")
+	cmd.Flags().StringVar(&sector, "sector", "", "Filter by sector (Financials, Technology, etc.)")
+	cmd.Flags().StringVar(&query, "q", "", "Search by name")
+	cmd.Flags().IntVar(&limit, "limit", 0, "Max results")
+	return cmd
+}
+
+func cmdProspectTargetGet(cfg *config.Config, st store.Store) *cobra.Command {
+	var asJSON bool
+
+	cmd := &cobra.Command{
+		Use:   "get <target_id_or_name>",
+		Short: "Get full target profile with lead and investigation summary",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			token, err := requireToken(st)
+			if err != nil {
+				return err
+			}
+
+			targetID := args[0]
+			// If it doesn't look like a target_id, resolve by name
+			if !strings.HasPrefix(targetID, "t-") {
+				targetID, err = resolveTargetID(cmd, cfg, token, args[0])
+				if err != nil {
+					return err
+				}
+			}
+
+			data, err := util.ServiceGet(cmd.Context(), cfg.APIOrigin, "/v1/prospect/targets/"+targetID, token)
+			if err != nil {
+				return err
+			}
+
+			printOrJSON(data, asJSON, func(b []byte) { printJSON(b) })
+			return nil
+		},
+	}
+
+	cmd.Flags().BoolVar(&asJSON, "json", false, "Output as JSON")
+	return cmd
+}
+
+func cmdProspectTargetAdd(cfg *config.Config, st store.Store) *cobra.Command {
+	var (
+		asJSON   bool
+		name     string
+		ticker   string
+		domain   string
+		cik      string
+		industry string
+		sector   string
+	)
+
+	cmd := &cobra.Command{
+		Use:   "add",
+		Short: "Add a new prospect target",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if name == "" {
+				return fmt.Errorf("--name is required")
+			}
+
+			token, err := requireToken(st)
+			if err != nil {
+				return err
+			}
+
+			body := map[string]interface{}{"name": name}
+			if ticker != "" {
+				body["ticker"] = ticker
+			}
+			if domain != "" {
+				body["domains"] = fmt.Sprintf("[%q]", domain)
+			}
+			if cik != "" {
+				body["cik"] = cik
+			}
+			if industry != "" {
+				body["industry"] = industry
+			}
+			if sector != "" {
+				body["sector"] = sector
+			}
+
+			data, err := util.ServicePost(cmd.Context(), cfg.APIOrigin, "/v1/prospect/targets", token, body)
+			if err != nil {
+				return err
+			}
+
+			printOrJSON(data, asJSON, func(b []byte) {
+				var out struct {
+					OK       bool   `json:"ok"`
+					TargetID string `json:"target_id"`
+				}
+				if json.Unmarshal(b, &out) == nil && out.OK {
+					fmt.Printf("Target created: %s\n", out.TargetID)
+				} else {
+					printJSON(b)
+				}
+			})
+			return nil
+		},
+	}
+
+	cmd.Flags().BoolVar(&asJSON, "json", false, "Output as JSON")
+	cmd.Flags().StringVar(&name, "name", "", "Company name (required)")
+	cmd.Flags().StringVar(&ticker, "ticker", "", "Stock ticker")
+	cmd.Flags().StringVar(&domain, "domain", "", "Primary domain")
+	cmd.Flags().StringVar(&cik, "cik", "", "SEC CIK number")
+	cmd.Flags().StringVar(&industry, "industry", "", "Industry")
+	cmd.Flags().StringVar(&sector, "sector", "", "Sector")
+	return cmd
+}
+
+func cmdProspectTargetRemove(cfg *config.Config, st store.Store) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "remove <target_id>",
+		Short: "Archive a prospect target (soft delete)",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			token, err := requireToken(st)
+			if err != nil {
+				return err
+			}
+
+			_, err = util.ServiceDelete(cmd.Context(), cfg.APIOrigin, "/v1/prospect/targets/"+args[0], token)
+			if err != nil {
+				return err
+			}
+
+			fmt.Printf("Target %s archived\n", args[0])
+			return nil
+		},
+	}
+	return cmd
+}
+
+// ---- prospect report ----
+
+func cmdProspectReport(cfg *config.Config, st store.Store) *cobra.Command {
+	var (
+		asJSON  bool
+		output  string
+		compile bool
+	)
+
+	cmd := &cobra.Command{
+		Use:   "report <target_name_or_id>",
+		Short: "Generate a LaTeX research report for a target company",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			token, err := requireToken(st)
+			if err != nil {
+				return err
+			}
+
+			targetID := args[0]
+			if !strings.HasPrefix(targetID, "t-") {
+				targetID, err = resolveTargetID(cmd, cfg, token, args[0])
+				if err != nil {
+					return err
+				}
+			}
+
+			fmt.Printf("Generating report for %s...\n", targetID)
+
+			data, err := util.ServiceGet(cmd.Context(), cfg.APIOrigin,
+				"/v1/prospect/targets/"+targetID+"/report?format=latex", token)
+			if err != nil {
+				return err
+			}
+
+			if asJSON {
+				result := map[string]string{
+					"target_id": targetID,
+					"format":    "latex",
+					"content":   string(data),
+				}
+				b, _ := json.MarshalIndent(result, "", "  ")
+				fmt.Println(string(b))
+				return nil
+			}
+
+			// Determine output path
+			outPath := output
+			if outPath == "" {
+				slug := strings.ReplaceAll(targetID, "t-", "")
+				date := time.Now().Format("2006-01-02")
+				outPath = fmt.Sprintf("haiphen-report-%s-%s.tex", slug, date)
+			}
+
+			if err := os.WriteFile(outPath, data, 0644); err != nil {
+				return fmt.Errorf("write report: %w", err)
+			}
+			fmt.Printf("Report saved: %s\n", outPath)
+
+			// Optionally compile to PDF
+			if compile {
+				fmt.Println("Compiling LaTeX to PDF...")
+				outDir := filepath.Dir(outPath)
+				if outDir == "" || outDir == "." {
+					outDir, _ = os.Getwd()
+				}
+
+				// Extract logo file alongside .tex for \includegraphics
+				if err := report.WriteLogoFile(outDir); err != nil {
+					fmt.Printf("  Warning: could not write logo: %v\n", err)
+				}
+
+				pdfPath := strings.TrimSuffix(outPath, filepath.Ext(outPath)) + ".pdf"
+				// Run pdflatex twice for LastPage ref resolution.
+				// pdflatex may exit non-zero on first run (e.g. font generation) but
+				// still produce a valid PDF, so always attempt the second pass and
+				// check for the output file rather than relying solely on exit code.
+				_ = util.RunCommand("pdflatex", "-interaction=nonstopmode", "-output-directory="+outDir, outPath)
+				_ = util.RunCommand("pdflatex", "-interaction=nonstopmode", "-output-directory="+outDir, outPath)
+
+				if _, statErr := os.Stat(pdfPath); statErr != nil {
+					fmt.Println("  pdflatex failed to produce PDF.")
+					fmt.Println("  Install TeX Live (brew install --cask mactex) or compile manually.")
+				} else {
+					fmt.Printf("PDF generated: %s\n", pdfPath)
+				}
+			}
+
+			return nil
+		},
+	}
+
+	cmd.Flags().BoolVar(&asJSON, "json", false, "Output as JSON")
+	cmd.Flags().StringVar(&output, "output", "", "Output file path (default: haiphen-report-{slug}-{date}.tex)")
+	cmd.Flags().BoolVar(&compile, "compile", false, "Compile LaTeX to PDF using pdflatex")
+	return cmd
+}
+
+// resolveTargetID looks up a target by name and returns its target_id.
+func resolveTargetID(cmd *cobra.Command, cfg *config.Config, token, name string) (string, error) {
+	params := url.Values{"q": {name}, "limit": {"1"}}
+	data, err := util.ServiceGet(cmd.Context(), cfg.APIOrigin, "/v1/prospect/targets?"+params.Encode(), token)
+	if err != nil {
+		return "", fmt.Errorf("target lookup failed: %w", err)
+	}
+	var out struct {
+		Items []struct {
+			TargetID string `json:"target_id"`
+		} `json:"items"`
+	}
+	if err := json.Unmarshal(data, &out); err != nil || len(out.Items) == 0 {
+		return "", fmt.Errorf("target %q not found", name)
+	}
+	return out.Items[0].TargetID, nil
 }

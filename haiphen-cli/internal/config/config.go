@@ -26,6 +26,10 @@ type Config struct {
 	BrokerMaxOrderValue  float64
 	BrokerDailyLossLimit float64
 	BrokerConfirmOrders  bool
+
+	// Signal daemon safety defaults
+	SignalMaxTriggersPerHour int
+	SignalMaxOrdersPerSession int
 }
 
 func Default() *Config {
@@ -47,5 +51,7 @@ func Default() *Config {
 		BrokerMaxOrderValue:       50000.0,
 		BrokerDailyLossLimit:      10000.0,
 		BrokerConfirmOrders:       true,
+		SignalMaxTriggersPerHour:  10,
+		SignalMaxOrdersPerSession: 50,
 	}
 }

@@ -118,6 +118,35 @@
               </div>
               {{/if}}
 
+              <!-- Feature Spotlight -->
+              {{#if cta}}
+              <div style="background:#fbfcfe;border:1px solid #e6ecf3;border-radius:12px;padding:14px;margin-bottom:20px;">
+                <div style="font-size:13px;font-weight:900;color:#2c3e50;margin-bottom:10px;">Feature Spotlight</div>
+                <div style="font-size:15px;font-weight:800;color:#5A9BD4;margin-bottom:6px;">{{cta.feature}}</div>
+                <p style="margin:0 0 10px;font-size:13px;color:#556;line-height:1.5;font-style:italic;">
+                  &ldquo;{{cta.scenario}}&rdquo;
+                </p>
+                {{#if cta.demo_url}}
+                <div style="text-align:center;margin-bottom:12px;">
+                  <img src="{{cta.demo_url}}" alt="{{cta.feature}} demo" width="540" style="max-width:100%;height:auto;border-radius:8px;border:1px solid #e6ecf3;" />
+                </div>
+                {{/if}}
+                <p style="margin:0 0 14px;font-size:13px;color:#556;line-height:1.55;">
+                  {{cta.description}}
+                </p>
+                <div style="text-align:center;">
+                  <a href="{{cta.cta_url}}" style="display:inline-block;padding:10px 24px;background:#5A9BD4;color:#ffffff;font-size:13px;font-weight:700;text-decoration:none;border-radius:8px;">
+                    {{cta.cta_text}} &rarr;
+                  </a>
+                </div>
+              </div>
+              {{/if}}
+
+              <!-- Prospect Intelligence -->
+              {{#if prospect_section}}
+              {{{prospect_section}}}
+              {{/if}}
+
               <!-- Your email subscriptions -->
               {{#if subscriptions}}
               <div style="background:#fbfcfe;border:1px solid #e6ecf3;border-radius:12px;padding:14px;margin-bottom:20px;">

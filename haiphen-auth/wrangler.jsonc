@@ -38,7 +38,8 @@
     "GOOGLE_REDIRECT_URI": "https://auth.haiphen.io/callback/google",
     "FROM_EMAIL": "jude@haiphen.io",
     "FROM_NAME": "Haiphen",
-    "OWNER_EMAIL": "jude@haiphen.io"
+    "OWNER_EMAIL": "jude@haiphen.io",
+    "TURNSTILE_SITE_KEY": "0x4AAAAAACKr8sUWJUM68QdF"
   },
 
   "routes": [

@@ -8,6 +8,7 @@ import { requireUserFromAuthCookie, verifyUserFromJwt } from "./auth";
 import { getExtremes, getKpis, getPortfolioAssets, getSeries } from "./metrics_queries";
 import { withCors, handleOptions as corsOptions } from "./cors";
 import { synthesize, type DataGap } from "./synthesizer";
+import { renderReportLatex, type ReportTarget, type ReportLead, type ReportInvestigation, type ReportStepDetail } from "./report";
 
 // Export DO classes for Wrangler
 export { RateLimiterDO, QuotaDO, SignalFeedDO };
@@ -1317,8 +1318,307 @@ async function route(req: Request, env: Env): Promise<Response> {
     return okJson(data, requestId, corsHeaders(req, env));
   }
 
+  // ---- PROSPECT TARGETS ----
+
+  // GET /v1/prospect/targets
+  if (req.method === "GET" && url.pathname === "/v1/prospect/targets") {
+    const u = await authSessionUser(req, env, requestId);
+
+    const clauses: string[] = ["1=1"];
+    const params: unknown[] = [];
+
+    const status = url.searchParams.get("status");
+    if (status) { clauses.push("t.status = ?"); params.push(status); }
+    const sector = url.searchParams.get("sector");
+    if (sector) { clauses.push("t.sector = ?"); params.push(sector); }
+    const q = url.searchParams.get("q");
+    if (q) { clauses.push("(t.name LIKE ? OR t.ticker LIKE ?)"); params.push(`%${q}%`, `%${q}%`); }
+    const limit = Math.min(parseInt(url.searchParams.get("limit") || "50", 10) || 50, 500);
+
+    const rows = await env.DB.prepare(`
+      SELECT t.*,
+        (SELECT COUNT(*) FROM prospect_leads WHERE target_id = t.target_id) as lead_count,
+        (SELECT COUNT(*) FROM investigations i JOIN prospect_leads l ON i.lead_id = l.lead_id WHERE l.target_id = t.target_id) as investigation_count
+      FROM prospect_targets t
+      WHERE ${clauses.join(" AND ")}
+      ORDER BY t.name
+      LIMIT ?
+    `).bind(...params, limit).all();
+
+    return okJson({ items: rows.results || [] }, requestId, corsHeaders(req, env));
+  }
+
+  // GET /v1/prospect/targets/:id
+  if (req.method === "GET" && url.pathname.match(/^\/v1\/prospect\/targets\/[^/]+$/)) {
+    const u = await authSessionUser(req, env, requestId);
+    const targetId = url.pathname.split("/").pop()!;
+
+    const target = await env.DB.prepare(`SELECT * FROM prospect_targets WHERE target_id = ?`).bind(targetId).first();
+    if (!target) return err("not_found", "Target not found", requestId, 404, corsHeaders(req, env));
+
+    const leads = await env.DB.prepare(
+      `SELECT lead_id, signal_type, severity, cvss_score, impact_score, vulnerability_id, entity_name, source_id, status, created_at
+       FROM prospect_leads WHERE target_id = ? ORDER BY created_at DESC LIMIT 100`
+    ).bind(targetId).all();
+
+    const investigations = await env.DB.prepare(
+      `SELECT i.investigation_id, i.lead_id, i.aggregate_score, i.status, i.created_at
+       FROM investigations i JOIN prospect_leads l ON i.lead_id = l.lead_id
+       WHERE l.target_id = ? ORDER BY i.created_at DESC LIMIT 50`
+    ).bind(targetId).all();
+
+    return okJson({
+      ...target,
+      leads: leads.results || [],
+      investigations: investigations.results || [],
+    }, requestId, corsHeaders(req, env));
+  }
+
+  // POST /v1/prospect/targets
+  if (req.method === "POST" && url.pathname === "/v1/prospect/targets") {
+    const u = await authSessionUser(req, env, requestId);
+    const body = await req.json().catch(() => ({})) as any;
+
+    if (!body.name) return err("invalid_request", "name is required", requestId, 400, corsHeaders(req, env));
+
+    const targetId = body.target_id || ("t-" + body.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/-+$/, ""));
+    const domains = body.domains ? (typeof body.domains === "string" ? body.domains : JSON.stringify(body.domains)) : null;
+    const keywords = body.keywords ? (typeof body.keywords === "string" ? body.keywords : JSON.stringify(body.keywords)) : null;
+    const products = body.products ? (typeof body.products === "string" ? body.products : JSON.stringify(body.products)) : null;
+
+    await env.DB.prepare(
+      `INSERT INTO prospect_targets (target_id, name, ticker, cik, domains, industry, sector, keywords, products)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+       ON CONFLICT (target_id) DO UPDATE SET
+         name = excluded.name, ticker = COALESCE(excluded.ticker, prospect_targets.ticker),
+         cik = COALESCE(excluded.cik, prospect_targets.cik),
+         domains = COALESCE(excluded.domains, prospect_targets.domains),
+         industry = COALESCE(excluded.industry, prospect_targets.industry),
+         sector = COALESCE(excluded.sector, prospect_targets.sector),
+         keywords = COALESCE(excluded.keywords, prospect_targets.keywords),
+         products = COALESCE(excluded.products, prospect_targets.products),
+         updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now')`
+    ).bind(targetId, body.name, body.ticker ?? null, body.cik ?? null, domains, body.industry ?? null, body.sector ?? null, keywords, products).run();
+
+    return okJson({ ok: true, target_id: targetId }, requestId, corsHeaders(req, env));
+  }
+
+  // PUT /v1/prospect/targets/:id
+  if (req.method === "PUT" && url.pathname.match(/^\/v1\/prospect\/targets\/[^/]+$/)) {
+    const u = await authSessionUser(req, env, requestId);
+    const targetId = url.pathname.split("/").pop()!;
+    const body = await req.json().catch(() => ({})) as any;
+
+    const sets: string[] = ["updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now')"];
+    const params: unknown[] = [];
+
+    if (body.name !== undefined) { sets.push("name = ?"); params.push(body.name); }
+    if (body.ticker !== undefined) { sets.push("ticker = ?"); params.push(body.ticker); }
+    if (body.cik !== undefined) { sets.push("cik = ?"); params.push(body.cik); }
+    if (body.domains !== undefined) { sets.push("domains = ?"); params.push(typeof body.domains === "string" ? body.domains : JSON.stringify(body.domains)); }
+    if (body.industry !== undefined) { sets.push("industry = ?"); params.push(body.industry); }
+    if (body.sector !== undefined) { sets.push("sector = ?"); params.push(body.sector); }
+    if (body.keywords !== undefined) { sets.push("keywords = ?"); params.push(typeof body.keywords === "string" ? body.keywords : JSON.stringify(body.keywords)); }
+    if (body.products !== undefined) { sets.push("products = ?"); params.push(typeof body.products === "string" ? body.products : JSON.stringify(body.products)); }
+    if (body.status !== undefined) { sets.push("status = ?"); params.push(body.status); }
+
+    await env.DB.prepare(
+      `UPDATE prospect_targets SET ${sets.join(", ")} WHERE target_id = ?`
+    ).bind(...params, targetId).run();
+
+    return okJson({ ok: true, target_id: targetId }, requestId, corsHeaders(req, env));
+  }
+
+  // DELETE /v1/prospect/targets/:id (soft-delete)
+  if (req.method === "DELETE" && url.pathname.match(/^\/v1\/prospect\/targets\/[^/]+$/)) {
+    const u = await authSessionUser(req, env, requestId);
+    const targetId = url.pathname.split("/").pop()!;
+
+    await env.DB.prepare(
+      `UPDATE prospect_targets SET status = 'archived', updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE target_id = ?`
+    ).bind(targetId).run();
+
+    return okJson({ ok: true, target_id: targetId, status: "archived" }, requestId, corsHeaders(req, env));
+  }
+
+  // POST /v1/prospect/targets/:id/crawl — targeted crawl (inline)
+  if (req.method === "POST" && url.pathname.match(/^\/v1\/prospect\/targets\/[^/]+\/crawl$/)) {
+    const u = await authSessionUser(req, env, requestId);
+    const parts = url.pathname.split("/");
+    const targetId = parts[parts.length - 2];
+
+    const target = await env.DB.prepare(`SELECT * FROM prospect_targets WHERE target_id = ? AND status = 'active'`)
+      .bind(targetId).first<{ target_id: string; name: string; ticker: string | null; cik: string | null; domains: string | null; industry: string | null; sector: string | null; keywords: string | null; products: string | null }>();
+    if (!target) return err("not_found", "Target not found or archived", requestId, 404, corsHeaders(req, env));
+
+    const domains: string[] = target.domains ? JSON.parse(target.domains) : [];
+    const keywords: string[] = target.keywords ? JSON.parse(target.keywords) : [];
+    const products: string[] = target.products ? JSON.parse(target.products) : [];
+    const searchTerms = [target.name, ...(keywords || [])];
+
+    const leads: Array<{ lead_id: string; source_id: string; severity: string; entity_name: string; vulnerability_id: string }> = [];
+
+    // NVD: search by company name in keyword
+    try {
+      const nvdParams = new URLSearchParams({
+        keywordSearch: target.name,
+        resultsPerPage: "20",
+      });
+      const nvdRes = await fetch(`https://services.nvd.nist.gov/rest/json/cves/2.0?${nvdParams}`, {
+        headers: { Accept: "application/json" },
+      });
+      if (nvdRes.ok) {
+        const nvdData = await nvdRes.json() as any;
+        for (const item of (nvdData.vulnerabilities ?? []).slice(0, 10)) {
+          const cve = item.cve;
+          const desc = cve.descriptions?.find((d: any) => d.lang === "en")?.value ?? "";
+          const cvss = cve.metrics?.cvssMetricV31?.[0]?.cvssData?.baseScore ?? cve.metrics?.cvssMetricV2?.[0]?.cvssData?.baseScore ?? 0;
+          if (cvss < 4.0) continue;
+          const leadId = uuid();
+          const severity = cvss >= 9.0 ? "critical" : cvss >= 7.0 ? "high" : cvss >= 4.0 ? "medium" : "low";
+          await env.DB.prepare(
+            `INSERT INTO prospect_leads (lead_id, source_id, entity_type, entity_name, vulnerability_id, severity, cvss_score, summary, raw_data_json, services_json, status, signal_type, target_id)
+             VALUES (?, 'nvd', 'software', ?, ?, ?, ?, ?, ?, '["secure"]', 'new', 'vulnerability', ?)
+             ON CONFLICT (source_id, vulnerability_id, entity_name) DO NOTHING`
+          ).bind(leadId, target.name, cve.id, severity, cvss, desc.slice(0, 500), JSON.stringify(cve), targetId).run();
+          leads.push({ lead_id: leadId, source_id: "nvd", severity, entity_name: target.name, vulnerability_id: cve.id });
+        }
+      }
+    } catch (e) { console.error("[targeted-crawl] NVD error:", e); }
+
+    // SEC EDGAR: search by CIK
+    if (target.cik) {
+      try {
+        const edgarParams = new URLSearchParams({
+          q: `"cybersecurity" OR "technology failure" OR "data breach"`,
+          dateRange: "custom",
+          startdt: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
+          enddt: new Date().toISOString().split("T")[0],
+          forms: "8-K,10-K",
+        });
+        const edgarRes = await fetch(`https://efts.sec.gov/LATEST/search-index?${edgarParams}`, {
+          headers: { Accept: "application/json", "User-Agent": "Haiphen/1.0 (infrastructure intelligence; contact@haiphen.io)" },
+        });
+        if (edgarRes.ok) {
+          const edgarData = await edgarRes.json() as any;
+          for (const hit of (edgarData.hits?.hits ?? []).slice(0, 5)) {
+            const src = hit._source;
+            const leadId = uuid();
+            const vulnId = `SEC-${hit._id.replace(/[^0-9-]/g, "")}`;
+            const sev = src.form_type?.startsWith("8-K") ? "high" : "medium";
+            const summary = `SEC ${src.form_type} filing by ${src.entity_name} (${src.file_date})`;
+            await env.DB.prepare(
+              `INSERT INTO prospect_leads (lead_id, source_id, entity_type, entity_name, vulnerability_id, severity, summary, raw_data_json, services_json, status, signal_type, impact_score, target_id)
+               VALUES (?, 'sec-edgar', 'company', ?, ?, ?, ?, ?, '["risk"]', 'new', 'regulatory', ?, ?)
+               ON CONFLICT (source_id, vulnerability_id, entity_name) DO NOTHING`
+            ).bind(leadId, src.entity_name || target.name, vulnId, sev, summary.slice(0, 500), JSON.stringify(src), src.form_type?.startsWith("8-K") ? 70 : 50, targetId).run();
+            leads.push({ lead_id: leadId, source_id: "sec-edgar", severity: sev, entity_name: src.entity_name || target.name, vulnerability_id: vulnId });
+          }
+        }
+      } catch (e) { console.error("[targeted-crawl] SEC EDGAR error:", e); }
+    }
+
+    // Infra-scan: check target domains (TLS/headers via fetch only — CF Worker can't do raw TLS)
+    for (const domain of domains.slice(0, 5)) {
+      try {
+        const t0 = Date.now();
+        const domRes = await fetch(`https://${domain}`, { redirect: "follow" });
+        const elapsed = Date.now() - t0;
+        const headers = Object.fromEntries(domRes.headers.entries());
+
+        if (elapsed > 3000) {
+          const leadId = uuid();
+          await env.DB.prepare(
+            `INSERT INTO prospect_leads (lead_id, source_id, entity_type, entity_name, entity_domain, vulnerability_id, severity, summary, raw_data_json, services_json, status, signal_type, impact_score, target_id)
+             VALUES (?, 'infra-scan', 'system', ?, ?, ?, 'medium', ?, ?, '["network","risk"]', 'new', 'performance', 50, ?)
+             ON CONFLICT (source_id, vulnerability_id, entity_name) DO NOTHING`
+          ).bind(leadId, domain, domain, `INFRA-${domain}-response_time`, `Slow response time on ${domain}: ${elapsed}ms`, JSON.stringify({ domain, elapsed, timestamp: new Date().toISOString() }), targetId).run();
+          leads.push({ lead_id: leadId, source_id: "infra-scan", severity: "medium", entity_name: domain, vulnerability_id: `INFRA-${domain}-response_time` });
+        }
+
+        if (!headers["strict-transport-security"]) {
+          const leadId = uuid();
+          await env.DB.prepare(
+            `INSERT INTO prospect_leads (lead_id, source_id, entity_type, entity_name, entity_domain, vulnerability_id, severity, summary, raw_data_json, services_json, status, signal_type, impact_score, target_id)
+             VALUES (?, 'infra-scan', 'system', ?, ?, ?, 'low', ?, ?, '["secure"]', 'new', 'performance', 30, ?)
+             ON CONFLICT (source_id, vulnerability_id, entity_name) DO NOTHING`
+          ).bind(leadId, domain, domain, `INFRA-${domain}-hsts`, `Missing HSTS header on ${domain}`, JSON.stringify({ domain, headers, timestamp: new Date().toISOString() }), targetId).run();
+          leads.push({ lead_id: leadId, source_id: "infra-scan", severity: "low", entity_name: domain, vulnerability_id: `INFRA-${domain}-hsts` });
+        }
+      } catch (e) { console.error(`[targeted-crawl] infra-scan ${domain} error:`, e); }
+    }
+
+    return okJson({
+      ok: true,
+      target_id: targetId,
+      target_name: target.name,
+      leads_found: leads.length,
+      leads,
+    }, requestId, corsHeaders(req, env));
+  }
+
+  // GET /v1/prospect/targets/:id/report?format=latex
+  if (req.method === "GET" && url.pathname.match(/^\/v1\/prospect\/targets\/[^/]+\/report$/)) {
+    const u = await authSessionUser(req, env, requestId);
+    const parts = url.pathname.split("/");
+    const targetId = parts[parts.length - 2];
+
+    const target = await env.DB.prepare(`SELECT target_id, name, ticker, industry, sector, domains FROM prospect_targets WHERE target_id = ?`)
+      .bind(targetId).first<ReportTarget>();
+    if (!target) return err("not_found", "Target not found", requestId, 404, corsHeaders(req, env));
+
+    const leadsResult = await env.DB.prepare(
+      `SELECT lead_id, signal_type, severity, cvss_score, impact_score, vulnerability_id, entity_name, summary, source_id
+       FROM prospect_leads WHERE target_id = ? ORDER BY cvss_score DESC, impact_score DESC`
+    ).bind(targetId).all<ReportLead>();
+
+    // Build step_scores JSON from investigation_steps table since investigations doesn't have that column
+    const rawInvResult = await env.DB.prepare(
+      `SELECT i.investigation_id, i.lead_id, i.aggregate_score, i.status, i.claude_summary
+       FROM investigations i JOIN prospect_leads l ON i.lead_id = l.lead_id
+       WHERE l.target_id = ? AND i.status = 'completed'
+       ORDER BY i.aggregate_score DESC`
+    ).bind(targetId).all<Omit<ReportInvestigation, "step_scores" | "steps">>();
+
+    // Enrich with step_scores + step details from investigation_steps
+    const invResults: ReportInvestigation[] = [];
+    for (const inv of rawInvResult.results ?? []) {
+      const stepsResult = await env.DB.prepare(
+        `SELECT service, score, findings_json, recommendation, duration_ms FROM investigation_steps WHERE investigation_id = ? AND status = 'completed' AND score IS NOT NULL`
+      ).bind(inv.investigation_id).all<{ service: string; score: number; findings_json: string | null; recommendation: string | null; duration_ms: number }>();
+      const stepScores: Record<string, number> = {};
+      const steps: ReportStepDetail[] = [];
+      for (const s of stepsResult.results ?? []) {
+        stepScores[s.service] = s.score;
+        let findings: string[] = [];
+        try { if (s.findings_json) findings = JSON.parse(s.findings_json); } catch { /* skip */ }
+        steps.push({ service: s.service, score: s.score, findings, recommendation: s.recommendation, duration_ms: s.duration_ms });
+      }
+      invResults.push({ ...inv, step_scores: JSON.stringify(stepScores), steps });
+    }
+
+    const invResult = { results: invResults };
+
+    const latex = renderReportLatex(
+      target,
+      leadsResult.results || [],
+      invResult.results || [],
+    );
+
+    const filename = `haiphen-report-${targetId}-${new Date().toISOString().split("T")[0]}.tex`;
+    return new Response(latex, {
+      status: 200,
+      headers: {
+        "Content-Type": "text/plain; charset=utf-8",
+        "Content-Disposition": `attachment; filename="${filename}"`,
+        "X-Request-Id": requestId,
+        ...corsHeaders(req, env),
+      },
+    });
+  }
+
   // ---- PROSPECT: list leads ----
-  // GET /v1/prospect/leads?status=&source=&severity=&limit=
+  // GET /v1/prospect/leads?status=&source=&severity=&signal_type=&limit=
   if (req.method === "GET" && url.pathname === "/v1/prospect/leads") {
     const u = await authSessionUser(req, env, requestId);
 
@@ -1334,6 +1634,9 @@ async function route(req: Request, env: Env): Promise<Response> {
     const severity = url.searchParams.get("severity");
     if (severity) { clauses.push("severity = ?"); params.push(severity); }
 
+    const signalType = url.searchParams.get("signal_type");
+    if (signalType) { clauses.push("signal_type = ?"); params.push(signalType); }
+
     const where = clauses.length > 0 ? `WHERE ${clauses.join(" AND ")}` : "";
     const limit = Math.min(200, Math.max(1, Number(url.searchParams.get("limit") ?? "50")));
     params.push(limit);
@@ -1341,7 +1644,8 @@ async function route(req: Request, env: Env): Promise<Response> {
     const rows = await env.DB.prepare(
       `SELECT lead_id, source_id, entity_type, entity_name, entity_domain,
               industry, country, vulnerability_id, severity, cvss_score,
-              summary, services_json, status, investigation_status, created_at, updated_at
+              summary, services_json, status, investigation_status,
+              signal_type, impact_score, created_at, updated_at
        FROM prospect_leads ${where}
        ORDER BY created_at DESC LIMIT ?`
     ).bind(...params).all();
@@ -1411,11 +1715,17 @@ async function route(req: Request, env: Env): Promise<Response> {
       ).all<{
         rule_id: string; match_severity: string | null; match_entity_type: string | null;
         match_keywords: string | null; match_source_id: string | null; match_cvss_min: number | null;
-        services_json: string;
+        match_signal_types: string | null; services_json: string;
       }>();
 
       let matched = false;
+      const leadSignalType = (lead as any).signal_type ?? "vulnerability";
       for (const rule of rules.results ?? []) {
+        // Signal type filter: if rule specifies signal types, lead must match
+        if (rule.match_signal_types) {
+          const allowedTypes = rule.match_signal_types.split(",").map((t: string) => t.trim().toLowerCase());
+          if (!allowedTypes.includes(leadSignalType)) continue;
+        }
         if (rule.match_severity && lead.severity !== rule.match_severity) continue;
         if (rule.match_entity_type && lead.entity_type !== rule.match_entity_type) continue;
         if (rule.match_source_id && lead.source_id !== rule.match_source_id) continue;
@@ -1563,11 +1873,17 @@ async function route(req: Request, env: Env): Promise<Response> {
     ).all<{
       rule_id: string; match_severity: string | null; match_entity_type: string | null;
       match_keywords: string | null; match_source_id: string | null; match_cvss_min: number | null;
-      services_json: string; solution_template: string;
+      match_signal_types: string | null; services_json: string; solution_template: string;
     }>();
 
     let matchedTemplate: string | null = null;
+    const outreachLeadSignalType = (lead as any).signal_type ?? "vulnerability";
     for (const rule of rules.results ?? []) {
+      // Signal type filter
+      if (rule.match_signal_types) {
+        const allowedTypes = rule.match_signal_types.split(",").map((t: string) => t.trim().toLowerCase());
+        if (!allowedTypes.includes(outreachLeadSignalType)) continue;
+      }
       if (rule.match_severity && lead.severity !== rule.match_severity) continue;
       if (rule.match_entity_type && lead.entity_type !== rule.match_entity_type) continue;
       if (rule.match_source_id && lead.source_id !== rule.match_source_id) continue;
@@ -1581,6 +1897,15 @@ async function route(req: Request, env: Env): Promise<Response> {
       break;
     }
 
+    // Signal type label mapping for human-readable outreach
+    const SIGNAL_TYPE_LABELS: Record<string, string> = {
+      vulnerability: "Security Vulnerability",
+      regulatory: "Regulatory Filing",
+      performance: "Infrastructure Performance",
+      incident: "Operational Incident",
+    };
+    const signalTypeLabel = SIGNAL_TYPE_LABELS[(lead as any).signal_type ?? "vulnerability"] ?? "Operational Risk";
+
     if (matchedTemplate) {
       // Interpolate template variables
       const svcList = (analyses.results ?? []).map(a => a.service).join(", ") || "pending";
@@ -1589,33 +1914,35 @@ async function route(req: Request, env: Env): Promise<Response> {
         .replace(/\{\{vulnerability_id\}\}/g, lead.vulnerability_id ?? "Identified exposure")
         .replace(/\{\{severity\}\}/g, lead.severity ?? "Unknown")
         .replace(/\{\{services\}\}/g, svcList)
+        .replace(/\{\{signal_type_label\}\}/g, signalTypeLabel)
         .replace(/\{\{analysis_summary\}\}/g, analysisContext ? `Analysis Results: ${analysisContext}` : "Analysis pending.");
-      bodyText = `Dear Security Team,\n\n${bodyText}\n\nBest regards,\nHaiphen Security Intelligence`;
+      bodyText = `Dear Infrastructure Team,\n\n${bodyText}\n\nBest regards,\nHaiphen Infrastructure Intelligence`;
     } else {
-      // Fallback to original boilerplate
+      // Fallback to infrastructure advisory boilerplate
       bodyText = [
-        `Dear Security Team,`,
+        `Dear Infrastructure Team,`,
         ``,
-        `We are writing to inform you of a potential security concern affecting ${lead.entity_name}.`,
+        `We are writing regarding an operational risk assessment affecting ${lead.entity_name}.`,
         ``,
-        `Vulnerability: ${lead.vulnerability_id ?? "Identified exposure"}`,
+        `Signal: ${signalTypeLabel}`,
+        `Reference: ${lead.vulnerability_id ?? "Identified exposure"}`,
         `Severity: ${lead.severity ?? "Unknown"}`,
         `Summary: ${lead.summary}`,
         ``,
         analysisContext ? `Analysis Results: ${analysisContext}` : "",
         ``,
-        `We discovered this through our automated security monitoring platform (Haiphen)`,
-        `and are reaching out as part of responsible disclosure.`,
+        `We identified this through our automated infrastructure intelligence platform (Haiphen)`,
+        `and are reaching out as part of our operational risk advisory service.`,
         ``,
         `We would be happy to provide additional technical details or assist with remediation.`,
         ``,
         `Best regards,`,
-        `Haiphen Security Research`,
+        `Haiphen Infrastructure Intelligence`,
       ].filter(l => l !== undefined).join("\n");
     }
 
     const outreachId = uuid();
-    const subject = `Security Advisory: ${lead.vulnerability_id ?? "Potential Vulnerability"} — ${lead.entity_name}`;
+    const subject = `Infrastructure Advisory: ${lead.entity_name} — Operational Risk Assessment`;
 
     await env.DB.prepare(
       `INSERT INTO prospect_outreach (outreach_id, lead_id, subject, body_text, status)
@@ -2049,8 +2376,11 @@ async function route(req: Request, env: Env): Promise<Response> {
   // ==============================================================
 
   const SERVICE_PIPELINE = ["secure", "network", "causal", "risk", "graph", "supply"] as const;
-  const SERVICE_WEIGHTS: Record<string, number> = {
-    secure: 0.20, network: 0.15, causal: 0.20, risk: 0.20, graph: 0.10, supply: 0.15,
+  const PIPELINE_WEIGHTS: Record<string, Record<string, number>> = {
+    vulnerability: { secure: 0.25, network: 0.15, causal: 0.15, risk: 0.20, graph: 0.10, supply: 0.15 },
+    regulatory:    { secure: 0.05, network: 0.10, causal: 0.25, risk: 0.30, graph: 0.10, supply: 0.20 },
+    performance:   { secure: 0.10, network: 0.30, causal: 0.15, risk: 0.20, graph: 0.10, supply: 0.15 },
+    incident:      { secure: 0.10, network: 0.20, causal: 0.30, risk: 0.15, graph: 0.10, supply: 0.15 },
   };
   const SERVICE_FETCHERS: Record<string, Fetcher> = {
     secure: env.SVC_SECURE,
@@ -2183,16 +2513,20 @@ async function route(req: Request, env: Env): Promise<Response> {
   // ---- Helper: run sequential pipeline ----
   async function runPipeline(
     investigationId: string,
-    lead: { lead_id: string; entity_name: string; vulnerability_id: string | null; summary: string; cvss_score: number | null; source_id: string | null; severity?: string | null },
+    lead: { lead_id: string; entity_name: string; vulnerability_id: string | null; summary: string; cvss_score: number | null; source_id: string | null; severity?: string | null; signal_type?: string | null },
   ): Promise<{ steps: Array<{ service: string; step_id: string; score: number | null; findings: string[]; recommendation: string | null; duration_ms: number; status: string }>; aggregateScore: number; allGaps: DataGap[] }> {
     // Pre-pipeline: seed triples from lead data
     await hydrateTriples(lead, "seed");
 
-    const upstreamContext: { prior_scores: Record<string, number>; prior_findings: string[]; prior_gaps: DataGap[]; investigation_id: string } = {
+    const signalType = lead.signal_type ?? "vulnerability";
+    const serviceWeights = PIPELINE_WEIGHTS[signalType] ?? PIPELINE_WEIGHTS.vulnerability;
+
+    const upstreamContext: { prior_scores: Record<string, number>; prior_findings: string[]; prior_gaps: DataGap[]; investigation_id: string; signal_type: string } = {
       prior_scores: {},
       prior_findings: [],
       prior_gaps: [],
       investigation_id: investigationId,
+      signal_type: signalType,
     };
 
     const steps: Array<{ service: string; step_id: string; score: number | null; findings: string[]; recommendation: string | null; duration_ms: number; status: string }> = [];
@@ -2269,7 +2603,7 @@ async function route(req: Request, env: Env): Promise<Response> {
     let weightedSum = 0;
     for (const step of steps) {
       if (step.status === "completed" && step.score !== null) {
-        const w = SERVICE_WEIGHTS[step.service] ?? 0;
+        const w = serviceWeights[step.service] ?? 0;
         totalWeight += w;
         weightedSum += step.score * w;
       }
@@ -2323,11 +2657,12 @@ async function route(req: Request, env: Env): Promise<Response> {
     const leadId = parts[parts.length - 2];
 
     const lead = await env.DB.prepare(
-      `SELECT lead_id, entity_name, vulnerability_id, summary, cvss_score, source_id, severity, entity_type, services_json FROM prospect_leads WHERE lead_id = ?`
+      `SELECT lead_id, entity_name, vulnerability_id, summary, cvss_score, source_id, severity, entity_type, services_json, signal_type, impact_score FROM prospect_leads WHERE lead_id = ?`
     ).bind(leadId).first<{
       lead_id: string; entity_name: string; vulnerability_id: string | null;
       summary: string; cvss_score: number | null; source_id: string | null;
       severity: string | null; entity_type: string | null; services_json: string | null;
+      signal_type: string | null; impact_score: number | null;
     }>();
     if (!lead) return err("not_found", "Lead not found", requestId, 404, corsHeaders(req, env));
 
@@ -2495,11 +2830,11 @@ async function route(req: Request, env: Env): Promise<Response> {
     const leadId = parts[parts.length - 2];
 
     const lead = await env.DB.prepare(
-      `SELECT lead_id, entity_name, vulnerability_id, summary, cvss_score, source_id, severity FROM prospect_leads WHERE lead_id = ?`
+      `SELECT lead_id, entity_name, vulnerability_id, summary, cvss_score, source_id, severity, signal_type, impact_score FROM prospect_leads WHERE lead_id = ?`
     ).bind(leadId).first<{
       lead_id: string; entity_name: string; vulnerability_id: string | null;
       summary: string; cvss_score: number | null; source_id: string | null;
-      severity: string | null;
+      severity: string | null; signal_type: string | null; impact_score: number | null;
     }>();
     if (!lead) return err("not_found", "Lead not found", requestId, 404, corsHeaders(req, env));
 
@@ -3061,15 +3396,16 @@ async function route(req: Request, env: Env): Promise<Response> {
   // ---- Shared: auto-investigate top uninvestigated leads ----
   async function autoInvestigateLeads(userId: string, maxLeads: number, minCvss: number) {
     const leads = await env.DB.prepare(
-      `SELECT lead_id, entity_name, vulnerability_id, summary, cvss_score, source_id, severity, entity_type, services_json
+      `SELECT lead_id, entity_name, vulnerability_id, summary, cvss_score, source_id, severity, entity_type, services_json, signal_type, impact_score
        FROM prospect_leads
        WHERE investigation_status IS NULL AND status = 'new' AND (cvss_score >= ? OR cvss_score IS NULL)
-       ORDER BY cvss_score DESC NULLS LAST
+       ORDER BY COALESCE(cvss_score, impact_score, 0) DESC
        LIMIT ?`
     ).bind(minCvss, maxLeads).all<{
       lead_id: string; entity_name: string; vulnerability_id: string | null;
       summary: string; cvss_score: number | null; source_id: string | null;
       severity: string | null; entity_type: string | null; services_json: string | null;
+      signal_type: string | null; impact_score: number | null;
     }>();
 
     const results: Array<{ lead_id: string; aggregate_score: number; threats: string[] }> = [];
@@ -3162,6 +3498,136 @@ async function route(req: Request, env: Env): Promise<Response> {
     const results = await autoInvestigateLeads(u.user_login, maxLeads, minCvss);
 
     return okJson({ ok: true, investigated: results.length, leads: results }, requestId, corsHeaders(req, env));
+  }
+
+  // ---- POST /v1/internal/prospect/pipeline-digest (internal-token auth) ----
+  // Returns comprehensive pipeline data for the daily digest email.
+  if (req.method === "POST" && url.pathname === "/v1/internal/prospect/pipeline-digest") {
+    const tok = req.headers.get("X-Internal-Token") || "";
+    if (!env.INTERNAL_TOKEN || !safeEqual(tok, env.INTERNAL_TOKEN)) {
+      return err("forbidden", "Forbidden", requestId, 403, corsHeaders(req, env));
+    }
+
+    try {
+    const body = await req.json().catch(() => ({})) as { max_leads?: number; since_hours?: number };
+    const maxLeads = Math.min(Math.max(body.max_leads ?? 10, 1), 20);
+    const sinceHours = body.since_hours ?? 24;
+
+    // 1. Run auto-investigate on uninvestigated leads (best-effort — don't fail the digest)
+    let investigated: Array<{ lead_id: string; aggregate_score: number; threats: string[] }> = [];
+    try {
+      investigated = await autoInvestigateLeads("system:pipeline-digest", maxLeads, 0);
+    } catch (e: any) {
+      console.error("[pipeline-digest] auto-investigate failed (non-fatal):", e?.message || e);
+    }
+
+    // Pre-compute the cutoff timestamp in JS (avoids D1 string concat issues)
+    const cutoff = new Date(Date.now() - sinceHours * 3600_000).toISOString();
+
+    // 2. New leads by signal type (since window)
+    const newLeadsByType = await env.DB.prepare(`
+      SELECT signal_type, COUNT(*) as count,
+             AVG(COALESCE(cvss_score, impact_score, 0)) as avg_score,
+             GROUP_CONCAT(entity_name, ', ') as entities
+      FROM prospect_leads
+      WHERE created_at >= ?
+      GROUP BY signal_type
+    `).bind(cutoff).all();
+
+    // 3. Completed investigations with full detail (since window)
+    const investigations = await env.DB.prepare(`
+      SELECT
+        i.investigation_id, i.lead_id,
+        l.entity_name, l.vulnerability_id, l.severity, l.cvss_score,
+        l.signal_type, l.impact_score,
+        i.aggregate_score, i.claude_summary,
+        i.risk_score_before, i.risk_score_after, i.completed_at,
+        (SELECT json_group_object(s.service, s.score)
+         FROM investigation_steps s
+         WHERE s.investigation_id = i.investigation_id AND s.status = 'completed'
+        ) AS step_scores,
+        (SELECT json_group_array(json_object('service', s.service, 'gaps', s.gaps_json))
+         FROM investigation_steps s
+         WHERE s.investigation_id = i.investigation_id AND s.gaps_json IS NOT NULL
+        ) AS step_gaps,
+        (SELECT COUNT(*) FROM investigation_requirements r
+         WHERE r.investigation_id = i.investigation_id) AS requirement_count,
+        (SELECT COUNT(*) FROM investigation_requirements r
+         WHERE r.investigation_id = i.investigation_id AND r.resolved = 1) AS resolved_count
+      FROM investigations i
+      JOIN prospect_leads l ON i.lead_id = l.lead_id
+      WHERE i.status = 'completed'
+        AND i.completed_at >= ?
+      ORDER BY i.aggregate_score DESC
+      LIMIT 20
+    `).bind(cutoff).all();
+
+    // 4. Rule match frequency (which rules are being matched)
+    const ruleStats = await env.DB.prepare(`
+      SELECT r.rule_id, r.name, r.match_signal_types, r.priority,
+             COUNT(DISTINCT l.lead_id) as match_count
+      FROM use_case_rules r
+      LEFT JOIN prospect_leads l ON (
+        l.services_json IS NOT NULL
+        AND l.created_at >= ?
+      )
+      GROUP BY r.rule_id
+      ORDER BY match_count DESC
+    `).bind(cutoff).all();
+
+    // 5. Overall pipeline health
+    const health = await env.DB.prepare(`
+      SELECT
+        (SELECT COUNT(*) FROM prospect_leads WHERE created_at >= ?) as new_leads,
+        (SELECT COUNT(*) FROM prospect_leads WHERE investigation_status = 'investigated' AND updated_at >= ?) as investigated_leads,
+        (SELECT COUNT(*) FROM prospect_leads WHERE investigation_status IS NULL AND status = 'new') as pending_leads,
+        (SELECT COUNT(*) FROM investigations WHERE status = 'completed' AND completed_at >= ?) as completed_investigations,
+        (SELECT AVG(aggregate_score) FROM investigations WHERE status = 'completed' AND completed_at >= ?) as avg_score,
+        (SELECT COUNT(*) FROM prospect_regressions WHERE created_at >= ?) as new_regressions,
+        (SELECT COUNT(DISTINCT source_id) FROM prospect_leads WHERE created_at >= ?) as active_sources
+    `).bind(cutoff, cutoff, cutoff, cutoff, cutoff, cutoff).all();
+
+    // 6. Data gaps aggregation
+    const gapSummary: Record<string, number> = {};
+    for (const inv of (investigations.results || [])) {
+      try {
+        const summary = typeof inv.claude_summary === "string" ? JSON.parse(inv.claude_summary as string) : inv.claude_summary;
+        if (summary?.data_gaps) {
+          for (const gap of summary.data_gaps) {
+            const key = gap.type || "unknown";
+            gapSummary[key] = (gapSummary[key] || 0) + 1;
+          }
+        }
+      } catch { /* skip */ }
+    }
+
+    return okJson({
+      ok: true,
+      digest: {
+        generated_at: new Date().toISOString(),
+        window_hours: sinceHours,
+        just_investigated: investigated.length,
+        new_leads_by_type: newLeadsByType.results || [],
+        investigations: (investigations.results || []).map((inv: any) => ({
+          ...inv,
+          step_scores: typeof inv.step_scores === "string" ? JSON.parse(inv.step_scores) : inv.step_scores,
+          step_gaps: typeof inv.step_gaps === "string" ? JSON.parse(inv.step_gaps) : inv.step_gaps,
+          claude_summary: typeof inv.claude_summary === "string" ? JSON.parse(inv.claude_summary) : inv.claude_summary,
+        })),
+        rule_stats: ruleStats.results || [],
+        health: (health.results || [])[0] || {},
+        gap_summary: gapSummary,
+      },
+    }, requestId, corsHeaders(req, env));
+
+    } catch (digestErr: any) {
+      console.error("[pipeline-digest] error:", digestErr?.message || digestErr, digestErr?.stack);
+      return okJson({
+        ok: false,
+        error: "pipeline_digest_failed",
+        message: String(digestErr?.message || digestErr || "unknown"),
+      }, requestId, corsHeaders(req, env));
+    }
   }
 
   return err("not_found", "Not found", requestId, 404, corsHeaders(req, env));

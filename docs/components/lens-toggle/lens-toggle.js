@@ -128,11 +128,11 @@
     /* Stop any existing flash loop */
     stopFlashing();
 
-    /* Start repeating pulse every 2.4s (animation is 1.6s + 0.8s gap) */
+    /* Start repeating pulse every 3s (animation is 2.2s + 0.8s gap) */
     setTimeout(function () {
       doPulse();
-      _flashInterval = setInterval(doPulse, 2400);
-    }, 600);
+      _flashInterval = setInterval(doPulse, 3000);
+    }, 400);
   }
 
   /* Expose for showSection() to call */
@@ -176,6 +176,11 @@
     /* Set initial dropdown state */
     updateDropdownState(getLens());
 
+    /* On mobile, auto-show the dropdown so a single tap toggles the lens */
+    if (isTouchDevice && dropdown) {
+      dropdown.classList.add('is-open');
+    }
+
     /* ---- Hover acknowledges (stops) the flash ---- */
     if (wrapper) {
       wrapper.addEventListener('mouseenter', function () {
@@ -193,18 +198,8 @@
       e.stopPropagation();
       stopFlashing();
 
-      if (isTouchDevice) {
-        /* Mobile: first tap opens dropdown, second tap (while open) toggles lens */
-        if (dropdown && dropdown.classList.contains('is-open')) {
-          closeDropdown();
-          setLens(getLens() === 'tech' ? 'finance' : 'tech');
-        } else {
-          if (dropdown) dropdown.classList.add('is-open');
-        }
-      } else {
-        /* Desktop: direct toggle (dropdown already visible via CSS :hover) */
-        setLens(getLens() === 'tech' ? 'finance' : 'tech');
-      }
+      /* Both mobile and desktop: direct toggle */
+      setLens(getLens() === 'tech' ? 'finance' : 'tech');
     });
 
     /* ---- Click dropdown options → pick specific lens ---- */
@@ -218,13 +213,14 @@
         if (pick && !opt.classList.contains('is-current')) {
           setLens(pick);
         }
-        closeDropdown();
+        /* On desktop close the dropdown; on mobile keep it visible */
+        if (!isTouchDevice) closeDropdown();
       });
     }
 
     /* ---- Close dropdown on outside tap (mobile) ---- */
     document.addEventListener('click', function (e) {
-      if (dropdown && dropdown.classList.contains('is-open') && !wrapper.contains(e.target)) {
+      if (!isTouchDevice && dropdown && dropdown.classList.contains('is-open') && !wrapper.contains(e.target)) {
         closeDropdown();
       }
     });

@@ -20,7 +20,15 @@ import (
 	"github.com/haiphen/haiphen-cli/internal/config"
 	"github.com/haiphen/haiphen-cli/internal/server"
 	"github.com/haiphen/haiphen-cli/internal/store"
+	"github.com/haiphen/haiphen-cli/internal/tui"
 	"github.com/haiphen/haiphen-cli/internal/util"
+)
+
+// Set via ldflags at build time.
+var (
+	version = "dev"
+	commit  = "unknown"
+	date    = "unknown"
 )
 
 func main() {
@@ -33,13 +41,9 @@ func main() {
 		Short: "Haiphen local gateway + CLI",
 	}
 
-	// ✅ Print banner only when user runs plain `haiphen` (no subcommand/flags).
-	// This keeps `haiphen serve`, `haiphen status`, etc. clean.
+	// Print landing page only when user runs plain `haiphen` (no subcommand/flags).
 	if len(os.Args) == 1 {
-		util.PrintBanner(os.Stdout, util.BannerSizeWide)
-		fmt.Println()
-		fmt.Println("Haiphen local gateway + CLI")
-		fmt.Println()
+		printLandingPage()
 	}
 
 	root.PersistentFlags().StringVar(&cfg.AuthOrigin, "auth-origin", cfg.AuthOrigin, "Auth origin (e.g. https://auth.haiphen.io)")
@@ -67,9 +71,46 @@ func main() {
 	root.AddCommand(cmdSupply(cfg, st))
 	root.AddCommand(cmdProspect(cfg, st))
 	root.AddCommand(cmdBroker(cfg, st))
+	root.AddCommand(cmdSignal(cfg, st))
+	root.AddCommand(cmdVersion())
 
 	if err := root.Execute(); err != nil {
 		os.Exit(1)
+	}
+}
+
+func printLandingPage() {
+	util.PrintBanner(os.Stdout, util.BannerSizeRobot)
+	fmt.Println()
+
+	commitShort := commit
+	if len(commitShort) > 7 {
+		commitShort = commitShort[:7]
+	}
+	fmt.Printf("  %s v%s (%s)\n", tui.C(tui.Bold, "Haiphen CLI"), version, commitShort)
+	fmt.Printf("  %s\n", tui.C(tui.Gray, "Semantic Edge Protocol Intelligence Platform"))
+	fmt.Println()
+	fmt.Printf("  %s\n", tui.C(tui.Bold, "Quick Start:"))
+	fmt.Printf("    %s          %s\n", tui.C(tui.Cyan, "haiphen login"), tui.C(tui.Gray, "Log in via browser"))
+	fmt.Printf("    %s    %s\n", tui.C(tui.Cyan, "haiphen broker init"), tui.C(tui.Gray, "Connect a paper brokerage"))
+	fmt.Printf("    %s  %s\n", tui.C(tui.Cyan, "haiphen signal daemon"), tui.C(tui.Gray, "Start signal arbitrage engine"))
+	fmt.Printf("    %s         %s\n", tui.C(tui.Cyan, "haiphen status"), tui.C(tui.Gray, "Auth + entitlement status"))
+	fmt.Printf("    %s       %s\n", tui.C(tui.Cyan, "haiphen services"), tui.C(tui.Gray, "Platform health dashboard"))
+	fmt.Printf("    %s         %s\n", tui.C(tui.Cyan, "haiphen --help"), tui.C(tui.Gray, "Full command reference"))
+	fmt.Println()
+}
+
+func cmdVersion() *cobra.Command {
+	return &cobra.Command{
+		Use:   "version",
+		Short: "Print CLI version, commit, and build date",
+		Run: func(cmd *cobra.Command, args []string) {
+			commitShort := commit
+			if len(commitShort) > 7 {
+				commitShort = commitShort[:7]
+			}
+			fmt.Printf("haiphen %s (commit %s, built %s)\n", version, commitShort, date)
+		},
 	}
 }
 

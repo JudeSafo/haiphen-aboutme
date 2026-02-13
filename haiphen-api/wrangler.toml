@@ -19,7 +19,8 @@ database_id = "9a26fb67-b6e5-4d5f-8e62-3ecfde5ee8c2"
 [durable_objects]
 bindings = [
   { name = "RATE_LIMITER", class_name = "RateLimiterDO" },
-  { name = "QUOTA_DO", class_name = "QuotaDO" }
+  { name = "QUOTA_DO", class_name = "QuotaDO" },
+  { name = "SIGNAL_FEED", class_name = "SignalFeedDO" }
 ]
 
 [[migrations]]
@@ -30,6 +31,10 @@ new_classes = ["RateLimiterDO"]
 tag = "v2"
 new_classes = ["QuotaDO"]
 
+[[migrations]]
+tag = "v3"
+new_classes = ["SignalFeedDO"]
+
 [[kv_namespaces]]
 binding = "REVOKE_KV"
 id = "7ef6277bfea34ec18fb4b52ceb79aba3"
@@ -37,6 +42,31 @@ id = "7ef6277bfea34ec18fb4b52ceb79aba3"
 [[kv_namespaces]]
 binding = "CACHE_KV"
 id = "173c29cd36d0429fa9f7556c5cba334b"
+
+# Service bindings for Worker-to-Worker calls (same-zone fetch bypasses Workers)
+[[services]]
+binding = "SVC_SECURE"
+service = "haiphen-secure"
+
+[[services]]
+binding = "SVC_NETWORK"
+service = "haiphen-network"
+
+[[services]]
+binding = "SVC_GRAPH"
+service = "haiphen-graph"
+
+[[services]]
+binding = "SVC_RISK"
+service = "haiphen-risk"
+
+[[services]]
+binding = "SVC_CAUSAL"
+service = "haiphen-causal"
+
+[[services]]
+binding = "SVC_SUPPLY"
+service = "haiphen-supply"
 
 # Secrets (set via `npx wrangler secret put <NAME>`):
 #   JWT_SECRET, API_KEY_PEPPER, ADMIN_TOKEN, INTERNAL_TOKEN, CREDENTIAL_KEY,
@@ -52,3 +82,6 @@ ONBOARDING_SUPPORT_EMAIL = "pi@haiphenai.com"
 ONBOARDING_CLI_DOCS_URL = "https://haiphen.io/#docs"
 ONBOARDING_API_BASE_URL = "https://api.haiphen.io"
 ONBOARDING_WEBSOCKET_URL = "wss://api.haiphen.io/v1/telemetry/stream"
+# TEMPORARY: tokens as vars to bypass secret binding issue — move back to secrets after fix
+INTERNAL_TOKEN = "db5a17c4b3ce9a5632af4619fdcb1f2c62d61ef96718e6199cf51544919e98fa"
+SIGNING_SECRET = "c46d900392c12feb725bc9e18c423ba1a8ef3ce67367d800d39b439fb3e436efb36aaa3ad60ed36cbeb3a9d61a4d2b3fee212ecb59b3d7d80839fb76ac86c521"

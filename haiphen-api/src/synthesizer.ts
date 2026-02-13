@@ -16,7 +16,10 @@ export type ThreatPrimitive =
   | "execution_disruption"
   | "settlement_failure"
   | "supply_dependency"
-  | "cascade_propagation";
+  | "cascade_propagation"
+  | "regulatory_gap"
+  | "technology_obsolescence"
+  | "operational_fragility";
 
 export type ImpactPrimitive =
   | "financial_loss"
@@ -100,6 +103,21 @@ const THREAT_CLASSIFIERS: ThreatClassifier[] = [
     patterns: [/\bcascade/i, /\bpropagat/i, /\bdownstream/i, /\bmulti.?system/i, /\bchain.?reaction/i, /\bdomino/i, /\bsystemic/i],
     serviceAffinity: ["causal", "graph"],
   },
+  {
+    primitive: "regulatory_gap",
+    patterns: [/\bSEC\b/, /\bfiling/i, /\benforcement/i, /\bcompliance/i, /\bfine\b/i, /\bpenalt/i, /\b8-K\b/, /\bregulat/i],
+    serviceAffinity: ["risk", "causal"],
+  },
+  {
+    primitive: "technology_obsolescence",
+    patterns: [/\blegacy/i, /\bTLS 1\.[01]/, /\bdeprecated/i, /\bend.of.life/i, /\bunsupported/i, /\bexpir/i, /\boutdated/i],
+    serviceAffinity: ["secure", "network"],
+  },
+  {
+    primitive: "operational_fragility",
+    patterns: [/\boutage/i, /\bdowntime/i, /\blatency/i, /\bresponse.time/i, /\bfailover/i, /\bsingle.point/i, /\btimeout/i],
+    serviceAffinity: ["network", "causal"],
+  },
 ];
 
 // ---------------------------------------------------------------------------
@@ -114,6 +132,9 @@ const THREAT_IMPACT_MATRIX: Record<ThreatPrimitive, Record<ImpactPrimitive, numb
   settlement_failure:     { financial_loss: 0.8, regulatory_exposure: 0.9, client_data_breach: 0.2, operational_disruption: 0.5, reputational_damage: 0.8 },
   supply_dependency:      { financial_loss: 0.5, regulatory_exposure: 0.3, client_data_breach: 0.2, operational_disruption: 0.9, reputational_damage: 0.4 },
   cascade_propagation:    { financial_loss: 0.6, regulatory_exposure: 0.4, client_data_breach: 0.3, operational_disruption: 0.9, reputational_damage: 0.7 },
+  regulatory_gap:         { financial_loss: 0.7, regulatory_exposure: 1.0, client_data_breach: 0.2, operational_disruption: 0.4, reputational_damage: 0.8 },
+  technology_obsolescence:{ financial_loss: 0.5, regulatory_exposure: 0.6, client_data_breach: 0.4, operational_disruption: 0.7, reputational_damage: 0.3 },
+  operational_fragility:  { financial_loss: 0.8, regulatory_exposure: 0.3, client_data_breach: 0.1, operational_disruption: 1.0, reputational_damage: 0.6 },
 };
 
 // ---------------------------------------------------------------------------
@@ -140,6 +161,9 @@ const RECOMMENDATION_TEMPLATES: Record<ThreatPrimitive, string> = {
   settlement_failure: "Verify settlement cycle compliance (T+1/T+2), reconcile positions pre- and post-settlement, and escalate to clearing ops.",
   supply_dependency: "Map single-source dependencies, establish vendor SLAs with penalty clauses, and identify backup providers.",
   cascade_propagation: "Implement blast-radius isolation between systems, add circuit breakers at service boundaries, and run cascade failure simulations.",
+  regulatory_gap: "Review SEC filing obligations, engage compliance counsel, and implement automated regulatory monitoring for material events.",
+  technology_obsolescence: "Upgrade TLS to 1.3, rotate expiring certificates, replace deprecated dependencies, and establish a technology lifecycle management program.",
+  operational_fragility: "Implement redundant infrastructure paths, add health-check monitoring with automated failover, and conduct chaos engineering exercises.",
 };
 
 // ---------------------------------------------------------------------------

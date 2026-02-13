@@ -24,6 +24,19 @@ export interface ProspectSource {
   config_json: string | null;
 }
 
+export interface ProspectTarget {
+  target_id: string;
+  name: string;
+  ticker: string | null;
+  cik: string | null;
+  domains: string | null;   // JSON array
+  industry: string | null;
+  sector: string | null;
+  keywords: string | null;  // JSON array
+  products: string | null;  // JSON array
+  status: string;
+}
+
 export interface ProspectLead {
   lead_id: string;
   source_id: string;
@@ -39,6 +52,9 @@ export interface ProspectLead {
   raw_data_json?: string | null;
   services_json?: string | null;
   status?: string;
+  signal_type?: string;
+  impact_score?: number | null;
+  target_id?: string | null;
 }
 
 export interface ProspectAnalysis {
@@ -163,8 +179,8 @@ export async function writeLead(lead: ProspectLead): Promise<boolean> {
       `INSERT INTO prospect_leads (
         lead_id, source_id, entity_type, entity_name, entity_domain,
         industry, country, vulnerability_id, severity, cvss_score,
-        summary, raw_data_json, services_json, status
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'new')
+        summary, raw_data_json, services_json, status, signal_type, impact_score, target_id
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'new', ?, ?, ?)
       ON CONFLICT (source_id, vulnerability_id, entity_name) DO NOTHING`,
       [
         lead.lead_id,
@@ -180,6 +196,9 @@ export async function writeLead(lead: ProspectLead): Promise<boolean> {
         lead.summary,
         lead.raw_data_json ?? null,
         lead.services_json ?? null,
+        lead.signal_type ?? "vulnerability",
+        lead.impact_score ?? null,
+        lead.target_id ?? null,
       ],
     );
     return true;
@@ -244,4 +263,30 @@ export async function updateSourceCursor(
      WHERE source_id = ?`,
     [cursor, sourceId],
   );
+}
+
+export async function readTarget(targetId: string): Promise<ProspectTarget | null> {
+  const rows = await queryD1(
+    `SELECT * FROM prospect_targets WHERE target_id = ? AND status = 'active'`,
+    [targetId],
+  );
+  return (rows[0] as unknown as ProspectTarget) ?? null;
+}
+
+export async function readTargets(filter?: { status?: string; sector?: string; limit?: number }): Promise<ProspectTarget[]> {
+  const clauses: string[] = [];
+  const params: unknown[] = [];
+
+  if (filter?.status) { clauses.push("status = ?"); params.push(filter.status); }
+  else { clauses.push("status = 'active'"); }
+  if (filter?.sector) { clauses.push("sector = ?"); params.push(filter.sector); }
+
+  const where = clauses.length > 0 ? `WHERE ${clauses.join(" AND ")}` : "";
+  const limit = filter?.limit ?? 100;
+
+  const rows = await queryD1(
+    `SELECT * FROM prospect_targets ${where} ORDER BY name LIMIT ?`,
+    [...params, limit],
+  );
+  return rows as unknown as ProspectTarget[];
 }

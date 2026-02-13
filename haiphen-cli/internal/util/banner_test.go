@@ -39,6 +39,21 @@ func TestPrintBanner_DefaultIsWide(t *testing.T) {
 	}
 }
 
+func TestPrintBanner_Robot(t *testing.T) {
+	var buf bytes.Buffer
+	PrintBanner(&buf, BannerSizeRobot)
+	out := buf.String()
+	if strings.TrimSpace(out) == "" {
+		t.Fatal("Robot banner should not be empty")
+	}
+	if !strings.Contains(out, "◉") {
+		t.Error("Robot banner should contain eye character ◉")
+	}
+	if !strings.Contains(out, "H") {
+		t.Error("Robot banner should contain H character")
+	}
+}
+
 func TestPrintBanner_NoLeadingTrailingNewlines(t *testing.T) {
 	var buf bytes.Buffer
 	PrintBanner(&buf, BannerSizeWide)

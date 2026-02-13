@@ -33,6 +33,91 @@
     });
   }
 
+  /* ---- Typewriter hint (long-hover easter egg) ---- */
+
+  const HINT_LINES = {
+    Trades:   'Live options flow, volatility skew, and momentum signals \u2014 refreshed every 30 minutes.',
+    OnePager: 'Six autonomous services. One pipeline. Every threat vector from CVE to counterparty.',
+    Docs:     'One API key unlocks trade telemetry, risk scores, and infrastructure intelligence.',
+    Services: 'Free tier included. Scale to enterprise with usage-based pricing.',
+  };
+
+  const LONG_HOVER_MS  = 1800;   /* cursor must rest this long before typing starts */
+  const CHAR_DELAY_MS  = 38;     /* milliseconds between each character */
+
+  let _twTimer   = null;   /* setTimeout id for long-hover detection */
+  let _twRaf     = null;   /* requestAnimationFrame / setTimeout chain for typing */
+  let _twEl      = null;   /* the .section-menu__hint element */
+
+  function ensureHintEl(root) {
+    if (_twEl) return _twEl;
+    _twEl = document.createElement('span');
+    _twEl.className = 'section-menu__hint';
+    _twEl.setAttribute('aria-hidden', 'true');
+    /* Append inside the mount div (root) so the absolute positioning
+       is relative to the section-menu-wrap container, not the page. */
+    root.appendChild(_twEl);
+    return _twEl;
+  }
+
+  function clearTypewriter() {
+    if (_twTimer) { clearTimeout(_twTimer); _twTimer = null; }
+    if (_twRaf)   { clearTimeout(_twRaf);   _twRaf = null; }
+    if (_twEl) {
+      _twEl.classList.remove('is-typing');
+      _twEl.textContent = '';
+    }
+  }
+
+  function startTypewriter(root, text) {
+    const el = ensureHintEl(root);
+    el.textContent = '';
+    el.classList.add('is-typing');
+
+    /* Add blinking cursor span */
+    const cursor = document.createElement('span');
+    cursor.className = 'tw-cursor';
+
+    let idx = 0;
+    function tick() {
+      if (idx <= text.length) {
+        el.textContent = text.slice(0, idx);
+        el.appendChild(cursor);
+        idx++;
+        _twRaf = setTimeout(tick, CHAR_DELAY_MS);
+      }
+      /* when done, cursor keeps blinking until mouse leaves */
+    }
+    tick();
+  }
+
+  function wireHints(root) {
+    /* Only on devices with fine pointer (desktop) — skip on touch */
+    if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+
+    /* Make the mount div position:relative for absolute hint placement */
+    root.classList.add('section-menu-wrap');
+
+    root.querySelectorAll('[data-section]').forEach(function (btn) {
+      btn.addEventListener('mouseenter', function () {
+        const section = btn.getAttribute('data-section');
+        const line = HINT_LINES[section];
+        if (!line) return;
+
+        clearTypewriter();
+        _twTimer = setTimeout(function () {
+          startTypewriter(root, line);
+        }, LONG_HOVER_MS);
+      });
+
+      btn.addEventListener('mouseleave', function () {
+        clearTypewriter();
+      });
+    });
+  }
+
+  /* ---- Core wiring ---- */
+
   function wire(root) {
     const SECTION_HASH = {
       Trades: 'fintech',
@@ -58,6 +143,9 @@
       const section = btn.getAttribute('data-section');
       if (!section) return;
 
+      /* Clear any in-progress typewriter on click */
+      clearTypewriter();
+
       // Set hash first (so sharing / history is correct)
       setHash(section);
 
@@ -68,6 +156,9 @@
         setActive(root, section);
       }
     });
+
+    /* Wire the long-hover typewriter hints */
+    wireHints(root);
   }
 
   async function loadSectionMenu() {

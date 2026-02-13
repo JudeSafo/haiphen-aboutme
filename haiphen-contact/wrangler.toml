@@ -55,6 +55,10 @@ USAGE_ALERT_TEMPLATE_ID = "d-88f4602240c34b938a8229a875b45e13"
 # Subscription change
 SUBSCRIPTION_CHANGE_TEMPLATE_ID = "d-5d33c72cf8be4fcf90a6102f7c3f5cf9"
 USAGE_FROM_NAME = "Haiphen"
+# TEMPORARY: secrets as vars to bypass wrangler v4.54+ bug (secret put stores but runtime sees empty string)
+# Move back to `wrangler secret put` once bug is fixed. Keep .gitignore'd or rotate after fix.
+DIGEST_HMAC_SECRET = "909f2e44a985fdde31319667c3a9c4d629742630ec25c4c7a82c40a6b1b91fdf"
+INTERNAL_TOKEN = "db5a17c4b3ce9a5632af4619fdcb1f2c62d61ef96718e6199cf51544919e98fa"
 
 # If you add the D1 idempotency table for email events
 [[d1_databases]]
@@ -76,6 +80,7 @@ id = "7ef6277bfea34ec18fb4b52ceb79aba3"
 preview_id = "d855f84fde7f471cb7d91d632868107a"
 
 [triggers]
+# 06:00 UTC = 12am CT — prospect pipeline digest (daily, after 3am crawler)
 # 13:00 UTC = 7am Chicago (CST) — morning daily digest
 # 22:00 UTC = 5pm ET — post-market trading report email
-crons = ["0 13 * * 1-5", "0 22 * * 1-5"]
+crons = ["0 6 * * *", "0 13 * * 1-5", "0 22 * * 1-5"]

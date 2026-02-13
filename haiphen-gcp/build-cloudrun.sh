@@ -58,4 +58,13 @@ fi
 echo "    Compiling TypeScript..."
 (cd "$CR_DIR" && npx tsc)
 
+# Copy non-TS worker files (e.g. auth's .js sources) that tsc doesn't process
+if [ "$SERVICE" = "auth" ]; then
+  echo "    Copying JS worker files to dist/worker/..."
+  mkdir -p "$CR_DIR/dist/worker"
+  for f in "$SRC_DIR/worker"/*.js; do
+    [ -f "$f" ] && cp "$f" "$CR_DIR/dist/worker/"
+  done
+fi
+
 echo "==> Built haiphen-${SERVICE} Cloud Run → ${CR_DIR}/dist/"

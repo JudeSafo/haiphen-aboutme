@@ -74,6 +74,9 @@ export interface Env {
   // Prospect outreach HMAC (shared with haiphen-api INTERNAL_TOKEN)
   PROSPECT_HMAC_SECRET?: string;
 
+  // Internal API token for calling haiphen-api internal endpoints
+  INTERNAL_TOKEN?: string;
+
   // Digest template + config
   SENDGRID_TEMPLATE_ID_DAILY?: string; // add as [vars]
   DAILY_FROM_NAME?: string;
@@ -359,6 +362,8 @@ export default {
         res = await handleUsageAlert(request, env);
       } else if (request.method === "POST" && path === "/api/prospect/outreach/send") {
         res = await handleProspectOutreachSend(request, env);
+      } else if (request.method === "POST" && path === "/api/prospect/digest/send") {
+        res = await handleProspectDigestSend(request, env);
       } else if (request.method === "POST" && path === "/api/trading-report/send") {
         res = await handleTradingReportSend(request, env);
       } else {
@@ -392,7 +397,15 @@ export default {
         const when = new Date(event.scheduledTime);
         const hour = when.getUTCHours();
 
-        if (hour === 13) {
+        if (hour === 6) {
+          // Prospect pipeline digest (6am UTC daily — runs after 3am crawler)
+          try {
+            const out = await runProspectPipelineDigest(env, when);
+            console.log("[prospect-digest] scheduled ok", out, { build: BUILD_ID });
+          } catch (err) {
+            console.error("[prospect-digest] scheduled failed", err, { build: BUILD_ID });
+          }
+        } else if (hour === 13) {
           // Morning daily digest (7am CT)
           try {
             const out = await runDailyDigest(env, when);
@@ -1970,6 +1983,7 @@ type TradesJson = {
 
 type AuthedDigestPayload = {
   send_date?: string; // optional override, YYYY-MM-DD
+  test_email?: string; // if set, send only to this email (bypasses idempotency)
 };
 
 type DigestSubscriber = {
@@ -2056,8 +2070,8 @@ function buildScreenshotUrl(trades: TradesJson): string {
   return `https://haiphen.io/assets/trades/alpaca_screenshot.png`;
 }
 
-/** Rotating CTA — one feature spotlight per weekday. */
-const DIGEST_CTAS: Array<{
+/** Static fallback CTAs — used when no investigations are available. */
+const DIGEST_CTAS_FALLBACK: Array<{
   feature: string;
   scenario: string;
   description: string;
@@ -2065,15 +2079,15 @@ const DIGEST_CTAS: Array<{
   cta_text: string;
   cta_url: string;
 }> = [
-  { // Monday
-    feature: "Prospect Investigation",
-    scenario: "A critical settlement gateway vulnerability just hit the NVD.",
-    description: "Haiphen's 6-engine investigation pipeline scored 3 fintech leads at 85+ severity overnight — and auto-drafted outreach before the market opened.",
-    demo_url: "https://haiphen.io/assets/demos/cli-prospect-investigate.gif",
-    cta_text: "See how investigations work",
-    cta_url: "https://haiphen.io/#getting-started:prospect-investigate",
+  {
+    feature: "Prospect Pipeline",
+    scenario: "6 crawlers run overnight: CVEs, SEC filings, TLS scans, outage feeds.",
+    description: "Haiphen's prospect pipeline sources leads from NVD, EDGAR, infrastructure scans, and incident feeds — then auto-investigates and drafts outreach before you open your laptop.",
+    demo_url: "https://haiphen.io/assets/demos/cli-prospect-pipeline.gif",
+    cta_text: "See the pipeline in action",
+    cta_url: "https://haiphen.io/#getting-started:prospect-pipeline",
   },
-  { // Tuesday
+  {
     feature: "Risk Simulation",
     scenario: "Your OT gateway went offline during peak trading hours.",
     description: "Run a Monte Carlo simulation to estimate PnL impact across 10,000 scenarios — Haiphen quantified a $340K tail risk in under 2 seconds.",
@@ -2081,7 +2095,7 @@ const DIGEST_CTAS: Array<{
     cta_text: "Try risk simulation",
     cta_url: "https://haiphen.io/#getting-started:svc-risk",
   },
-  { // Wednesday
+  {
     feature: "Supply Chain Intelligence",
     scenario: "A critical vendor just disclosed CVE-2026-1847 in their edge firmware.",
     description: "Haiphen's supply chain scorer flagged 4 downstream counterparties with exposure, weighted by contract value and data dependency depth.",
@@ -2089,7 +2103,7 @@ const DIGEST_CTAS: Array<{
     cta_text: "Explore supply chain analysis",
     cta_url: "https://haiphen.io/#getting-started:svc-supply",
   },
-  { // Thursday
+  {
     feature: "Causal Inference",
     scenario: "Three seemingly unrelated trade failures hit your book this morning.",
     description: "Haiphen's DAG builder traced all three to a single misconfigured load balancer — root cause identified in 800ms across 12 upstream services.",
@@ -2097,7 +2111,7 @@ const DIGEST_CTAS: Array<{
     cta_text: "See causal analysis in action",
     cta_url: "https://haiphen.io/#getting-started:svc-causal",
   },
-  { // Friday
+  {
     feature: "Network Protocol Analysis",
     scenario: "Unusual latency spikes are appearing on your Modbus/TCP edge nodes.",
     description: "Haiphen decoded 14,000 protocol frames and isolated a rogue polling interval — fix deployed before it cascaded to the order router.",
@@ -2107,10 +2121,90 @@ const DIGEST_CTAS: Array<{
   },
 ];
 
-function pickCta(when: Date) {
-  // Mon=0 .. Fri=4 (getUTCDay: Mon=1..Fri=5)
+const SIGNAL_TYPE_LABELS: Record<string, string> = {
+  vulnerability: "Security Vulnerability",
+  regulatory: "Regulatory Filing",
+  performance: "Infrastructure Performance",
+  incident: "Operational Incident",
+};
+
+const SERVICE_FEATURE_MAP: Record<string, { feature: string; cta_url: string }> = {
+  secure: { feature: "Security Analysis", cta_url: "https://haiphen.io/#getting-started:svc-secure" },
+  network: { feature: "Network Analysis", cta_url: "https://haiphen.io/#getting-started:svc-network" },
+  causal: { feature: "Causal Inference", cta_url: "https://haiphen.io/#getting-started:svc-causal" },
+  risk: { feature: "Risk Simulation", cta_url: "https://haiphen.io/#getting-started:svc-risk" },
+  graph: { feature: "Graph Intelligence", cta_url: "https://haiphen.io/#getting-started:svc-graph" },
+  supply: { feature: "Supply Chain Intelligence", cta_url: "https://haiphen.io/#getting-started:svc-supply" },
+};
+
+/**
+ * Build a dynamic Feature Spotlight from the top investigation.
+ * Falls back to static rotating CTA if no investigations available.
+ */
+function buildSpotlight(investigations: InvestigationDigestRow[], when: Date): {
+  feature: string;
+  scenario: string;
+  description: string;
+  demo_url: string;
+  cta_text: string;
+  cta_url: string;
+} {
+  // If we have completed investigations, build a dynamic spotlight from the top one
+  if (investigations.length > 0) {
+    const top = investigations[0];
+    const sigLabel = SIGNAL_TYPE_LABELS[top.signal_type ?? "vulnerability"] ?? "Intelligence";
+
+    // Find the highest-scoring service to determine the feature name
+    let topService = "risk";
+    let topScore = 0;
+    if (top.step_scores) {
+      try {
+        const scores: Record<string, number> = JSON.parse(top.step_scores);
+        for (const [svc, sc] of Object.entries(scores)) {
+          if (sc > topScore) { topScore = sc; topService = svc; }
+        }
+      } catch { /* ignore */ }
+    }
+
+    const svcInfo = SERVICE_FEATURE_MAP[topService] ?? SERVICE_FEATURE_MAP.risk;
+
+    // Build scenario from lead data
+    const vulnLabel = top.vulnerability_id ?? "signal detected";
+    const sevLabel = (top.severity ?? "MEDIUM").toUpperCase();
+    const scenario = `${sevLabel} ${sigLabel.toLowerCase()} identified at ${top.entity_name}: ${vulnLabel}.`;
+
+    // Build description from synthesis summary
+    let description = `Haiphen's 6-engine pipeline scored ${top.entity_name} at ${top.aggregate_score?.toFixed(0) ?? "—"} aggregate risk.`;
+    if (top.claude_summary) {
+      try {
+        const parsed = JSON.parse(top.claude_summary);
+        if (parsed.summary) {
+          const snippet = parsed.summary.length > 180 ? parsed.summary.slice(0, 177) + "..." : parsed.summary;
+          description = snippet;
+        }
+      } catch { /* fallback to default */ }
+    }
+
+    // If re-investigation showed risk reduction, mention it
+    if (top.risk_score_before != null && top.risk_score_after != null) {
+      const delta = top.risk_score_before - top.risk_score_after;
+      const pct = top.risk_score_before > 0 ? ((delta / top.risk_score_before) * 100).toFixed(0) : "0";
+      description += ` Risk reduced ${pct}% after remediation.`;
+    }
+
+    return {
+      feature: `${svcInfo.feature}: ${top.entity_name}`,
+      scenario,
+      description,
+      demo_url: "https://haiphen.io/assets/demos/cli-prospect-pipeline-poster.png",
+      cta_text: `See ${topService} analysis in action`,
+      cta_url: svcInfo.cta_url,
+    };
+  }
+
+  // Fallback: static rotating CTA
   const dayIdx = Math.max(0, when.getUTCDay() - 1);
-  return DIGEST_CTAS[dayIdx % DIGEST_CTAS.length];
+  return DIGEST_CTAS_FALLBACK[dayIdx % DIGEST_CTAS_FALLBACK.length];
 }
 
 function safeParseJson<T>(s: string | null): T | null {
@@ -2118,13 +2212,14 @@ function safeParseJson<T>(s: string | null): T | null {
   try { return JSON.parse(s) as T; } catch { return null; }
 }
 
-async function fetchTradesJson(env: Env): Promise<TradesJson> {
+async function fetchTradesJson(env: Env, targetDate?: string): Promise<TradesJson> {
   // Try live API first; fall back to static file if API is down or stale
   const staticUrl = (env.TRADES_JSON_URL || "https://haiphen.io/assets/trades/trades.json").trim();
+  const dateQs = targetDate ? `?date=${targetDate}` : "";
 
   let apiData: TradesJson | null = null;
   try {
-    const apiResp = await fetch("https://api.haiphen.io/v1/trades/latest", { cf: { cacheTtl: 60, cacheEverything: true } as any });
+    const apiResp = await fetch(`https://api.haiphen.io/v1/trades/latest${dateQs}`, { cf: { cacheTtl: 60, cacheEverything: true } as any });
     if (apiResp.ok) apiData = (await apiResp.json()) as TradesJson;
   } catch (_) { /* fall through */ }
 
@@ -2170,7 +2265,8 @@ async function handleDigestSend(request: Request, env: Env): Promise<Response> {
     if (Number.isFinite(cand.getTime())) when = cand;
   }
 
-  const out = await runDailyDigest(env, when);
+  const testEmail = body?.test_email?.trim() || undefined;
+  const out = await runDailyDigest(env, when, testEmail);
   return json({ ok: true, ...out }, 200);
 }
 
@@ -2213,6 +2309,7 @@ type InvestigationDigestRow = {
   vulnerability_id: string | null;
   severity: string | null;
   cvss_score: number | null;
+  signal_type: string | null;
   aggregate_score: number | null;
   claude_summary: string | null;
   risk_score_before: number | null;
@@ -2229,6 +2326,7 @@ async function fetchDigestInvestigations(env: Env): Promise<InvestigationDigestR
       SELECT
         i.investigation_id, i.lead_id,
         l.entity_name, l.vulnerability_id, l.severity, l.cvss_score,
+        l.signal_type,
         i.aggregate_score, i.claude_summary,
         i.risk_score_before, i.risk_score_after, i.completed_at,
         (SELECT json_group_object(s.service, s.score)
@@ -2321,11 +2419,15 @@ function renderProspectSection(rows: InvestigationDigestRow[]): string {
     }
 
     const vulnLabel = r.vulnerability_id ? ` \u00B7 ${escapeHtml(r.vulnerability_id)}` : "";
+    const sigType = r.signal_type ?? "vulnerability";
+    const sigLabel: Record<string, string> = { vulnerability: "vuln", regulatory: "reg", performance: "perf", incident: "incident" };
+    const sigColor: Record<string, string> = { vulnerability: "#dc2626", regulatory: "#7c3aed", performance: "#0ea5e9", incident: "#ea580c" };
+    const sigChip = `<span style="display:inline-block;padding:1px 6px;border-radius:3px;font-size:10px;color:#fff;background:${sigColor[sigType] ?? "#6b7280"};margin-left:6px;">${sigLabel[sigType] ?? sigType}</span>`;
 
     return `
     <div style="background:#fff;border-radius:8px;padding:16px;margin-bottom:12px;border:1px solid #e5e7eb;">
       <div style="display:flex;justify-content:space-between;align-items:center;">
-        <div style="font-size:14px;font-weight:600;color:#111827;">${escapeHtml(r.entity_name)}${vulnLabel}</div>
+        <div style="font-size:14px;font-weight:600;color:#111827;">${escapeHtml(r.entity_name)}${vulnLabel}${sigChip}</div>
         <div style="display:flex;gap:8px;align-items:center;">
           <span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;color:#fff;background:${sevCol};">${sev}</span>
           <span style="font-size:18px;font-weight:700;color:${aggCol};">${agg}</span>
@@ -2347,7 +2449,157 @@ function renderProspectSection(rows: InvestigationDigestRow[]): string {
   </div>`;
 }
 
-async function runDailyDigest(env: Env, when: Date): Promise<{
+/**
+ * Render the daily digest email as raw HTML (replaces SendGrid dynamic template).
+ * All sections are rendered server-side so we don't depend on an external template.
+ */
+function renderDailyDigestHtml(data: {
+  name: string;
+  headline: string;
+  date_label: string;
+  summary?: string;
+  kpis?: Array<{ kpi: string; value: string }>;
+  entities?: Array<{ symbol: string; contract_name: string; contract_qs: string }>;
+  entities_fallback?: Array<{ symbol: string; contract_name: string }>;
+  cta?: { feature: string; scenario: string; description: string; demo_url: string; cta_text: string; cta_url: string };
+  prospect_section?: string;
+  subscriptions?: Array<{ label: string; active: boolean }>;
+  manage_url: string;
+  updated_at?: string;
+  unsubscribe?: string;
+}): string {
+  const esc = escapeHtml;
+
+  // KPIs table rows
+  let kpisHtml = "";
+  if (data.kpis?.length) {
+    const rows = data.kpis.map((k, i) => {
+      const border = i > 0 ? "border-top:1px solid #eef2f7;" : "";
+      return `<tr><td style="padding:7px 0;font-size:13px;color:#667;${border}">${esc(k.kpi)}</td><td style="padding:7px 0;font-size:13px;color:#2c3e50;font-weight:800;text-align:right;${border}">${esc(k.value)}</td></tr>`;
+    }).join("");
+    kpisHtml = `<div style="background:#fbfcfe;border:1px solid #e6ecf3;border-radius:12px;padding:14px;margin-bottom:20px;">
+      <div style="font-size:13px;font-weight:900;color:#2c3e50;margin-bottom:10px;">Key Metrics</div>
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;">${rows}</table>
+    </div>`;
+  }
+
+  // Entities (portfolio watchlist)
+  let entitiesHtml = "";
+  if (data.entities?.length) {
+    const rows = data.entities.map((e, i) => {
+      const border = i > 0 ? "border-top:1px solid #eef2f7;" : "";
+      return `<tr><td style="padding:7px 0;font-size:13px;color:#2c3e50;font-weight:800;width:20%;${border}">${esc(e.symbol)}</td><td style="padding:7px 0;font-size:12px;color:#667;${border}"><a href="${esc(data.manage_url)}?contract=${esc(e.contract_qs)}" style="color:#5A9BD4;text-decoration:none;font-weight:700;">${esc(e.contract_name)}</a></td></tr>`;
+    }).join("");
+    entitiesHtml = `<div style="background:#fbfcfe;border:1px solid #e6ecf3;border-radius:12px;padding:14px;margin-bottom:20px;">
+      <div style="font-size:13px;font-weight:900;color:#2c3e50;margin-bottom:10px;">Portfolio watchlist</div>
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;">${rows}</table>
+    </div>`;
+  } else if (data.entities_fallback?.length) {
+    const rows = data.entities_fallback.map((e, i) => {
+      const border = i > 0 ? "border-top:1px solid #eef2f7;" : "";
+      return `<tr><td style="padding:7px 0;font-size:13px;color:#2c3e50;font-weight:800;width:20%;${border}">${esc(e.symbol)}</td><td style="padding:7px 0;font-size:12px;color:#667;${border}">${esc(e.contract_name)}</td></tr>`;
+    }).join("");
+    entitiesHtml = `<div style="background:#fbfcfe;border:1px solid #e6ecf3;border-radius:12px;padding:14px;margin-bottom:20px;">
+      <div style="font-size:13px;font-weight:900;color:#2c3e50;margin-bottom:6px;">Portfolio watchlist</div>
+      <div style="font-size:12px;color:#778;line-height:1.4;margin-bottom:10px;">No active positions found. Here are some popular contracts to watch:</div>
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;">${rows}</table>
+    </div>`;
+  }
+
+  // Feature Spotlight
+  let ctaHtml = "";
+  if (data.cta) {
+    const c = data.cta;
+    const imgBlock = c.demo_url
+      ? `<div style="text-align:center;margin-bottom:12px;"><img src="${esc(c.demo_url)}" alt="${esc(c.feature)} demo" width="540" style="max-width:100%;height:auto;border-radius:8px;border:1px solid #e6ecf3;" /></div>`
+      : "";
+    ctaHtml = `<div style="background:#fbfcfe;border:1px solid #e6ecf3;border-radius:12px;padding:14px;margin-bottom:20px;">
+      <div style="font-size:13px;font-weight:900;color:#2c3e50;margin-bottom:10px;">Feature Spotlight</div>
+      <div style="font-size:15px;font-weight:800;color:#5A9BD4;margin-bottom:6px;">${esc(c.feature)}</div>
+      <p style="margin:0 0 10px;font-size:13px;color:#556;line-height:1.5;font-style:italic;">&ldquo;${esc(c.scenario)}&rdquo;</p>
+      ${imgBlock}
+      <p style="margin:0 0 14px;font-size:13px;color:#556;line-height:1.55;">${esc(c.description)}</p>
+      <div style="text-align:center;"><a href="${esc(c.cta_url)}" style="display:inline-block;padding:10px 24px;background:#5A9BD4;color:#ffffff;font-size:13px;font-weight:700;text-decoration:none;border-radius:8px;">${esc(c.cta_text)} &rarr;</a></div>
+    </div>`;
+  }
+
+  // Subscriptions table
+  let subsHtml = "";
+  if (data.subscriptions?.length) {
+    const rows = data.subscriptions.map(s => {
+      const badge = s.active
+        ? `<span style="color:#10B981;">Subscribed</span>`
+        : `<span style="color:#94a3b8;">Unsubscribed</span>`;
+      return `<tr><td style="padding:7px 8px;border-top:1px solid #eef2f7;font-size:13px;color:#2c3e50;font-weight:700;">${esc(s.label)}</td><td align="right" style="padding:7px 8px;border-top:1px solid #eef2f7;font-size:12px;font-weight:900;">${badge}</td></tr>`;
+    }).join("");
+    subsHtml = `<div style="background:#fbfcfe;border:1px solid #e6ecf3;border-radius:12px;padding:14px;margin-bottom:20px;">
+      <div style="font-size:13px;font-weight:900;color:#2c3e50;margin-bottom:6px;">Your email subscriptions</div>
+      <div style="font-size:12px;color:#778;line-height:1.55;margin-bottom:10px;">Manage these from your <a href="${esc(data.manage_url)}#profile/settings" style="color:#5A9BD4;text-decoration:none;font-weight:700;">profile settings</a>.</div>
+      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;">${rows}</table>
+    </div>`;
+  }
+
+  // Source / updated_at
+  const sourceHtml = data.updated_at ? `<p style="margin:0;font-size:11px;color:#778;line-height:1.4;">Data as of ${esc(data.updated_at)}</p>` : "";
+
+  const unsubLink = data.unsubscribe ?? `${data.manage_url}#profile/settings`;
+
+  return `<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Daily Digest - Haiphen</title>
+  <!--[if mso]><noscript><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml></noscript><![endif]-->
+</head>
+<body style="margin:0;padding:0;background-color:#f6f8fb;font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;">
+  <div style="display:none;font-size:1px;color:#f6f8fb;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;">${esc(data.headline)} — ${esc(data.date_label)}</div>
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#f6f8fb;">
+    <tr><td align="center" style="padding:32px 16px;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" style="max-width:600px;width:100%;background-color:#ffffff;border:1px solid #e6ecf3;border-radius:16px;overflow:hidden;">
+        <tr><td style="padding:22px 28px 14px;">
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+            <tr>
+              <td align="left" style="vertical-align:middle;">
+                <div style="font-weight:900;font-size:18px;color:#2c3e50;line-height:1.3;">Haiphen</div>
+                <div style="font-size:12px;color:#667;line-height:1.4;margin-top:2px;">Signals intelligence &bull; automated trading telemetry &bull; API Everything &hearts;</div>
+              </td>
+              <td align="right" style="vertical-align:middle;">
+                <a href="https://haiphen.io" style="font-size:12px;color:#5A9BD4;font-weight:700;text-decoration:none;">haiphen.io</a>
+              </td>
+            </tr>
+          </table>
+        </td></tr>
+        <tr><td style="padding:0 28px;"><div style="height:1px;background:#e6ecf3;"></div></td></tr>
+        <tr><td style="padding:22px 28px;">
+          <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#2c3e50;font-weight:700;">Hi ${esc(data.name)},</p>
+          ${data.summary ? `<p style="margin:0 0 20px;font-size:13px;line-height:1.6;color:#556;">${esc(data.summary)}</p>` : ""}
+          ${kpisHtml}
+          ${entitiesHtml}
+          ${ctaHtml}
+          ${data.prospect_section ?? ""}
+          ${subsHtml}
+          ${sourceHtml}
+        </td></tr>
+        <tr><td style="padding:0 28px;"><div style="height:1px;background:#e6ecf3;"></div></td></tr>
+        <tr><td style="padding:18px 28px 22px;">
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+            <tr><td align="center">
+              <p style="margin:0 0 6px;font-size:11px;color:#778;line-height:1.5;">Haiphen &bull; Manhattan, NY &bull; <a href="mailto:pi@haiphenai.com" style="color:#778;text-decoration:none;">pi@haiphenai.com</a> &bull; (512) 910-4544</p>
+              <p style="margin:0 0 6px;font-size:11px;color:#778;line-height:1.5;">You received this because you're subscribed to the Daily Market Digest. <a href="${esc(data.manage_url)}#profile/settings" style="color:#5A9BD4;text-decoration:none;font-weight:700;">Manage preferences</a></p>
+              <p style="margin:0;font-size:11px;color:#778;line-height:1.5;"><a href="${esc(unsubLink)}" style="color:#778;text-decoration:underline;">Unsubscribe</a></p>
+            </td></tr>
+          </table>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+}
+
+async function runDailyDigest(env: Env, when: Date, testEmail?: string): Promise<{
   sendDate: string;
   attempted: number;
   sent: number;
@@ -2356,8 +2608,8 @@ async function runDailyDigest(env: Env, when: Date): Promise<{
 }> {
   const sendDate = yyyyMmDdUtc(when);
 
-  // Optional: skip weekends even if cron misfires
-  if (!isWeekdayUtc(when)) {
+  // Optional: skip weekends even if cron misfires (unless test_email override)
+  if (!testEmail && !isWeekdayUtc(when)) {
     console.log("[digest] weekend skip", { sendDate });
     return { sendDate, attempted: 0, sent: 0, skipped: 0, failed: 0 };
   }
@@ -2370,30 +2622,47 @@ async function runDailyDigest(env: Env, when: Date): Promise<{
   const subjPrefix = (env.DAILY_SUBJECT_PREFIX ?? "Haiphen Daily").trim();
   const manageUrl = (env.PUBLIC_APP_PROFILE_URL ?? "https://haiphen.io/#profile").trim();
 
-  // Load the content once
-  const trades = await fetchTradesJson(env);
+  // Load the prior day's trades data (digest reports on yesterday, not today)
+  const priorDay = new Date(when.getTime() - 86_400_000);
+  const priorDateStr = yyyyMmDdUtc(priorDay);
+  const trades = await fetchTradesJson(env, priorDateStr);
 
-  // Load prospect investigations for digest
+  // Load prospect investigations for Feature Spotlight
   const investigations = await fetchDigestInvestigations(env);
-  const prospectHtml = renderProspectSection(investigations);
 
   // Query active subscribers (default to active unless explicitly unsubscribed)
-  const subs = await env.DB.prepare(
-    `
-    SELECT
-      u.user_login AS user_login,
-      u.email AS email,
-      u.name AS name,
-      s.prefs_json AS prefs_json
-    FROM users u
-    LEFT JOIN user_email_subscriptions s
-      ON s.user_login = u.user_login AND s.list_id = 'daily_digest'
-    WHERE u.email IS NOT NULL AND u.email <> ''
-      AND (s.active IS NULL OR s.active = 1)
-      AND u.user_login NOT LIKE 'system%'
-    ORDER BY u.user_login ASC
-    `
-  ).all<DigestSubscriber>();
+  const subQuery = testEmail
+    ? env.DB.prepare(
+        `
+        SELECT
+          u.user_login AS user_login,
+          u.email AS email,
+          u.name AS name,
+          s.prefs_json AS prefs_json
+        FROM users u
+        LEFT JOIN user_email_subscriptions s
+          ON s.user_login = u.user_login AND s.list_id = 'daily_digest'
+        WHERE u.email = ?
+        ORDER BY u.user_login ASC LIMIT 1
+        `
+      ).bind(testEmail)
+    : env.DB.prepare(
+        `
+        SELECT
+          u.user_login AS user_login,
+          u.email AS email,
+          u.name AS name,
+          s.prefs_json AS prefs_json
+        FROM users u
+        LEFT JOIN user_email_subscriptions s
+          ON s.user_login = u.user_login AND s.list_id = 'daily_digest'
+        WHERE u.email IS NOT NULL AND u.email <> ''
+          AND (s.active IS NULL OR s.active = 1)
+          AND u.user_login NOT LIKE 'system%'
+        ORDER BY u.user_login ASC
+        `
+      );
+  const subs = await subQuery.all<DigestSubscriber>();
 
   const rows = subs.results ?? [];
   console.log("[digest] subscribers", rows.length);
@@ -2407,7 +2676,7 @@ async function runDailyDigest(env: Env, when: Date): Promise<{
   const entities = buildEntities(trades);
   const kpis = pickDigestKpis(trades.rows);
   const screenshotUrl = buildScreenshotUrl(trades);
-  const cta = pickCta(when);
+  const cta = buildSpotlight(investigations, when);
 
   const emailOnly = await env.DB.prepare(
     `
@@ -2431,17 +2700,18 @@ async function runDailyDigest(env: Env, when: Date): Promise<{
       continue;
     }
 
-    // Idempotency: insert delivery row; if conflict, skip
+    // Idempotency: insert delivery row; if conflict, skip (unless test_email)
     const deliveryId = crypto.randomUUID();
+    const listTag = testEmail ? 'daily_digest_test' : 'daily_digest';
     try {
       const ins = await env.DB.prepare(
         `
         INSERT INTO email_deliveries(delivery_id, user_login, list_id, send_date, status, created_at, updated_at)
-        VALUES (?, ?, 'daily_digest', ?, 'queued', (strftime('%Y-%m-%dT%H:%M:%fZ','now')), (strftime('%Y-%m-%dT%H:%M:%fZ','now')))
+        VALUES (?, ?, ?, ?, 'queued', (strftime('%Y-%m-%dT%H:%M:%fZ','now')), (strftime('%Y-%m-%dT%H:%M:%fZ','now')))
         `
-      ).bind(deliveryId, userLogin, sendDate).run();
+      ).bind(deliveryId, userLogin, listTag, sendDate).run();
 
-      // If SQLite didn’t insert, treat as skip (extra safety)
+      // If SQLite didn't insert, treat as skip (extra safety)
       if (!ins.success) {
         skipped++;
         continue;
@@ -2450,13 +2720,20 @@ async function runDailyDigest(env: Env, when: Date): Promise<{
       // Unique constraint triggers -> already sent today
       const msg = String(e?.message || e || "");
       if (/UNIQUE|constraint/i.test(msg)) {
-        skipped++;
+        if (testEmail) {
+          // For test sends, skip idempotency — generate a new unique tag
+          // (the list_id 'daily_digest_test' should rarely conflict)
+        } else {
+          skipped++;
+          continue;
+        }
+      }
+      if (!testEmail) {
+        // Unknown insert error
+        failed++;
+        console.error("[digest] delivery insert failed", { userLogin, msg });
         continue;
       }
-      // Unknown insert error
-      failed++;
-      console.error("[digest] delivery insert failed", { userLogin, msg });
-      continue;
     }
 
     // Fetch all 4 subscription preferences for this user
@@ -2483,8 +2760,6 @@ async function runDailyDigest(env: Env, when: Date): Promise<{
       subscriptions,
       manage_url: manageUrl,
       updated_at: trades.updated_at ?? "",
-      prospect_section: prospectHtml || undefined,
-      prospect_count: investigations.length,
     };
 
     const sg = await sendSendGrid(env.SENDGRID_API_KEY, {
@@ -2769,4 +3044,495 @@ async function sendTradingReport(
     console.error("[trading-report] send failed", { sendDate, details: sg.details });
     return { sendDate, sent: false, reason: "sendgrid_failed" };
   }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// Prospect Pipeline Digest — Daily internal email to jude@haiphen.io
+// Runs full pipeline (crawl → auto-investigate → synthesize), renders digest,
+// sends via SendGrid with actionable feedback items.
+// ══════════════════════════════════════════════════════════════════════════════
+
+/**
+ * Manual trigger: POST /api/prospect/digest/send
+ * Protected by DIGEST_HMAC_SECRET.
+ */
+async function handleProspectDigestSend(request: Request, env: Env): Promise<Response> {
+  const raw = await request.text();
+
+  const secret = (env.DIGEST_HMAC_SECRET || "").trim();
+  if (!secret) return json({ ok: false, error: "DIGEST_HMAC_SECRET not set" }, 500);
+
+  const sigOk = await verifyHmacRequest(request, secret, raw);
+  if (!sigOk) return json({ ok: false, error: "unauthorized" }, 401);
+
+  const body = raw ? safeParseJson<{ send_date?: string }>(raw) : null;
+  let when = new Date();
+  if (body?.send_date) {
+    const cand = new Date(`${body.send_date}T00:00:00Z`);
+    if (Number.isFinite(cand.getTime())) when = cand;
+  }
+
+  const out = await runProspectPipelineDigest(env, when);
+  return json({ ok: true, ...out }, 200);
+}
+
+interface PipelineDigestData {
+  generated_at: string;
+  window_hours: number;
+  just_investigated: number;
+  new_leads_by_type: Array<{ signal_type: string; count: number; avg_score: number; entities: string }>;
+  investigations: Array<{
+    investigation_id: string;
+    lead_id: string;
+    entity_name: string;
+    vulnerability_id: string | null;
+    severity: string | null;
+    cvss_score: number | null;
+    signal_type: string;
+    impact_score: number | null;
+    aggregate_score: number | null;
+    claude_summary: any;
+    risk_score_before: number | null;
+    risk_score_after: number | null;
+    completed_at: string;
+    step_scores: Record<string, number> | null;
+    step_gaps: Array<{ service: string; gaps: string }> | null;
+    requirement_count: number;
+    resolved_count: number;
+  }>;
+  rule_stats: Array<{ rule_id: string; name: string; match_signal_types: string | null; priority: number; match_count: number }>;
+  health: {
+    new_leads: number;
+    investigated_leads: number;
+    pending_leads: number;
+    completed_investigations: number;
+    avg_score: number | null;
+    new_regressions: number;
+    active_sources: number;
+  };
+  gap_summary: Record<string, number>;
+}
+
+async function runProspectPipelineDigest(
+  env: Env,
+  when: Date,
+): Promise<{ sendDate: string; sent: boolean; reason?: string; digest?: PipelineDigestData }> {
+  const sendDate = yyyyMmDdUtc(when);
+
+  // 1. Call haiphen-api pipeline-digest endpoint (triggers auto-investigate + gathers stats)
+  let digest: PipelineDigestData;
+  try {
+    const apiUrl = "https://api.haiphen.io/v1/internal/prospect/pipeline-digest";
+    const token = env.INTERNAL_TOKEN ?? env.PROSPECT_HMAC_SECRET ?? "";
+    const resp = await fetch(apiUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Internal-Token": token,
+      },
+      body: JSON.stringify({ max_leads: 10, since_hours: 24 }),
+    });
+    const data = await resp.json().catch(() => ({ ok: false })) as any;
+    if (!resp.ok || !data.ok) {
+      const detail = data?.message || data?.error || `http_${resp.status}`;
+      console.error("[prospect-digest] API call failed", { status: resp.status, detail });
+      return { sendDate, sent: false, reason: `api_error: ${detail}` } as any;
+    }
+    if (!data.digest) {
+      return { sendDate, sent: false, reason: "api_returned_no_digest" } as any;
+    }
+    digest = data.digest;
+  } catch (e) {
+    console.error("[prospect-digest] API call exception", e);
+    return { sendDate, sent: false, reason: "api_exception" };
+  }
+
+  // 2. Skip if nothing to report
+  const totalLeads = digest.health.new_leads ?? 0;
+  const totalInv = digest.investigations.length;
+  if (totalLeads === 0 && totalInv === 0 && digest.just_investigated === 0) {
+    console.log("[prospect-digest] nothing to report", { sendDate });
+    return { sendDate, sent: false, reason: "nothing_to_report", digest };
+  }
+
+  // 3. Idempotency check
+  const deliveryId = crypto.randomUUID();
+  try {
+    await env.DB.prepare(
+      `INSERT INTO email_deliveries(delivery_id, user_login, list_id, send_date, status, created_at, updated_at)
+       VALUES (?, 'system', 'prospect_digest', ?, 'queued',
+               (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
+               (strftime('%Y-%m-%dT%H:%M:%fZ','now')))`
+    ).bind(deliveryId, sendDate).run();
+  } catch (e: any) {
+    const msg = String(e?.message || e || "");
+    if (/UNIQUE|constraint/i.test(msg)) {
+      console.log("[prospect-digest] already sent today", { sendDate });
+      return { sendDate, sent: false, reason: "already_sent_today" };
+    }
+    throw e;
+  }
+
+  // 4. Render email HTML
+  const toEmail = env.OWNER_EMAIL || "jude@haiphen.io";
+  const fromEmail = env.FROM_EMAIL || "jude@haiphen.io";
+  const fromName = "Haiphen Pipeline";
+  const html = renderPipelineDigest(digest, sendDate, toEmail);
+
+  // 5. Send via SendGrid
+  const subject = `Pipeline Digest: ${sendDate} — ${totalInv} investigation${totalInv !== 1 ? "s" : ""}, ${totalLeads} new lead${totalLeads !== 1 ? "s" : ""}`;
+
+  const sg = await sendSendGrid(env.SENDGRID_API_KEY, {
+    from: { email: fromEmail, name: fromName },
+    reply_to: { email: toEmail },
+    personalizations: [{
+      to: [{ email: toEmail }],
+      subject,
+    }],
+    content: [
+      { type: "text/html", value: html },
+    ],
+  });
+
+  // 6. Update delivery status
+  if (sg.ok) {
+    await env.DB.prepare(
+      `UPDATE email_deliveries
+          SET status='sent', message_id=?, updated_at=(strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+        WHERE delivery_id=?`
+    ).bind(sg.messageId ?? null, deliveryId).run();
+    console.log("[prospect-digest] sent to", toEmail, { sendDate, messageId: sg.messageId });
+    return { sendDate, sent: true, digest };
+  } else {
+    await env.DB.prepare(
+      `UPDATE email_deliveries
+          SET status='failed', error=?, updated_at=(strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+        WHERE delivery_id=?`
+    ).bind(JSON.stringify(sg.details ?? {}), deliveryId).run();
+    console.error("[prospect-digest] send failed", { sendDate, details: sg.details });
+    return { sendDate, sent: false, reason: "sendgrid_failed", digest };
+  }
+}
+
+// ── Pipeline Digest HTML Renderer ──
+
+function renderPipelineDigest(digest: PipelineDigestData, sendDate: string, recipientEmail = "jude@haiphen.io"): string {
+  const h = digest.health;
+  const signalTypeLabel: Record<string, string> = {
+    vulnerability: "Vulnerability",
+    regulatory: "Regulatory",
+    performance: "Performance",
+    incident: "Incident",
+  };
+  const signalTypeColor: Record<string, string> = {
+    vulnerability: "#dc2626",
+    regulatory: "#7c3aed",
+    performance: "#2563eb",
+    incident: "#ea580c",
+  };
+  const severityColor: Record<string, string> = {
+    CRITICAL: "#dc2626",
+    HIGH: "#ea580c",
+    MEDIUM: "#ca8a04",
+    LOW: "#2563eb",
+  };
+
+  function scoreColor(score: number | null): string {
+    if (score == null) return "#6b7280";
+    if (score >= 80) return "#dc2626";
+    if (score >= 60) return "#ea580c";
+    if (score >= 40) return "#ca8a04";
+    return "#16a34a";
+  }
+
+  // ── Section 1: Pipeline Health Overview ──
+  const healthHtml = `
+  <div style="background:#f8fafc;border-radius:8px;padding:16px;margin-bottom:20px;border:1px solid #e2e8f0;">
+    <div style="font-size:14px;font-weight:700;color:#0f172a;margin-bottom:12px;">Pipeline Health</div>
+    <table style="width:100%;border-collapse:collapse;font-size:13px;">
+      <tr>
+        <td style="padding:4px 12px 4px 0;color:#64748b;">New leads (24h)</td>
+        <td style="padding:4px 0;font-weight:600;color:#0f172a;">${h.new_leads ?? 0}</td>
+        <td style="padding:4px 12px 4px 24px;color:#64748b;">Investigated</td>
+        <td style="padding:4px 0;font-weight:600;color:#0f172a;">${h.investigated_leads ?? 0}</td>
+      </tr>
+      <tr>
+        <td style="padding:4px 12px 4px 0;color:#64748b;">Pending queue</td>
+        <td style="padding:4px 0;font-weight:600;color:#0f172a;">${h.pending_leads ?? 0}</td>
+        <td style="padding:4px 12px 4px 24px;color:#64748b;">Avg score</td>
+        <td style="padding:4px 0;font-weight:600;color:${scoreColor(h.avg_score)};">${h.avg_score != null ? h.avg_score.toFixed(1) : "—"}</td>
+      </tr>
+      <tr>
+        <td style="padding:4px 12px 4px 0;color:#64748b;">Active sources</td>
+        <td style="padding:4px 0;font-weight:600;color:#0f172a;">${h.active_sources ?? 0}</td>
+        <td style="padding:4px 12px 4px 24px;color:#64748b;">Regressions</td>
+        <td style="padding:4px 0;font-weight:600;color:${(h.new_regressions ?? 0) > 0 ? "#ea580c" : "#16a34a"};">${h.new_regressions ?? 0}</td>
+      </tr>
+    </table>
+  </div>`;
+
+  // ── Section 2: Signal Type Distribution ──
+  const leadsByType = digest.new_leads_by_type || [];
+  let signalHtml = "";
+  if (leadsByType.length > 0) {
+    const bars = leadsByType.map(t => {
+      const label = signalTypeLabel[t.signal_type] || t.signal_type;
+      const color = signalTypeColor[t.signal_type] || "#6b7280";
+      const entList = (t.entities || "").split(", ").slice(0, 3).join(", ");
+      const more = (t.entities || "").split(", ").length > 3 ? ` +${(t.entities || "").split(", ").length - 3} more` : "";
+      return `
+      <div style="margin-bottom:8px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+          <span style="font-size:12px;font-weight:600;color:${color};">${label}</span>
+          <span style="font-size:12px;color:#64748b;">${t.count} lead${t.count !== 1 ? "s" : ""} \u00B7 avg ${t.avg_score != null ? t.avg_score.toFixed(1) : "—"}</span>
+        </div>
+        <div style="font-size:11px;color:#94a3b8;margin-left:8px;">${escapeHtml(entList)}${more}</div>
+      </div>`;
+    }).join("");
+
+    signalHtml = `
+    <div style="background:#fff;border-radius:8px;padding:16px;margin-bottom:20px;border:1px solid #e2e8f0;">
+      <div style="font-size:14px;font-weight:700;color:#0f172a;margin-bottom:12px;">Signal Distribution</div>
+      ${bars}
+    </div>`;
+  }
+
+  // ── Section 3: Top Investigations ──
+  let invHtml = "";
+  if (digest.investigations.length > 0) {
+    const cards = digest.investigations.map(inv => {
+      const sev = (inv.severity ?? "UNKNOWN").toUpperCase();
+      const sevCol = severityColor[sev] ?? "#6b7280";
+      const agg = inv.aggregate_score != null ? inv.aggregate_score.toFixed(0) : "—";
+      const aggCol = scoreColor(inv.aggregate_score);
+      const sigType = signalTypeLabel[inv.signal_type] || inv.signal_type || "vulnerability";
+      const sigCol = signalTypeColor[inv.signal_type] || "#6b7280";
+
+      // Step scores
+      let stepsHtml = "";
+      if (inv.step_scores) {
+        const order = ["secure", "network", "causal", "risk", "graph", "supply"];
+        const chips = order
+          .filter(s => inv.step_scores![s] != null)
+          .map(s => {
+            const sc = inv.step_scores![s];
+            return `<span style="display:inline-block;padding:2px 6px;margin:2px;border-radius:4px;font-size:11px;background:#f3f4f6;color:${scoreColor(sc)};">${s}:${sc}</span>`;
+          })
+          .join("");
+        if (chips) stepsHtml = `<div style="margin-top:8px;">${chips}</div>`;
+      }
+
+      // Synthesis summary
+      let summaryHtml = "";
+      let recommendations: string[] = [];
+      let dataGaps: Array<{ type: string; description: string; suggestion: string }> = [];
+      if (inv.claude_summary) {
+        const parsed = typeof inv.claude_summary === "string" ? JSON.parse(inv.claude_summary) : inv.claude_summary;
+        let snippet = parsed?.summary ?? "";
+        if (snippet.length > 250) snippet = snippet.slice(0, 247) + "...";
+        if (snippet) summaryHtml = `<div style="margin-top:8px;font-size:12px;color:#4b5563;line-height:1.4;">${escapeHtml(snippet)}</div>`;
+        recommendations = parsed?.recommendations || [];
+        dataGaps = parsed?.data_gaps || [];
+      }
+
+      // Recommendations
+      let recHtml = "";
+      if (recommendations.length > 0) {
+        const items = recommendations.slice(0, 3).map(r =>
+          `<li style="margin-bottom:4px;font-size:11px;color:#4b5563;">${escapeHtml(r)}</li>`
+        ).join("");
+        recHtml = `<div style="margin-top:8px;"><div style="font-size:11px;font-weight:600;color:#64748b;margin-bottom:4px;">Recommendations:</div><ul style="margin:0;padding-left:16px;">${items}</ul></div>`;
+      }
+
+      // Data gaps
+      let gapHtml = "";
+      if (dataGaps.length > 0) {
+        const items = dataGaps.slice(0, 2).map(g =>
+          `<li style="margin-bottom:4px;font-size:11px;color:#ca8a04;"><strong>${escapeHtml(g.type)}:</strong> ${escapeHtml(g.description)}<br/><span style="color:#64748b;">Suggestion: ${escapeHtml(g.suggestion)}</span></li>`
+        ).join("");
+        gapHtml = `<div style="margin-top:8px;"><div style="font-size:11px;font-weight:600;color:#ca8a04;margin-bottom:4px;">Data Gaps:</div><ul style="margin:0;padding-left:16px;">${items}</ul></div>`;
+      }
+
+      const signalId = inv.vulnerability_id ? ` \u00B7 ${escapeHtml(inv.vulnerability_id)}` : "";
+      const score = inv.signal_type === "vulnerability" ? (inv.cvss_score != null ? `CVSS ${inv.cvss_score}` : "") : (inv.impact_score != null ? `Impact ${inv.impact_score}` : "");
+
+      return `
+      <div style="background:#fff;border-radius:8px;padding:16px;margin-bottom:12px;border:1px solid #e5e7eb;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <div style="font-size:14px;font-weight:600;color:#111827;">${escapeHtml(inv.entity_name)}${signalId}</div>
+            <div style="display:flex;gap:6px;margin-top:4px;align-items:center;">
+              <span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600;color:#fff;background:${sigCol};">${sigType}</span>
+              <span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600;color:#fff;background:${sevCol};">${sev}</span>
+              ${score ? `<span style="font-size:11px;color:#64748b;">${score}</span>` : ""}
+            </div>
+          </div>
+          <div style="font-size:22px;font-weight:700;color:${aggCol};">${agg}</div>
+        </div>
+        ${stepsHtml}
+        ${summaryHtml}
+        ${recHtml}
+        ${gapHtml}
+      </div>`;
+    }).join("");
+
+    invHtml = `
+    <div style="margin-bottom:20px;">
+      <div style="font-size:14px;font-weight:700;color:#0f172a;margin-bottom:4px;padding-bottom:8px;border-bottom:2px solid #8B5CF6;">Investigations</div>
+      <div style="font-size:12px;color:#6b7280;margin-bottom:12px;">${digest.investigations.length} completed in the last 24 hours (${digest.just_investigated} just now)</div>
+      ${cards}
+    </div>`;
+  }
+
+  // ── Section 4: Rule Effectiveness ──
+  let ruleHtml = "";
+  const activeRules = (digest.rule_stats || []).filter(r => r.match_count > 0);
+  const dormantRules = (digest.rule_stats || []).filter(r => r.match_count === 0);
+  if (digest.rule_stats.length > 0) {
+    const activeRows = activeRules.map(r => {
+      const types = r.match_signal_types || "any";
+      return `<tr>
+        <td style="padding:4px 8px;font-size:12px;color:#0f172a;">${escapeHtml(r.name)}</td>
+        <td style="padding:4px 8px;font-size:12px;color:#64748b;">${types}</td>
+        <td style="padding:4px 8px;font-size:12px;font-weight:600;color:#16a34a;">${r.match_count}</td>
+        <td style="padding:4px 8px;font-size:12px;color:#94a3b8;">P${r.priority}</td>
+      </tr>`;
+    }).join("");
+
+    const dormantList = dormantRules.slice(0, 5).map(r => escapeHtml(r.name)).join(", ");
+    const dormantNote = dormantRules.length > 0
+      ? `<div style="margin-top:8px;font-size:11px;color:#94a3b8;">Dormant rules (0 matches): ${dormantList}${dormantRules.length > 5 ? ` +${dormantRules.length - 5} more` : ""}</div>`
+      : "";
+
+    ruleHtml = `
+    <div style="background:#fff;border-radius:8px;padding:16px;margin-bottom:20px;border:1px solid #e2e8f0;">
+      <div style="font-size:14px;font-weight:700;color:#0f172a;margin-bottom:12px;">Rule Effectiveness</div>
+      ${activeRules.length > 0 ? `
+      <table style="width:100%;border-collapse:collapse;">
+        <tr>
+          <th style="padding:4px 8px;font-size:11px;color:#64748b;text-align:left;border-bottom:1px solid #e5e7eb;">Rule</th>
+          <th style="padding:4px 8px;font-size:11px;color:#64748b;text-align:left;border-bottom:1px solid #e5e7eb;">Signal Types</th>
+          <th style="padding:4px 8px;font-size:11px;color:#64748b;text-align:left;border-bottom:1px solid #e5e7eb;">Matches</th>
+          <th style="padding:4px 8px;font-size:11px;color:#64748b;text-align:left;border-bottom:1px solid #e5e7eb;">Priority</th>
+        </tr>
+        ${activeRows}
+      </table>` : `<div style="font-size:12px;color:#94a3b8;">No rules matched in this window.</div>`}
+      ${dormantNote}
+    </div>`;
+  }
+
+  // ── Section 5: Gap Summary ──
+  let gapSectionHtml = "";
+  const gapEntries = Object.entries(digest.gap_summary || {});
+  if (gapEntries.length > 0) {
+    const gapTypeLabels: Record<string, string> = {
+      data_gap: "Data Gaps",
+      relationship_gap: "Relationship Gaps",
+      coverage_gap: "Coverage Gaps",
+    };
+    const items = gapEntries.map(([type, count]) =>
+      `<span style="display:inline-block;padding:4px 10px;margin:3px;border-radius:16px;font-size:12px;background:#fef3c7;color:#92400e;">${gapTypeLabels[type] || type}: ${count}</span>`
+    ).join("");
+    gapSectionHtml = `
+    <div style="background:#fff;border-radius:8px;padding:16px;margin-bottom:20px;border:1px solid #e2e8f0;">
+      <div style="font-size:14px;font-weight:700;color:#0f172a;margin-bottom:8px;">Gap Analysis</div>
+      <div>${items}</div>
+      <div style="font-size:11px;color:#64748b;margin-top:8px;">Gaps indicate where adding data sources or adjusting crawler keywords would improve coverage.</div>
+    </div>`;
+  }
+
+  // ── Section 6: Actionable Feedback / CLI Commands ──
+  const feedbackItems: string[] = [];
+
+  // High-scoring uninvestigated leads
+  if ((h.pending_leads ?? 0) > 10) {
+    feedbackItems.push(`<strong>${h.pending_leads} leads pending</strong> investigation. Run: <code style="background:#f3f4f6;padding:2px 6px;border-radius:4px;font-size:12px;">haiphen prospect pipeline --max-leads 20</code>`);
+  }
+
+  // Dormant rules
+  if (dormantRules.length > 3) {
+    feedbackItems.push(`<strong>${dormantRules.length} rules</strong> had 0 matches. Consider pruning or adjusting: <code style="background:#f3f4f6;padding:2px 6px;border-radius:4px;font-size:12px;">haiphen prospect rules</code>`);
+  }
+
+  // Low average score
+  if (h.avg_score != null && h.avg_score < 30) {
+    feedbackItems.push(`<strong>Low avg score (${h.avg_score.toFixed(1)})</strong> — pipeline may be generating low-quality leads. Review sources: <code style="background:#f3f4f6;padding:2px 6px;border-radius:4px;font-size:12px;">haiphen prospect sources</code>`);
+  }
+
+  // High regressions
+  if ((h.new_regressions ?? 0) > 2) {
+    feedbackItems.push(`<strong>${h.new_regressions} regressions</strong> detected — recurring patterns. Review: <code style="background:#f3f4f6;padding:2px 6px;border-radius:4px;font-size:12px;">haiphen prospect regressions</code>`);
+  }
+
+  // Data gaps
+  if (gapEntries.length > 0) {
+    const totalGaps = gapEntries.reduce((sum, [, c]) => sum + c, 0);
+    feedbackItems.push(`<strong>${totalGaps} data gap${totalGaps !== 1 ? "s" : ""}</strong> across investigations. Consider adding sources or keywords. Solve: <code style="background:#f3f4f6;padding:2px 6px;border-radius:4px;font-size:12px;">haiphen prospect solve &lt;investigation_id&gt;</code>`);
+  }
+
+  // Missing signal types
+  const seenTypes = new Set(leadsByType.map(t => t.signal_type));
+  const allTypes = ["vulnerability", "regulatory", "performance", "incident"];
+  const missingTypes = allTypes.filter(t => !seenTypes.has(t));
+  if (missingTypes.length > 0) {
+    feedbackItems.push(`No <strong>${missingTypes.map(t => signalTypeLabel[t] || t).join(", ")}</strong> signals in the last 24h. The ${missingTypes.join("/")} crawlers may need attention.`);
+  }
+
+  let feedbackHtml = "";
+  if (feedbackItems.length > 0) {
+    const list = feedbackItems.map(item =>
+      `<div style="padding:8px 12px;margin-bottom:6px;border-left:3px solid #8B5CF6;background:#faf5ff;font-size:12px;color:#374151;line-height:1.5;">${item}</div>`
+    ).join("");
+    feedbackHtml = `
+    <div style="margin-bottom:20px;">
+      <div style="font-size:14px;font-weight:700;color:#0f172a;margin-bottom:8px;padding-bottom:8px;border-bottom:2px solid #10B981;">Feedback &amp; Actions</div>
+      ${list}
+    </div>`;
+  }
+
+  // ── Section 7: Quick Reference ──
+  const quickRef = `
+  <div style="background:#f1f5f9;border-radius:8px;padding:16px;margin-bottom:20px;border:1px solid #cbd5e1;">
+    <div style="font-size:13px;font-weight:700;color:#334155;margin-bottom:8px;">Quick Reference</div>
+    <table style="width:100%;border-collapse:collapse;font-size:12px;font-family:monospace;">
+      <tr><td style="padding:3px 0;color:#64748b;">Full pipeline</td><td style="padding:3px 0;color:#0f172a;">haiphen prospect pipeline --max-leads 10</td></tr>
+      <tr><td style="padding:3px 0;color:#64748b;">List by signal</td><td style="padding:3px 0;color:#0f172a;">haiphen prospect list --signal-type regulatory</td></tr>
+      <tr><td style="padding:3px 0;color:#64748b;">View rules</td><td style="padding:3px 0;color:#0f172a;">haiphen prospect rules</td></tr>
+      <tr><td style="padding:3px 0;color:#64748b;">Investigate lead</td><td style="padding:3px 0;color:#0f172a;">haiphen prospect investigate &lt;lead_id&gt;</td></tr>
+      <tr><td style="padding:3px 0;color:#64748b;">Solve gaps</td><td style="padding:3px 0;color:#0f172a;">haiphen prospect solve &lt;investigation_id&gt;</td></tr>
+      <tr><td style="padding:3px 0;color:#64748b;">Re-investigate</td><td style="padding:3px 0;color:#0f172a;">haiphen prospect re-investigate &lt;investigation_id&gt;</td></tr>
+      <tr><td style="padding:3px 0;color:#64748b;">View regressions</td><td style="padding:3px 0;color:#0f172a;">haiphen prospect regressions</td></tr>
+      <tr><td style="padding:3px 0;color:#64748b;">Crawl now</td><td style="padding:3px 0;color:#0f172a;">haiphen prospect crawl</td></tr>
+    </table>
+  </div>`;
+
+  // ── Assemble full email ──
+  return `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+  <div style="max-width:640px;margin:0 auto;padding:24px 16px;">
+
+    <!-- Header -->
+    <div style="text-align:center;margin-bottom:24px;">
+      <div style="font-size:24px;font-weight:800;color:#0f172a;">Haiphen Pipeline Digest</div>
+      <div style="font-size:13px;color:#64748b;margin-top:4px;">${sendDate} \u00B7 ${digest.window_hours}h window \u00B7 ${digest.just_investigated} just investigated</div>
+    </div>
+
+    ${healthHtml}
+    ${signalHtml}
+    ${invHtml}
+    ${ruleHtml}
+    ${gapSectionHtml}
+    ${feedbackHtml}
+    ${quickRef}
+
+    <!-- Footer -->
+    <div style="text-align:center;padding-top:16px;border-top:1px solid #e2e8f0;">
+      <div style="font-size:11px;color:#94a3b8;">This is an internal pipeline digest sent to ${escapeHtml(recipientEmail)}.</div>
+      <div style="font-size:11px;color:#94a3b8;margin-top:4px;">Each tool in the pipeline complements the others. Use feedback actions above to refine collectively.</div>
+    </div>
+  </div>
+</body>
+</html>`;
 }

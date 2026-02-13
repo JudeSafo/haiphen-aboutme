@@ -21,6 +21,53 @@ async function verifyTurnstile(secretKey, token, ip) {
   const data = await resp.json().catch(() => ({}));
   return data.success === true;
 }
+/* ── Turnstile interstitial page ──
+ * Serves a minimal HTML page with the Turnstile widget.  Once the CAPTCHA
+ * completes, the page auto-redirects to the original /login URL with
+ * cf_token appended.  This allows direct links (e.g. from the site header)
+ * to work without a pre-existing Turnstile token. */
+function turnstileInterstitialHtml(siteKey, originalUrl) {
+  // Strip any existing cf_token from originalUrl before appending the new one
+  const u = new URL(originalUrl);
+  u.searchParams.delete('cf_token');
+  const cleanUrl = u.toString();
+  const sep = cleanUrl.includes('?') ? '&' : '?';
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Haiphen \u2014 Verifying</title>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer><\/script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+  display:flex;align-items:center;justify-content:center;min-height:100vh;
+  background:#f8fafc;color:#334155}
+.card{text-align:center;padding:2rem;border-radius:16px;
+  background:#fff;border:1px solid rgba(15,23,42,.10);
+  box-shadow:0 12px 30px rgba(2,6,23,.08);max-width:360px;width:100%}
+h1{font-size:1.1rem;font-weight:700;margin-bottom:.5rem}
+p{font-size:.85rem;color:#64748b;margin-bottom:1.25rem}
+.cf-turnstile{display:inline-block}
+.err{color:#dc2626;font-size:.8rem;margin-top:.75rem;display:none}
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>Quick verification</h1>
+  <p>Confirm you\u2019re human, then we\u2019ll redirect you to sign in.</p>
+  <div class="cf-turnstile" data-sitekey="${siteKey}" data-callback="onPass" data-error-callback="onErr"></div>
+  <div class="err" id="err">Verification failed \u2014 please refresh and try again.</div>
+</div>
+<script>
+function onPass(token){window.location.replace("${cleanUrl}${sep}cf_token="+encodeURIComponent(token))}
+function onErr(){document.getElementById("err").style.display="block"}
+<\/script>
+</body>
+</html>`;
+}
+
 const _rl = new Map();
 
 function rateLimit(ip, bucket, max) {
@@ -659,17 +706,27 @@ async function handleAuth(req, env, jwtKey, ctx) {
     if (tsSecret) {
       const cfToken = url.searchParams.get('cf_token') || '';
       if (!cfToken) {
-        return new Response(JSON.stringify({ ok: false, error: 'Turnstile verification required' }), {
-          status: 403,
-          headers: { ...corsHeaders(origin), 'Content-Type': 'application/json' },
-        });
-      }
-      const valid = await verifyTurnstile(tsSecret, cfToken, clientIp);
-      if (!valid) {
-        return new Response(JSON.stringify({ ok: false, error: 'Turnstile verification failed' }), {
-          status: 403,
-          headers: { ...corsHeaders(origin), 'Content-Type': 'application/json' },
-        });
+        // Serve an HTML interstitial that renders the Turnstile widget and
+        // auto-redirects with the token appended to the original URL.
+        const tsSiteKey = (env.TURNSTILE_SITE_KEY || '').trim();
+        if (!tsSiteKey) {
+          // Misconfigured: secret set but no site key — skip Turnstile entirely
+          // to avoid blocking login.  Log and continue.
+          console.warn('[auth] TURNSTILE_SECRET_KEY set but TURNSTILE_SITE_KEY missing; skipping verification');
+        } else {
+          return new Response(turnstileInterstitialHtml(tsSiteKey, url.href), {
+            status: 200,
+            headers: { 'Content-Type': 'text/html;charset=UTF-8', 'Cache-Control': 'no-store' },
+          });
+        }
+      } else {
+        const valid = await verifyTurnstile(tsSecret, cfToken, clientIp);
+        if (!valid) {
+          return new Response(JSON.stringify({ ok: false, error: 'Turnstile verification failed' }), {
+            status: 403,
+            headers: { ...corsHeaders(origin), 'Content-Type': 'application/json' },
+          });
+        }
       }
     }
 

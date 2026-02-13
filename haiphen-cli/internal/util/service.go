@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
+	"os/exec"
 	"strings"
 	"time"
 )
@@ -165,4 +167,12 @@ func ServiceDelete(ctx context.Context, origin, path, token string) ([]byte, err
 	}
 
 	return body, nil
+}
+
+// RunCommand executes an external command and returns any error.
+func RunCommand(name string, args ...string) error {
+	cmd := exec.Command(name, args...)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	return cmd.Run()
 }

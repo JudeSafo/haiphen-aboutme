@@ -13,7 +13,15 @@ import (
 
 	"github.com/haiphen/haiphen-cli/internal/broker"
 	_ "github.com/haiphen/haiphen-cli/internal/broker/alpaca"
+	_ "github.com/haiphen/haiphen-cli/internal/broker/blackstone"
+	"github.com/haiphen/haiphen-cli/internal/broker/credflow"
+	_ "github.com/haiphen/haiphen-cli/internal/broker/fidelity"
+	_ "github.com/haiphen/haiphen-cli/internal/broker/ibkr"
+	_ "github.com/haiphen/haiphen-cli/internal/broker/merrilllynch"
+	_ "github.com/haiphen/haiphen-cli/internal/broker/robinhood"
 	_ "github.com/haiphen/haiphen-cli/internal/broker/schwab"
+	brokertotp "github.com/haiphen/haiphen-cli/internal/broker/totp"
+	_ "github.com/haiphen/haiphen-cli/internal/broker/vanguard"
 	"github.com/haiphen/haiphen-cli/internal/brokerstore"
 	"github.com/haiphen/haiphen-cli/internal/config"
 	"github.com/haiphen/haiphen-cli/internal/pipeline"
@@ -88,53 +96,114 @@ func safetyConfig(cfg *config.Config) broker.SafetyConfig {
 	}
 }
 
+// brokerOption maps a UI label to a broker registry name.
+type brokerOption struct {
+	Label    string
+	Registry string
+	Active   bool
+}
+
+var brokerOptions = []brokerOption{
+	{"Alpaca (Paper Trading)", "alpaca", true},
+	{"Charles Schwab", "schwab", false},
+	{"Interactive Brokers", "ibkr", false},
+	{"Fidelity", "fidelity", false},
+	{"Robinhood", "robinhood", false},
+	{"Merrill Lynch", "merrilllynch", false},
+	{"Vanguard", "vanguard", false},
+	{"Blackstone", "blackstone", false},
+}
+
+// requireTOTP prompts for a TOTP code if the broker has 2FA enrolled.
+func requireTOTP(cfg *config.Config, brokerName string) error {
+	bs, err := brokerstore.New(cfg.Profile)
+	if err != nil {
+		return err
+	}
+	creds, err := bs.Load(brokerName)
+	if err != nil {
+		return err
+	}
+	if creds == nil || creds.TOTPSecret == "" {
+		return nil
+	}
+	code, err := tui.TOTPInput("Enter 2FA code: ")
+	if err != nil {
+		return err
+	}
+	if !brokertotp.ValidateTOTP(code, creds.TOTPSecret) {
+		return fmt.Errorf("invalid 2FA code")
+	}
+	return nil
+}
+
 // ---- broker init ----
 
 func cmdBrokerInit(cfg *config.Config, _ store.Store) *cobra.Command {
-	return &cobra.Command{
+	var useTerminal bool
+
+	cmd := &cobra.Command{
 		Use:   "init",
 		Short: "Interactive broker setup wizard",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			tui.DisclaimerBanner(os.Stdout)
 
 			fmt.Println("Select broker:")
-			options := []string{
-				"Alpaca (Paper Trading)",
-				"Charles Schwab (Coming Soon)",
+			labels := make([]string, len(brokerOptions))
+			for i, opt := range brokerOptions {
+				if opt.Active {
+					labels[i] = opt.Label
+				} else {
+					labels[i] = opt.Label + " (Coming Soon)"
+				}
 			}
-			idx, err := tui.Select("", options)
+			idx, err := tui.Select("", labels)
 			if err != nil {
 				return err
 			}
 
-			if idx == 1 {
+			selected := brokerOptions[idx]
+			if !selected.Active {
 				fmt.Println()
-				fmt.Println(tui.C(tui.Yellow, "Charles Schwab integration is coming soon."))
-				fmt.Println("Schwab's API currently lacks paper trading support.")
+				fmt.Printf("%s %s integration is coming soon.\n", tui.C(tui.Yellow, "⚠"), selected.Label)
 				fmt.Println("Use Alpaca for paper trading in the meantime.")
 				return nil
 			}
 
-			fmt.Println()
-			apiKey, err := tui.SecretInput("Enter your Alpaca API key ID: ")
-			if err != nil {
-				return err
-			}
-			if apiKey == "" {
-				return fmt.Errorf("API key cannot be empty")
+			// Collect credentials via browser or terminal.
+			var apiKey, apiSecret string
+			if useTerminal {
+				fmt.Println()
+				apiKey, err = tui.SecretInput("Enter your Alpaca API key ID: ")
+				if err != nil {
+					return err
+				}
+				if apiKey == "" {
+					return fmt.Errorf("API key cannot be empty")
+				}
+				apiSecret, err = tui.SecretInput("Enter your Alpaca secret key:  ")
+				if err != nil {
+					return err
+				}
+				if apiSecret == "" {
+					return fmt.Errorf("API secret cannot be empty")
+				}
+			} else {
+				fmt.Println()
+				fmt.Println("Opening browser for secure credential entry...")
+				result, err := credflow.Collect(cmd.Context(), selected.Registry, selected.Label)
+				if err != nil {
+					fmt.Printf("\n%s Browser flow failed: %v\n", tui.C(tui.Yellow, "⚠"), err)
+					fmt.Println("Retry with --terminal for headless/SSH environments.")
+					return err
+				}
+				apiKey = result.APIKey
+				apiSecret = result.APISecret
 			}
 
-			apiSecret, err := tui.SecretInput("Enter your Alpaca secret key:  ")
-			if err != nil {
-				return err
-			}
-			if apiSecret == "" {
-				return fmt.Errorf("API secret cannot be empty")
-			}
+			sp := tui.NewSpinner(fmt.Sprintf("Connecting to %s paper trading...", selected.Label))
 
-			sp := tui.NewSpinner("Connecting to Alpaca paper trading...")
-
-			b, err := broker.New("alpaca", apiKey, apiSecret)
+			b, err := broker.New(selected.Registry, apiKey, apiSecret)
 			if err != nil {
 				sp.Fail("Failed to create broker")
 				return err
@@ -153,7 +222,7 @@ func cmdBrokerInit(cfg *config.Config, _ store.Store) *cobra.Command {
 
 			constraints, _ := b.ProbeConstraints(cmd.Context())
 
-			sp.Success("Connected to Alpaca paper trading account")
+			sp.Success(fmt.Sprintf("Connected to %s paper trading account", selected.Label))
 			fmt.Println()
 
 			tui.TableRow(os.Stdout, "Account ID", acct.AccountID)
@@ -184,21 +253,48 @@ func cmdBrokerInit(cfg *config.Config, _ store.Store) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			creds := &brokerstore.Credentials{
+			storeCreds := &brokerstore.Credentials{
 				APIKey:    apiKey,
 				APISecret: apiSecret,
 				AccountID: acct.AccountID,
 			}
-			if err := bs.Save("alpaca", creds); err != nil {
+			if err := bs.Save(selected.Registry, storeCreds); err != nil {
 				return fmt.Errorf("save credentials: %w", err)
 			}
 
 			fmt.Println()
 			fmt.Println(tui.C(tui.Green, "✓") + " Credentials encrypted and saved")
+
+			// Offer TOTP enrollment.
+			ok, err := tui.Confirm("Enable 2FA (TOTP) for broker operations?", false)
+			if err == nil && ok {
+				accountName := fmt.Sprintf("haiphen:%s", selected.Registry)
+				secret, err := brokertotp.EnrollTOTP(accountName)
+				if err != nil {
+					fmt.Printf("%s TOTP setup failed: %v\n", tui.C(tui.Red, "✗"), err)
+				} else {
+					// Verify one code before saving.
+					code, err := tui.TOTPInput("Enter the 6-digit code from your app: ")
+					if err == nil && brokertotp.ValidateTOTP(code, secret) {
+						storeCreds.TOTPSecret = secret
+						if err := bs.Save(selected.Registry, storeCreds); err != nil {
+							fmt.Printf("%s Failed to save TOTP: %v\n", tui.C(tui.Red, "✗"), err)
+						} else {
+							fmt.Println(tui.C(tui.Green, "✓") + " 2FA enrolled — code verified")
+						}
+					} else {
+						fmt.Println(tui.C(tui.Red, "✗") + " Invalid code — 2FA not enrolled")
+					}
+				}
+			}
+
 			b.Close()
 			return nil
 		},
 	}
+
+	cmd.Flags().BoolVar(&useTerminal, "terminal", false, "Use terminal input instead of browser for credentials")
+	return cmd
 }
 
 // ---- broker status ----
@@ -284,6 +380,10 @@ func cmdBrokerTrade(cfg *config.Config, _ store.Store) *cobra.Command {
 		Use:   "trade",
 		Short: "Submit a paper trade order",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if err := requireTOTP(cfg, "alpaca"); err != nil {
+				return err
+			}
+
 			if symbol == "" {
 				return fmt.Errorf("--symbol is required")
 			}
@@ -628,6 +728,10 @@ func cmdBrokerHalt(cfg *config.Config, _ store.Store) *cobra.Command {
 		Use:   "halt",
 		Short: "Kill switch — cancel ALL open orders immediately",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if err := requireTOTP(cfg, "alpaca"); err != nil {
+				return err
+			}
+
 			if !skipConfirm {
 				fmt.Println(tui.C(tui.Red+tui.Bold, "⚠  This will cancel ALL open orders."))
 				ok, err := tui.Confirm("Are you sure?", false)
@@ -885,6 +989,10 @@ func cmdBrokerDisconnect(cfg *config.Config, _ store.Store) *cobra.Command {
 		Use:   "disconnect",
 		Short: "Remove broker credentials",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if err := requireTOTP(cfg, "alpaca"); err != nil {
+				return err
+			}
+
 			bs, err := brokerstore.New(cfg.Profile)
 			if err != nil {
 				return err

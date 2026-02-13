@@ -2,10 +2,10 @@
   "name": "haiphen-secure-gcp",
   "version": "1.0.0",
   "private": true,
-  "type": "module",
   "main": "dist/index.js",
   "scripts": {
-    "build": "../../build-function.sh secure",
+    "build": "tsc",
+    "gcp-build": "",
     "deploy": "npm run build && gcloud functions deploy haiphen-secure --gen2 --runtime=nodejs20 --region=us-central1 --project=united-lane-361102 --source=. --entry-point=handler --trigger-http --allow-unauthenticated --memory=256MB --timeout=30s --max-instances=1 --concurrency=1 --service-account=haiphen-worker@united-lane-361102.iam.gserviceaccount.com --set-env-vars=ALLOWED_ORIGINS=https://haiphen.io,https://www.haiphen.io --set-secrets=JWT_SECRET=HAIPHEN_JWT_SECRET:latest,INTERNAL_TOKEN=HAIPHEN_INTERNAL_TOKEN:latest"
   },
   "dependencies": {

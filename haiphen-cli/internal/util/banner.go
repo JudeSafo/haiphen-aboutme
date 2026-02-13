@@ -29,11 +29,27 @@ const BannerCompact = `
               |_|
 `
 
+const BannerRobot = `
+        ┌───────────┐
+        │  ◉     ◉  │
+        │     ▽     │
+        │  ╰─────╯  │
+        └─────┬─────┘
+          ┌───┴───┐
+          │ ░░░░░ │
+          │ ░ H ░ │
+          │ ░░░░░ │
+          └───┬───┘
+            ┌─┴─┐
+           ─┘   └─
+`
+
 type BannerSize string
 
 const (
 	BannerSizeWide    BannerSize = "wide"
 	BannerSizeCompact BannerSize = "compact"
+	BannerSizeRobot   BannerSize = "robot"
 )
 
 func PrintBanner(w io.Writer, size BannerSize) {
@@ -41,6 +57,8 @@ func PrintBanner(w io.Writer, size BannerSize) {
 	switch size {
 	case BannerSizeCompact:
 		s = BannerCompact
+	case BannerSizeRobot:
+		s = BannerRobot
 	default:
 		s = BannerWide
 	}

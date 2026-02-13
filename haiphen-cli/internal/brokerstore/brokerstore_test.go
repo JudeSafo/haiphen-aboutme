@@ -119,6 +119,89 @@ func TestStoreFileIsEncrypted(t *testing.T) {
 	}
 }
 
+func TestStoreTOTPRoundTrip(t *testing.T) {
+	tmpDir := t.TempDir()
+	s := &Store{dir: tmpDir, profile: "test"}
+
+	creds := &Credentials{
+		APIKey:     "PKTEST123",
+		APISecret:  "supersecretkey",
+		AccountID:  "acct-456",
+		TOTPSecret: "JBSWY3DPEHPK3PXP",
+	}
+
+	if err := s.Save("alpaca", creds); err != nil {
+		t.Fatalf("Save() error = %v", err)
+	}
+
+	loaded, err := s.Load("alpaca")
+	if err != nil {
+		t.Fatalf("Load() error = %v", err)
+	}
+	if loaded.TOTPSecret != "JBSWY3DPEHPK3PXP" {
+		t.Errorf("TOTPSecret = %q, want JBSWY3DPEHPK3PXP", loaded.TOTPSecret)
+	}
+}
+
+func TestStoreHasTOTP(t *testing.T) {
+	tmpDir := t.TempDir()
+	s := &Store{dir: tmpDir, profile: "test"}
+
+	// No creds → no TOTP.
+	has, err := s.HasTOTP("alpaca")
+	if err != nil {
+		t.Fatalf("HasTOTP() error = %v", err)
+	}
+	if has {
+		t.Fatal("HasTOTP() = true for non-existent broker")
+	}
+
+	// Creds without TOTP.
+	creds := &Credentials{APIKey: "key", APISecret: "secret"}
+	if err := s.Save("alpaca", creds); err != nil {
+		t.Fatalf("Save() error = %v", err)
+	}
+	has, err = s.HasTOTP("alpaca")
+	if err != nil {
+		t.Fatalf("HasTOTP() error = %v", err)
+	}
+	if has {
+		t.Fatal("HasTOTP() = true when TOTPSecret is empty")
+	}
+
+	// Creds with TOTP.
+	creds.TOTPSecret = "SECRETKEY"
+	if err := s.Save("alpaca", creds); err != nil {
+		t.Fatalf("Save() error = %v", err)
+	}
+	has, err = s.HasTOTP("alpaca")
+	if err != nil {
+		t.Fatalf("HasTOTP() error = %v", err)
+	}
+	if !has {
+		t.Fatal("HasTOTP() = false when TOTPSecret is set")
+	}
+}
+
+func TestStoreTOTPBackwardCompatible(t *testing.T) {
+	tmpDir := t.TempDir()
+	s := &Store{dir: tmpDir, profile: "test"}
+
+	// Save without TOTP field, then load — should work fine.
+	creds := &Credentials{APIKey: "key", APISecret: "secret"}
+	if err := s.Save("alpaca", creds); err != nil {
+		t.Fatalf("Save() error = %v", err)
+	}
+
+	loaded, err := s.Load("alpaca")
+	if err != nil {
+		t.Fatalf("Load() error = %v", err)
+	}
+	if loaded.TOTPSecret != "" {
+		t.Errorf("TOTPSecret = %q, want empty for legacy creds", loaded.TOTPSecret)
+	}
+}
+
 func contains(s, substr string) bool {
 	for i := 0; i <= len(s)-len(substr); i++ {
 		if s[i:i+len(substr)] == substr {

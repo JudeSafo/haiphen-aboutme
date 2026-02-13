@@ -14,6 +14,7 @@ type Credentials struct {
 	APIKey      string `json:"api_key"`
 	APISecret   string `json:"api_secret"`
 	AccountID   string `json:"account_id,omitempty"`
+	TOTPSecret  string `json:"totp_secret,omitempty"`
 	ConnectedAt string `json:"connected_at"`
 }
 
@@ -112,4 +113,16 @@ func (s *Store) Delete(broker string) error {
 func (s *Store) Exists(broker string) bool {
 	_, err := os.Stat(s.path(broker))
 	return err == nil
+}
+
+// HasTOTP checks if TOTP 2FA is enrolled for a broker.
+func (s *Store) HasTOTP(broker string) (bool, error) {
+	creds, err := s.Load(broker)
+	if err != nil {
+		return false, err
+	}
+	if creds == nil {
+		return false, nil
+	}
+	return creds.TOTPSecret != "", nil
 }

@@ -4,7 +4,7 @@
 // Unlimited rate, queries by ecosystem
 // ---------------------------------------------------------------------------
 
-import { ProspectLead, ProspectSource } from "../d1-writer";
+import { ProspectLead, ProspectSource, ProspectTarget } from "../d1-writer";
 import { randomUUID, sleep } from "../util";
 
 interface OsvConfig {
@@ -52,11 +52,29 @@ function severityFromCvss(score: number | null): ProspectLead["severity"] {
   return "info";
 }
 
-// ICS/IoT-relevant packages to query across ecosystems
+// Fintech + ICS/IoT-relevant packages to query across ecosystems
 const ICS_PACKAGES: Record<string, string[]> = {
-  npm: ["modbus-serial", "node-opcua", "mqtt", "bacnet-client", "node-red"],
-  PyPI: ["pymodbus", "opcua", "paho-mqtt", "scapy", "pycomm3"],
-  Go: ["github.com/gopcua/opcua", "github.com/eclipse/paho.mqtt.golang"],
+  npm: [
+    // Fintech
+    "ccxt", "ws", "socket.io", "express", "fastify", "passport",
+    "jsonwebtoken", "stripe", "plaid", "alpaca-trade-api",
+    // ICS/IoT
+    "modbus-serial", "node-opcua", "mqtt", "bacnet-client", "node-red",
+  ],
+  PyPI: [
+    // Fintech
+    "ccxt", "websockets", "fastapi", "django", "celery", "alpaca-trade-api",
+    "ibapi", "pandas", "numpy",
+    // ICS/IoT
+    "pymodbus", "opcua", "paho-mqtt", "scapy", "pycomm3",
+  ],
+  Go: [
+    // Fintech/API
+    "github.com/gin-gonic/gin", "github.com/gorilla/websocket",
+    "github.com/golang-jwt/jwt",
+    // ICS/IoT
+    "github.com/gopcua/opcua", "github.com/eclipse/paho.mqtt.golang",
+  ],
 };
 
 export async function crawlOsv(source: ProspectSource): Promise<ProspectLead[]> {
@@ -94,6 +112,14 @@ export async function crawlOsv(source: ProspectSource): Promise<ProspectLead[]> 
           const cvssScore = parseCvssScore(vuln.severity);
           const summary = vuln.summary ?? vuln.details?.slice(0, 300) ?? vuln.id;
 
+          // Determine services based on summary content
+          const svcSet = new Set(["secure", "supply"]);
+          const lowerSummary = summary.toLowerCase();
+          if (/trading|order|execution|websocket|fix\b/.test(lowerSummary)) { svcSet.add("risk"); svcSet.add("network"); }
+          if (/api|gateway|auth|oauth|jwt|token/.test(lowerSummary)) { svcSet.add("network"); }
+          if (/payment|transaction|ledger/.test(lowerSummary)) { svcSet.add("risk"); svcSet.add("graph"); }
+          if (/settlement|clearing|reconcil/.test(lowerSummary)) { svcSet.add("risk"); svcSet.add("causal"); }
+
           leads.push({
             lead_id: randomUUID(),
             source_id: "osv",
@@ -104,7 +130,7 @@ export async function crawlOsv(source: ProspectSource): Promise<ProspectLead[]> 
             cvss_score: cvssScore,
             summary: summary.slice(0, 500),
             raw_data_json: JSON.stringify(vuln),
-            services_json: JSON.stringify(["secure", "supply"]),
+            services_json: JSON.stringify([...svcSet]),
           });
         }
       } catch (err) {
@@ -117,5 +143,69 @@ export async function crawlOsv(source: ProspectSource): Promise<ProspectLead[]> 
   }
 
   console.log(`[osv] Found ${leads.length} leads`);
+  return leads;
+}
+
+export async function crawlOsvTargeted(target: ProspectTarget, source: ProspectSource): Promise<ProspectLead[]> {
+  const leads: ProspectLead[] = [];
+  const baseUrl = source.api_base_url;
+  const products: string[] = target.products ? JSON.parse(target.products) : [];
+
+  if (products.length === 0) {
+    console.log(`[osv-targeted] No products for ${target.name}, skipping`);
+    return leads;
+  }
+
+  // Query each product as a package name across common ecosystems
+  const ecosystems = ["npm", "PyPI", "Go", "Maven", "NuGet", "crates.io"];
+
+  for (const product of products.slice(0, 5)) {
+    for (const ecosystem of ecosystems) {
+      console.log(`[osv-targeted] Querying ${ecosystem}/${product}`);
+
+      try {
+        const res = await fetch(`${baseUrl}/query`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ package: { ecosystem, name: product } }),
+        });
+
+        if (!res.ok) continue;
+
+        const data = (await res.json()) as OsvQueryResponse;
+        const vulns = data.vulns ?? [];
+
+        for (const vuln of vulns.slice(0, 5)) {
+          const cvssScore = parseCvssScore(vuln.severity);
+          const summary = vuln.summary ?? vuln.details?.slice(0, 300) ?? vuln.id;
+
+          const svcSet = new Set(["secure", "supply"]);
+          const lowerSummary = summary.toLowerCase();
+          if (/trading|order|execution/.test(lowerSummary)) { svcSet.add("risk"); svcSet.add("network"); }
+          if (/api|gateway|auth/.test(lowerSummary)) { svcSet.add("network"); }
+
+          leads.push({
+            lead_id: randomUUID(),
+            source_id: "osv",
+            entity_type: "software",
+            entity_name: product,
+            vulnerability_id: vuln.id,
+            severity: severityFromCvss(cvssScore),
+            cvss_score: cvssScore,
+            summary: summary.slice(0, 500),
+            raw_data_json: JSON.stringify(vuln),
+            services_json: JSON.stringify([...svcSet]),
+            target_id: target.target_id,
+          });
+        }
+      } catch (err) {
+        console.error(`[osv-targeted] Error querying ${product}:`, err);
+      }
+
+      await sleep(300);
+    }
+  }
+
+  console.log(`[osv-targeted] Found ${leads.length} leads for ${target.name}`);
   return leads;
 }
