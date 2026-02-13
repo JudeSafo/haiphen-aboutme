@@ -329,13 +329,13 @@
 		  .main-container{
 		    padding-left: calc(2rem + var(--sidebar-w));
 		  }
-		  /* Keep hero & section-menu centred relative to the viewport,
-		     not the padded container. Shift back by half the sidebar offset. */
-		  .main-container .hero,
-		  .main-container #section-menu-mount{
-		    margin-left: calc((var(--sidebar-w) - 2rem) / -2);
+		  /* Re-center hero relative to the full viewport (undo half
+		     the sidebar reservation).  Uses the same technique as
+		     .section-menu in section-menu.css so both stay aligned. */
+		  .main-container .hero{
+		    transform: translateX(calc(-1 * var(--sidebar-w) / 2));
 		  }
-		}  
+		}
 	    /* ============================================================
 	       Service Keys Popup Styling
 	    ============================================================ */

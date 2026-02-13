@@ -276,6 +276,7 @@ body.sidebar-collapsed .site-sidebar:hover .sidebar-session .sidebar-session__su
   border-bottom: 2px solid rgba(15, 23, 42, 0.10);
   background: var(--sidebar-session-bg, rgba(15, 23, 42, 0.05));
   flex-shrink: 0;
+  border-radius: calc(var(--radius) - 2px) calc(var(--radius) - 2px) 0 0;
 }
 
 .site-sidebar__session .api-cred{
