@@ -163,10 +163,10 @@
 	    }
 	    .hero-logo img {
 	      max-width: 400px; width: 100%; height: auto;
-	      display: block; margin: 0 auto 10px; transform: translateX(-115px) translateY(-55px); /* shift left by 20px */
+	      display: block; margin: 0 auto 10px; transform: translateY(-55px);
 	    }
 	    .hero p {
-	      font-size: 1.05rem; color: #555; margin-bottom: 3rem; margin-top: 0rem;  transform: translateX(-110px) translateY(-45px); /* shift left by 20px */
+	      font-size: 1.05rem; color: #555; margin-bottom: 3rem; margin-top: 0rem; transform: translateY(-45px);
 	    }
 	    
 	    /* Navbar “Login” button */
@@ -328,6 +328,12 @@
 		@media (min-width: 920px){
 		  .main-container{
 		    padding-left: calc(2rem + var(--sidebar-w));
+		  }
+		  /* Keep hero & section-menu centred relative to the viewport,
+		     not the padded container. Shift back by half the sidebar offset. */
+		  .main-container .hero,
+		  .main-container #section-menu-mount{
+		    margin-left: calc((var(--sidebar-w) - 2rem) / -2);
 		  }
 		}  
 	    /* ============================================================
@@ -558,16 +564,11 @@
 		    margin: auto;
 		  }
 
-		/* give space so content doesn't sit under sidebar on wide screens */
-		@media (min-width: 920px) {
-		  .main-container { padding-left: 190px; }
-		}
+		/* (sidebar padding-left handled by the variable-based rule above) */
 		body.sidebar-collapsed {
 		  --sidebar-w: 48px;
 		}
-		body.sidebar-collapsed .main-container {
-		  padding-left: calc(2rem + 48px);
-		}
+		/* sidebar-collapsed .main-container padding-left: handled by var(--sidebar-w) */
 
 		/* ============================================================
 		   Snap Sections (one full section visible at a time)
