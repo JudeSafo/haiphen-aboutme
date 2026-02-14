@@ -416,6 +416,7 @@
     if (!mount.__haiphenProfileMounted) {
       const html = await fetchText('components/profile/profile.html');
       mount.innerHTML = html;
+      mount.__haiphenProfileWired = false; // DOM replaced — force re-wire
       wire(mount);
       mount.__haiphenProfileMounted = true;
     }
@@ -1217,7 +1218,8 @@
     const profilePages = ['profile', 'settings', 'billing', 'quota', 'apikeys', 'credentials'];
     if (profilePages.includes(page)) {
       ensureContentWidgetVisible();
-      if (typeof window.showSection === 'function') window.showSection('Profile');
+      // showSection('Profile') removed — showProfile handles its own mounting
+      // and calling it here creates a race that destroys wired DOM elements
       NS.showProfile({ tab }).catch((e) => console.warn(LOG, 'showProfile failed', e));
     }
   });
