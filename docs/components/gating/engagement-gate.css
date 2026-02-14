@@ -22,17 +22,15 @@
 }
 
 /* Sticky card wrapper — stays centered on viewport while content-widget
-   is in view; scrolls away when user scrolls past the section.
-   height:0 + overflow:visible keeps it from pushing content down. */
+   is in view; scrolls away when user scrolls past the section. */
 .engage-gate-card-sticky {
   position: sticky;
   top: calc(50vh - 120px);
   z-index: 91;
-  height: 0;
-  overflow: visible;
   display: flex;
   justify-content: center;
   pointer-events: none; /* clicks pass through to scroll */
+  margin-bottom: -300px;  /* reclaim vertical space so content isn't pushed down */
 }
 
 /* ── Preview mode (Docs) ───────────────────────────────────── */
