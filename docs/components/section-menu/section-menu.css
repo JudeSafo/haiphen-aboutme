@@ -7,14 +7,14 @@
 
   /* equal spacing + symmetric edges */
   justify-content: space-evenly;
-  gap: 1rem;              /* space-evenly already creates spacing */
+  gap: 1rem;
   flex-wrap: wrap;
 }
 
-/* Re-center relative to the full viewport (undo half the sidebar reservation) */
+/* Re-center relative to the full viewport (match hero logo offset) */
 @media (min-width: 920px){
   .section-menu{
-    transform: translateX(calc(-1 * var(--sidebar-w) / 2));
+    transform: translateX(-115px);
   }
 }
 
@@ -105,6 +105,6 @@ html[data-lens="finance"] .section-menu__hint .tw-cursor{
 /* Re-center hint on desktop alongside the menu */
 @media (min-width: 920px){
   .section-menu__hint{
-    transform: translateX(calc(-50% - var(--sidebar-w,0px) / 2));
+    transform: translateX(calc(-50% - 115px));
   }
 }
