@@ -30,6 +30,7 @@
   };
 
   var OVERLAY_ID  = 'engage-gate-overlay';
+  var CARD_ID     = 'engage-gate-card-fixed';
   var WRAPPER_CLS = 'engage-gate-wrap';
   var GATED_CLS   = 'engage-gated';
 
@@ -188,6 +189,8 @@
   function clearGate() {
     var ov = document.getElementById(OVERLAY_ID);
     if (ov) ov.remove();
+    var fc = document.getElementById(CARD_ID);
+    if (fc) fc.remove();
 
     var cw = document.getElementById('content-widget');
     if (!cw) return;
@@ -207,18 +210,26 @@
 
     cw.style.position = 'relative';
 
+    // Wrap content in blurred container
     var wrapper = document.createElement('div');
     wrapper.className = WRAPPER_CLS + ' ' + GATED_CLS;
     while (cw.firstChild) wrapper.appendChild(cw.firstChild);
     cw.appendChild(wrapper);
 
+    // Transparent overlay inside content-widget (blocks pointer-events on blurred area)
     var overlay = document.createElement('div');
     overlay.id = OVERLAY_ID;
     overlay.className = 'engage-gate-overlay';
-    overlay.innerHTML = buildCard();
     cw.appendChild(overlay);
 
-    wireOverlay(overlay);
+    // Fixed card container on body — stays centered on screen during scroll
+    var fixed = document.createElement('div');
+    fixed.id = CARD_ID;
+    fixed.className = 'engage-gate-card-fixed';
+    fixed.innerHTML = buildCard();
+    document.body.appendChild(fixed);
+
+    wireOverlay(fixed);
   }
 
   // ── DOM: preview gate (Docs — top visible, bottom faded) ──────

@@ -9,7 +9,7 @@
   transition: filter 0.3s ease;
 }
 
-/* Base overlay — used by both blur + preview modes */
+/* Base overlay — covers the blurred content area (no card inside) */
 .engage-gate-overlay {
   position: absolute;
   top: 0;
@@ -18,11 +18,21 @@
   bottom: 0;
   min-height: 100%;
   z-index: 90;
+  pointer-events: none;
+}
+
+/* Fixed card container — stays centered on screen, above everything */
+.engage-gate-card-fixed {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 91;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
-  padding-top: clamp(4rem, 18vh, 10rem);
-  pointer-events: none; /* scroll passes through; card overrides */
+  pointer-events: none; /* clicks pass through to scroll */
 }
 
 /* ── Preview mode (Docs) ───────────────────────────────────── */
