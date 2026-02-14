@@ -1,0 +1,98 @@
+/* docs/components/gating/engagement-gate.css */
+
+/* Applied to content that should be blurred behind the gate */
+.engage-gated {
+  filter: blur(6px);
+  pointer-events: none;
+  user-select: none;
+  transition: filter 0.3s ease;
+}
+
+/* Overlay sits as a sibling of the blurred wrapper (NOT inside it) */
+.engage-gate-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 90;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: clamp(4rem, 18vh, 10rem);
+  pointer-events: none; /* pass scroll through; card overrides */
+}
+
+.engage-gate-card {
+  pointer-events: auto;
+  max-width: 380px;
+  width: 90%;
+  padding: 2rem 1.75rem;
+  background: rgba(15, 27, 46, 0.96);
+  border: 1px solid rgba(90, 155, 212, 0.25);
+  border-radius: var(--radius, 14px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+  text-align: center;
+  color: #e2e8f0;
+}
+
+.engage-gate-card__title {
+  margin: 0 0 0.5rem;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.engage-gate-card__text {
+  margin: 0 0 1.25rem;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: #94a3b8;
+}
+
+.engage-gate-card__btn {
+  display: inline-block;
+  padding: 0.65rem 1.75rem;
+  background: #5A9BD4;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s ease;
+}
+
+.engage-gate-card__btn:hover {
+  background: #4a8bc4;
+}
+
+.engage-gate-card__links {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  margin-top: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.engage-gate-link {
+  color: #5A9BD4;
+  font-size: 0.82rem;
+  font-weight: 500;
+  text-decoration: none;
+  padding: 0.15rem 0.25rem;
+  transition: color 0.15s ease;
+}
+
+.engage-gate-link:hover {
+  color: #93c5fd;
+  text-decoration: underline;
+}
+
+.engage-gate-link__sep {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #475569;
+  margin: 0 0.5rem;
+  flex-shrink: 0;
+}

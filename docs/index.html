@@ -47,7 +47,8 @@
 	  <script src="components/site-search/site-search-index.js"></script>
 	  <script src="components/gating/auth-session.js" defer></script>
       <script src="components/gating/entitlement-gate.js" defer></script>
-	  <script src="components/gating/gate-shim.js" defer></script>	  
+	  <script src="components/gating/engagement-gate.js" defer></script>
+  <script src="components/gating/gate-shim.js" defer></script>
 	  <script src="components/api-docs/api-docs.js"></script>
 	  <script src="components/api-docs/api-access.js"></script>
 	  <script src="components/contact-form/contact-form.js"></script>
@@ -58,7 +59,8 @@
 	  <link rel="stylesheet" href="components/cohort/cohort.css" />	  
 	  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 	  <link rel="stylesheet" href="components/contact-form/contact-form.css" />
-	  <link rel="stylesheet" href="components/terms-gate/terms-gate.css" data-terms-gate-css="1" />
+	  <link rel="stylesheet" href="components/gating/engagement-gate.css" />
+  <link rel="stylesheet" href="components/terms-gate/terms-gate.css" data-terms-gate-css="1" />
 	  <script src="components/terms-gate/terms-gate.js"></script>
 	  <script src="components/terms-gate/checkout-router.js"></script>
 	  <script src="components/terms-gate/tos-resume.js"></script>
@@ -2391,6 +2393,10 @@
 		  const html = sectionContent[resolved];
 		  contentWidget.innerHTML = html || ``;
 		  contentWidget.classList.add("active");
+
+		  // Engagement gate — blur + login overlay for gated sections
+		  // Runs AFTER innerHTML so content exists for wrapping + blur
+		  if (window.HAIPHEN?.EngagementGate) { window.HAIPHEN.EngagementGate.check(resolved); }
 
 		  // Flash the lens toggle on first visit to this section
 		  if (typeof window.HAIPHEN?.lensFlashForSection === 'function') {
