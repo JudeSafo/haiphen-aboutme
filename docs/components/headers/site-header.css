@@ -200,6 +200,19 @@
   line-height: 1.4;
 }
 
+/* Signals entry — subtle teal accent to draw the eye */
+.site-header__drop-link--signals{
+  background: linear-gradient(135deg, rgba(16,185,129,.06), rgba(90,155,212,.06));
+  font-weight: 600;
+}
+.site-header__drop-link--signals:hover{
+  background: linear-gradient(135deg, rgba(16,185,129,.13), rgba(90,155,212,.10));
+}
+.site-header__drop-link--signals .site-header__drop-badge{
+  background: rgba(16,185,129,.14);
+  color: #10B981;
+}
+
 /* Thin separator between featured link and service list */
 .site-header__drop-sep{
   height: 1px;
@@ -671,6 +684,17 @@ html[data-lens="finance"] .site-header__drop-link--featured:hover{
 html[data-lens="finance"] .site-header__drop-badge{
   background: rgba(90,155,212,.15);
   color: #93c5fd;
+}
+
+html[data-lens="finance"] .site-header__drop-link--signals{
+  background: linear-gradient(135deg, rgba(16,185,129,.10), rgba(90,155,212,.08));
+}
+html[data-lens="finance"] .site-header__drop-link--signals:hover{
+  background: linear-gradient(135deg, rgba(16,185,129,.18), rgba(90,155,212,.14));
+}
+html[data-lens="finance"] .site-header__drop-link--signals .site-header__drop-badge{
+  background: rgba(16,185,129,.18);
+  color: #34d399;
 }
 
 html[data-lens="finance"] .site-header__drop-sep{

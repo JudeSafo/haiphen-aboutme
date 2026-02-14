@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+     stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <!-- signal pulse / waveform -->
+  <polyline stroke="#10B981" points="1 12 4 12 6 5 8 19 10 8 12 16 14 10 16 14 18 12 20 12"/>
+  <!-- broadcast arcs -->
+  <path stroke="#5A9BD4" d="M20.5 7.5a7.5 7.5 0 0 1 0 9" opacity=".7"/>
+  <path stroke="#8B5CF6" d="M22 5a11 11 0 0 1 0 14" opacity=".45"/>
+</svg>
