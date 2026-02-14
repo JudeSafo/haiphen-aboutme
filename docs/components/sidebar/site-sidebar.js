@@ -398,6 +398,7 @@
 
     wire(mount);
     wireHamburger(mount);
+    wireCollapseToggle();
 
     insertSidebarSessionCard(mount);
   }
@@ -430,6 +431,49 @@
     setTimeout(function () { updateSidebarLabels(lens); }, 500);
   });
 
+  // ── User-driven collapse toggle ────────────────────────────────
+  // Separate from the auto-collapse that showSection() applies.
+  // State persisted in localStorage so it survives page reloads.
+
+  var LS_COLLAPSE_KEY = 'haiphen.sidebar.userCollapsed';
+
+  function isUserCollapsed() {
+    try { return localStorage.getItem(LS_COLLAPSE_KEY) === '1'; } catch(e) { return false; }
+  }
+
+  function setUserCollapsed(val) {
+    try { localStorage.setItem(LS_COLLAPSE_KEY, val ? '1' : '0'); } catch(e) {}
+  }
+
+  function applySidebarCollapse() {
+    document.body.classList.toggle('sidebar-collapsed', isUserCollapsed());
+  }
+
+  function wireCollapseToggle() {
+    var btn = document.getElementById('sidebar-collapse-btn');
+    if (!btn) return;
+
+    btn.addEventListener('click', function () {
+      var willCollapse = !document.body.classList.contains('sidebar-collapsed');
+      setUserCollapsed(willCollapse);
+      document.body.classList.toggle('sidebar-collapsed', willCollapse);
+      btn.setAttribute('aria-label', willCollapse ? 'Expand sidebar' : 'Collapse sidebar');
+      btn.setAttribute('title', willCollapse ? 'Expand sidebar' : 'Collapse sidebar');
+    });
+
+    // Sync aria-label with current state
+    if (document.body.classList.contains('sidebar-collapsed')) {
+      btn.setAttribute('aria-label', 'Expand sidebar');
+      btn.setAttribute('title', 'Expand sidebar');
+    }
+  }
+
+  // Apply persisted user preference on load
+  if (isUserCollapsed()) {
+    document.body.classList.add('sidebar-collapsed');
+  }
+
   window.HAIPHEN = window.HAIPHEN || {};
   window.HAIPHEN.loadSidebar = loadSidebar;
+  window.HAIPHEN.sidebarUserCollapsed = isUserCollapsed;
 })();

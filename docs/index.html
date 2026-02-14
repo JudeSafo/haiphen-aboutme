@@ -2407,7 +2407,10 @@
 		  wireRevealElements(contentWidget);
 
 		  // Collapse sidebar when viewing API docs or mission to give full width
-		  document.body.classList.toggle('sidebar-collapsed', resolved === 'Docs' || resolved === 'OnePager' || resolved === 'GettingStarted');
+		  // If user manually collapsed via toggle, keep it collapsed regardless of section
+		  var autoCollapse = resolved === 'Docs' || resolved === 'OnePager' || resolved === 'GettingStarted';
+		  var userCollapsed = window.HAIPHEN?.sidebarUserCollapsed?.() || false;
+		  document.body.classList.toggle('sidebar-collapsed', autoCollapse || userCollapsed);
 
 		  // Dismiss all header dropdowns (prevents them staying visible after nav click)
 		  document.querySelectorAll('.site-header__item').forEach(function(item) {
