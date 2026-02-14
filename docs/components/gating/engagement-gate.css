@@ -21,16 +21,16 @@
   pointer-events: none;
 }
 
-/* Fixed card container — stays centered on screen, above everything */
-.engage-gate-card-fixed {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+/* Sticky card wrapper — stays centered on viewport while content-widget
+   is in view; scrolls away when user scrolls past the section.
+   height:0 + overflow:visible keeps it from pushing content down. */
+.engage-gate-card-sticky {
+  position: sticky;
+  top: calc(50vh - 120px);
   z-index: 91;
+  height: 0;
+  overflow: visible;
   display: flex;
-  align-items: center;
   justify-content: center;
   pointer-events: none; /* clicks pass through to scroll */
 }

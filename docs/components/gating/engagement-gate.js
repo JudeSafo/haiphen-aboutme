@@ -222,14 +222,15 @@
     overlay.className = 'engage-gate-overlay';
     cw.appendChild(overlay);
 
-    // Fixed card container on body — stays centered on screen during scroll
-    var fixed = document.createElement('div');
-    fixed.id = CARD_ID;
-    fixed.className = 'engage-gate-card-fixed';
-    fixed.innerHTML = buildCard();
-    document.body.appendChild(fixed);
+    // Sticky card — stays centered on viewport while content-widget is in view,
+    // scrolls away naturally when user scrolls past the section
+    var sticky = document.createElement('div');
+    sticky.id = CARD_ID;
+    sticky.className = 'engage-gate-card-sticky';
+    sticky.innerHTML = buildCard();
+    cw.insertBefore(sticky, wrapper);
 
-    wireOverlay(fixed);
+    wireOverlay(sticky);
   }
 
   // ── DOM: preview gate (Docs — top visible, bottom faded) ──────
