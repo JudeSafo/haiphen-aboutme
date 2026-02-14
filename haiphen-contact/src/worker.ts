@@ -50,6 +50,9 @@ export interface Env {
   USAGE_ALERT_TEMPLATE_ID?: string;
   USAGE_FROM_NAME?: string;
 
+  // Subscription change
+  SUBSCRIPTION_CHANGE_TEMPLATE_ID?: string;
+
   // vars
   ALLOWED_ORIGINS: string;
   FROM_EMAIL: string;
@@ -276,6 +279,124 @@ function debugNotFound(req: Request, url: URL, path: string): Response {
   });
 }
 
+// Display names for service_id → human-readable (used by trial expiry cron)
+const SERVICE_DISPLAY_NAMES: Record<string, string> = {
+  haiphen_cli: "Haiphen CLI", haiphen_webapp: "Haiphen Web App",
+  daily_newsletter: "Daily Newsletter", haiphen_mobile: "Haiphen Mobile",
+  haiphen_desktop: "Haiphen Desktop", slackbot_discord: "Slack / Discord Bot",
+  haiphen_secure: "Haiphen Secure", network_trace: "Network Trace",
+  knowledge_graph: "Knowledge Graph", risk_analysis: "Risk Analysis",
+  causal_chain: "Causal Chain", supply_chain: "Supply Chain",
+};
+
+async function runTrialExpiryCheck(env: Env): Promise<{ warnings: number; skipped: number }> {
+  const today = new Date().toISOString().slice(0, 10);
+  const threeDaysLater = new Date(Date.now() + 3 * 86_400_000).toISOString();
+  let warnings = 0;
+  let skipped = 0;
+
+  // 1) Day-based trials expiring within 3 days
+  const dayBased = await env.DB.prepare(
+    `SELECT user_login, service_id, trial_ends_at, status
+     FROM service_subscriptions
+     WHERE status = 'trialing'
+       AND trial_ends_at IS NOT NULL
+       AND trial_ends_at <= ?`
+  ).bind(threeDaysLater).all<{
+    user_login: string; service_id: string; trial_ends_at: string; status: string;
+  }>();
+
+  for (const row of dayBased.results ?? []) {
+    const endDate = new Date(row.trial_ends_at);
+    const daysRemaining = Math.max(0, Math.ceil((endDate.getTime() - Date.now()) / 86_400_000));
+    const serviceName = SERVICE_DISPLAY_NAMES[row.service_id] ?? row.service_id;
+
+    // Check idempotency inline
+    const prior = await env.DB.prepare(
+      `SELECT delivery_id FROM email_deliveries WHERE user_login = ? AND list_id = 'trial_expiring' AND send_date = ? LIMIT 1`
+    ).bind(row.user_login, today).first<{ delivery_id: string }>();
+    if (prior) { skipped++; continue; }
+
+    const requestId = crypto.randomUUID();
+    const payload: TrialExpiringPayload = {
+      user_login: row.user_login,
+      service_name: serviceName,
+      days_remaining: daysRemaining,
+      trial_end_date: row.trial_ends_at.slice(0, 10),
+      request_id: requestId,
+    };
+
+    // Call handler internally by constructing a request
+    const body = JSON.stringify(payload);
+    const ts = String(Date.now());
+    const sig = await hmacSha256Hex(env.WELCOME_HMAC_SECRET, `${ts}.${body}`);
+    const req = new Request("https://internal/api/trial/expiring", {
+      method: "POST",
+      headers: { "content-type": "application/json", "x-haiphen-ts": ts, "x-haiphen-sig": sig },
+      body,
+    });
+    try {
+      const res = await handleTrialExpiring(req, env);
+      const data = await res.json().catch(() => null) as any;
+      if (data?.ok) warnings++;
+      else console.warn("[trial-expiry-cron] send failed for", row.user_login, data);
+    } catch (e) {
+      console.error("[trial-expiry-cron] error for", row.user_login, e);
+    }
+  }
+
+  // 2) Request-based trials at ≥80% usage
+  const reqBased = await env.DB.prepare(
+    `SELECT user_login, service_id, trial_requests_used, trial_requests_limit, status
+     FROM service_subscriptions
+     WHERE status = 'trialing'
+       AND trial_requests_limit > 0
+       AND trial_requests_used >= CAST(trial_requests_limit * 0.8 AS INTEGER)`
+  ).all<{
+    user_login: string; service_id: string;
+    trial_requests_used: number; trial_requests_limit: number; status: string;
+  }>();
+
+  for (const row of reqBased.results ?? []) {
+    const serviceName = SERVICE_DISPLAY_NAMES[row.service_id] ?? row.service_id;
+    const pct = Math.round((row.trial_requests_used / row.trial_requests_limit) * 100);
+
+    const prior = await env.DB.prepare(
+      `SELECT delivery_id FROM email_deliveries WHERE user_login = ? AND list_id = 'trial_expiring' AND send_date = ? LIMIT 1`
+    ).bind(row.user_login, today).first<{ delivery_id: string }>();
+    if (prior) { skipped++; continue; }
+
+    const requestId = crypto.randomUUID();
+    const daysRemaining = 0; // request-based: treat as "expiring now"
+    const payload: TrialExpiringPayload = {
+      user_login: row.user_login,
+      service_name: serviceName,
+      days_remaining: daysRemaining,
+      trial_end_date: `${pct}% of ${row.trial_requests_limit} requests used`,
+      request_id: requestId,
+    };
+
+    const body = JSON.stringify(payload);
+    const ts = String(Date.now());
+    const sig = await hmacSha256Hex(env.WELCOME_HMAC_SECRET, `${ts}.${body}`);
+    const req = new Request("https://internal/api/trial/expiring", {
+      method: "POST",
+      headers: { "content-type": "application/json", "x-haiphen-ts": ts, "x-haiphen-sig": sig },
+      body,
+    });
+    try {
+      const res = await handleTrialExpiring(req, env);
+      const data = await res.json().catch(() => null) as any;
+      if (data?.ok) warnings++;
+      else console.warn("[trial-expiry-cron] send failed for", row.user_login, data);
+    } catch (e) {
+      console.error("[trial-expiry-cron] error for", row.user_login, e);
+    }
+  }
+
+  return { warnings, skipped };
+}
+
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
@@ -363,6 +484,8 @@ export default {
         res = await handleTrialExpiring(request, env);
       } else if (request.method === "POST" && path === "/api/usage/alert") {
         res = await handleUsageAlert(request, env);
+      } else if (request.method === "POST" && path === "/api/subscription/change") {
+        res = await handleSubscriptionChange(request, env);
       } else if (request.method === "POST" && path === "/api/prospect/outreach/send") {
         res = await handleProspectOutreachSend(request, env);
       } else if (request.method === "POST" && path === "/api/prospect/digest/send") {
@@ -407,6 +530,13 @@ export default {
             console.log("[prospect-digest] scheduled ok", out, { build: BUILD_ID });
           } catch (err) {
             console.error("[prospect-digest] scheduled failed", err, { build: BUILD_ID });
+          }
+          // Trial expiry check (same 6am slot)
+          try {
+            const out = await runTrialExpiryCheck(env);
+            console.log("[trial-expiry] scheduled ok", out, { build: BUILD_ID });
+          } catch (err) {
+            console.error("[trial-expiry] scheduled failed", err, { build: BUILD_ID });
           }
         } else if (hour === 13) {
           // Morning daily digest (7am CT)
@@ -1314,6 +1444,15 @@ async function handlePurchaseConfirm(request: Request, env: Env): Promise<Respon
     return json({ ok: false, error: "PURCHASE_TEMPLATE_ID not set" }, 500);
   }
 
+  // Idempotency: one purchase confirmation per user (ever)
+  const prior = await env.DB.prepare(
+    `SELECT delivery_id FROM email_deliveries WHERE user_login = ? AND list_id = 'purchase_confirm' LIMIT 1`
+  ).bind(userLogin).first<{ delivery_id: string }>();
+  if (prior) {
+    console.log("[purchase] already sent", { userLogin, requestId });
+    return json({ ok: true, alreadySent: true }, 200);
+  }
+
   const user = await env.DB.prepare(
     `SELECT user_login, email, name FROM users WHERE user_login = ? LIMIT 1`
   )
@@ -1369,6 +1508,17 @@ async function handlePurchaseConfirm(request: Request, env: Env): Promise<Respon
     return json({ ok: false, error: "SendGrid send failed", details: sgResp.details }, 502);
   }
 
+  // Record delivery for idempotency
+  try {
+    const today = new Date().toISOString().slice(0, 10);
+    await env.DB.prepare(
+      `INSERT INTO email_deliveries(delivery_id, user_login, list_id, send_date, status, message_id, created_at, updated_at)
+       VALUES (?, ?, 'purchase_confirm', ?, 'sent', ?, strftime('%Y-%m-%dT%H:%M:%fZ','now'), strftime('%Y-%m-%dT%H:%M:%fZ','now'))`
+    ).bind(requestId, userLogin, today, sgResp.messageId ?? null).run();
+  } catch (e) {
+    console.warn("[purchase] delivery record failed (email was sent)", { userLogin, requestId, error: e });
+  }
+
   console.log("[purchase] sent", { userLogin, requestId, messageId: sgResp.messageId ?? null });
   return json({ ok: true, messageId: sgResp.messageId ?? undefined }, 200);
 }
@@ -1389,8 +1539,10 @@ type TrialExpiringPayload = {
 async function handleTrialExpiring(request: Request, env: Env): Promise<Response> {
   const raw = await request.text();
 
+  // Dual-auth: HMAC or X-Internal-Token
   const sigOk = await verifyHmacRequest(request, env.WELCOME_HMAC_SECRET, raw);
-  if (!sigOk) return json({ ok: false, error: "unauthorized" }, 401);
+  const tokOk = env.INTERNAL_TOKEN && timingSafeEqualHex(request.headers.get("X-Internal-Token") ?? "", env.INTERNAL_TOKEN);
+  if (!sigOk && !tokOk) return json({ ok: false, error: "unauthorized" }, 401);
 
   let body: TrialExpiringPayload | null = null;
   try {
@@ -1416,6 +1568,16 @@ async function handleTrialExpiring(request: Request, env: Env): Promise<Response
   if (!templateId) {
     console.error("[trial] TRIAL_EXPIRING_TEMPLATE_ID not configured", { requestId });
     return json({ ok: false, error: "TRIAL_EXPIRING_TEMPLATE_ID not set" }, 500);
+  }
+
+  // Idempotency: one trial-expiring email per user per day
+  const today = new Date().toISOString().slice(0, 10);
+  const prior = await env.DB.prepare(
+    `SELECT delivery_id FROM email_deliveries WHERE user_login = ? AND list_id = 'trial_expiring' AND send_date = ? LIMIT 1`
+  ).bind(userLogin, today).first<{ delivery_id: string }>();
+  if (prior) {
+    console.log("[trial] already sent today", { userLogin, requestId });
+    return json({ ok: true, alreadySent: true }, 200);
   }
 
   const user = await env.DB.prepare(
@@ -1469,6 +1631,16 @@ async function handleTrialExpiring(request: Request, env: Env): Promise<Response
     return json({ ok: false, error: "SendGrid send failed", details: sgResp.details }, 502);
   }
 
+  // Record delivery for idempotency
+  try {
+    await env.DB.prepare(
+      `INSERT INTO email_deliveries(delivery_id, user_login, list_id, send_date, status, message_id, created_at, updated_at)
+       VALUES (?, ?, 'trial_expiring', ?, 'sent', ?, strftime('%Y-%m-%dT%H:%M:%fZ','now'), strftime('%Y-%m-%dT%H:%M:%fZ','now'))`
+    ).bind(requestId, userLogin, today, sgResp.messageId ?? null).run();
+  } catch (e) {
+    console.warn("[trial] delivery record failed (email was sent)", { userLogin, requestId, error: e });
+  }
+
   console.log("[trial] sent", { userLogin, requestId, messageId: sgResp.messageId ?? null });
   return json({ ok: true, messageId: sgResp.messageId ?? undefined }, 200);
 }
@@ -1491,8 +1663,10 @@ type UsageAlertPayload = {
 async function handleUsageAlert(request: Request, env: Env): Promise<Response> {
   const raw = await request.text();
 
+  // Dual-auth: HMAC or X-Internal-Token
   const sigOk = await verifyHmacRequest(request, env.WELCOME_HMAC_SECRET, raw);
-  if (!sigOk) return json({ ok: false, error: "unauthorized" }, 401);
+  const tokOk = env.INTERNAL_TOKEN && timingSafeEqualHex(request.headers.get("X-Internal-Token") ?? "", env.INTERNAL_TOKEN);
+  if (!sigOk && !tokOk) return json({ ok: false, error: "unauthorized" }, 401);
 
   let body: UsageAlertPayload | null = null;
   try {
@@ -1524,6 +1698,16 @@ async function handleUsageAlert(request: Request, env: Env): Promise<Response> {
   if (!templateId) {
     console.error("[usage] USAGE_ALERT_TEMPLATE_ID not configured", { requestId });
     return json({ ok: false, error: "USAGE_ALERT_TEMPLATE_ID not set" }, 500);
+  }
+
+  // Idempotency: one usage alert per user per day
+  const today = new Date().toISOString().slice(0, 10);
+  const prior = await env.DB.prepare(
+    `SELECT delivery_id FROM email_deliveries WHERE user_login = ? AND list_id = 'usage_alert' AND send_date = ? LIMIT 1`
+  ).bind(userLogin, today).first<{ delivery_id: string }>();
+  if (prior) {
+    console.log("[usage] already sent today", { userLogin, requestId });
+    return json({ ok: true, alreadySent: true }, 200);
   }
 
   const user = await env.DB.prepare(
@@ -1579,7 +1763,137 @@ async function handleUsageAlert(request: Request, env: Env): Promise<Response> {
     return json({ ok: false, error: "SendGrid send failed", details: sgResp.details }, 502);
   }
 
+  // Record delivery for idempotency
+  try {
+    await env.DB.prepare(
+      `INSERT INTO email_deliveries(delivery_id, user_login, list_id, send_date, status, message_id, created_at, updated_at)
+       VALUES (?, ?, 'usage_alert', ?, 'sent', ?, strftime('%Y-%m-%dT%H:%M:%fZ','now'), strftime('%Y-%m-%dT%H:%M:%fZ','now'))`
+    ).bind(requestId, userLogin, today, sgResp.messageId ?? null).run();
+  } catch (e) {
+    console.warn("[usage] delivery record failed (email was sent)", { userLogin, requestId, error: e });
+  }
+
   console.log("[usage] sent", { userLogin, requestId, messageId: sgResp.messageId ?? null });
+  return json({ ok: true, messageId: sgResp.messageId ?? undefined }, 200);
+}
+
+// ----------------------
+// Subscription change notification (HMAC-protected)
+// ----------------------
+
+type SubscriptionChangePayload = {
+  user_login: string;
+  service_name: string;
+  previous_status: string;
+  new_status: string;
+  current_period_end?: string | null;
+  request_id?: string;
+};
+
+async function handleSubscriptionChange(request: Request, env: Env): Promise<Response> {
+  const raw = await request.text();
+
+  const sigOk = await verifyHmacRequest(request, env.WELCOME_HMAC_SECRET, raw);
+  if (!sigOk) return json({ ok: false, error: "unauthorized" }, 401);
+
+  let body: SubscriptionChangePayload | null = null;
+  try {
+    body = raw ? (JSON.parse(raw) as SubscriptionChangePayload) : null;
+  } catch {
+    body = null;
+  }
+  if (!body) return json({ ok: false, error: "Invalid JSON" }, 400);
+
+  const userLogin = String(body.user_login ?? "").trim();
+  const serviceName = String(body.service_name ?? "").trim();
+  const previousStatus = String(body.previous_status ?? "").trim();
+  const newStatus = String(body.new_status ?? "").trim();
+
+  if (!userLogin || !serviceName || !previousStatus || !newStatus) {
+    return json({ ok: false, error: "Missing required fields: user_login, service_name, previous_status, new_status" }, 400);
+  }
+
+  const periodEnd = body.current_period_end ? String(body.current_period_end).trim() : undefined;
+  const requestId = String(body.request_id ?? "").trim() || crypto.randomUUID();
+
+  const templateId = String(env.SUBSCRIPTION_CHANGE_TEMPLATE_ID ?? "").trim();
+  if (!templateId) {
+    console.error("[subscription] SUBSCRIPTION_CHANGE_TEMPLATE_ID not configured", { requestId });
+    return json({ ok: false, error: "SUBSCRIPTION_CHANGE_TEMPLATE_ID not set" }, 500);
+  }
+
+  // Idempotency: one subscription change email per user per day
+  const today = new Date().toISOString().slice(0, 10);
+  const prior = await env.DB.prepare(
+    `SELECT delivery_id FROM email_deliveries WHERE user_login = ? AND list_id = 'subscription_change' AND send_date = ? LIMIT 1`
+  ).bind(userLogin, today).first<{ delivery_id: string }>();
+  if (prior) {
+    console.log("[subscription] already sent today", { userLogin, requestId });
+    return json({ ok: true, alreadySent: true }, 200);
+  }
+
+  const user = await env.DB.prepare(
+    `SELECT user_login, email, name FROM users WHERE user_login = ? LIMIT 1`
+  )
+    .bind(userLogin)
+    .first<{ user_login: string; email: string | null; name: string | null }>();
+
+  if (!user) {
+    console.error("[subscription] unknown user", { userLogin, requestId });
+    return json({ ok: false, error: "Unknown user" }, 404);
+  }
+
+  const email = (user.email ?? "").trim();
+  if (!email) {
+    console.error("[subscription] user has no email", { userLogin, requestId });
+    return json({ ok: false, error: "User has no email" }, 412);
+  }
+
+  const fromName = (env.FROM_NAME ?? "Haiphen").trim();
+  const fromEmail = env.FROM_EMAIL;
+  const supportEmail = (env.WELCOME_SUPPORT_EMAIL ?? "pi@haiphenai.com").trim();
+
+  const sgResp = await sendSendGrid(env.SENDGRID_API_KEY, {
+    from: { email: fromEmail, name: fromName },
+    template_id: templateId,
+    personalizations: [
+      {
+        to: [{ email, name: user.name ?? undefined }],
+        subject: `Haiphen — your ${serviceName} subscription is now ${newStatus}`,
+        dynamic_template_data: {
+          name: user.name ?? userLogin,
+          service_name: serviceName,
+          previous_status: previousStatus,
+          new_status: newStatus,
+          current_period_end: periodEnd,
+          upgrade_url: "https://haiphen.io/#services",
+          support_email: supportEmail,
+        },
+      },
+    ],
+  });
+
+  if (!sgResp.ok) {
+    console.error("[subscription] SendGrid send failed", {
+      userLogin,
+      requestId,
+      templateId,
+      details: sgResp.details ?? null,
+    });
+    return json({ ok: false, error: "SendGrid send failed", details: sgResp.details }, 502);
+  }
+
+  // Record delivery for idempotency
+  try {
+    await env.DB.prepare(
+      `INSERT INTO email_deliveries(delivery_id, user_login, list_id, send_date, status, message_id, created_at, updated_at)
+       VALUES (?, ?, 'subscription_change', ?, 'sent', ?, strftime('%Y-%m-%dT%H:%M:%fZ','now'), strftime('%Y-%m-%dT%H:%M:%fZ','now'))`
+    ).bind(requestId, userLogin, today, sgResp.messageId ?? null).run();
+  } catch (e) {
+    console.warn("[subscription] delivery record failed (email was sent)", { userLogin, requestId, error: e });
+  }
+
+  console.log("[subscription] sent", { userLogin, requestId, messageId: sgResp.messageId ?? null });
   return json({ ok: true, messageId: sgResp.messageId ?? undefined }, 200);
 }
 

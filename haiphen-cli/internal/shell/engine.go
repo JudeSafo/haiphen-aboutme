@@ -8,6 +8,8 @@ import (
 	"strings"
 	"sync"
 
+	"golang.org/x/term"
+
 	"github.com/haiphen/haiphen-cli/internal/acl"
 	"github.com/haiphen/haiphen-cli/internal/config"
 	"github.com/haiphen/haiphen-cli/internal/store"
@@ -208,10 +210,13 @@ func (e *Engine) workflowByID(id string) *Workflow {
 
 // Run starts the interactive REPL loop.
 func (e *Engine) Run(ctx context.Context) error {
+	// Clear screen and position cursor at top — content flows downward.
+	e.initScreen()
+
 	// Banner + version
 	util.PrintBanner(e.w, util.BannerSizeCompact)
 	fmt.Fprintf(e.w, "  %s Interactive Shell\n", tui.C(tui.Bold, "Haiphen"))
-	fmt.Fprintf(e.w, "  %s\n\n", tui.C(tui.Gray, "Type a number to select, 'q' to quit"))
+	fmt.Fprintf(e.w, "  %s\n\n", tui.C(tui.Gray, "↑↓ navigate · enter select · q quit"))
 
 	// Hydrate state silently
 	e.hydrate()
@@ -224,47 +229,25 @@ func (e *Engine) Run(ctx context.Context) error {
 
 		e.statusBar.Render(e.w, e.state)
 		fmt.Fprintln(e.w)
-		fmt.Fprintf(e.w, "  %s\n\n", tui.C(tui.Bold, "What would you like to do?"))
 
+		// Build menu options
+		menuOptions := make([]string, len(e.workflows)+1)
 		for i, wf := range e.workflows {
-			fmt.Fprintf(e.w, "  %s  %s %s\n",
-				tui.C(tui.Cyan, fmt.Sprintf("[%d]", i+1)),
-				wf.Label,
-				tui.C(tui.Gray, "- "+wf.Description))
+			menuOptions[i] = fmt.Sprintf("%s %s", wf.Label, tui.C(tui.Gray, "- "+wf.Description))
 		}
-		fmt.Fprintf(e.w, "  %s  %s\n\n",
-			tui.C(tui.Cyan, "[q]"),
-			"Quit")
+		menuOptions[len(e.workflows)] = "Quit"
 
-		input, err := tui.TextInput("  > ")
+		idx, err := tui.Select("  What would you like to do?", menuOptions)
 		if err != nil {
-			// EOF or Ctrl+C at menu level → exit
-			fmt.Fprintf(e.w, "\n%s\n", tui.C(tui.Gray, "Goodbye."))
-			return nil
-		}
-		input = strings.TrimSpace(strings.ToLower(input))
-
-		if input == "q" || input == "quit" || input == "exit" {
+			// Cancelled / Ctrl+C / q → exit
 			fmt.Fprintf(e.w, "\n%s\n", tui.C(tui.Gray, "Goodbye."))
 			return nil
 		}
 
-		if input == "back" || input == "" {
-			continue
-		}
-
-		// Parse number
-		idx := -1
-		for i := range e.workflows {
-			if input == fmt.Sprintf("%d", i+1) {
-				idx = i
-				break
-			}
-		}
-
-		if idx < 0 {
-			fmt.Fprintf(e.w, "\n  %s\n\n", tui.C(tui.Red, "Unknown option."))
-			continue
+		// Quit option is last
+		if idx == len(e.workflows) {
+			fmt.Fprintf(e.w, "\n%s\n", tui.C(tui.Gray, "Goodbye."))
+			return nil
 		}
 
 		wf := e.workflows[idx]
@@ -307,6 +290,27 @@ func (e *Engine) Run(ctx context.Context) error {
 		}
 		fmt.Fprintln(e.w)
 	}
+}
+
+// initScreen clears the terminal and sets a scroll region so the banner
+// stays visible at the top and interactions flow downward from below it.
+func (e *Engine) initScreen() {
+	fd := int(os.Stdout.Fd())
+	_, height, err := term.GetSize(fd)
+	if err != nil || height <= 0 {
+		height = 40 // safe fallback
+	}
+
+	// Clear screen, move cursor home.
+	fmt.Fprint(e.w, "\033[2J\033[H")
+
+	// Pre-fill the bottom half with empty lines so the initial content
+	// starts at the top and subsequent output scrolls naturally downward.
+	pad := height / 2
+	fmt.Fprint(e.w, strings.Repeat("\n", pad))
+
+	// Move cursor back to the top.
+	fmt.Fprint(e.w, "\033[H")
 }
 
 func (e *Engine) hydrate() {

@@ -19,7 +19,15 @@ async function verifyTurnstile(secretKey, token, ip) {
     body: form,
   });
   const data = await resp.json().catch(() => ({}));
-  return data.success === true;
+  if (!data.success) {
+    console.error('[turnstile] verification failed', JSON.stringify({
+      success: data.success,
+      'error-codes': data['error-codes'],
+      hostname: data.hostname,
+      action: data.action,
+    }));
+  }
+  return data;
 }
 /* ── Turnstile interstitial page ──
  * Serves a minimal HTML page with the Turnstile widget.  Once the CAPTCHA
@@ -720,9 +728,10 @@ async function handleAuth(req, env, jwtKey, ctx) {
           });
         }
       } else {
-        const valid = await verifyTurnstile(tsSecret, cfToken, clientIp);
-        if (!valid) {
-          return new Response(JSON.stringify({ ok: false, error: 'Turnstile verification failed' }), {
+        const tsResult = await verifyTurnstile(tsSecret, cfToken, clientIp);
+        if (!tsResult.success) {
+          const codes = tsResult['error-codes'] || [];
+          return new Response(JSON.stringify({ ok: false, error: 'Turnstile verification failed', codes }), {
             status: 403,
             headers: { ...corsHeaders(origin), 'Content-Type': 'application/json' },
           });

@@ -135,18 +135,21 @@ func CheckDaemon(cfg *config.Config, state *State) {
 
 // TargetSummary is a row from GET /v1/prospect/targets.
 type TargetSummary struct {
-	TargetID string `json:"target_id"`
-	Name     string `json:"name"`
-	Ticker   string `json:"ticker"`
-	Sector   string `json:"sector"`
-	Industry string `json:"industry"`
+	TargetID           string `json:"target_id"`
+	Name               string `json:"name"`
+	Ticker             string `json:"ticker"`
+	Sector             string `json:"sector"`
+	Industry           string `json:"industry"`
+	Domains            string `json:"domains,omitempty"`   // JSON array string
+	LeadCount          int    `json:"lead_count"`          // enriched by count query
+	InvestigationCount int    `json:"investigation_count"` // enriched by count query
 }
 
 // LeadSummary is a row from GET /v1/prospect/leads.
 type LeadSummary struct {
 	LeadID     string  `json:"lead_id"`
-	Entity     string  `json:"entity"`
-	CVSS       float64 `json:"cvss"`
+	Entity     string  `json:"entity_name"`
+	CVSS       float64 `json:"cvss_score"`
 	Severity   string  `json:"severity"`
 	SignalType string  `json:"signal_type"`
 	TargetID   string  `json:"target_id,omitempty"`
@@ -154,23 +157,62 @@ type LeadSummary struct {
 
 // CrawlResult is returned by POST /v1/prospect/targets/:id/crawl.
 type CrawlResult struct {
-	LeadsCreated int `json:"leads_created"`
+	LeadsCreated int         `json:"leads_found"`
+	TargetID     string      `json:"target_id"`
+	TargetName   string      `json:"target_name"`
+	Leads        []CrawlLead `json:"leads,omitempty"`
 }
 
-// AnalysisResult is returned by POST /v1/prospect/leads/:id/analyze.
+// CrawlLead is a single lead returned in the crawl response.
+type CrawlLead struct {
+	LeadID          string `json:"lead_id"`
+	SourceID        string `json:"source_id"`
+	Severity        string `json:"severity"`
+	EntityName      string `json:"entity_name"`
+	VulnerabilityID string `json:"vulnerability_id"`
+}
+
+// AnalysisResult is returned by POST /v1/prospect/leads/:id/investigate.
 type AnalysisResult struct {
-	LeadID       string           `json:"lead_id"`
-	Score        float64          `json:"aggregate_score"`
-	Summary      string           `json:"summary"`
-	DataGaps     []string         `json:"data_gaps,omitempty"`
-	Breakdown    []ServiceScore   `json:"breakdown,omitempty"`
+	InvestigationID string        `json:"investigation_id"`
+	LeadID          string        `json:"lead_id"`
+	Score           float64       `json:"aggregate_score"`
+	ClaudeSummary   *SynthSummary `json:"claude_summary,omitempty"`
+	Steps           []StepScore   `json:"steps,omitempty"`
 }
 
-// ServiceScore is a single service's contribution to the aggregate.
-type ServiceScore struct {
-	Service string  `json:"service"`
-	Score   float64 `json:"score"`
-	Weight  float64 `json:"weight"`
+// SynthSummary holds the deterministic synthesis output.
+type SynthSummary struct {
+	Summary         string   `json:"summary"`
+	Impact          string   `json:"impact"`
+	Recommendations []string `json:"recommendations"`
+	DataGaps        []string `json:"data_gaps,omitempty"`
+}
+
+// StepScore is a single pipeline service step result.
+type StepScore struct {
+	Service        string   `json:"service"`
+	Score          *float64 `json:"score"`
+	Findings       []string `json:"findings"`
+	Recommendation string   `json:"recommendation"`
+	DurationMs     int      `json:"duration_ms"`
+	Status         string   `json:"status"`
+}
+
+// CredentialInfo represents a configured credential provider.
+type CredentialInfo struct {
+	Provider  string `json:"provider"`
+	Label     string `json:"label"`
+	UpdatedAt string `json:"updated_at"`
+}
+
+// OutreachDraft is returned by POST /v1/prospect/leads/:id/outreach.
+type OutreachDraft struct {
+	OutreachID string `json:"outreach_id"`
+	LeadID     string `json:"lead_id"`
+	Subject    string `json:"subject"`
+	BodyText   string `json:"body_text"`
+	Status     string `json:"status"`
 }
 
 // FetchTargets returns prospect targets with optional filters.
@@ -187,12 +229,12 @@ func FetchTargets(ctx context.Context, cfg *config.Config, token string, sector 
 		return nil, err
 	}
 	var resp struct {
-		Targets []TargetSummary `json:"targets"`
+		Items []TargetSummary `json:"items"`
 	}
 	if err := json.Unmarshal(data, &resp); err != nil {
 		return nil, err
 	}
-	return resp.Targets, nil
+	return resp.Items, nil
 }
 
 // FetchLeads returns prospect leads with optional target filter.
@@ -209,12 +251,12 @@ func FetchLeads(ctx context.Context, cfg *config.Config, token string, targetID 
 		return nil, err
 	}
 	var resp struct {
-		Leads []LeadSummary `json:"leads"`
+		Items []LeadSummary `json:"items"`
 	}
 	if err := json.Unmarshal(data, &resp); err != nil {
 		return nil, err
 	}
-	return resp.Leads, nil
+	return resp.Items, nil
 }
 
 // TriggerCrawl starts a targeted crawl for a prospect target.
@@ -231,9 +273,10 @@ func TriggerCrawl(ctx context.Context, cfg *config.Config, token string, targetI
 	return &result, nil
 }
 
-// TriggerAnalysis runs the investigation pipeline on a lead.
+// TriggerAnalysis runs the full investigation pipeline (6-service sequential
+// pipeline + deterministic synthesis) on a lead.
 func TriggerAnalysis(ctx context.Context, cfg *config.Config, token string, leadID string) (*AnalysisResult, error) {
-	path := fmt.Sprintf("/v1/prospect/leads/%s/analyze", leadID)
+	path := fmt.Sprintf("/v1/prospect/leads/%s/investigate", leadID)
 	data, err := util.ServicePost(ctx, cfg.APIOrigin, path, token, nil)
 	if err != nil {
 		return nil, err
@@ -253,11 +296,46 @@ func FetchReport(ctx context.Context, cfg *config.Config, token string, targetID
 
 // SetCredential stores a crawler credential via the API.
 func SetCredential(ctx context.Context, cfg *config.Config, token string, provider string, value string) error {
-	path := "/v1/prospect/credentials"
+	path := fmt.Sprintf("/v1/prospect/credentials/%s", provider)
 	_, err := util.ServicePut(ctx, cfg.APIOrigin, path, token, map[string]string{
-		"provider": provider,
-		"value":    value,
+		"api_key": value,
 	})
+	return err
+}
+
+// FetchCredentials returns the list of configured credentials.
+func FetchCredentials(ctx context.Context, cfg *config.Config, token string) ([]CredentialInfo, error) {
+	data, err := util.ServiceGet(ctx, cfg.APIOrigin, "/v1/prospect/credentials", token)
+	if err != nil {
+		return nil, err
+	}
+	var resp struct {
+		Items []CredentialInfo `json:"items"`
+	}
+	if err := json.Unmarshal(data, &resp); err != nil {
+		return nil, err
+	}
+	return resp.Items, nil
+}
+
+// DraftOutreach creates an outreach draft for a prospect lead.
+func DraftOutreach(ctx context.Context, cfg *config.Config, token string, leadID string) (*OutreachDraft, error) {
+	path := fmt.Sprintf("/v1/prospect/leads/%s/outreach", leadID)
+	data, err := util.ServicePost(ctx, cfg.APIOrigin, path, token, nil)
+	if err != nil {
+		return nil, err
+	}
+	var draft OutreachDraft
+	if err := json.Unmarshal(data, &draft); err != nil {
+		return nil, err
+	}
+	return &draft, nil
+}
+
+// ApproveOutreach approves a draft outreach for sending.
+func ApproveOutreach(ctx context.Context, cfg *config.Config, token string, leadID string) error {
+	path := fmt.Sprintf("/v1/prospect/leads/%s/outreach/approve", leadID)
+	_, err := util.ServicePost(ctx, cfg.APIOrigin, path, token, nil)
 	return err
 }
 

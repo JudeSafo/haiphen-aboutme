@@ -93,6 +93,40 @@ type Env = {
   ONBOARDING_WEBSOCKET_URL?: string;
 };
 
+// Fire-and-forget usage alert via SVC_CONTACT service binding
+async function postUsageAlert(
+  env: Env, userId: string, plan: string,
+  used: number, limit: number, pct: number,
+): Promise<void> {
+  try {
+    const resetAt = new Date();
+    resetAt.setUTCDate(resetAt.getUTCDate() + 1);
+    resetAt.setUTCHours(0, 0, 0, 0);
+
+    const body = JSON.stringify({
+      user_login: userId,
+      service_name: "Haiphen API",
+      usage_pct: pct,
+      used_count: used,
+      limit_count: limit,
+      reset_date: resetAt.toISOString().slice(0, 10),
+      current_plan: plan,
+      request_id: crypto.randomUUID(),
+    });
+
+    await env.SVC_CONTACT.fetch("https://internal/api/usage/alert", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        "X-Internal-Token": env.INTERNAL_TOKEN,
+      },
+      body,
+    });
+  } catch (e) {
+    console.warn("[usage-alert] fire-and-forget failed", { userId, error: e });
+  }
+}
+
 type ErrorCode =
   | "unauthorized"
   | "forbidden"
@@ -1293,15 +1327,33 @@ async function route(req: Request, env: Env): Promise<Response> {
       return err("forbidden", "Forbidden", requestId, 403, corsHeaders(req, env));
     }
 
+    const rawBody = await req.text();
     const doId = env.QUOTA_DO.idFromName("global");
     const stub = env.QUOTA_DO.get(doId);
     const doRes = await stub.fetch(new Request("https://do/consume", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: await req.text(),
+      body: rawBody,
     }));
 
-    const data = await doRes.json();
+    const data = await doRes.json() as any;
+
+    // Fire usage alert if user crossed 80% of their daily limit
+    if (data.allowed && typeof data.remaining_user === "number") {
+      try {
+        const parsed = JSON.parse(rawBody) as { user_id?: string; plan?: string };
+        const USAGE_LIMITS: Record<string, number> = { free: 1000, pro: 10000, enterprise: 50000 };
+        const limit = USAGE_LIMITS[parsed.plan ?? ""] ?? 0;
+        if (limit > 0 && parsed.user_id) {
+          const used = limit - data.remaining_user;
+          const pct = Math.round((used / limit) * 100);
+          if (pct >= 80) {
+            ctx.waitUntil(postUsageAlert(env, parsed.user_id, parsed.plan!, used, limit, pct));
+          }
+        }
+      } catch { /* ignore parse errors — don't break quota response */ }
+    }
+
     return okJson(data, requestId, corsHeaders(req, env));
   }
 
@@ -1653,6 +1705,9 @@ async function route(req: Request, env: Env): Promise<Response> {
 
     const signalType = url.searchParams.get("signal_type");
     if (signalType) { clauses.push("signal_type = ?"); params.push(signalType); }
+
+    const targetId = url.searchParams.get("target_id");
+    if (targetId) { clauses.push("target_id = ?"); params.push(targetId); }
 
     const where = clauses.length > 0 ? `WHERE ${clauses.join(" AND ")}` : "";
     const limit = Math.min(200, Math.max(1, Number(url.searchParams.get("limit") ?? "50")));

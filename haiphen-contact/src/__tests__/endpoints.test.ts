@@ -244,6 +244,19 @@ describe("HMAC-protected endpoints reject unsigned requests", () => {
     expect(body.error).toBe("unauthorized");
   });
 
+  it("POST /api/subscription/change without HMAC returns 401", async () => {
+    const res = await call(
+      req("/api/subscription/change", {
+        method: "POST",
+        body: JSON.stringify({ user_login: "testuser" }),
+      }),
+    );
+    expect(res.status).toBe(401);
+    const body = (await res.json()) as { ok: boolean; error: string };
+    expect(body.ok).toBe(false);
+    expect(body.error).toBe("unauthorized");
+  });
+
   it("POST /api/digest/send without HMAC returns 401", async () => {
     const res = await call(
       req("/api/digest/send", {
@@ -273,6 +286,85 @@ describe("HMAC-protected endpoints reject bad signatures", () => {
         method: "POST",
         headers,
         body: JSON.stringify({ user_login: "testuser" }),
+      }),
+    );
+    expect(res.status).toBe(401);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Dual-auth endpoints accept X-Internal-Token
+// ---------------------------------------------------------------------------
+describe("Dual-auth endpoints accept X-Internal-Token", () => {
+  it("POST /api/trial/expiring with wrong INTERNAL_TOKEN returns 401", async () => {
+    const res = await call(
+      new Request(`${BASE}/api/trial/expiring`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Internal-Token": "wrong-token-value",
+        },
+        body: JSON.stringify({ user_login: "testuser", service_name: "CLI", trial_type: "day", days_remaining: 2 }),
+      }),
+    );
+    expect(res.status).toBe(401);
+  });
+
+  it("POST /api/usage/alert with wrong INTERNAL_TOKEN returns 401", async () => {
+    const res = await call(
+      new Request(`${BASE}/api/usage/alert`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Internal-Token": "wrong-token-value",
+        },
+        body: JSON.stringify({ user_login: "testuser", service_name: "API", usage_pct: 85 }),
+      }),
+    );
+    expect(res.status).toBe(401);
+  });
+
+  it("POST /api/subscription/change does NOT accept X-Internal-Token (HMAC only)", async () => {
+    const res = await call(
+      new Request(`${BASE}/api/subscription/change`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Internal-Token": "any-token",
+        },
+        body: JSON.stringify({
+          user_login: "testuser",
+          service_name: "CLI",
+          previous_status: "active",
+          new_status: "canceled",
+        }),
+      }),
+    );
+    // subscription/change is HMAC-only, so token should not grant access
+    expect(res.status).toBe(401);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Subscription change endpoint validation
+// ---------------------------------------------------------------------------
+describe("POST /api/subscription/change validation", () => {
+  it("returns 401 with bad HMAC signature", async () => {
+    const headers = new Headers({
+      "Content-Type": "application/json",
+      "x-haiphen-ts": String(Math.floor(Date.now() / 1000)),
+      "x-haiphen-sig": "deadbeef".repeat(8),
+    });
+    const res = await call(
+      new Request(`${BASE}/api/subscription/change`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          user_login: "testuser",
+          service_name: "CLI",
+          previous_status: "active",
+          new_status: "canceled",
+        }),
       }),
     );
     expect(res.status).toBe(401);

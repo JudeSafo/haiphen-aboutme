@@ -111,6 +111,57 @@ describe("POST /v1/stripe/webhook", () => {
     expect(body.ok).toBe(false);
     expect(body.error).toContain("stripe-signature");
   });
+
+  it("rejects with invalid stripe-signature", async () => {
+    const req = new Request("https://checkout.haiphen.io/v1/stripe/webhook", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        "stripe-signature": "t=9999999999,v1=badbadbadbadbadbadbadbadbadbadbadbadbadbadbadbadbadbadbadbadbadbad",
+      },
+      body: JSON.stringify({ id: "evt_test2", type: "checkout.session.completed" }),
+    });
+    const res = await callWorker(req);
+
+    expect(res.status).toBe(400);
+    const body = (await res.json()) as any;
+    expect(body.ok).toBe(false);
+  });
+
+  it("rejects with expired timestamp", async () => {
+    const req = new Request("https://checkout.haiphen.io/v1/stripe/webhook", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        // Timestamp from 2020 — well outside 5-minute tolerance
+        "stripe-signature": "t=1577836800,v1=abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
+      },
+      body: JSON.stringify({ id: "evt_test3", type: "checkout.session.completed" }),
+    });
+    const res = await callWorker(req);
+
+    expect(res.status).toBe(400);
+    const body = (await res.json()) as any;
+    expect(body.ok).toBe(false);
+    expect(body.error).toContain("Timestamp");
+  });
+});
+
+// ── POST /v1/checkout/service (auth gating) ─────────────────────────────────
+
+describe("POST /v1/checkout/service", () => {
+  it("returns 401 without auth", async () => {
+    const req = new Request("https://checkout.haiphen.io/v1/checkout/service", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ service_id: "haiphen_cli", price_lookup_key: "test" }),
+    });
+    const res = await callWorker(req);
+
+    expect(res.status).toBe(401);
+    const body = (await res.json()) as any;
+    expect(body.ok).toBe(false);
+  });
 });
 
 // ── GET /v1/account/status (auth gating) ─────────────────────────────────────

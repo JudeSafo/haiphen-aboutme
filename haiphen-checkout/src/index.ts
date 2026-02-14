@@ -149,6 +149,122 @@ async function postOnboardingConfirm(env: Env, payload: {
   return { ok: true, status: resp.status, data };
 }
 
+type PurchaseCallResult =
+  | { ok: true; status: number; data: any }
+  | { ok: false; status: number; data: any };
+
+async function postPurchaseConfirm(env: Env, payload: {
+  user_login: string;
+  service_name: string;
+  plan: string;
+  price: string;
+  trial_days?: number;
+  request_id?: string;
+}): Promise<PurchaseCallResult> {
+  const contactOrigin = (env.CONTACT_ORIGIN || "").replace(/\/+$/, "");
+  if (!contactOrigin) {
+    console.error("purchase.misconfig", { error: "CONTACT_ORIGIN missing" });
+    return { ok: false, status: 0, data: { error: "CONTACT_ORIGIN missing" } };
+  }
+  if (!env.WELCOME_HMAC_SECRET) {
+    console.error("purchase.misconfig", { error: "WELCOME_HMAC_SECRET missing" });
+    return { ok: false, status: 0, data: { error: "WELCOME_HMAC_SECRET missing" } };
+  }
+
+  const bodyObj = {
+    user_login: payload.user_login,
+    service_name: payload.service_name,
+    plan: payload.plan,
+    price: payload.price,
+    trial_days: payload.trial_days,
+    request_id: payload.request_id ?? crypto.randomUUID(),
+  };
+  const body = JSON.stringify(bodyObj);
+  const ts = String(Date.now());
+  const sig = await hmacSha256Hex(env.WELCOME_HMAC_SECRET, `${ts}.${body}`);
+
+  let resp: Response;
+  try {
+    resp = await fetch(`${contactOrigin}/api/purchase/confirm`, {
+      method: "POST",
+      headers: { "content-type": "application/json", "x-haiphen-ts": ts, "x-haiphen-sig": sig },
+      body,
+    });
+  } catch (err: any) {
+    console.error("purchase.fetch_failed", { message: err?.message ?? String(err) });
+    return { ok: false, status: 0, data: { error: "fetch_failed" } };
+  }
+
+  const text = await resp.text().catch(() => "");
+  let data: any = null;
+  try { data = text ? JSON.parse(text) : null; } catch { data = { raw: text }; }
+
+  if (!resp.ok) {
+    console.error("purchase.call_failed", { status: resp.status, data });
+    return { ok: false, status: resp.status, data };
+  }
+  console.log("purchase.call_ok", { status: resp.status, data });
+  return { ok: true, status: resp.status, data };
+}
+
+type SubscriptionChangeCallResult =
+  | { ok: true; status: number; data: any }
+  | { ok: false; status: number; data: any };
+
+async function postSubscriptionChange(env: Env, payload: {
+  user_login: string;
+  service_name: string;
+  previous_status: string;
+  new_status: string;
+  current_period_end?: string | null;
+  request_id?: string;
+}): Promise<SubscriptionChangeCallResult> {
+  const contactOrigin = (env.CONTACT_ORIGIN || "").replace(/\/+$/, "");
+  if (!contactOrigin) {
+    console.error("subscription_change.misconfig", { error: "CONTACT_ORIGIN missing" });
+    return { ok: false, status: 0, data: { error: "CONTACT_ORIGIN missing" } };
+  }
+  if (!env.WELCOME_HMAC_SECRET) {
+    console.error("subscription_change.misconfig", { error: "WELCOME_HMAC_SECRET missing" });
+    return { ok: false, status: 0, data: { error: "WELCOME_HMAC_SECRET missing" } };
+  }
+
+  const bodyObj = {
+    user_login: payload.user_login,
+    service_name: payload.service_name,
+    previous_status: payload.previous_status,
+    new_status: payload.new_status,
+    current_period_end: payload.current_period_end ?? undefined,
+    request_id: payload.request_id ?? crypto.randomUUID(),
+  };
+  const body = JSON.stringify(bodyObj);
+  const ts = String(Date.now());
+  const sig = await hmacSha256Hex(env.WELCOME_HMAC_SECRET, `${ts}.${body}`);
+
+  let resp: Response;
+  try {
+    resp = await fetch(`${contactOrigin}/api/subscription/change`, {
+      method: "POST",
+      headers: { "content-type": "application/json", "x-haiphen-ts": ts, "x-haiphen-sig": sig },
+      body,
+    });
+  } catch (err: any) {
+    console.error("subscription_change.fetch_failed", { message: err?.message ?? String(err) });
+    return { ok: false, status: 0, data: { error: "fetch_failed" } };
+  }
+
+  const text = await resp.text().catch(() => "");
+  let data: any = null;
+  try { data = text ? JSON.parse(text) : null; } catch { data = { raw: text }; }
+
+  if (!resp.ok) {
+    console.error("subscription_change.call_failed", { status: resp.status, data });
+    return { ok: false, status: resp.status, data };
+  }
+  console.log("subscription_change.call_ok", { status: resp.status, data });
+  return { ok: true, status: resp.status, data };
+}
+
 export interface Env {
   DB: D1Database;
   STATUS_DO: DurableObjectNamespace;
@@ -195,6 +311,21 @@ const SERVICE_TRIAL_LIMITS: Record<string, { type: "requests" | "days"; limit: n
   risk_analysis:   { type: "requests", limit: 25 },
   causal_chain:    { type: "requests", limit: 10 },
   supply_chain:    { type: "requests", limit: 5 },
+};
+
+const SERVICE_DISPLAY_NAMES: Record<string, string> = {
+  haiphen_cli:       "Haiphen CLI",
+  haiphen_webapp:    "Haiphen Web App",
+  daily_newsletter:  "Daily Newsletter",
+  haiphen_mobile:    "Haiphen Mobile",
+  haiphen_desktop:   "Haiphen Desktop",
+  slackbot_discord:  "Slack / Discord Bot",
+  haiphen_secure:    "Haiphen Secure",
+  network_trace:     "Network Trace",
+  knowledge_graph:   "Knowledge Graph",
+  risk_analysis:     "Risk Analysis",
+  causal_chain:      "Causal Chain",
+  supply_chain:      "Supply Chain",
 };
 
 interface ServiceCheckoutRequest {
@@ -1268,6 +1399,28 @@ export default {
               source: "stripe_webhook",
               request_id: checkoutId ? `checkout:${checkoutId}:onboarding` : undefined,
             });
+
+            // 4) Purchase confirmation email
+            const pcServiceId = obj?.metadata?.service_id as string | undefined;
+            const pcServiceName = pcServiceId
+              ? (SERVICE_DISPLAY_NAMES[pcServiceId] ?? pcServiceId)
+              : `Haiphen ${normalizedPlan === "enterprise" ? "Enterprise" : "Pro"}`;
+            const amountTotal = Number(obj?.amount_total ?? 0);
+            const currency = String(obj?.currency ?? "usd").toUpperCase();
+            const priceStr = currency === "USD"
+              ? `$${(amountTotal / 100).toFixed(2)}`
+              : `${(amountTotal / 100).toFixed(2)} ${currency}`;
+            const trialDays = pcServiceId && SERVICE_TRIAL_LIMITS[pcServiceId]?.type === "days"
+              ? SERVICE_TRIAL_LIMITS[pcServiceId].limit : undefined;
+
+            ctx.waitUntil(postPurchaseConfirm(env, {
+              user_login: userLogin,
+              service_name: pcServiceName,
+              plan: normalizedPlan,
+              price: priceStr,
+              trial_days: trialDays,
+              request_id: checkoutId ? `checkout:${checkoutId}:purchase` : undefined,
+            }));
           } else {
             console.warn("stripe.checkout_completed_missing_user_login", {
               stripe_session_id: obj?.id,
@@ -1318,6 +1471,13 @@ export default {
                 ? new Date(obj.current_period_end * 1000).toISOString()
                 : null;
 
+              // Query existing state before update (for change notification)
+              const existing = await env.DB.prepare(
+                `SELECT user_login, service_id, status FROM service_subscriptions WHERE stripe_subscription_id = ? LIMIT 1`
+              )
+                .bind(subId)
+                .first<{ user_login: string; service_id: string; status: string }>();
+
               await env.DB.prepare(
                 `UPDATE service_subscriptions
                  SET status = ?, current_period_end = ?, updated_at = datetime('now')
@@ -1331,6 +1491,18 @@ export default {
                 serviceId,
                 status: mappedStatus,
               });
+
+              // Send subscription change email if status actually changed
+              if (existing && existing.status !== mappedStatus) {
+                const svcName = SERVICE_DISPLAY_NAMES[existing.service_id] ?? existing.service_id;
+                ctx.waitUntil(postSubscriptionChange(env, {
+                  user_login: existing.user_login,
+                  service_name: svcName,
+                  previous_status: existing.status,
+                  new_status: mappedStatus,
+                  current_period_end: periodEnd,
+                }));
+              }
             }
           }
         }
