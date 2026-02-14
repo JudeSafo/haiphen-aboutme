@@ -1,8 +1,12 @@
 /* docs/components/gating/engagement-gate.js
  *
  * Two gate modes:
- *   preview  — always gated (Docs): top half visible, bottom fades out, login card
- *   visits   — click-count gated (Mission, Fintech): full blur after N visits
+ *   preview — always gated (Docs): top half visible, bottom fades out, login card
+ *   clicks  — in-section click-count gated (Mission, Fintech): full blur after N clicks
+ *
+ * Click tracking: ONE delegated listener on #content-widget. Each click/tap
+ * inside a gated section increments a localStorage counter. Zero API calls,
+ * zero DOM mutations until the threshold is crossed.
  *
  * Logged-in users (cached or verified via /me) skip all gates.
  * Auth result cached 30 min in localStorage.
@@ -15,25 +19,28 @@
 
   var GATED = {
     Docs:     { mode: 'preview' },
-    OnePager: { mode: 'visits', visits: 10 },
-    Trades:   { mode: 'visits', visits: 10 },
+    OnePager: { mode: 'clicks', clicks: 15 },
+    Trades:   { mode: 'clicks', clicks: 15 },
   };
 
   var OVERLAY_ID  = 'engage-gate-overlay';
   var WRAPPER_CLS = 'engage-gate-wrap';
   var GATED_CLS   = 'engage-gated';
 
+  // Currently active section (set by check(), read by click handler)
+  var _activeSection = null;
+
   // ── localStorage helpers ──────────────────────────────────────
 
   function lsGet(k)    { try { return localStorage.getItem(k); } catch(e) { return null; } }
   function lsSet(k, v) { try { localStorage.setItem(k, String(v)); } catch(e) {} }
 
-  function getVisits(section) {
-    return parseInt(lsGet('haiphen.engage.' + section + '.visits'), 10) || 0;
+  function getClicks(section) {
+    return parseInt(lsGet('haiphen.engage.' + section + '.clicks'), 10) || 0;
   }
-  function incVisits(section) {
-    var n = getVisits(section) + 1;
-    lsSet('haiphen.engage.' + section + '.visits', n);
+  function incClicks(section) {
+    var n = getClicks(section) + 1;
+    lsSet('haiphen.engage.' + section + '.clicks', n);
     return n;
   }
 
@@ -102,7 +109,7 @@
     }
   }
 
-  // ── DOM: full-blur gate (visits mode) ─────────────────────────
+  // ── DOM: full-blur gate (clicks mode) ─────────────────────────
 
   function applyBlurGate() {
     var cw = document.getElementById('content-widget');
@@ -157,10 +164,50 @@
     }
   }
 
-  // ── Main gate check ───────────────────────────────────────────
+  // ── In-section click handler (delegated) ──────────────────────
+
+  function onContentClick(e) {
+    if (!_activeSection) return;
+
+    var cfg = GATED[_activeSection];
+    if (!cfg || cfg.mode !== 'clicks') return;
+
+    // Don't count clicks on the gate overlay itself
+    if (e.target.closest('#' + OVERLAY_ID)) return;
+
+    // Logged-in users don't need counting
+    if (getCachedAuth() === true) return;
+
+    var clicks = incClicks(_activeSection);
+
+    // Just crossed the threshold — apply the gate live
+    if (clicks > cfg.clicks && !document.getElementById(OVERLAY_ID)) {
+      applyBlurGate();
+      runBackgroundAuth();
+    }
+  }
+
+  // ── Install click listener (once) ─────────────────────────────
+
+  function installClickListener() {
+    var cw = document.getElementById('content-widget');
+    if (cw) {
+      cw.addEventListener('click', onContentClick);
+    }
+  }
+
+  // content-widget may not exist yet at script parse time
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', installClickListener);
+  } else {
+    installClickListener();
+  }
+
+  // ── Main gate check (called by showSection) ───────────────────
 
   function check(section) {
     clearGate();
+    _activeSection = section;
 
     var cfg = GATED[section];
     if (!cfg) return { allowed: true };
@@ -175,19 +222,19 @@
       return { allowed: false };
     }
 
-    // Visits mode (Mission, Trades): count navigations, gate after threshold
-    var visits = incVisits(section);
-    if (visits <= cfg.visits) {
-      // Under threshold — allow through, no gate
-      // Still fire a background auth check to warm the cache
+    // Clicks mode: check if already over threshold from previous sessions
+    if (cfg.mode === 'clicks') {
+      if (getClicks(section) > cfg.clicks) {
+        applyBlurGate();
+        runBackgroundAuth();
+        return { allowed: false };
+      }
+      // Under threshold — allow through, warm auth cache in background
       runBackgroundAuth();
       return { allowed: true };
     }
 
-    // Over threshold + not logged in → full blur
-    applyBlurGate();
-    runBackgroundAuth();
-    return { allowed: false };
+    return { allowed: true };
   }
 
   // ── Public API ────────────────────────────────────────────────
@@ -195,6 +242,6 @@
   window.HAIPHEN = window.HAIPHEN || {};
   window.HAIPHEN.EngagementGate = {
     check: check,
-    _debug: { clearGate: clearGate, GATED: GATED, getVisits: getVisits },
+    _debug: { clearGate: clearGate, GATED: GATED, getClicks: getClicks },
   };
 })();
