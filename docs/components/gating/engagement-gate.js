@@ -191,6 +191,11 @@
 
     var cw = document.getElementById('content-widget');
     if (!cw) return;
+
+    // Reset preview-mode inline styles
+    cw.style.overflow = '';
+    cw.style.maxHeight = '';
+
     var wrapper = cw.querySelector('.' + WRAPPER_CLS);
     if (wrapper) {
       while (wrapper.firstChild) cw.insertBefore(wrapper.firstChild, wrapper);
@@ -227,6 +232,8 @@
     if (!cw || document.getElementById(OVERLAY_ID)) return;
 
     cw.style.position = 'relative';
+    cw.style.overflow = 'hidden';
+    cw.style.maxHeight = '80vh';
 
     var overlay = document.createElement('div');
     overlay.id = OVERLAY_ID;

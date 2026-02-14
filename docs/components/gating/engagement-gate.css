@@ -12,7 +12,11 @@
 /* Base overlay — used by both blur + preview modes */
 .engage-gate-overlay {
   position: absolute;
-  inset: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  min-height: 100%;
   z-index: 90;
   display: flex;
   align-items: flex-start;
@@ -29,14 +33,31 @@
   pointer-events: auto; /* block clicks on the faded content */
   background: linear-gradient(
     to bottom,
-    transparent 0%,
-    transparent 28%,
-    rgba(15, 27, 46, 0.25) 38%,
-    rgba(15, 27, 46, 0.70) 50%,
-    rgba(15, 27, 46, 0.92) 62%,
-    rgba(15, 27, 46, 0.98) 75%
+    rgba(15, 27, 46, 0.0)  0%,
+    rgba(15, 27, 46, 0.05) 15%,
+    rgba(15, 27, 46, 0.25) 28%,
+    rgba(15, 27, 46, 0.55) 38%,
+    rgba(15, 27, 46, 0.80) 48%,
+    rgba(15, 27, 46, 0.93) 58%,
+    rgba(15, 27, 46, 0.98) 68%,
+    rgba(15, 27, 46, 1.0)  80%
   );
   padding-top: clamp(10rem, 38vh, 20rem);
+}
+
+/* Finance lens: match the dark bg color */
+html[data-lens="finance"] .engage-gate-overlay--preview {
+  background: linear-gradient(
+    to bottom,
+    rgba(30, 41, 59, 0.0)  0%,
+    rgba(30, 41, 59, 0.05) 15%,
+    rgba(30, 41, 59, 0.25) 28%,
+    rgba(30, 41, 59, 0.55) 38%,
+    rgba(30, 41, 59, 0.80) 48%,
+    rgba(30, 41, 59, 0.93) 58%,
+    rgba(30, 41, 59, 0.98) 68%,
+    rgba(30, 41, 59, 1.0)  80%
+  );
 }
 
 /* ── Card ──────────────────────────────────────────────────── */
