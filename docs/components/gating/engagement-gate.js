@@ -4,9 +4,13 @@
  *   preview — always gated (Docs): top half visible, bottom fades out, login card
  *   clicks  — in-section click-count gated (Mission, Fintech): full blur after N clicks
  *
- * Click tracking: ONE delegated listener on #content-widget. Each click/tap
- * inside a gated section increments a localStorage counter. Zero API calls,
- * zero DOM mutations until the threshold is crossed.
+ * Anti-bypass (Layer 1+2):
+ *   - Counters mirrored to both localStorage AND a cookie. The TRUE count
+ *     is always MAX(localStorage, cookie) so clearing one doesn't help.
+ *   - A "high watermark" cookie tracks the peak count. If localStorage drops
+ *     below the watermark, that's a detected reset — a strikes counter
+ *     increments. After MAX_RESETS strikes the gate locks permanently for
+ *     that browser (cookie-based, survives localStorage wipes).
  *
  * Logged-in users (cached or verified via /me) skip all gates.
  * Auth result cached 30 min in localStorage.
@@ -16,6 +20,8 @@
 
   var LOG = '[engage-gate]';
   var AUTH_CACHE_TTL = 30 * 60 * 1000; // 30 minutes
+  var MAX_RESETS = 3; // after 3 detected resets, permanent gate
+  var COOKIE_DAYS = 365;
 
   var GATED = {
     Docs:     { mode: 'preview' },
@@ -30,19 +36,102 @@
   // Currently active section (set by check(), read by click handler)
   var _activeSection = null;
 
+  // ── Cookie helpers ────────────────────────────────────────────
+
+  function setCookie(name, value, days) {
+    var d = new Date();
+    d.setTime(d.getTime() + days * 86400000);
+    document.cookie = name + '=' + encodeURIComponent(value) +
+      ';expires=' + d.toUTCString() +
+      ';path=/;SameSite=Lax';
+  }
+
+  function getCookie(name) {
+    var prefix = name + '=';
+    var parts = document.cookie.split(';');
+    for (var i = 0; i < parts.length; i++) {
+      var c = parts[i].trim();
+      if (c.indexOf(prefix) === 0) return decodeURIComponent(c.substring(prefix.length));
+    }
+    return null;
+  }
+
   // ── localStorage helpers ──────────────────────────────────────
 
   function lsGet(k)    { try { return localStorage.getItem(k); } catch(e) { return null; } }
   function lsSet(k, v) { try { localStorage.setItem(k, String(v)); } catch(e) {} }
 
+  // ── Multi-layer click counter ─────────────────────────────────
+  // TRUE count = MAX(localStorage, cookie). Both are updated on every write.
+
+  var CK_PREFIX = 'hp_eg_';  // cookie prefix (short to save header bytes)
+
   function getClicks(section) {
-    return parseInt(lsGet('haiphen.engage.' + section + '.clicks'), 10) || 0;
+    var ls = parseInt(lsGet('haiphen.engage.' + section + '.clicks'), 10) || 0;
+    var ck = parseInt(getCookie(CK_PREFIX + section), 10) || 0;
+    return Math.max(ls, ck);
   }
+
+  function setClicks(section, n) {
+    lsSet('haiphen.engage.' + section + '.clicks', n);
+    setCookie(CK_PREFIX + section, n, COOKIE_DAYS);
+  }
+
   function incClicks(section) {
     var n = getClicks(section) + 1;
-    lsSet('haiphen.engage.' + section + '.clicks', n);
+    setClicks(section, n);
+    syncWatermark(section, n);
     return n;
   }
+
+  // ── High-watermark + reset detection (Layer 2) ────────────────
+  // Watermark cookie stores the highest click count ever seen.
+  // If localStorage is lower than the watermark, user cleared it.
+
+  function getWatermark(section) {
+    return parseInt(getCookie(CK_PREFIX + 'hw_' + section), 10) || 0;
+  }
+
+  function syncWatermark(section, clicks) {
+    var hw = getWatermark(section);
+    if (clicks > hw) {
+      setCookie(CK_PREFIX + 'hw_' + section, clicks, COOKIE_DAYS);
+    }
+  }
+
+  function getResets() {
+    return parseInt(getCookie(CK_PREFIX + 'resets'), 10) || 0;
+  }
+
+  function incResets() {
+    var n = getResets() + 1;
+    setCookie(CK_PREFIX + 'resets', n, COOKIE_DAYS);
+    return n;
+  }
+
+  function isLockedOut() {
+    return getResets() >= MAX_RESETS;
+  }
+
+  // Detect if localStorage was cleared for any gated section
+  function detectResets() {
+    var sections = Object.keys(GATED);
+    for (var i = 0; i < sections.length; i++) {
+      var s = sections[i];
+      if (GATED[s].mode !== 'clicks') continue;
+      var hw = getWatermark(s);
+      if (hw === 0) continue; // no watermark yet, nothing to detect
+      var ls = parseInt(lsGet('haiphen.engage.' + s + '.clicks'), 10) || 0;
+      if (ls < hw) {
+        // Reset detected — restore counter from watermark and record strike
+        lsSet('haiphen.engage.' + s + '.clicks', hw);
+        incResets();
+        console.warn(LOG, 'reset detected for', s, '(strike ' + getResets() + '/' + MAX_RESETS + ')');
+      }
+    }
+  }
+
+  // ── Auth cache ────────────────────────────────────────────────
 
   function getCachedAuth() {
     try {
@@ -196,12 +285,15 @@
     }
   }
 
-  // content-widget may not exist yet at script parse time
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', installClickListener);
   } else {
     installClickListener();
   }
+
+  // ── Run reset detection on load ───────────────────────────────
+
+  detectResets();
 
   // ── Main gate check (called by showSection) ───────────────────
 
@@ -215,6 +307,13 @@
     // Logged-in users always pass
     if (getCachedAuth() === true) return { allowed: true };
 
+    // Lockout: too many resets detected — permanent gate on all click-gated sections
+    if (cfg.mode === 'clicks' && isLockedOut()) {
+      applyBlurGate();
+      runBackgroundAuth();
+      return { allowed: false };
+    }
+
     // Preview mode (Docs): always gate for anonymous users
     if (cfg.mode === 'preview') {
       applyPreviewGate();
@@ -222,7 +321,7 @@
       return { allowed: false };
     }
 
-    // Clicks mode: check if already over threshold from previous sessions
+    // Clicks mode: check if already over threshold
     if (cfg.mode === 'clicks') {
       if (getClicks(section) > cfg.clicks) {
         applyBlurGate();
@@ -242,6 +341,9 @@
   window.HAIPHEN = window.HAIPHEN || {};
   window.HAIPHEN.EngagementGate = {
     check: check,
-    _debug: { clearGate: clearGate, GATED: GATED, getClicks: getClicks },
+    _debug: {
+      clearGate: clearGate, GATED: GATED, getClicks: getClicks,
+      getResets: getResets, getWatermark: getWatermark, isLockedOut: isLockedOut,
+    },
   };
 })();
