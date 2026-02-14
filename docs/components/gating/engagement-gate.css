@@ -1,6 +1,7 @@
 /* docs/components/gating/engagement-gate.css */
 
-/* Applied to content that should be blurred behind the gate */
+/* ── Full-blur mode (visits gate) ──────────────────────────── */
+
 .engage-gated {
   filter: blur(6px);
   pointer-events: none;
@@ -8,7 +9,7 @@
   transition: filter 0.3s ease;
 }
 
-/* Overlay sits as a sibling of the blurred wrapper (NOT inside it) */
+/* Base overlay — used by both blur + preview modes */
 .engage-gate-overlay {
   position: absolute;
   inset: 0;
@@ -17,8 +18,28 @@
   align-items: flex-start;
   justify-content: center;
   padding-top: clamp(4rem, 18vh, 10rem);
-  pointer-events: none; /* pass scroll through; card overrides */
+  pointer-events: none; /* scroll passes through; card overrides */
 }
+
+/* ── Preview mode (Docs) ───────────────────────────────────── */
+/* Top ~35% of content visible, then gradient fade to opaque.  */
+/* No blur wrapper needed — gradient obscures bottom content.  */
+
+.engage-gate-overlay--preview {
+  pointer-events: auto; /* block clicks on the faded content */
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    transparent 28%,
+    rgba(15, 27, 46, 0.25) 38%,
+    rgba(15, 27, 46, 0.70) 50%,
+    rgba(15, 27, 46, 0.92) 62%,
+    rgba(15, 27, 46, 0.98) 75%
+  );
+  padding-top: clamp(10rem, 38vh, 20rem);
+}
+
+/* ── Card ──────────────────────────────────────────────────── */
 
 .engage-gate-card {
   pointer-events: auto;
@@ -64,6 +85,8 @@
 .engage-gate-card__btn:hover {
   background: #4a8bc4;
 }
+
+/* ── Secondary links row ───────────────────────────────────── */
 
 .engage-gate-card__links {
   display: flex;
