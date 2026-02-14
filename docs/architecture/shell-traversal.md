@@ -117,6 +117,54 @@ from a central menu, and workflows can chain into each other on completion.
 | 6 | `prospect.report` | Generate Report | skip: `plan == free` |
 | 7 | `prospect.outreach` | Draft Outreach | skip: `role != admin` |
 
+## API & Infrastructure Mapping
+
+Every leaf node has verified working infrastructure. This table maps each step
+to the backend call it makes:
+
+### Onboarding
+| Step | Backend Call | Verified |
+|------|-------------|----------|
+| `onboarding.welcome` | None (pure text) | yes |
+| `onboarding.auth` | `auth.Login()` → OAuth browser flow | yes |
+| `onboarding.status` | State-only (email, plan, role, entitled) | yes |
+| `onboarding.services` | `GET /v1/health` on 7 service origins (concurrent) | yes |
+| `onboarding.next` | None (menu selection → workflow chain) | yes |
+
+### Trading
+| Step | Backend Call | Verified |
+|------|-------------|----------|
+| `trading.broker` | Alpaca SDK: `New()` + `Connect()` + `GetAccount()` | yes |
+| `trading.account` | Alpaca SDK: `GetAccount()` + `GetPositions()` | yes |
+| `trading.safety` | Local `config.Save()` (filesystem) | yes |
+| `trading.trade` | Alpaca SDK: `CreateOrder()` with lg-order guard | yes |
+| `trading.history` | Alpaca SDK: `GetOrders(ctx, "all", 10)` | yes |
+| `trading.watch` | Alpaca SDK: `StreamUpdates()` (WebSocket) | yes |
+| `trading.signals` | `signal.LoadRulesFromDir()` + `SaveRule()` (YAML fs) | yes |
+| `trading.daemon` | `os/exec` fork with TOTP gate | yes |
+
+### Prospect Intelligence
+| Step | Backend Call | Verified |
+|------|-------------|----------|
+| `prospect.credentials` | `PUT /v1/prospect/credentials/:provider` (nvd\|github\|shodan) | yes |
+| `prospect.targets` | `GET /v1/prospect/targets?sector=&limit=` | yes |
+| `prospect.crawl` | `POST /v1/prospect/targets/:id/crawl` | yes |
+| `prospect.leads` | `GET /v1/prospect/leads?target_id=&limit=` | yes |
+| `prospect.investigate` | `POST /v1/prospect/leads/:id/investigate` (6-svc pipeline + synthesis) | yes |
+| `prospect.report` | `GET /v1/prospect/targets/:id/report?format=latex` + optional pdflatex | yes |
+| `prospect.outreach` | `POST /v1/prospect/leads/:id/outreach` + `.../approve` | yes |
+
+### Fixes Applied (2026-02-13)
+- `FetchTargets` / `FetchLeads`: response wrapper changed from `targets`/`leads` to `items`
+- `LeadSummary`: JSON tags `entity` → `entity_name`, `cvss` → `cvss_score`
+- `TriggerAnalysis`: endpoint changed from `/analyze` to `/investigate`
+- `AnalysisResult`: rewritten with `Steps[]` + `ClaudeSummary` (synthesis output)
+- `SetCredential`: path fixed to include provider in URL, body uses `api_key`
+- `DraftOutreach` / `ApproveOutreach`: extracted as proper action functions
+- Outreach step: uses `selected_lead_id` (not target ID)
+- Credential provider mapping: explicit map (`"GitHub Advisory"` → `"github"`)
+- API: `GET /v1/prospect/leads` gained `target_id` query filter
+
 ## Cross-Workflow Chaining
 
 After completing Onboarding's "What's Next" step, the engine chains directly

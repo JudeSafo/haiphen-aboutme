@@ -163,10 +163,10 @@
 	    }
 	    .hero-logo img {
 	      max-width: 400px; width: 100%; height: auto;
-	      display: block; margin: 0 auto 10px; transform: translateY(-55px);
+	      display: block; margin: 0 auto 10px; transform: translateX(-115px) translateY(-55px); /* shift left by 20px */
 	    }
 	    .hero p {
-	      font-size: 1.05rem; color: #555; margin-bottom: 3rem; margin-top: 0rem; transform: translateY(-45px);
+	      font-size: 1.05rem; color: #555; margin-bottom: 3rem; margin-top: 0rem;  transform: translateX(-110px) translateY(-45px); /* shift left by 20px */
 	    }
 	    
 	    /* Navbar “Login” button */
@@ -300,7 +300,7 @@
 		  --cohort-banner-offset: 0px;
 
 		  /* keep your existing look/spacing */
-		  --sidebar-top-gap: 22px; /* 92px - 70px = 22px */
+		  --sidebar-top-gap: calc(22px + 10vh);
 		}
 
 		/* Body: reserve space for BOTH banner + header */
@@ -328,12 +328,6 @@
 		@media (min-width: 920px){
 		  .main-container{
 		    padding-left: calc(2rem + var(--sidebar-w));
-		  }
-		  /* Re-center hero relative to the full viewport (undo half
-		     the sidebar reservation).  Uses the same technique as
-		     .section-menu in section-menu.css so both stay aligned. */
-		  .main-container .hero{
-		    transform: translateX(calc(-1 * var(--sidebar-w) / 2));
 		  }
 		}
 	    /* ============================================================
@@ -564,11 +558,16 @@
 		    margin: auto;
 		  }
 
-		/* (sidebar padding-left handled by the variable-based rule above) */
+		/* give space so content doesn't sit under sidebar on wide screens */
+		@media (min-width: 920px) {
+		  .main-container { padding-left: 190px; }
+		}
 		body.sidebar-collapsed {
 		  --sidebar-w: 48px;
 		}
-		/* sidebar-collapsed .main-container padding-left: handled by var(--sidebar-w) */
+		body.sidebar-collapsed .main-container {
+		  padding-left: calc(2rem + 48px);
+		}
 
 		/* ============================================================
 		   Snap Sections (one full section visible at a time)

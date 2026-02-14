@@ -3,10 +3,9 @@
   position: fixed;
   left: 16px;
   top: calc(var(--cohort-banner-offset) + var(--header-h) + var(--sidebar-top-gap));
-  bottom: 16px;
   z-index: 900;
 
-  width: 142px;
+  width: 168px;
   background: var(--sidebar-bg);
   border: 2px solid rgba(15, 23, 42, 0.14);
   border-radius: var(--radius);
@@ -192,7 +191,7 @@ body.sidebar-collapsed .site-sidebar {
 }
 
 body.sidebar-collapsed .site-sidebar:hover {
-  width: 142px;
+  width: 168px;
   overflow: visible;
 }
 
@@ -276,7 +275,6 @@ body.sidebar-collapsed .site-sidebar:hover .sidebar-session .sidebar-session__su
   border-bottom: 2px solid rgba(15, 23, 42, 0.10);
   background: var(--sidebar-session-bg, rgba(15, 23, 42, 0.05));
   flex-shrink: 0;
-  border-radius: calc(var(--radius) - 2px) calc(var(--radius) - 2px) 0 0;
 }
 
 .site-sidebar__session .api-cred{
