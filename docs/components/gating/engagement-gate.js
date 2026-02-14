@@ -158,7 +158,7 @@
       '<div class="engage-gate-card__links">' +
         '<a href="#services" class="engage-gate-link" data-gate-nav="Services">Explore Services</a>' +
         '<span class="engage-gate-link__sep"></span>' +
-        '<a href="#contact-us" class="engage-gate-link" data-gate-nav="Contact">Schedule a Demo</a>' +
+        '<a href="#contact-us:hp-schedule" class="engage-gate-link" data-gate-nav="Contact:hp-schedule">Schedule a Demo</a>' +
         '<span class="engage-gate-link__sep"></span>' +
         '<a href="#cohort" class="engage-gate-link" data-gate-nav="Trades">Join Newsletter</a>' +
       '</div>' +
