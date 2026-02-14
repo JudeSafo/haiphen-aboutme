@@ -171,56 +171,67 @@ body.sidebar-mobile-open .sidebar-mobile-backdrop {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%230f172a' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='5' cy='5' r='2'/%3E%3Ccircle cx='11' cy='5' r='2'/%3E%3Cpath d='M1 13c0-2.2 1.8-4 4-4'/%3E%3Cpath d='M15 13c0-2.2-1.8-4-4-4'/%3E%3Cpath d='M5 9l3 2 3-2'/%3E%3C/svg%3E");
 }
 
-/* ── Collapse toggle button ── */
-.site-sidebar__collapse-btn {
+/* ── Drawer tab (right-edge collapse handle) ── */
+.site-sidebar__drawer-tab {
+  position: absolute;
+  right: -14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid rgba(15, 23, 42, 0.10);
+  border-left: none;
+  border-radius: 0 6px 6px 0;
+  background: #f1f3f5;
+  color: rgba(15, 23, 42, 0.30);
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
-  padding: 6px 0;
-  border: none;
-  border-top: 1px solid rgba(15, 23, 42, 0.08);
-  background: transparent;
-  color: rgba(15, 23, 42, 0.35);
-  cursor: pointer;
-  transition: color 0.15s ease, background 0.15s ease;
-  flex-shrink: 0;
-}
-.site-sidebar__collapse-btn:hover {
-  color: rgba(15, 23, 42, 0.65);
-  background: rgba(15, 23, 42, 0.04);
+  transition: color 0.15s ease, background 0.15s ease, opacity 0.2s ease;
+  opacity: 0;
+  z-index: 1;
 }
 
-.sidebar-collapse-chevron {
+/* Show tab on sidebar hover */
+.site-sidebar:hover .site-sidebar__drawer-tab {
+  opacity: 1;
+}
+
+/* Always visible when collapsed (so user can find it) */
+body.sidebar-collapsed .site-sidebar__drawer-tab {
+  opacity: 1;
+}
+
+.site-sidebar__drawer-tab:hover {
+  color: rgba(15, 23, 42, 0.60);
+  background: #e5e7eb;
+}
+
+.sidebar-drawer-chevron {
   transition: transform 0.25s ease;
 }
 
-/* Flip chevron when collapsed (points right = "expand") */
-body.sidebar-collapsed .sidebar-collapse-chevron {
+/* Flip chevron when collapsed (points right = "click to expand") */
+body.sidebar-collapsed .sidebar-drawer-chevron {
   transform: rotate(180deg);
 }
 
-/* Hide label text in collapsed state, show on hover */
-body.sidebar-collapsed .site-sidebar__collapse-btn {
-  border-top-color: transparent;
-}
-body.sidebar-collapsed .site-sidebar:hover .site-sidebar__collapse-btn {
-  border-top-color: rgba(15, 23, 42, 0.08);
-}
-
 /* Finance lens */
-html[data-lens="finance"] .site-sidebar__collapse-btn {
-  color: rgba(148, 163, 184, 0.4);
-  border-top-color: rgba(148, 163, 184, 0.12);
+html[data-lens="finance"] .site-sidebar__drawer-tab {
+  background: #334155;
+  border-color: rgba(148, 163, 184, 0.18);
+  color: rgba(148, 163, 184, 0.45);
 }
-html[data-lens="finance"] .site-sidebar__collapse-btn:hover {
-  color: rgba(148, 163, 184, 0.7);
-  background: rgba(148, 163, 184, 0.08);
+html[data-lens="finance"] .site-sidebar__drawer-tab:hover {
+  background: #475569;
+  color: rgba(148, 163, 184, 0.75);
 }
 
 /* Hide on mobile — sidebar uses slide-in instead */
 @media (max-width: 920px) {
-  .site-sidebar__collapse-btn { display: none; }
+  .site-sidebar__drawer-tab { display: none; }
 }
 
 /* ── Sidebar collapse (icon strip with hover-to-expand) ── */
@@ -245,6 +256,23 @@ body.sidebar-collapsed .site-sidebar {
 body.sidebar-collapsed .site-sidebar:hover {
   width: 168px;
   overflow: visible;
+}
+
+/* Suppress hover expansion briefly after user clicks collapse
+   (prevents jiggle when mouse is still over the sidebar) */
+body.sidebar-nohover.sidebar-collapsed .site-sidebar,
+body.sidebar-nohover.sidebar-collapsed .site-sidebar:hover {
+  width: 48px;
+  overflow: hidden;
+}
+body.sidebar-nohover.sidebar-collapsed .site-sidebar:hover .sidebar-label {
+  opacity: 0;
+  width: 0;
+}
+body.sidebar-nohover.sidebar-collapsed .site-sidebar:hover .site-sidebar__link {
+  justify-content: center;
+  padding: 10px 8px;
+  gap: 0;
 }
 
 body.sidebar-collapsed .sidebar-label {

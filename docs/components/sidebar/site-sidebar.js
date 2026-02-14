@@ -434,6 +434,10 @@
   // ── User-driven collapse toggle ────────────────────────────────
   // Separate from the auto-collapse that showSection() applies.
   // State persisted in localStorage so it survives page reloads.
+  //
+  // "sidebar-nohover" is added briefly after collapsing to prevent
+  // the hover-to-expand CSS from firing while the mouse is still
+  // on the sidebar. Removed on mouseleave.
 
   var LS_COLLAPSE_KEY = 'haiphen.sidebar.userCollapsed';
 
@@ -445,20 +449,36 @@
     try { localStorage.setItem(LS_COLLAPSE_KEY, val ? '1' : '0'); } catch(e) {}
   }
 
-  function applySidebarCollapse() {
-    document.body.classList.toggle('sidebar-collapsed', isUserCollapsed());
-  }
-
   function wireCollapseToggle() {
     var btn = document.getElementById('sidebar-collapse-btn');
     if (!btn) return;
 
-    btn.addEventListener('click', function () {
-      var willCollapse = !document.body.classList.contains('sidebar-collapsed');
-      setUserCollapsed(willCollapse);
-      document.body.classList.toggle('sidebar-collapsed', willCollapse);
-      btn.setAttribute('aria-label', willCollapse ? 'Expand sidebar' : 'Collapse sidebar');
-      btn.setAttribute('title', willCollapse ? 'Expand sidebar' : 'Collapse sidebar');
+    var sidebar = btn.closest('.site-sidebar');
+
+    btn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      var isCollapsed = document.body.classList.contains('sidebar-collapsed');
+
+      if (isCollapsed) {
+        // Expand
+        setUserCollapsed(false);
+        document.body.classList.remove('sidebar-collapsed', 'sidebar-nohover');
+        btn.setAttribute('aria-label', 'Collapse sidebar');
+        btn.setAttribute('title', 'Collapse sidebar');
+      } else {
+        // Collapse — suppress hover expansion until mouse leaves
+        setUserCollapsed(true);
+        document.body.classList.add('sidebar-collapsed', 'sidebar-nohover');
+        btn.setAttribute('aria-label', 'Expand sidebar');
+        btn.setAttribute('title', 'Expand sidebar');
+
+        if (sidebar) {
+          sidebar.addEventListener('mouseleave', function handler() {
+            document.body.classList.remove('sidebar-nohover');
+            sidebar.removeEventListener('mouseleave', handler);
+          }, { once: true });
+        }
+      }
     });
 
     // Sync aria-label with current state
